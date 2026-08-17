@@ -6,6 +6,7 @@
 - Removed historical uniqueness from definition hashes and added publication idempotency.
 - Conserved assets by asset plus reward class and removed generic adjust movements.
 - Added required review modes/events, monitoring liveness, hostile Agent Feed regression, receipt redaction, and observation transition controls.
+- Pinned the published Agent Feed `@agent-feed/schema@0.1.1` artifact by exact release URL, source commit, SHA-256, size, and SHA-512 integrity.
 
 
 ## 0.4.0 — 2026-08-17

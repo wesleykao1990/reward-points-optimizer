@@ -4,6 +4,22 @@
 
 Agent Feed is a separate project, implemented and deployed from the sibling project `../agent-feed`. The Rewards Optimizer pins protocol `0.1` and consumes only its published schema package and signed delivery contract.
 
+## Published schema pin
+
+The canonical lock is `packages/agent-feed-consumer/protocol-lock.json`:
+
+- package/version: `@agent-feed/schema@0.1.1`;
+- tag/source commit: `schema-v0.1.1` / `ad7e1a7270d0ebc09ffdc844d38cfa71a87bf95e`;
+- artifact: `https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/agent-feed-schema-0.1.1.tgz`;
+- manifest: `https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/schema-artifact-manifest.json`;
+- SHA-512 integrity: `sha512-KHALcE3zQ/dey5GTXepDeXaz77Qf1DP3ySA+rcbG6eiFvUTws21cry8rfM191wyLeQthJ9ENd0neu23ETwX5/g==`;
+- SHA-256: `9e020aba4e291f2e5328897dfb07195aaf392f6ecdd742b5c13b890cffdd9d6e`;
+- size: `13078` bytes.
+
+These values were independently recomputed from the published tarball after
+release. Floating registry ranges, branch URLs, workspace links, and sibling
+source imports do not satisfy this boundary.
+
 The projects must not:
 
 - share application tables;

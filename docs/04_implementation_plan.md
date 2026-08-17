@@ -203,6 +203,11 @@ Begin only after Rewards Milestone 2 and Agent Feed Milestones 0–2 pass.
 - expose dead-letter/replay diagnostics;
 - keep all delivery independent of Supabase Realtime.
 
+The schema prerequisite is complete: `@agent-feed/schema@0.1.1` is pinned by
+release URL and SHA-512 integrity in
+`packages/agent-feed-consumer/protocol-lock.json`. This does not by itself mark
+the remaining Milestone 2.5 consumer implementation complete.
+
 ### Gate
 
 - duplicate events create one receipt and at most one observation;

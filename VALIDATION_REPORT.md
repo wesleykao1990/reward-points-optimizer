@@ -1,6 +1,6 @@
 # Japan Rewards Optimizer Foundation v0.4.1 validation report
 
-Validated: **2026-08-17 (Asia/Tokyo)**
+Validated: **2026-08-18 (Asia/Tokyo)**
 
 ## Result
 
@@ -20,6 +20,7 @@ Validated: **2026-08-17 (Asia/Tokyo)**
 - prototype syntax/build checks passed;
 - prototype tests: 10/10 passed;
 - browser/API smoke flow passed.
+- Agent Feed `@agent-feed/schema@0.1.1` release pin matches the independently verified artifact URL, source commit, SHA-256, byte length, and SHA-512 integrity.
 
 The prototype proves exact residual conservation, reward-class separation, valuation isolation, break-even sensitivity, reusable definition hashes, separate publication idempotency, bitemporal-overlap rejection, required review modes, and hostile Agent Feed intake rejection.
 

@@ -15,6 +15,10 @@ Responsibilities:
 
 It may depend on a published `@agent-feed/schema` artifact. It must not import Agent Feed server internals or query Agent Feed storage.
 
-`protocol-lock.json` is the repository-local dependency lock copied from the
-v0.4.1 two-project workspace. Update it only when a compatible Agent Feed
-protocol release has passed the cross-project contract suite.
+`protocol-lock.json` is the canonical repository-local dependency lock. It pins
+the published `@agent-feed/schema@0.1.1` tarball by immutable release URL,
+source tag/commit, SHA-256, byte length, and SHA-512 integrity. The offline
+package validator rejects drift between this lock and `package-manifest.json`.
+Update the pin only after a compatible Agent Feed release passes the
+cross-project contract suite and the downloaded bytes match the release
+manifest.

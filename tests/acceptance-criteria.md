@@ -97,7 +97,7 @@
 
 ## Agent Feed integration
 
-- [ ] Agent Feed remains a separate project/deployable and protocol `0.1` is pinned.
+- [x] Agent Feed remains a separate project/deployable and protocol `0.1` is pinned through the published `@agent-feed/schema@0.1.1` release URL and SHA-512 integrity.
 - [ ] Signed events are recorded idempotently before acknowledgement.
 - [ ] Generic findings map only to untrusted `SourceObservation`.
 - [ ] Transport dedupe and semantic dedupe are independently tested.
