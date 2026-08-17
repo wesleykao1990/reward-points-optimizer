@@ -1,0 +1,13 @@
+{
+  "agent_feed_protocol_version": "0.1",
+  "agent_feed_project_version": "0.1.1",
+  "rewards_optimizer_project_version": "0.4.1",
+  "schema_package": "@agent-feed/schema",
+  "delivery_event": "finding.submitted",
+  "consumer_schema": "rewards-optimizer/schemas/source-observation.schema.json",
+  "integration_mode": "signed_https_at_least_once_idempotent_consumer",
+  "direct_database_access": false,
+  "realtime_required": false,
+  "producer_liveness_required": true,
+  "hostile_input_fixture_required": true
+}

@@ -1,0 +1,686 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/golden-scenario.schema.json",
+  "title": "Golden Purchase or Conversion Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "version",
+    "status",
+    "level",
+    "title",
+    "as_of",
+    "replay_knowledge_at",
+    "timezone",
+    "user_state",
+    "objective",
+    "candidate_plans",
+    "expected",
+    "evidence_ids",
+    "review"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^JP-[A-Z0-9]+-[0-9]{3}$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "under_review",
+        "golden",
+        "superseded",
+        "retired"
+      ]
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "L1_SINGLE_RULE",
+        "L2_STACKING",
+        "L3_ADVERSARIAL"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5
+    },
+    "description": {
+      "type": "string"
+    },
+    "as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "replay_knowledge_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "timezone": {
+      "type": "string",
+      "const": "Asia/Tokyo"
+    },
+    "user_state": {
+      "$ref": "user-state.schema.json"
+    },
+    "objective": {
+      "$ref": "#/$defs/objective"
+    },
+    "candidate_plans": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "purchase-plan.schema.json"
+      }
+    },
+    "expected": {
+      "$ref": "#/$defs/expected"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ev_[a-z0-9_-]+$"
+      }
+    },
+    "review": {
+      "$ref": "#/$defs/review"
+    }
+  },
+  "$defs": {
+    "planResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_id",
+        "eligible",
+        "asset_movements",
+        "reward_components",
+        "ending_asset_lots",
+        "economics",
+        "objective_score_jpy",
+        "nominal_return_basis_points",
+        "applied_rule_ids",
+        "rejected_rule_ids",
+        "rejection_reasons"
+      ],
+      "properties": {
+        "plan_id": {
+          "type": "string"
+        },
+        "eligible": {
+          "type": "boolean"
+        },
+        "asset_movements": {
+          "type": "array",
+          "items": {
+            "$ref": "asset.schema.json#/$defs/assetMovement"
+          }
+        },
+        "reward_components": {
+          "type": "array",
+          "items": {
+            "$ref": "asset.schema.json#/$defs/rewardComponent"
+          }
+        },
+        "ending_asset_lots": {
+          "type": "array",
+          "items": {
+            "$ref": "asset.schema.json#/$defs/assetLot"
+          }
+        },
+        "economics": {
+          "$ref": "#/$defs/economics"
+        },
+        "objective_score_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "nominal_return_basis_points": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum",
+                "expected"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "integer"
+                },
+                "maximum": {
+                  "type": "integer"
+                },
+                "expected": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "applied_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^rr_[a-z0-9_-]+$"
+          }
+        },
+        "rejected_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^rr_[a-z0-9_-]+$"
+          }
+        },
+        "rejection_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome_mode",
+        "definite_winner_plan_id",
+        "safe_plan_id",
+        "runner_up_plan_id",
+        "conditional_winners",
+        "plan_results",
+        "assertions",
+        "explanation_tokens",
+        "questions_to_resolve",
+        "valuation_sensitivities"
+      ],
+      "properties": {
+        "outcome_mode": {
+          "type": "string",
+          "enum": [
+            "definite",
+            "conditional",
+            "no_valid_plan"
+          ]
+        },
+        "definite_winner_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "safe_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "runner_up_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditional_winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "plan_id",
+              "conditions",
+              "value_range_jpy"
+            ],
+            "properties": {
+              "plan_id": {
+                "type": "string"
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "value_range_jpy": {
+                "$ref": "asset.schema.json#/$defs/jpyValueRange"
+              }
+            }
+          }
+        },
+        "plan_results": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/planResult"
+          }
+        },
+        "assertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "assertion_type",
+              "target_id",
+              "expected",
+              "reason"
+            ],
+            "properties": {
+              "assertion_type": {
+                "type": "string",
+                "enum": [
+                  "rule_applies",
+                  "rule_does_not_apply",
+                  "plan_is_eligible",
+                  "plan_is_ineligible",
+                  "reward_equals",
+                  "winner_is",
+                  "runner_up_is",
+                  "cap_is_applied",
+                  "rounding_is_applied",
+                  "source_is_current",
+                  "residual_asset_equals",
+                  "unknown_state_is_conditional",
+                  "probabilistic_reward_not_guaranteed",
+                  "clawback_is_applied",
+                  "asset_movement_equals",
+                  "net_value_equals"
+                ]
+              },
+              "target_id": {
+                "type": "string"
+              },
+              "expected": {},
+              "reason": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          }
+        },
+        "explanation_tokens": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "questions_to_resolve": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fact_key",
+              "question",
+              "could_change_winner"
+            ],
+            "properties": {
+              "fact_key": {
+                "type": "string"
+              },
+              "question": {
+                "type": "string"
+              },
+              "could_change_winner": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "valuation_sensitivities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "asset_id",
+              "reward_class",
+              "current_jpy_per_unit",
+              "break_even_jpy_per_unit",
+              "winner_at_or_below_threshold_plan_id",
+              "winner_above_threshold_plan_id",
+              "explanation_token"
+            ],
+            "properties": {
+              "asset_id": {
+                "type": "string"
+              },
+              "reward_class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "current_jpy_per_unit": {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+              },
+              "break_even_jpy_per_unit": {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+              },
+              "explanation_token": {
+                "type": "string"
+              },
+              "winner_at_or_below_threshold_plan_id": {
+                "type": "string"
+              },
+              "winner_above_threshold_plan_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome_mode": {
+                "const": "definite"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "definite_winner_plan_id": {
+                "type": "string"
+              },
+              "safe_plan_id": {
+                "type": "string"
+              },
+              "conditional_winners": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome_mode": {
+                "const": "conditional"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "definite_winner_plan_id": {
+                "type": "null"
+              },
+              "conditional_winners": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome_mode": {
+                "const": "no_valid_plan"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "definite_winner_plan_id": {
+                "type": "null"
+              },
+              "safe_plan_id": {
+                "type": "null"
+              },
+              "runner_up_plan_id": {
+                "type": "null"
+              },
+              "conditional_winners": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_events",
+        "required_review_modes",
+        "review_mode",
+        "calculated_by",
+        "verified_by",
+        "verified_at",
+        "cooling_off_completed_at",
+        "independent_calculation_artifact",
+        "decision",
+        "notes"
+      ],
+      "properties": {
+        "review_mode": {
+          "type": "string",
+          "enum": [
+            "solo_dual_pass",
+            "agent_challenged",
+            "human_second_review",
+            "expert_review"
+          ]
+        },
+        "calculated_by": {
+          "type": "string"
+        },
+        "verified_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "cooling_off_completed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "independent_calculation_artifact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "needs_more_evidence"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "required_review_modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "solo_dual_pass",
+              "agent_challenged",
+              "human_second_review",
+              "expert_review"
+            ]
+          }
+        },
+        "review_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "reviewer_id",
+              "completed_at",
+              "decision",
+              "notes"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "solo_dual_pass",
+                  "agent_challenged",
+                  "human_second_review",
+                  "expert_review"
+                ]
+              },
+              "reviewer_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "needs_more_evidence"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary",
+        "probabilistic_reward_policy",
+        "ending_asset_valuation",
+        "tie_breakers"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "enum": [
+            "maximize_guaranteed_net_value",
+            "maximize_expected_net_value",
+            "minimize_net_cost",
+            "maximize_destination_value"
+          ]
+        },
+        "probabilistic_reward_policy": {
+          "type": "string",
+          "enum": [
+            "guaranteed_only",
+            "expected_if_official_probability",
+            "include_user_estimate"
+          ]
+        },
+        "ending_asset_valuation": {
+          "type": "string",
+          "enum": [
+            "use_user_profile",
+            "face_value",
+            "exclude"
+          ]
+        },
+        "tie_breakers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "lower_external_funding",
+              "fewer_operations",
+              "shorter_posting_delay",
+              "later_expiry",
+              "fewer_unknowns",
+              "user_preference"
+            ]
+          }
+        }
+      }
+    },
+    "economics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "merchant_value_received_jpy",
+        "external_funding_jpy",
+        "opening_asset_value_consumed_jpy",
+        "ending_asset_value_jpy",
+        "guaranteed_reward_value_jpy",
+        "probabilistic_expected_reward_value_jpy",
+        "fee_value_jpy",
+        "guaranteed_net_value_change_jpy",
+        "expected_net_value_change_jpy"
+      ],
+      "properties": {
+        "merchant_value_received_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "external_funding_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "opening_asset_value_consumed_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "ending_asset_value_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "guaranteed_reward_value_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "probabilistic_expected_reward_value_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "fee_value_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "guaranteed_net_value_change_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        },
+        "expected_net_value_change_jpy": {
+          "$ref": "asset.schema.json#/$defs/jpyValueRange"
+        }
+      }
+    }
+  }
+}

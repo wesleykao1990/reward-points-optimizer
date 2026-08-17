@@ -1,0 +1,20 @@
+asset_id: point.synthetic.normal
+asset_kind: reward_point
+display_name: Synthetic Normal Point
+program_id: point.synthetic
+scale: 0
+default_reward_class: normal
+default_expiry:
+  policy: none
+  expires_at: null
+  duration_days: null
+  timezone: Asia/Tokyo
+default_usage_restrictions:
+  transferable: true
+  redeemable_for_cash: false
+  usable_for_payment: true
+  investable: false
+  permitted_destination_ids: []
+  notes: Synthetic normal points.
+status: synthetic
+notes: Non-production asset used to validate v0.3 contracts.

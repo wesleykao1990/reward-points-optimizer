@@ -1,0 +1,13 @@
+observation_id: sao_example_001
+observed_at: '2026-08-17T12:00:00+09:00'
+observer: replace-with-observer
+environment: replace-with-environment-and-region
+method: manual_browser
+scope: single_source
+source_ids:
+- jp.example.source
+result: unknown
+http_status: null
+summary_counts: {}
+notes: Template only. Technical reachability does not establish authority or collection permission.
+evidence_reference: null

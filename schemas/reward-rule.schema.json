@@ -1,0 +1,1476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/reward-rule.schema.json",
+  "title": "Reward Rule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rule_id",
+    "version",
+    "status",
+    "rule_type",
+    "name",
+    "subject",
+    "scope",
+    "eligibility",
+    "caps",
+    "stacking",
+    "validity",
+    "provenance",
+    "audit"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "pattern": "^rr_[a-z0-9_-]+$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "under_review",
+        "published",
+        "superseded",
+        "retired",
+        "rejected"
+      ]
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "payment_acceptance",
+        "base_reward",
+        "merchant_bonus",
+        "campaign_bonus",
+        "loyalty_presentment",
+        "discount",
+        "asset_conversion",
+        "redemption",
+        "transfer",
+        "exclusion",
+        "fee",
+        "card_benefit"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3
+    },
+    "description": {
+      "type": "string"
+    },
+    "subject": {
+      "$ref": "#/$defs/entityRef"
+    },
+    "scope": {
+      "$ref": "#/$defs/scope"
+    },
+    "eligibility": {
+      "$ref": "#/$defs/eligibility"
+    },
+    "effect": {
+      "$ref": "#/$defs/nonFinancialEffect"
+    },
+    "calculation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/percentageCalculation"
+        },
+        {
+          "$ref": "#/$defs/pointsPerUnitCalculation"
+        },
+        {
+          "$ref": "#/$defs/fixedCalculation"
+        },
+        {
+          "$ref": "#/$defs/tieredCalculation"
+        },
+        {
+          "$ref": "#/$defs/multiplierCalculation"
+        },
+        {
+          "$ref": "#/$defs/transferCalculation"
+        }
+      ]
+    },
+    "output": {
+      "$ref": "#/$defs/output"
+    },
+    "caps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/cap"
+      }
+    },
+    "stacking": {
+      "$ref": "#/$defs/stacking"
+    },
+    "validity": {
+      "$ref": "#/$defs/validity"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "audit": {
+      "$ref": "#/$defs/audit"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "enum": [
+              "payment_acceptance",
+              "exclusion"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "effect"
+        ],
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "calculation"
+              ]
+            },
+            {
+              "required": [
+                "output"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "enum": [
+              "base_reward",
+              "merchant_bonus",
+              "campaign_bonus",
+              "loyalty_presentment",
+              "discount",
+              "fee",
+              "card_benefit"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "calculation",
+          "output"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rule_type": {
+            "enum": [
+              "asset_conversion",
+              "transfer",
+              "redemption"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "calculation"
+        ],
+        "properties": {
+          "calculation": {
+            "$ref": "#/$defs/transferCalculation"
+          }
+        },
+        "not": {
+          "required": [
+            "output"
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "entityRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_type",
+        "entity_id"
+      ],
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "enum": [
+            "credit_card",
+            "payment_method",
+            "loyalty_program",
+            "merchant",
+            "cashback_portal",
+            "airline_program",
+            "hotel_program",
+            "campaign",
+            "stored_value_program"
+          ]
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 2
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "countries",
+        "operation_types",
+        "channels"
+      ],
+      "properties": {
+        "countries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          }
+        },
+        "operation_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "merchant_purchase",
+              "stored_value_top_up",
+              "voucher_purchase",
+              "point_transfer",
+              "point_redemption",
+              "refund",
+              "reversal",
+              "portal_clickout"
+            ]
+          }
+        },
+        "merchant_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_merchant_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "merchant_group_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_merchant_group_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "merchant_location_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_merchant_location_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "merchant_category_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_merchant_category_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "in_store",
+              "online",
+              "mobile_order",
+              "delivery",
+              "drive_through",
+              "in_app",
+              "portal_clickout",
+              "transfer",
+              "not_applicable"
+            ]
+          }
+        },
+        "included_product_classes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_product_classes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "tax_basis": {
+          "type": "string",
+          "enum": [
+            "tax_inclusive",
+            "tax_exclusive",
+            "provider_defined",
+            "not_applicable"
+          ]
+        }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_match",
+        "user_conditions",
+        "transaction_conditions",
+        "campaign_conditions"
+      ],
+      "properties": {
+        "operation_match": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required_loyalty_program_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_payment_instrument_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded_payment_instrument_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_payment_instrument_types": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "credit_card",
+                  "debit_card",
+                  "prepaid_card",
+                  "qr_wallet",
+                  "electronic_money",
+                  "cash",
+                  "points",
+                  "bank_transfer",
+                  "stored_value",
+                  "voucher"
+                ]
+              }
+            },
+            "allowed_funding_source_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded_funding_source_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_source_asset_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded_source_asset_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_destination_asset_ids": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "required_interfaces": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "physical_card",
+                  "magstripe",
+                  "chip",
+                  "contactless_card",
+                  "mobile_contactless",
+                  "qr_code",
+                  "barcode",
+                  "merchant_app",
+                  "provider_app",
+                  "web_checkout",
+                  "portal_redirect",
+                  "cash",
+                  "manual_transfer",
+                  "automatic",
+                  "not_applicable"
+                ]
+              }
+            },
+            "excluded_interfaces": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "physical_card",
+                  "magstripe",
+                  "chip",
+                  "contactless_card",
+                  "mobile_contactless",
+                  "qr_code",
+                  "barcode",
+                  "merchant_app",
+                  "provider_app",
+                  "web_checkout",
+                  "portal_redirect",
+                  "cash",
+                  "manual_transfer",
+                  "automatic",
+                  "not_applicable"
+                ]
+              }
+            },
+            "must_present_before_payment": {
+              "type": "boolean"
+            }
+          }
+        },
+        "user_conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fact_key",
+              "operator",
+              "value",
+              "unknown_policy"
+            ],
+            "properties": {
+              "fact_key": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string",
+                "enum": [
+                  "eq",
+                  "neq",
+                  "in",
+                  "not_in",
+                  "gte",
+                  "lte",
+                  "exists",
+                  "not_exists"
+                ]
+              },
+              "value": {},
+              "unknown_policy": {
+                "type": "string",
+                "enum": [
+                  "return_conditional",
+                  "ask_user",
+                  "suppress_rule",
+                  "use_lower_bound"
+                ]
+              }
+            }
+          }
+        },
+        "transaction_conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minimum_amount_jpy": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "maximum_amount_jpy": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "eligible_amount_basis": {
+              "type": "string",
+              "enum": [
+                "gross_paid",
+                "net_after_coupons",
+                "net_after_points",
+                "cash_component",
+                "eligible_line_items",
+                "operation_amount",
+                "provider_defined",
+                "not_applicable"
+              ]
+            },
+            "excluded_tender_components": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "requires_single_operation": {
+              "type": "boolean"
+            }
+          }
+        },
+        "campaign_conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "campaign_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "entry_required": {
+              "type": "boolean"
+            },
+            "entry_deadline": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "targeted_offer": {
+              "type": "boolean"
+            },
+            "identity_verification_required": {
+              "type": "boolean"
+            },
+            "first_use_only": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "nonFinancialEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "effect_target",
+        "target_rule_ids",
+        "target_stack_groups",
+        "reason_code"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "effect_target": {
+          "type": "string",
+          "enum": [
+            "operation_eligibility",
+            "reward_earning",
+            "tier_progress",
+            "campaign_progress",
+            "transfer_eligibility",
+            "asset_use"
+          ]
+        },
+        "target_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^rr_[a-z0-9_-]+$"
+          }
+        },
+        "target_stack_groups": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reason_code": {
+          "type": "string"
+        }
+      }
+    },
+    "rounding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aggregation_scope",
+        "reward_rounding_mode"
+      ],
+      "properties": {
+        "aggregation_scope": {
+          "type": "string",
+          "enum": [
+            "per_line_item",
+            "per_operation",
+            "per_day",
+            "per_statement",
+            "per_campaign_period",
+            "transfer_request"
+          ]
+        },
+        "eligible_spend_quantum_jpy": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "reward_rounding_mode": {
+          "type": "string",
+          "enum": [
+            "floor",
+            "ceil",
+            "half_up",
+            "exact"
+          ]
+        }
+      }
+    },
+    "percentageCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "rate_basis_points",
+        "rounding"
+      ],
+      "properties": {
+        "model": {
+          "const": "percentage"
+        },
+        "rate_basis_points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        },
+        "base_reward_included": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pointsPerUnitCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "reward_units",
+        "spend_jpy",
+        "rounding"
+      ],
+      "properties": {
+        "model": {
+          "const": "points_per_unit"
+        },
+        "reward_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "spend_jpy": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        },
+        "base_reward_included": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fixedCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "reward_units",
+        "rounding"
+      ],
+      "properties": {
+        "model": {
+          "const": "fixed"
+        },
+        "reward_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        }
+      }
+    },
+    "tierAward": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "rate_basis_points"
+          ],
+          "properties": {
+            "model": {
+              "const": "percentage"
+            },
+            "rate_basis_points": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "reward_units"
+          ],
+          "properties": {
+            "model": {
+              "const": "fixed"
+            },
+            "reward_units": {
+              "type": "string",
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "model",
+            "reward_units",
+            "spend_jpy"
+          ],
+          "properties": {
+            "model": {
+              "const": "points_per_unit"
+            },
+            "reward_units": {
+              "type": "string",
+              "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+            },
+            "spend_jpy": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      ]
+    },
+    "tieredCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "tier_basis",
+        "tiers",
+        "rounding"
+      ],
+      "properties": {
+        "model": {
+          "const": "tiered"
+        },
+        "tier_basis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "key",
+            "period"
+          ],
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": [
+                "transaction_amount",
+                "user_fact",
+                "period_aggregate",
+                "event_counter"
+              ]
+            },
+            "key": {
+              "type": "string"
+            },
+            "period": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                null,
+                "current_day",
+                "current_month",
+                "previous_month",
+                "current_year",
+                "membership_year",
+                "campaign_period"
+              ]
+            }
+          }
+        },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operator",
+              "value",
+              "award"
+            ],
+            "properties": {
+              "operator": {
+                "type": "string",
+                "enum": [
+                  "eq",
+                  "in",
+                  "gte",
+                  "range"
+                ]
+              },
+              "value": {},
+              "award": {
+                "$ref": "#/$defs/tierAward"
+              }
+            }
+          }
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        }
+      }
+    },
+    "multiplierCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "multiplier_milli",
+        "applies_to_stack_group",
+        "rounding"
+      ],
+      "properties": {
+        "model": {
+          "const": "multiplier"
+        },
+        "multiplier_milli": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applies_to_stack_group": {
+          "type": "string"
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        }
+      }
+    },
+    "transferCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "source_asset",
+        "destination_asset",
+        "source_units",
+        "destination_units",
+        "minimum_source_units",
+        "increment_source_units",
+        "maximum_source_units_per_request",
+        "maximum_source_units_per_period",
+        "maximum_period",
+        "fee",
+        "rounding",
+        "processing_time_days_min",
+        "processing_time_days_max",
+        "cancellation_policy"
+      ],
+      "properties": {
+        "model": {
+          "const": "transfer_ratio"
+        },
+        "source_asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "destination_asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "source_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "destination_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "minimum_source_units": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "increment_source_units": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_source_units_per_request": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_source_units_per_period": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_period": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "day",
+            "month",
+            "year",
+            "campaign_period",
+            "lifetime"
+          ]
+        },
+        "fee": {
+          "oneOf": [
+            {
+              "$ref": "asset.schema.json#/$defs/quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rounding": {
+          "$ref": "#/$defs/rounding"
+        },
+        "processing_time_days_min": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "processing_time_days_max": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cancellation_policy": {
+          "type": "string",
+          "enum": [
+            "not_cancelable",
+            "cancelable_before_posting",
+            "provider_defined",
+            "unknown"
+          ]
+        },
+        "bonus_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^rr_[a-z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset",
+        "sign",
+        "certainty",
+        "settlement",
+        "expiry",
+        "restrictions",
+        "clawback"
+      ],
+      "properties": {
+        "asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "sign": {
+          "type": "string",
+          "enum": [
+            "credit",
+            "debit"
+          ]
+        },
+        "certainty": {
+          "$ref": "asset.schema.json#/$defs/certainty"
+        },
+        "settlement": {
+          "$ref": "asset.schema.json#/$defs/settlement"
+        },
+        "expiry": {
+          "$ref": "asset.schema.json#/$defs/expiry"
+        },
+        "restrictions": {
+          "$ref": "asset.schema.json#/$defs/usageRestrictions"
+        },
+        "clawback": {
+          "$ref": "asset.schema.json#/$defs/clawbackPolicy"
+        }
+      }
+    },
+    "cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cap_id",
+        "cap_type",
+        "max_reward_units",
+        "max_eligible_spend_jpy",
+        "shared_cap_group",
+        "progress_source",
+        "reset",
+        "partial_consumption",
+        "unknown_progress_policy"
+      ],
+      "properties": {
+        "cap_id": {
+          "type": "string"
+        },
+        "cap_type": {
+          "type": "string",
+          "enum": [
+            "per_operation",
+            "per_day",
+            "per_month",
+            "per_campaign",
+            "per_year",
+            "lifetime"
+          ]
+        },
+        "max_reward_units": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "max_eligible_spend_jpy": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "shared_cap_group": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "progress_source": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "user_input",
+            "transaction_aggregation",
+            "provider_api",
+            "unknown"
+          ]
+        },
+        "reset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "period",
+            "timezone",
+            "boundary"
+          ],
+          "properties": {
+            "period": {
+              "type": "string",
+              "enum": [
+                "operation",
+                "day",
+                "month",
+                "campaign",
+                "year",
+                "never"
+              ]
+            },
+            "timezone": {
+              "type": "string"
+            },
+            "boundary": {
+              "type": "string",
+              "enum": [
+                "calendar",
+                "anniversary",
+                "campaign_defined",
+                "not_applicable"
+              ]
+            }
+          }
+        },
+        "partial_consumption": {
+          "type": "boolean"
+        },
+        "unknown_progress_policy": {
+          "type": "string",
+          "enum": [
+            "return_range",
+            "ask_user",
+            "suppress_bonus",
+            "use_lower_bound",
+            "not_applicable"
+          ]
+        }
+      }
+    },
+    "stacking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stack_group",
+        "mode",
+        "precedence",
+        "conflicts_with_rule_ids",
+        "requires_rule_ids"
+      ],
+      "properties": {
+        "stack_group": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "additive",
+            "replaces_group",
+            "best_of_group",
+            "includes_base",
+            "non_reward_acceptance"
+          ]
+        },
+        "precedence": {
+          "type": "integer"
+        },
+        "conflicts_with_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid_from",
+        "valid_to",
+        "timezone",
+        "recorded_at",
+        "superseded_at"
+      ],
+      "properties": {
+        "announced_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "timezone": {
+          "type": "string",
+          "const": "Asia/Tokyo"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "superseded_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_ids",
+        "minimum_source_tier",
+        "confidence",
+        "human_verified"
+      ],
+      "properties": {
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^ev_[a-z0-9_-]+$"
+          }
+        },
+        "minimum_source_tier": {
+          "type": "string",
+          "enum": [
+            "T0_REGULATOR",
+            "T1_CANONICAL",
+            "T2_OFFICIAL_SUPPORT",
+            "T3_PARTNER_CONTRACT"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "human_verified": {
+          "type": "boolean"
+        },
+        "review_notes": {
+          "type": "string"
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "created_at",
+        "created_by",
+        "review_events",
+        "required_review_modes",
+        "review_mode",
+        "reviewed_at",
+        "reviewed_by",
+        "change_reason"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "review_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "solo_dual_pass",
+            "agent_challenged",
+            "human_second_review",
+            "expert_review"
+          ]
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "reviewed_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "change_reason": {
+          "type": "string"
+        },
+        "required_review_modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "solo_dual_pass",
+              "agent_challenged",
+              "human_second_review",
+              "expert_review"
+            ]
+          }
+        },
+        "review_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "reviewer_id",
+              "completed_at",
+              "decision",
+              "notes"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "solo_dual_pass",
+                  "agent_challenged",
+                  "human_second_review",
+                  "expert_review"
+                ]
+              },
+              "reviewer_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "needs_more_evidence"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

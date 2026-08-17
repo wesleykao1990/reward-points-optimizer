@@ -1,0 +1,42 @@
+evidence_id: ev_synthetic_topup_rate
+source_id: synthetic.official.example
+source_snapshot_id: snap_synthetic_topup_001
+source_url: https://example.com/synthetic-terms
+captured_at: '2026-08-17T10:00:00+09:00'
+content_hash: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+capture_method: test_fixture
+source_published_at: null
+valid_time:
+  valid_from: '2026-08-01T00:00:00+09:00'
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Synthetic fixture paragraph 1
+  page_number: null
+excerpt: 'Synthetic terms: card earns one point per JPY 100 on eligible stored-value
+  top-ups.'
+supports:
+- artifact_id: rr_synthetic_topup_base
+  json_pointer: /calculation
+  claim: Eligible top-ups earn one point per JPY 100.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 1.0
+review:
+  review_mode: solo_dual_pass
+  reviewer_id: synthetic-reviewer
+  reviewed_at: '2026-08-17T11:00:00+09:00'
+  decision: approved
+  notes: Synthetic test evidence only.
+  required_review_modes:
+  - solo_dual_pass
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: synthetic-reviewer
+    completed_at: '2026-08-17T13:00:00+09:00'
+    decision: approved
+    notes: Synthetic v0.4.1 contract fixture.

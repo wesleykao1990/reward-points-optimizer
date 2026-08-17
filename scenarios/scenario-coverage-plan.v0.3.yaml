@@ -1,0 +1,2343 @@
+version: 0.3.0
+research_cutoff: '2026-08-17'
+purpose: Coverage-balanced research queue for 100 evidence-backed scenarios. The 100-fixture program is a continuous quality
+  track, not a gate for a narrow alpha.
+distribution:
+  total: 100
+  by_level:
+    L1_SINGLE_RULE: 40
+    L2_STACKING: 40
+    L3_ADVERSARIAL: 20
+  by_category:
+    CVS: 15
+    DRG: 10
+    SUP: 10
+    FNB: 10
+    ELE: 8
+    ECOM: 12
+    RET: 5
+    TRV: 5
+    QR: 8
+    CMP: 10
+    XFR: 7
+status_meaning:
+  planned: Research has not yet produced a verified expected result.
+  candidate: Evidence and a draft calculation exist.
+  golden: Approved under a recorded review mode. Solo dual-pass is not represented as independent human review.
+scenarios:
+- scenario_id: JP-CMP-001
+  category: CMP
+  title: Campaign entry required before purchase
+  target: Generic Japanese campaign
+  level: L1_SINGLE_RULE
+  behavior_under_test: Enrollment condition
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.dbarai.campaigns
+  required_negative_assertion: No entry means no campaign reward.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CMP-002
+  category: CMP
+  title: Campaign minimum spend boundary
+  target: Generic Japanese campaign
+  level: L1_SINGLE_RULE
+  behavior_under_test: Minimum transaction amount
+  primary_source_ids:
+  - jp.vpoint.campaigns
+  - jp.aupay.campaigns
+  required_negative_assertion: One yen below the threshold must not qualify.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CMP-003
+  category: CMP
+  title: Campaign maximum bonus paid as limited-period points
+  target: Generic Japanese campaign
+  level: L1_SINGLE_RULE
+  behavior_under_test: Cap plus reward class, posting window, and expiry-aware valuation
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.rakutenpay.campaigns
+  required_negative_assertion: Reward must be clipped exactly at the cap.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  - reward_class_and_expiry
+  release_track: alpha_support
+  required_domain_features:
+  - reward_asset_class
+  - limited_period_points
+  - posting_delay
+  - expiry_valuation
+  - cap
+- scenario_id: JP-CMP-004
+  category: CMP
+  title: Campaign validity window
+  target: Generic Japanese campaign
+  level: L1_SINGLE_RULE
+  behavior_under_test: Start and end timestamps
+  primary_source_ids:
+  - jp.dbarai.campaigns
+  - jp.aeoncard.campaigns
+  required_negative_assertion: Expired or not-yet-started campaigns must remain inactive.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CMP-005
+  category: CMP
+  title: Campaign bonus paid as limited-period points
+  target: Generic Japanese campaign
+  level: L2_STACKING
+  behavior_under_test: Reward class, posting delay, expiry, usage restrictions, and expiry-adjusted valuation
+  primary_source_ids:
+  - jp.paypay.eligibility-faq
+  - jp.rakutenmarket.point-campaign-faq
+  required_negative_assertion: Limited-period points must not inherit the valuation or transferability of normal points.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - reward_class_and_expiry
+  - settlement_and_clawback
+  - campaign_validity_or_cap
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CMP-006
+  category: CMP
+  title: Refund reverses campaign reward and cap progress
+  target: Generic Japanese campaign
+  level: L2_STACKING
+  behavior_under_test: Reversal ledger and cap restoration policy
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.dbarai.ended-campaigns
+  required_negative_assertion: Refunded spend must not remain eligible unless terms explicitly retain it.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - settlement_and_clawback
+  - campaign_validity_or_cap
+  - refund_and_reversal
+  - asset_movement_ledger
+  release_track: continuous_quality_track
+  required_domain_features:
+  - refund
+  - reversal
+  - clawback
+  - cap_progress_reversal
+- scenario_id: JP-CMP-007
+  category: CMP
+  title: Guaranteed campaign reward versus lottery headline
+  target: Generic Japanese campaign
+  level: L2_STACKING
+  behavior_under_test: Guaranteed value separated from probabilistic or undisclosed-probability rewards
+  primary_source_ids:
+  - jp.smbc.member-campaigns
+  - jp.aeoncard.campaigns
+  required_negative_assertion: A lottery maximum must not be ranked as guaranteed cashback or assigned an invented probability.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - probabilistic_reward
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+  - probabilistic_reward
+  - guaranteed_value_ranking
+- scenario_id: JP-CMP-008
+  category: CMP
+  title: Targeted or lottery campaign with unknown eligibility and non-guaranteed reward
+  target: Issuer or wallet campaign
+  level: L2_STACKING
+  behavior_under_test: Tri-state user eligibility, conditional winner output, limited-period reward class, and probabilistic
+    reward excluded from guaranteed ranking
+  primary_source_ids:
+  - jp.smbc.member-campaigns
+  - jp.paypaycard.campaigns
+  required_negative_assertion: Unknown targeting must not be treated as eligible, and a lottery headline must not be ranked
+    as guaranteed face-value cashback.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - uncertain_user_state
+  - conditional_recommendation
+  - reward_class_and_expiry
+  - probabilistic_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - uncertain_user_state
+  - probabilistic_reward
+  - guaranteed_value_ranking
+- scenario_id: JP-CMP-009
+  category: CMP
+  title: Announced rule change delayed before effective date
+  target: Rakuten Pay
+  level: L3_ADVERSARIAL
+  behavior_under_test: Announcement versus valid-time separation
+  primary_source_ids:
+  - jp.rakutenpay.change-notice-2026
+  required_negative_assertion: The announced rule must not apply before its actual effective date.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - bitemporal_validity
+  - announced_then_postponed
+- scenario_id: JP-CMP-010
+  category: CMP
+  title: Campaign page remains online after expiry
+  target: Archived campaign
+  level: L3_ADVERSARIAL
+  behavior_under_test: Page availability versus rule validity
+  primary_source_ids:
+  - jp.dbarai.ended-campaigns
+  - jp.vpoint.campaigns
+  required_negative_assertion: An accessible page must not be treated as an active offer.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - reward_class_and_expiry
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-001
+  category: CVS
+  title: Seven Card to nanaco top-up reward or exclusion
+  target: Seven-Eleven
+  level: L1_SINGLE_RULE
+  behavior_under_test: Operation-scoped top-up reward and spend-metric exclusion
+  primary_source_ids:
+  - merchant.seveneleven.nanaco
+  - jp.nanaco.earning
+  required_negative_assertion: A card excluded from electronic-money top-up rewards must not receive the ordinary purchase
+    reward.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - stored_value_top_up
+  - operation_scoped_reward
+  - spend_metric_exclusion
+- scenario_id: JP-CVS-002
+  category: CVS
+  title: Seven-Eleven accepted card and QR methods for an ordinary purchase
+  target: Seven-Eleven
+  level: L1_SINGLE_RULE
+  behavior_under_test: Payment acceptance independent of reward calculation
+  primary_source_ids:
+  - merchant.seveneleven.payment-faq
+  required_negative_assertion: An unsupported tender must be rejected before ranking.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-003
+  category: CVS
+  title: Seven-Eleven nanaco redemption value
+  target: Seven-Eleven
+  level: L1_SINGLE_RULE
+  behavior_under_test: Point-to-electronic-money redemption
+  primary_source_ids:
+  - jp.nanaco.redemption-value
+  - merchant.seveneleven.nanaco
+  required_negative_assertion: Unconverted points must not be treated as spendable electronic money.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-CVS-004
+  category: CVS
+  title: FamilyMart payment-method acceptance
+  target: FamilyMart
+  level: L1_SINGLE_RULE
+  behavior_under_test: Merchant acceptance by tender class
+  primary_source_ids:
+  - merchant.familymart.payment
+  required_negative_assertion: A tender absent from the merchant list must not be generated as a recipe.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-005
+  category: CVS
+  title: Lawson Ponta or d Point basic presentment
+  target: Lawson
+  level: L1_SINGLE_RULE
+  behavior_under_test: Single loyalty program selected at checkout
+  primary_source_ids:
+  - merchant.lawson.ponta
+  required_negative_assertion: Both common points must not be awarded unless official terms explicitly permit it.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-006
+  category: CVS
+  title: Seven Card to nanaco top-up then Seven-Eleven purchase with residual balance
+  target: Seven-Eleven / nanaco
+  level: L2_STACKING
+  behavior_under_test: Multi-operation stored-value route and residual asset accounting
+  primary_source_ids:
+  - merchant.seveneleven.nanaco
+  - jp.nanaco.earning
+  - jp.nanaco.redemption-value
+  required_negative_assertion: The full top-up amount must not be treated as consumed by a smaller purchase.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: alpha_convenience
+  required_domain_features:
+  - multi_operation_plan
+  - stored_value_top_up
+  - residual_asset
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-CVS-007
+  category: CVS
+  title: FamilyMart linked point auto-identification
+  target: FamilyMart
+  level: L2_STACKING
+  behavior_under_test: One-scan identification and payment route
+  primary_source_ids:
+  - merchant.familymart.famipay
+  - merchant.familymart.famipay-points
+  required_negative_assertion: Manual and automatic presentation must not double-award the same loyalty layer.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-008
+  category: CVS
+  title: FamilyMart FamiPay campaign plus base reward
+  target: FamilyMart
+  level: L2_STACKING
+  behavior_under_test: Campaign bonus additive to base reward
+  primary_source_ids:
+  - merchant.familymart.famipay
+  - jp.dbarai.campaigns
+  required_negative_assertion: A campaign bonus must not apply without matching official campaign terms.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-009
+  category: CVS
+  title: Lawson time-of-day loyalty rate
+  target: Lawson
+  level: L2_STACKING
+  behavior_under_test: Time-local rule plus payment stack
+  primary_source_ids:
+  - merchant.lawson.points
+  - merchant.lawson.auto-membership
+  required_negative_assertion: The pre-boundary rate must not continue after the official time boundary.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-010
+  category: CVS
+  title: Lawson linked au PAY automatic Ponta identification
+  target: Lawson
+  level: L2_STACKING
+  behavior_under_test: Automatic loyalty identification plus QR reward
+  primary_source_ids:
+  - merchant.lawson.auto-membership
+  - jp.aupay.reward-guide
+  required_negative_assertion: Separate card presentation must not create a duplicate loyalty award.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-011
+  category: CVS
+  title: Lawson linked d払い automatic d Point identification
+  target: Lawson
+  level: L2_STACKING
+  behavior_under_test: Automatic loyalty identification plus QR reward
+  primary_source_ids:
+  - merchant.lawson.auto-membership
+  - jp.dbarai.campaigns
+  required_negative_assertion: An excluded d払い funding source must not inherit the normal reward.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-012
+  category: CVS
+  title: SMBC eligible convenience merchant mobile-contactless bonus
+  target: Eligible convenience merchant
+  level: L2_STACKING
+  behavior_under_test: Card base plus merchant/interface bonus
+  primary_source_ids:
+  - jp.smbc.eligible-merchant-rewards
+  required_negative_assertion: Do not double-count the base reward if the published rate includes it.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-013
+  category: CVS
+  title: Seven-Eleven service-payment tender restriction
+  target: Seven-Eleven
+  level: L3_ADVERSARIAL
+  behavior_under_test: Product-class-specific payment acceptance
+  primary_source_ids:
+  - merchant.seveneleven.bill-payment
+  required_negative_assertion: Ordinary retail acceptance rules must not leak into service-payment products.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-014
+  category: CVS
+  title: SMBC smartphone contactless versus physical-card route
+  target: Eligible convenience merchant
+  level: L3_ADVERSARIAL
+  behavior_under_test: Interface-specific reward differential
+  primary_source_ids:
+  - jp.smbc.eligible-merchant-rewards
+  - jp.smbc.vpoint-up-program
+  required_negative_assertion: A physical-card route must not receive a mobile-contactless-only bonus.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-CVS-015
+  category: CVS
+  title: Convenience campaign exact start/end timestamp
+  target: Convenience campaign
+  level: L3_ADVERSARIAL
+  behavior_under_test: Temporal boundary and Asia/Tokyo evaluation
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.dbarai.campaigns
+  - jp.vpoint.campaigns
+  required_negative_assertion: The rule must be inactive one instant before start and one instant after end.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_convenience
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-001
+  category: DRG
+  title: Matsukiyo Cocokara base point calculation
+  target: Matsukiyo Cocokara
+  level: L1_SINGLE_RULE
+  behavior_under_test: Tax basis and points-per-unit
+  primary_source_ids:
+  - merchant.matsukiyo.point-guide
+  required_negative_assertion: Tax-inclusive and tax-exclusive bases must not be mixed.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-002
+  category: DRG
+  title: Matsukiyo Cocokara point redemption
+  target: Matsukiyo Cocokara
+  level: L1_SINGLE_RULE
+  behavior_under_test: Redemption unit and minimum
+  primary_source_ids:
+  - jp.vpoint.value-and-use
+  - merchant.matsukiyo.point-guide
+  required_negative_assertion: Points below the minimum must not be represented as immediately redeemable.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-DRG-003
+  category: DRG
+  title: Welcia accepted payment method lookup
+  target: Welcia
+  level: L1_SINGLE_RULE
+  behavior_under_test: Merchant payment acceptance
+  primary_source_ids:
+  - merchant.welcia.faq
+  required_negative_assertion: Unknown branch acceptance must remain unknown rather than defaulting to chain-wide acceptance.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-004
+  category: DRG
+  title: Welcia WAON POINT basic presentation
+  target: Welcia
+  level: L1_SINGLE_RULE
+  behavior_under_test: Single loyalty presentment rule
+  primary_source_ids:
+  - merchant.welcia.home
+  - jp.waonpoint.earning-faq
+  required_negative_assertion: Presentation-dependent points must not apply when no card or linked app is shown.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-005
+  category: DRG
+  title: Matsukiyo tier multiplier after spend threshold
+  target: Matsukiyo Cocokara
+  level: L2_STACKING
+  behavior_under_test: Base reward plus user tier
+  primary_source_ids:
+  - merchant.matsukiyo.point-guide
+  required_negative_assertion: A tier earned for a future period must not be applied early.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - non_transaction_tier_basis
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-006
+  category: DRG
+  title: Matsukiyo branch-specific payment override
+  target: Matsukiyo Cocokara location
+  level: L2_STACKING
+  behavior_under_test: Chain default plus location override
+  primary_source_ids:
+  - merchant.matsukiyo.store-payment-faq
+  required_negative_assertion: The chain default must yield to a verified location-specific exception.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-007
+  category: DRG
+  title: Welcia WAON POINT plus eligible payment reward
+  target: Welcia
+  level: L2_STACKING
+  behavior_under_test: Loyalty presentment plus tender reward
+  primary_source_ids:
+  - merchant.welcia.home
+  - jp.waonpoint.earning-faq
+  - jp.aeonpay.reward-guide
+  required_negative_assertion: A payment reward must not imply that loyalty presentation occurred.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-008
+  category: DRG
+  title: Welcia V Point to WAON POINT conversion before redemption
+  target: Welcia
+  level: L2_STACKING
+  behavior_under_test: Transfer edge followed by redemption
+  primary_source_ids:
+  - merchant.welcia.home
+  - jp.vpoint.value-and-use
+  - jp.waonpoint.faq
+  required_negative_assertion: Uncompleted conversion must not be counted as available WAON POINT.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+  - point_redemption
+- scenario_id: JP-DRG-009
+  category: DRG
+  title: Drugstore prescription or cash-only product exclusion
+  target: Drugstore
+  level: L3_ADVERSARIAL
+  behavior_under_test: Line-item eligibility and mixed basket
+  primary_source_ids:
+  - merchant.matsukiyo.store-payment-faq
+  - merchant.welcia.faq
+  required_negative_assertion: Ineligible line items must not receive points even when the overall transaction is eligible.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-DRG-010
+  category: DRG
+  title: Drugstore campaign cap crossed by current purchase
+  target: Drugstore campaign
+  level: L3_ADVERSARIAL
+  behavior_under_test: Remaining campaign cap and partial award
+  primary_source_ids:
+  - jp.vpoint.campaigns
+  - jp.dbarai.campaigns
+  - jp.aupay.campaigns
+  required_negative_assertion: The awarded bonus must not exceed the remaining user-level cap.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-001
+  category: ECOM
+  title: Amazon Points redemption value
+  target: Amazon Japan
+  level: L1_SINGLE_RULE
+  behavior_under_test: Point face value and eligible purchase use
+  primary_source_ids:
+  - merchant.amazonjp.points-terms
+  required_negative_assertion: Points must not be applied to excluded products.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-ECOM-002
+  category: ECOM
+  title: Amazon Points posting timing
+  target: Amazon Japan
+  level: L1_SINGLE_RULE
+  behavior_under_test: Pending versus available points
+  primary_source_ids:
+  - merchant.amazonjp.points-terms
+  required_negative_assertion: Pending points must not be treated as spendable.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - settlement_and_clawback
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-003
+  category: ECOM
+  title: Rakuten Ichiba ordinary purchase points
+  target: Rakuten Ichiba
+  level: L1_SINGLE_RULE
+  behavior_under_test: Base marketplace points
+  primary_source_ids:
+  - jp.rakutenmarket.point-campaign-faq
+  required_negative_assertion: Campaign multipliers must not be included in the base rule.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-004
+  category: ECOM
+  title: Yahoo Shopping PayPay point posting
+  target: Yahoo Shopping
+  level: L1_SINGLE_RULE
+  behavior_under_test: Pending and posted rewards
+  primary_source_ids:
+  - merchant.yahoo-shopping.paypay-points
+  required_negative_assertion: Pending rewards must not be counted as current wallet balance.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - settlement_and_clawback
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-005
+  category: ECOM
+  title: ZOZOTOWN point redemption
+  target: ZOZOTOWN
+  level: L1_SINGLE_RULE
+  behavior_under_test: Point use and eligible fees/items
+  primary_source_ids:
+  - merchant.zozo.points
+  required_negative_assertion: Points must not cover fees or items excluded by official terms.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-006
+  category: ECOM
+  title: Amazon purchase with linked d Point
+  target: Amazon Japan
+  level: L2_STACKING
+  behavior_under_test: Merchant points, partner points, and payment-card rewards
+  primary_source_ids:
+  - merchant.amazonjp.points-terms
+  - merchant.amazonjp.partner-dpoint
+  required_negative_assertion: Partner points must not be awarded without valid account linking.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-007
+  category: ECOM
+  title: Rakuten Ichiba SPU with partially known user state
+  target: Rakuten Ichiba
+  level: L2_STACKING
+  behavior_under_test: Tiered rewards based on user attributes and period aggregates with known, estimated, and unknown states
+  primary_source_ids:
+  - jp.rakutenmarket.point-campaign-faq
+  required_negative_assertion: Unknown service completion and cap progress must not be silently treated as completed.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - uncertain_user_state
+  - conditional_recommendation
+  - non_transaction_tier_basis
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-008
+  category: ECOM
+  title: Rakuten Ichiba coupon-adjusted point basis
+  target: Rakuten Ichiba
+  level: L2_STACKING
+  behavior_under_test: Coupon and points calculation basis
+  primary_source_ids:
+  - jp.rakutenmarket.point-campaign-faq
+  required_negative_assertion: Points must not be calculated on an amount excluded after coupon adjustment.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-009
+  category: ECOM
+  title: Yahoo Shopping campaign cap progress
+  target: Yahoo Shopping
+  level: L2_STACKING
+  behavior_under_test: Pending reward and remaining cap
+  primary_source_ids:
+  - merchant.yahoo-shopping.pending-cap
+  - merchant.yahoo-shopping.paypay-points
+  required_negative_assertion: A cap already consumed by pending rewards must not be ignored.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-010
+  category: ECOM
+  title: ZOZOTOWN PayPay payment plus ZOZO points
+  target: ZOZOTOWN
+  level: L2_STACKING
+  behavior_under_test: Merchant points and payment reward
+  primary_source_ids:
+  - merchant.zozo.payment
+  - merchant.zozo.points
+  - jp.paypay.reward-rate
+  required_negative_assertion: An ineligible ZOZO product must not gain merchant points merely because PayPay is eligible.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ECOM-011
+  category: ECOM
+  title: Cashback portal attribution lost after visiting another portal
+  target: Online merchant
+  level: L3_ADVERSARIAL
+  behavior_under_test: Last-click/cookie attribution
+  primary_source_ids:
+  - jp.ana.mileage-mall
+  - jp.rebates.guide
+  - global.rakuten-us.shopping-trip
+  required_negative_assertion: Two mutually exclusive clickout portals must not both earn.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - portal_clickout
+  - attribution
+- scenario_id: JP-ECOM-012
+  category: ECOM
+  title: Online return or cancellation reverses rewards
+  target: Online merchant
+  level: L3_ADVERSARIAL
+  behavior_under_test: Refund/reversal operation, negative ledger component, reward clawback, and campaign progress restoration
+    policy
+  primary_source_ids:
+  - merchant.amazonjp.points-terms
+  - jp.rebates.guide
+  - merchant.yahoo-shopping.paypay-points
+  required_negative_assertion: Canceled spend must not remain in earned or campaign-progress totals.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - refund_and_reversal
+  - negative_ledger_component
+  - clawback
+  - cap_progress_reversal
+  - settlement_and_clawback
+  - asset_movement_ledger
+  release_track: continuous_quality_track
+  required_domain_features:
+  - refund
+  - reversal
+  - clawback
+  - cap_progress_reversal
+- scenario_id: JP-ELE-001
+  category: ELE
+  title: Bic Camera product-specific base point rate
+  target: Bic Camera
+  level: L1_SINGLE_RULE
+  behavior_under_test: SKU-level merchant point rate
+  primary_source_ids:
+  - merchant.biccamera.points
+  required_negative_assertion: The store headline rate must not override a product-specific rate.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-002
+  category: ELE
+  title: Yodobashi Gold Point redemption value
+  target: Yodobashi
+  level: L1_SINGLE_RULE
+  behavior_under_test: Merchant point face value
+  primary_source_ids:
+  - merchant.yodobashi.points
+  required_negative_assertion: A point cannot be valued above face value without an explicit user valuation.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-ELE-003
+  category: ELE
+  title: Yodobashi store payment method acceptance
+  target: Yodobashi
+  level: L1_SINGLE_RULE
+  behavior_under_test: Payment acceptance
+  primary_source_ids:
+  - merchant.yodobashi.payment
+  required_negative_assertion: Online-only methods must not appear in an in-store recipe.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-004
+  category: ELE
+  title: Bic Camera general credit card versus cash point rate
+  target: Bic Camera
+  level: L2_STACKING
+  behavior_under_test: Tender-dependent merchant points plus card rewards
+  primary_source_ids:
+  - merchant.biccamera.store-payment
+  - merchant.biccamera.points
+  required_negative_assertion: The cash merchant rate must not be applied to a general credit-card tender.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-005
+  category: ELE
+  title: Bic Camera co-branded card route
+  target: Bic Camera
+  level: L2_STACKING
+  behavior_under_test: Merchant point rate plus co-branded card reward
+  primary_source_ids:
+  - merchant.biccamera.store-payment
+  required_negative_assertion: Do not count a co-branded merchant bonus twice.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-006
+  category: ELE
+  title: Yodobashi credit card versus cash point rate
+  target: Yodobashi
+  level: L2_STACKING
+  behavior_under_test: Tender-dependent merchant points plus external card reward
+  primary_source_ids:
+  - merchant.yodobashi.payment
+  - merchant.yodobashi.points
+  required_negative_assertion: The engine must compare lost merchant points against gained card points.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-007
+  category: ELE
+  title: Bic Camera external common point replaces Bic Points
+  target: Bic Camera
+  level: L3_ADVERSARIAL
+  behavior_under_test: Mutually exclusive loyalty selection
+  primary_source_ids:
+  - merchant.biccamera.points
+  required_negative_assertion: Selected external points and Bic Points must not both be awarded when terms make them alternatives.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-ELE-008
+  category: ELE
+  title: Electronics mixed basket with different point rates
+  target: Electronics retailer
+  level: L3_ADVERSARIAL
+  behavior_under_test: Per-line-item calculation and transaction total
+  primary_source_ids:
+  - merchant.biccamera.points
+  - merchant.yodobashi.points
+  required_negative_assertion: A high-rate item must not lend its rate to a low-rate or excluded item.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-001
+  category: FNB
+  title: McDonald's payment acceptance by channel
+  target: McDonald's
+  level: L1_SINGLE_RULE
+  behavior_under_test: Counter, mobile-order, and delivery payment sets
+  primary_source_ids:
+  - merchant.mcdonalds.payment
+  required_negative_assertion: A tender accepted in one channel must not be assumed in another.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-002
+  category: FNB
+  title: McDonald's Rewards basic earning
+  target: McDonald's
+  level: L1_SINGLE_RULE
+  behavior_under_test: Enrollment and spend-unit reward
+  primary_source_ids:
+  - merchant.mcdonalds.rewards
+  - merchant.mcdonalds.rewards-faq
+  required_negative_assertion: A non-enrolled user must not receive points.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-003
+  category: FNB
+  title: Starbucks Rewards basic registered-card earning
+  target: Starbucks
+  level: L1_SINGLE_RULE
+  behavior_under_test: Eligible payment route for Stars
+  primary_source_ids:
+  - merchant.starbucks.rewards
+  required_negative_assertion: Unregistered payment must not earn Stars.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-004
+  category: FNB
+  title: Doutor Value Card purchase points
+  target: Doutor
+  level: L1_SINGLE_RULE
+  behavior_under_test: Purchase reward and redemption value
+  primary_source_ids:
+  - merchant.doutor.value-card
+  required_negative_assertion: A cash purchase must not inherit stored-value-card purchase points.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-005
+  category: FNB
+  title: McDonald's coupon reduces eligible amount
+  target: McDonald's
+  level: L2_STACKING
+  behavior_under_test: Coupon-adjusted eligible basis
+  primary_source_ids:
+  - merchant.mcdonalds.rewards-faq
+  required_negative_assertion: The pre-discount amount must not be used when terms reward only the paid amount.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-006
+  category: FNB
+  title: McDonald's daily reward cap
+  target: McDonald's
+  level: L2_STACKING
+  behavior_under_test: Cap progress across transactions
+  primary_source_ids:
+  - merchant.mcdonalds.rewards
+  required_negative_assertion: The current purchase must not exceed the user's remaining daily cap.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-007
+  category: FNB
+  title: Starbucks registered card plus card-funding reward
+  target: Starbucks
+  level: L2_STACKING
+  behavior_under_test: Stored-value purchase and funding card layer
+  primary_source_ids:
+  - merchant.starbucks.rewards
+  required_negative_assertion: Funding rewards must be modeled separately from Stars and not inferred without card evidence.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - residual_asset_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-008
+  category: FNB
+  title: Doutor stored-value top-up, later purchase reward, and residual balance
+  target: Doutor
+  level: L2_STACKING
+  behavior_under_test: Ordered top-up and purchase operations, distinct caps, residual Value Card balance, and charge reward
+    attached only to the acquisition operation
+  primary_source_ids:
+  - merchant.doutor.value-card
+  - merchant.doutor.rank
+  required_negative_assertion: The charge reward must not be earned twice when the stored value is spent, and unused balance
+    must remain an asset with its restrictions.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - operation_scoped_reward
+  - residual_asset_accounting
+  - separate_cap_scopes
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - multi_operation_plan
+  - stored_value_top_up
+  - residual_asset
+  - top_up_cap
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-FNB-009
+  category: FNB
+  title: Starbucks mobile-order Apple Pay exclusion
+  target: Starbucks
+  level: L3_ADVERSARIAL
+  behavior_under_test: Channel and payment-interface exclusion
+  primary_source_ids:
+  - merchant.starbucks.rewards
+  required_negative_assertion: The excluded mobile-order route must not earn Stars.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-FNB-010
+  category: FNB
+  title: Doutor rank change effective next program period
+  target: Doutor
+  level: L3_ADVERSARIAL
+  behavior_under_test: Annual spend tier and delayed effect
+  primary_source_ids:
+  - merchant.doutor.rank
+  required_negative_assertion: A newly reached tier must not alter historical or premature charge rewards.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - non_transaction_tier_basis
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-QR-001
+  category: QR
+  title: PayPay ordinary reward-rate rule
+  target: PayPay
+  level: L1_SINGLE_RULE
+  behavior_under_test: Base payment reward
+  primary_source_ids:
+  - jp.paypay.reward-rate
+  required_negative_assertion: Campaign rates must not be embedded in the base rule.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-QR-002
+  category: QR
+  title: d払い ordinary reward eligibility
+  target: d払い
+  level: L1_SINGLE_RULE
+  behavior_under_test: Base reward by eligible funding route
+  primary_source_ids:
+  - jp.dcard.exclusions
+  - jp.dbarai.campaigns
+  required_negative_assertion: Excluded funding must not receive base points.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-QR-003
+  category: QR
+  title: Rakuten Cash funding operation constraints
+  target: Rakuten Pay
+  level: L1_SINGLE_RULE
+  behavior_under_test: Top-up route, eligible funding instrument, and reward attribution
+  primary_source_ids:
+  - jp.rakutenpay.point-program
+  - jp.rakutenpay.point-detail
+  - jp.rakutencard.product
+  required_negative_assertion: A top-up reward and a payment reward must be evaluated on their own operations and never duplicated.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - residual_asset_accounting
+  release_track: alpha_support
+  required_domain_features:
+  - stored_value_top_up
+  - operation_constraint
+  - top_up_reward
+- scenario_id: JP-QR-004
+  category: QR
+  title: PayPay third-party-card voucher denomination and residual balance
+  target: PayPay
+  level: L2_STACKING
+  behavior_under_test: Voucher acquisition, fixed increment, residual asset, and reward exclusions
+  primary_source_ids:
+  - jp.paypay.third-party-card-voucher
+  - jp.paypay.reward-rate
+  - jp.paypay.eligibility-faq
+  required_negative_assertion: A small purchase must not consume or expense the entire voucher, and excluded rewards must
+    remain excluded.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - residual_asset_accounting
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: alpha_support
+  required_domain_features:
+  - voucher_purchase
+  - multi_operation_plan
+  - increment_constraint
+  - residual_asset
+  - operation_scoped_exclusion
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-QR-005
+  category: QR
+  title: Rakuten funding operation plus point-card and payment stack
+  target: Rakuten Pay
+  level: L2_STACKING
+  behavior_under_test: Multi-operation funding reward plus presentment and purchase rewards
+  primary_source_ids:
+  - jp.rakutenpay.double-points
+  - jp.rakutenpay.point-program
+  required_negative_assertion: A merchant without point-card eligibility must not receive the presentation layer.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: alpha_support
+  required_domain_features:
+  - multi_operation_plan
+  - stored_value_top_up
+  - loyalty_presentment
+  - stacking
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-QR-006
+  category: QR
+  title: au PAY local campaign plus base reward
+  target: au PAY
+  level: L2_STACKING
+  behavior_under_test: Location-scoped campaign and base points
+  primary_source_ids:
+  - jp.aupay.local-campaigns
+  - jp.aupay.reward-guide
+  required_negative_assertion: A location outside the official campaign area must not qualify.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-QR-007
+  category: QR
+  title: d払い non-d Card funding exclusion
+  target: d払い
+  level: L3_ADVERSARIAL
+  behavior_under_test: Funding-source exclusion across reward layers
+  primary_source_ids:
+  - jp.dpoint.campaign-example-funding-exclusion
+  - jp.dcard.exclusions
+  required_negative_assertion: Excluded funding must not earn normal or campaign points where barred.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: alpha_support
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-QR-008
+  category: QR
+  title: PayPay third-party-card voucher acquisition and residual balance
+  target: PayPay
+  level: L3_ADVERSARIAL
+  behavior_under_test: Multi-operation voucher purchase, rollout eligibility, JPY 10,000 increment, residual stored value,
+    merchant/channel exclusions, and reward exclusions
+  primary_source_ids:
+  - jp.paypay.third-party-card-voucher
+  - jp.paypay.eligibility-faq
+  - jp.paypay.calculation-faq
+  required_negative_assertion: The engine must not charge the full voucher acquisition cost to one small purchase, assume
+    feature availability, or award excluded reward layers.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - residual_asset_accounting
+  - uncertain_user_state
+  - conditional_recommendation
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: alpha_support
+  required_domain_features:
+  - uncertain_user_state
+  - conditional_winner
+  - question_selection
+  - explicit_asset_movements
+  - net_economic_value_accounting
+  - voucher_purchase
+  - residual_asset
+  - increment_constraint
+  - operation_scoped_exclusion
+- scenario_id: JP-RET-001
+  category: RET
+  title: Merchant loyalty point redemption face value
+  target: Department or specialty retailer
+  level: L1_SINGLE_RULE
+  behavior_under_test: Merchant currency valuation
+  primary_source_ids:
+  - merchant.biccamera.points
+  - merchant.yodobashi.points
+  required_negative_assertion: A user valuation must remain separate from nominal face value.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-RET-002
+  category: RET
+  title: Merchant accepts common point for use but not earn
+  target: Retail merchant
+  level: L1_SINGLE_RULE
+  behavior_under_test: Earn versus redeem acceptance distinction
+  primary_source_ids:
+  - jp.vpoint.store-list
+  - jp.vpoint.use-store-list
+  - jp.ponta.partner-list
+  required_negative_assertion: Use acceptance must not imply earning acceptance.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-RET-003
+  category: RET
+  title: Shopping-center campaign plus issuer campaign
+  target: Retail location
+  level: L2_STACKING
+  behavior_under_test: Merchant event and card campaign stacking
+  primary_source_ids:
+  - jp.aeoncard.campaigns
+  - jp.smbc.member-campaigns
+  required_negative_assertion: Conflicting campaign groups must use best-of or exclusion rules.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-RET-004
+  category: RET
+  title: Location-specific campaign in selected municipality
+  target: Retail location
+  level: L2_STACKING
+  behavior_under_test: Geospatial location scope
+  primary_source_ids:
+  - jp.paypay.local-campaigns
+  - jp.aupay.local-campaigns
+  - jp.dbarai.local-campaigns
+  required_negative_assertion: A nearby but out-of-boundary branch must not qualify.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-RET-005
+  category: RET
+  title: Franchise or tenant exception to chain-wide acceptance
+  target: Retail location
+  level: L3_ADVERSARIAL
+  behavior_under_test: Location override and confidence fallback
+  primary_source_ids:
+  - jp.paypay.merchant-list
+  - jp.aupay.merchant-list
+  required_negative_assertion: Unverified branch support must not be represented as certain.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - acceptance_without_fake_reward
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-001
+  category: SUP
+  title: AEON Pay ordinary base reward
+  target: AEON retail merchant
+  level: L1_SINGLE_RULE
+  behavior_under_test: Base reward route
+  primary_source_ids:
+  - jp.aeonpay.overview
+  - jp.aeonpay.reward-guide
+  required_negative_assertion: A campaign-only rate must not become the ordinary base rate.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-002
+  category: SUP
+  title: WAON POINT ordinary presentment
+  target: AEON retail merchant
+  level: L1_SINGLE_RULE
+  behavior_under_test: Loyalty presentation and base earn
+  primary_source_ids:
+  - jp.waonpoint.earning-faq
+  required_negative_assertion: No presentment means no presentment-dependent award.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-003
+  category: SUP
+  title: Ito-Yokado nanaco earning
+  target: Ito-Yokado
+  level: L1_SINGLE_RULE
+  behavior_under_test: nanaco points-per-unit
+  primary_source_ids:
+  - jp.nanaco.earning
+  - merchant.itoyokado.nanaco-app
+  required_negative_assertion: Spend below the denominator must not receive a partial point.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-004
+  category: SUP
+  title: Ito-Yokado nanaco point redemption
+  target: Ito-Yokado
+  level: L1_SINGLE_RULE
+  behavior_under_test: nanaco conversion and use
+  primary_source_ids:
+  - jp.nanaco.redemption-value
+  - merchant.itoyokado.nanaco-app
+  required_negative_assertion: Points must not be valued as spendable before conversion where conversion is required.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_redemption
+- scenario_id: JP-SUP-005
+  category: SUP
+  title: AEON Pay plus WAON POINT presentment
+  target: AEON retail merchant
+  level: L2_STACKING
+  behavior_under_test: Payment and loyalty layers
+  primary_source_ids:
+  - jp.aeonpay.overview
+  - jp.waonpoint.earning-faq
+  required_negative_assertion: Payment identity must not automatically imply loyalty presentation unless officially linked.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-006
+  category: SUP
+  title: AEON Card campaign plus ordinary points
+  target: AEON retail merchant
+  level: L2_STACKING
+  behavior_under_test: Card campaign stack
+  primary_source_ids:
+  - jp.aeoncard.campaigns
+  - jp.aeonpay.reward-guide
+  required_negative_assertion: A best-of campaign must not be added when terms say it replaces another award.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-007
+  category: SUP
+  title: Ito-Yokado Happy Day eligible payment route
+  target: Ito-Yokado
+  level: L2_STACKING
+  behavior_under_test: Discount eligibility based on tender and coupon
+  primary_source_ids:
+  - merchant.itoyokado.happy-day
+  required_negative_assertion: An excluded third-party card or code payment must not receive the discount.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-008
+  category: SUP
+  title: Ito-Yokado app coupon plus nanaco payment
+  target: Ito-Yokado
+  level: L2_STACKING
+  behavior_under_test: Coupon presentation plus payment reward
+  primary_source_ids:
+  - merchant.itoyokado.happy-day
+  - merchant.itoyokado.nanaco-app
+  required_negative_assertion: A coupon not presented or activated must not be assumed.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-009
+  category: SUP
+  title: AEON code-pay versus WAON touch campaign distinction
+  target: AEON retail merchant
+  level: L3_ADVERSARIAL
+  behavior_under_test: Payment-interface-specific campaign
+  primary_source_ids:
+  - jp.aeonpay.campaign-channel-example
+  required_negative_assertion: Code pay and WAON touch must remain distinct interfaces.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-SUP-010
+  category: SUP
+  title: Supermarket tenant-store exception
+  target: Shopping-center tenant
+  level: L3_ADVERSARIAL
+  behavior_under_test: Location and tenant override
+  primary_source_ids:
+  - jp.aeoncard.campaigns
+  - merchant.itoyokado.happy-day
+  required_negative_assertion: A mall-wide event must not automatically include every tenant.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-TRV-001
+  category: TRV
+  title: View Card to Mobile Suica charge, then Suica merchant purchase
+  target: JR East / View Card ecosystem
+  level: L2_STACKING
+  behavior_under_test: Card-funded stored-value top-up reward, later merchant payment, residual Suica balance, and registered-Suica
+    merchant points
+  primary_source_ids:
+  - jp.viewcard.suica-charge
+  - jp.jrepoint.suica-earning
+  required_negative_assertion: The charge reward must be attached to the top-up operation only and must not be re-awarded
+    when the same balance is later spent.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - operation_asset_graph
+  - operation_scoped_reward
+  - residual_asset_accounting
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - stored_value_top_up
+  - operation_scoped_reward
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-TRV-002
+  category: TRV
+  title: ANA Mileage Mall merchant base mile rate
+  target: ANA Mileage Mall
+  level: L1_SINGLE_RULE
+  behavior_under_test: Portal rate and clickout requirement
+  primary_source_ids:
+  - jp.ana.mileage-mall
+  required_negative_assertion: Direct merchant navigation must not receive portal miles.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - portal_clickout
+  - attribution
+- scenario_id: JP-TRV-003
+  category: TRV
+  title: JAL Mileage Park plus JAL Card purchase
+  target: JAL Mileage Park merchant
+  level: L1_SINGLE_RULE
+  behavior_under_test: Direct JAL Card purchase-mile rule at an eligible Mileage Park merchant
+  primary_source_ids:
+  - jp.jal.mileage-park
+  - jp.jal.mileage-park-howto
+  required_negative_assertion: A QR wallet funded by JAL Card must not inherit a direct-card special-store bonus unless allowed.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - direct_purchase
+- scenario_id: JP-TRV-004
+  category: TRV
+  title: View Card charge plus registered Suica merchant and JRE campaign rewards
+  target: JR East ecosystem
+  level: L2_STACKING
+  behavior_under_test: Multi-operation charge and merchant stack
+  primary_source_ids:
+  - jp.jrepoint.campaigns
+  - jp.jrepoint.suica-earning
+  required_negative_assertion: Campaign entry or registration conditions must be independently checked.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - campaign_validity_or_cap
+  - asset_movement_ledger
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - multi_operation_plan
+  - stored_value_top_up
+  - campaign_stack
+  - residual_asset
+  - explicit_asset_movements
+  - net_economic_value_accounting
+- scenario_id: JP-TRV-005
+  category: TRV
+  title: Mileage portal interrupted by app handoff or another site
+  target: ANA or JAL mileage portal
+  level: L3_ADVERSARIAL
+  behavior_under_test: Attribution continuity and app handoff
+  primary_source_ids:
+  - jp.ana.mileage-mall
+  - jp.jal.mileage-park
+  required_negative_assertion: The engine must not promise portal miles when tracking continuity is uncertain.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - core_matching_and_calculation
+  release_track: continuous_quality_track
+  required_domain_features:
+  - portal_clickout
+  - attribution
+- scenario_id: JP-XFR-001
+  category: XFR
+  title: Ponta to JAL standard conversion ratio
+  target: Ponta to JAL
+  level: L1_SINGLE_RULE
+  behavior_under_test: Directed transfer ratio and minimum
+  primary_source_ids:
+  - jp.ponta.jal-transfer
+  - jp.jal.ponta-benefit
+  required_negative_assertion: The edge direction must not be assumed reversible.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+- scenario_id: JP-XFR-002
+  category: XFR
+  title: Rakuten Point to ANA standard transfer
+  target: Rakuten Point to ANA
+  level: L1_SINGLE_RULE
+  behavior_under_test: Transfer ratio, minimum, increment, periodic maximum, and posting delay
+  primary_source_ids:
+  - jp.ana.rakuten-transfer
+  required_negative_assertion: Non-transferable point classes must not enter the path.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - transfer_minimum
+  - transfer_increment
+  - transfer_period_cap
+  - posting_delay
+  - point_transfer
+- scenario_id: JP-XFR-003
+  category: XFR
+  title: V Point to ANA transfer
+  target: V Point to ANA
+  level: L1_SINGLE_RULE
+  behavior_under_test: Directed transfer ratio and eligibility
+  primary_source_ids:
+  - jp.ana.vpoint-transfer
+  required_negative_assertion: An ineligible V Point balance must not be transferable.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+- scenario_id: JP-XFR-004
+  category: XFR
+  title: ALL Accor to JAL transfer
+  target: ALL to JAL
+  level: L1_SINGLE_RULE
+  behavior_under_test: International partner ratio and identity match
+  primary_source_ids:
+  - global.accor.jal-transfer
+  required_negative_assertion: Mismatched account identity must make the edge unavailable.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+- scenario_id: JP-XFR-005
+  category: XFR
+  title: Ponta to JAL temporary bonus edge with minimum, increment, posting, and expiry
+  target: Ponta to JAL
+  level: L2_STACKING
+  behavior_under_test: Versioned transfer bonus with block constraints, posting window, and destination-asset semantics
+  primary_source_ids:
+  - jp.ponta.jal-transfer
+  - jp.jal.ponta-campaign-2026
+  required_negative_assertion: The bonus edge must not apply outside its effective window or to an invalid transfer increment.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - reward_class_and_expiry
+  - settlement_and_clawback
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - temporary_bonus_edge
+  - reward_asset_class
+  - transfer_increment
+  - point_transfer
+- scenario_id: JP-XFR-006
+  category: XFR
+  title: JAL multi-partner transfer campaign deadlines
+  target: Multiple card points to JAL
+  level: L2_STACKING
+  behavior_under_test: Partner-specific registration and transfer deadlines
+  primary_source_ids:
+  - jp.jal.multi-point-campaign-2026
+  required_negative_assertion: One partner's deadline must not be reused for another.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - campaign_validity_or_cap
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+- scenario_id: JP-XFR-007
+  category: XFR
+  title: Transfer graph cycle and no-arbitrage guard
+  target: Multiple points and miles
+  level: L3_ADVERSARIAL
+  behavior_under_test: Cycle detection, fees, and path dominance
+  primary_source_ids:
+  - jp.ponta.exchange-hub
+  - jp.ana.partner-points
+  - global.marriott.bonvoy-terms
+  - global.hyatt.airline-transfer
+  required_negative_assertion: The graph must never create unlimited value through a conversion cycle.
+  status: planned
+  golden_gate:
+  - Capture immutable evidence from every primary source using an approved or manual method.
+  - Calculate every candidate plan independently before viewing engine output.
+  - Record operation-level ledgers, asset balance deltas, winner or conditional winners, rejected alternatives, and negative
+    assertions.
+  - Complete an allowed review mode; solo work must use dual-pass calculation and a cooling-off reread.
+  contract_features:
+  - transfer_constraints
+  - net_economic_value_accounting
+  release_track: continuous_quality_track
+  required_domain_features:
+  - point_transfer
+  - cycle_guard
+release_policy:
+  alpha_scope: Tokyo convenience-store chains plus a limited wallet/card set
+  alpha_gate: All alpha_convenience and selected alpha_support scenarios touching shipped features must be reviewed; the remaining
+    scenarios continue as a background quality track.
+  review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  - human_second_review
+  - expert_review

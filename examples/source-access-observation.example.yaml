@@ -1,0 +1,15 @@
+observation_id: sao_official_web_checks_20260817
+observed_at: '2026-08-17T14:30:00+09:00'
+observer: package maintainer
+environment: official-page web verification
+method: manual_browser
+scope: source_group
+source_ids:
+- jp.paypay.third-party-card-voucher
+- jp.viewcard.suica-charge
+result: reachable
+http_status: 200
+summary_counts:
+  http_200: 2
+notes: Pages were manually reviewed to register the source and authority scope; automation remains unapproved.
+evidence_reference: null

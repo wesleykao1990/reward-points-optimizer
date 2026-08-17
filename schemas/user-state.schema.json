@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/user-state.schema.json",
+  "title": "User Reward State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "owned_instrument_ids",
+    "owned_loyalty_program_ids",
+    "facts",
+    "asset_lots",
+    "valuation_profile",
+    "cap_progress"
+  ],
+  "properties": {
+    "owned_instrument_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "owned_loyalty_program_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/stateValue"
+      }
+    },
+    "asset_lots": {
+      "type": "array",
+      "items": {
+        "$ref": "asset.schema.json#/$defs/assetLot"
+      }
+    },
+    "valuation_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "entries"
+      ],
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "valuation_id",
+              "asset_id",
+              "reward_class",
+              "expiry_horizon_days",
+              "jpy_per_unit",
+              "basis"
+            ],
+            "properties": {
+              "valuation_id": {
+                "type": "string"
+              },
+              "asset_id": {
+                "type": "string"
+              },
+              "reward_class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "expiry_horizon_days": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "jpy_per_unit": {
+                "type": "string",
+                "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "face_value",
+                  "user_preference",
+                  "market_estimate",
+                  "transfer_goal",
+                  "restricted_value"
+                ]
+              },
+              "assumption": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "required": [
+                  "source",
+                  "expected_use_horizon_days",
+                  "question_id",
+                  "notes"
+                ],
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "explicit_user_answer",
+                      "observed_usage_history",
+                      "face_value_default",
+                      "program_restriction_default",
+                      "user_custom",
+                      "unknown"
+                    ]
+                  },
+                  "expected_use_horizon_days": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "question_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cap_progress": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/capProgressState"
+      }
+    }
+  },
+  "$defs": {
+    "comparableBound": {
+      "description": "Comparable numeric user-state bound. Decimal values are strings to avoid binary floating-point semantics.",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$"
+        }
+      ]
+    },
+    "stateValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "source"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "known",
+            "estimated",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "value": {},
+        "lower_bound": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/comparableBound"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "upper_bound": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/comparableBound"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "user_input",
+            "transaction_history",
+            "provider_api",
+            "inferred",
+            "manual_review",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "known"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value",
+              "observed_at"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "estimated"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "lower_bound",
+              "upper_bound",
+              "confidence",
+              "observed_at"
+            ],
+            "properties": {
+              "lower_bound": {
+                "$ref": "#/$defs/comparableBound"
+              },
+              "upper_bound": {
+                "$ref": "#/$defs/comparableBound"
+              },
+              "observed_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "unknown",
+                  "not_applicable"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "confidence": {
+                "type": [
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "$comment": "Cross-field lower/upper ordering and known-value equality are semantic invariants; see docs/13_semantic_validation_contract.md."
+    },
+    "capProgressState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "period_start",
+        "period_end",
+        "source"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "known",
+            "estimated",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "eligible_spend_jpy_min": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "eligible_spend_jpy_max": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reward_earned_units_min": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "reward_earned_units_max": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "period_start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "period_end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "user_input",
+            "transaction_history",
+            "provider_api",
+            "inferred",
+            "unknown"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "known"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "eligible_spend_jpy_min",
+              "eligible_spend_jpy_max",
+              "reward_earned_units_min",
+              "reward_earned_units_max",
+              "observed_at"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "estimated"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "eligible_spend_jpy_min",
+              "eligible_spend_jpy_max",
+              "reward_earned_units_min",
+              "reward_earned_units_max",
+              "observed_at"
+            ]
+          }
+        }
+      ],
+      "$comment": "Cross-field lower/upper ordering and known-value equality are semantic invariants; see docs/13_semantic_validation_contract.md."
+    }
+  },
+  "$comment": "Structural and lexical contract. Cross-property ordering/equality invariants are canonical in docs/13_semantic_validation_contract.md and must be enforced by the shared semantic validator."
+}

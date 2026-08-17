@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/source-access-observation.schema.json",
+  "title": "Source Access Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observation_id",
+    "observed_at",
+    "observer",
+    "environment",
+    "method",
+    "scope",
+    "source_ids",
+    "result",
+    "summary_counts",
+    "notes"
+  ],
+  "properties": {
+    "observation_id": {
+      "type": "string",
+      "pattern": "^sao_[a-z0-9_-]+$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observer": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "plain_http",
+        "browser_session",
+        "official_api",
+        "manual_browser",
+        "partner_feed",
+        "aggregate_external_review"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "single_source",
+        "source_group",
+        "registry"
+      ]
+    },
+    "source_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "reachable",
+        "forbidden",
+        "unavailable",
+        "timeout",
+        "login_required",
+        "requires_rendering",
+        "blocked_or_unavailable",
+        "aggregate",
+        "unknown"
+      ]
+    },
+    "http_status": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 100,
+      "maximum": 599
+    },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "evidence_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/source-observation.schema.json",
+  "title": "Rewards Optimizer Source Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observation_id",
+    "agent_feed",
+    "source_ids",
+    "subjects",
+    "change_type",
+    "summary",
+    "effective_time",
+    "discovery_assessment",
+    "submitted_evidence_refs",
+    "canonical_evidence_ids",
+    "semantic_fingerprint_version",
+    "semantic_fingerprint",
+    "status",
+    "security_flags",
+    "raw_attributes",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "observation_id": {
+      "type": "string",
+      "pattern": "^so_[a-z0-9_-]+$"
+    },
+    "agent_feed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "event_id",
+        "stream_id",
+        "run_id",
+        "finding_id"
+      ],
+      "properties": {
+        "protocol_version": {
+          "const": "0.1"
+        },
+        "event_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "stream_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "finding_id": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "source_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "subjects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "reward_rate",
+        "eligibility",
+        "campaign",
+        "cap",
+        "merchant_acceptance",
+        "funding_route",
+        "transfer",
+        "expiry",
+        "announcement",
+        "unknown"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 5000
+    },
+    "effective_time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurred_at",
+        "effective_from",
+        "effective_to"
+      ],
+      "properties": {
+        "occurred_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "effective_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "effective_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "discovery_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_authority_claim",
+        "evidence_completeness",
+        "agent_confidence"
+      ],
+      "properties": {
+        "source_authority_claim": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "official_secondary",
+            "third_party",
+            "unknown"
+          ]
+        },
+        "evidence_completeness": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "lead_only"
+          ]
+        },
+        "agent_confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "submitted_evidence_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "canonical_evidence_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ev_[a-z0-9_-]+$"
+      }
+    },
+    "semantic_fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "duplicate",
+        "needs_evidence",
+        "needs_review",
+        "rejected",
+        "closed"
+      ]
+    },
+    "security_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "raw_attributes": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "semantic_fingerprint_version": {
+      "type": "integer",
+      "const": 1
+    }
+  }
+}

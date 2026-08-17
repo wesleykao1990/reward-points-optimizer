@@ -1,0 +1,36 @@
+observation_id: so_agent_feed_paypay_route_001
+agent_feed:
+  protocol_version: '0.1'
+  event_id: event_rewards_monitor_001
+  stream_id: rewards-optimizer.source-monitor
+  run_id: run_rewards_monitor_20260817_001
+  finding_id: finding_paypay_route_001
+source_ids:
+- jp.paypay.example
+subjects:
+- type: payment_program
+  id: paypay
+  name: PayPay
+change_type: funding_route
+summary: 'Synthetic example: a payment program appears to announce a future funding-route
+  change.'
+effective_time:
+  occurred_at: '2026-08-17T08:00:00+09:00'
+  effective_from: '2026-09-01T00:00:00+09:00'
+  effective_to: null
+discovery_assessment:
+  source_authority_claim: primary
+  evidence_completeness: partial
+  agent_confidence: 0.92
+submitted_evidence_refs:
+- evidence_paypay_001
+canonical_evidence_ids: []
+semantic_fingerprint: sha256:1111111111111111111111111111111111111111111111111111111111111111
+status: needs_evidence
+security_flags: []
+raw_attributes:
+  change_kind: funding_route
+  canonical_source_capture_required: true
+created_at: '2026-08-17T09:07:00+09:00'
+updated_at: '2026-08-17T09:07:00+09:00'
+semantic_fingerprint_version: 1

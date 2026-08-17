@@ -1,0 +1,28 @@
+id: replace.me
+name: Replace with official source name
+publisher: Replace with publisher
+category: program_rules
+tier: T1_CANONICAL
+publication_use: canonical
+source_url: https://example.com/official-source
+authority_scope:
+- replace_scope
+locale: ja-JP
+geography: JP
+evidence_format: html
+volatility: high
+recommended_check_cadence: weekly
+access:
+  retrieval_method: manual_browser
+  requires_login: false
+  automation_status: requires_terms_review
+  terms_review_status: not_reviewed
+  technical_feasibility:
+    current_classification: unknown
+    last_observed_at: null
+    observation_ids: []
+verification:
+  url_registered_on: '2026-08-17'
+  content_verified_on: null
+  status: registered
+  notes: Registration does not imply content verification or collection permission.

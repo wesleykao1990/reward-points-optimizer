@@ -1,0 +1,19 @@
+candidate_id: xc_prompt_injection_001
+source_id: synthetic.official.example
+source_snapshot_ids:
+- snap_prompt_injection_001
+snapshot_hashes:
+- sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+extracted_at: '2026-08-17T10:20:00+09:00'
+model: example-model
+prompt_version: campaign-extraction-v0.3
+candidate_rules: []
+uncertainties:
+- field_path: /
+  question: Review source around embedded instruction.
+  severity: blocking
+security_flags:
+- flag_type: embedded_instruction
+  locator: div[data-untrusted]
+  action: quarantined
+status: needs_review

@@ -1,0 +1,35 @@
+id: jp.paypay.third-party-card-voucher
+name: PayPay third-party card voucher help
+publisher: PayPay
+category: payment_reward_rules
+tier: T1_CANONICAL
+publication_use: canonical
+source_url: https://paypay.ne.jp/help/c0551/
+authority_scope:
+- voucher_purchase
+- funding_route
+- purchase_increment
+- residual_balance
+- merchant_exclusions
+- reward_exclusions
+- rollout_eligibility
+locale: ja-JP
+geography: JP
+evidence_format: html
+volatility: very_high
+recommended_check_cadence: daily
+access:
+  retrieval_method: http_html
+  requires_login: false
+  automation_status: requires_terms_review
+  terms_review_status: not_reviewed
+  technical_feasibility:
+    current_classification: plain_http_observed_reachable
+    last_observed_at: '2026-08-17T14:30:00+09:00'
+    observation_ids:
+    - sao_official_web_checks_20260817
+verification:
+  url_registered_on: '2026-08-17'
+  content_verified_on: '2026-08-17'
+  status: content_verified
+  notes: Official help page manually reviewed for route-shape modelling; terms review still required before automation.

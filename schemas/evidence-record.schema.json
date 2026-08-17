@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/evidence-record.schema.json",
+  "title": "Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "source_id",
+    "source_snapshot_id",
+    "source_url",
+    "captured_at",
+    "content_hash",
+    "capture_method",
+    "locator",
+    "supports",
+    "status"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^ev_[a-z0-9_-]+$"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]+$"
+    },
+    "source_snapshot_id": {
+      "type": "string",
+      "pattern": "^snap_[a-zA-Z0-9_-]+$"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "capture_method": {
+      "type": "string",
+      "enum": [
+        "html_snapshot",
+        "pdf_snapshot",
+        "official_api",
+        "manual_capture",
+        "email_capture",
+        "partner_feed",
+        "test_fixture"
+      ]
+    },
+    "source_published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "valid_time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid_from",
+        "valid_to",
+        "timezone"
+      ],
+      "properties": {
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "timezone": {
+          "type": "string",
+          "const": "Asia/Tokyo"
+        }
+      }
+    },
+    "locator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "css_selector",
+            "heading",
+            "paragraph",
+            "table_cell",
+            "pdf_page",
+            "api_json_pointer",
+            "manual_note"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "excerpt": {
+      "type": "string",
+      "maxLength": 1500
+    },
+    "supports": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "json_pointer",
+          "claim"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string"
+          },
+          "json_pointer": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "captured",
+        "extracted",
+        "verified",
+        "rejected",
+        "superseded"
+      ]
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "human",
+            "deterministic_parser",
+            "llm_assisted"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prompt_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "review_mode": {
+          "type": "string",
+          "enum": [
+            "solo_dual_pass",
+            "agent_challenged",
+            "human_second_review",
+            "expert_review"
+          ]
+        },
+        "reviewer_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "needs_more_evidence"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "required_review_modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "solo_dual_pass",
+              "agent_challenged",
+              "human_second_review",
+              "expert_review"
+            ]
+          }
+        },
+        "review_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "reviewer_id",
+              "completed_at",
+              "decision",
+              "notes"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "solo_dual_pass",
+                  "agent_challenged",
+                  "human_second_review",
+                  "expert_review"
+                ]
+              },
+              "reviewer_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "needs_more_evidence"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "required_review_modes",
+        "review_events"
+      ]
+    }
+  }
+}

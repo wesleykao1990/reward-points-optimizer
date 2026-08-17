@@ -1,0 +1,494 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/purchase-plan.schema.json",
+  "title": "Candidate Purchase or Conversion Plan",
+  "description": "A candidate route expressed as timestamped operations with explicit principal asset flows. Engine-calculated residuals are not supplied as inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "operations",
+    "dependencies",
+    "loyalty_presentments",
+    "assumptions"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "pattern": "^plan_[a-zA-Z0-9_-]+$"
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_operation_id",
+          "to_operation_id",
+          "dependency_type"
+        ],
+        "properties": {
+          "from_operation_id": {
+            "type": "string",
+            "pattern": "^op_[a-zA-Z0-9_-]+$"
+          },
+          "to_operation_id": {
+            "type": "string",
+            "pattern": "^op_[a-zA-Z0-9_-]+$"
+          },
+          "dependency_type": {
+            "type": "string",
+            "enum": [
+              "funds",
+              "eligibility",
+              "attribution"
+            ]
+          }
+        }
+      }
+    },
+    "loyalty_presentments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "loyalty_program_id",
+          "interface",
+          "presentation_mode",
+          "sequence"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^op_[a-zA-Z0-9_-]+$"
+          },
+          "loyalty_program_id": {
+            "type": "string"
+          },
+          "interface": {
+            "$ref": "#/$defs/interface"
+          },
+          "presentation_mode": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "linked",
+              "automatic"
+            ]
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "channel": {
+      "type": "string",
+      "enum": [
+        "in_store",
+        "online",
+        "mobile_order",
+        "delivery",
+        "drive_through",
+        "in_app",
+        "portal_clickout",
+        "transfer",
+        "not_applicable"
+      ]
+    },
+    "interface": {
+      "type": "string",
+      "enum": [
+        "physical_card",
+        "magstripe",
+        "chip",
+        "contactless_card",
+        "mobile_contactless",
+        "qr_code",
+        "barcode",
+        "merchant_app",
+        "provider_app",
+        "web_checkout",
+        "portal_redirect",
+        "cash",
+        "manual_transfer",
+        "automatic",
+        "not_applicable"
+      ]
+    },
+    "lineItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line_item_id",
+        "product_class",
+        "amount_jpy",
+        "quantity",
+        "eligible_for_rewards"
+      ],
+      "properties": {
+        "line_item_id": {
+          "type": "string"
+        },
+        "product_class": {
+          "type": "string"
+        },
+        "amount_jpy": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "eligible_for_rewards": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "assetInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "source_lot_id",
+        "quantity",
+        "role"
+      ],
+      "properties": {
+        "input_id": {
+          "type": "string",
+          "pattern": "^in_[a-zA-Z0-9_-]+$"
+        },
+        "source_lot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "quantity": {
+          "$ref": "asset.schema.json#/$defs/quantity"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "external_funding",
+            "stored_value_tender",
+            "points_tender",
+            "transfer_source",
+            "redemption_source",
+            "fee",
+            "refund_source",
+            "other"
+          ]
+        }
+      }
+    },
+    "outputRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id",
+        "created_lot_id",
+        "asset",
+        "requested_amount",
+        "role"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^out_[a-zA-Z0-9_-]+$"
+        },
+        "created_lot_id": {
+          "type": "string",
+          "pattern": "^lot_[a-zA-Z0-9_-]+$"
+        },
+        "asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "requested_amount": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "stored_value",
+            "voucher",
+            "transfer_destination",
+            "redemption_destination",
+            "refund",
+            "other"
+          ]
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "sequence",
+        "occurred_at",
+        "operation_type",
+        "merchant_id",
+        "merchant_location_id",
+        "channel",
+        "interface",
+        "payment_instrument_id",
+        "funding_source_id",
+        "amount_jpy",
+        "asset_inputs",
+        "output_requests",
+        "original_operation_id",
+        "portal_id",
+        "line_items",
+        "notes"
+      ],
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "pattern": "^op_[a-zA-Z0-9_-]+$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "operation_type": {
+          "type": "string",
+          "enum": [
+            "merchant_purchase",
+            "stored_value_top_up",
+            "voucher_purchase",
+            "point_transfer",
+            "point_redemption",
+            "refund",
+            "reversal",
+            "portal_clickout"
+          ]
+        },
+        "merchant_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "merchant_location_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channel": {
+          "$ref": "#/$defs/channel"
+        },
+        "interface": {
+          "$ref": "#/$defs/interface"
+        },
+        "payment_instrument_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funding_source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amount_jpy": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "asset_inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assetInput"
+          }
+        },
+        "output_requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outputRequest"
+          }
+        },
+        "original_operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "portal_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "line_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lineItem"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operation_type": {
+                "const": "merchant_purchase"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "merchant_id": {
+                "type": "string"
+              },
+              "amount_jpy": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "asset_inputs": {
+                "minItems": 1
+              },
+              "output_requests": {
+                "maxItems": 0
+              },
+              "line_items": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation_type": {
+                "enum": [
+                  "stored_value_top_up",
+                  "voucher_purchase"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "amount_jpy": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "asset_inputs": {
+                "minItems": 1
+              },
+              "output_requests": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation_type": {
+                "enum": [
+                  "point_transfer",
+                  "point_redemption"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "asset_inputs": {
+                "minItems": 1
+              },
+              "output_requests": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation_type": {
+                "enum": [
+                  "refund",
+                  "reversal"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "original_operation_id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation_type": {
+                "const": "portal_clickout"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "merchant_id": {
+                "type": "string"
+              },
+              "portal_id": {
+                "type": "string"
+              },
+              "channel": {
+                "const": "portal_clickout"
+              },
+              "interface": {
+                "const": "portal_redirect"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

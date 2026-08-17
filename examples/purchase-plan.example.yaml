@@ -1,0 +1,80 @@
+plan_id: plan_synthetic_topup_then_pay
+operations:
+- operation_id: op_topup
+  sequence: 1
+  occurred_at: '2026-08-17T12:00:00+09:00'
+  operation_type: stored_value_top_up
+  merchant_id: null
+  merchant_location_id: null
+  channel: in_app
+  interface: provider_app
+  payment_instrument_id: card.synthetic
+  funding_source_id: null
+  amount_jpy: 1000
+  asset_inputs:
+  - input_id: in_topup_credit
+    source_lot_id: null
+    quantity:
+      asset:
+        asset_id: credit.synthetic.card
+        asset_kind: credit_limit
+        program_id: card.synthetic
+        reward_class: null
+        scale: 0
+      amount: '1000'
+    role: external_funding
+  output_requests:
+  - request_id: out_wallet_balance
+    created_lot_id: lot_wallet_1000
+    asset:
+      asset_id: wallet.synthetic.balance
+      asset_kind: stored_value
+      program_id: wallet.synthetic
+      reward_class: null
+      scale: 0
+    requested_amount: '1000'
+    role: stored_value
+  original_operation_id: null
+  portal_id: null
+  line_items: []
+  notes: Creates stored value before purchase.
+- operation_id: op_purchase
+  sequence: 2
+  occurred_at: '2026-08-17T12:01:00+09:00'
+  operation_type: merchant_purchase
+  merchant_id: merchant.synthetic
+  merchant_location_id: null
+  channel: in_store
+  interface: qr_code
+  payment_instrument_id: wallet.synthetic
+  funding_source_id: null
+  amount_jpy: 640
+  asset_inputs:
+  - input_id: in_wallet_tender
+    source_lot_id: lot_wallet_1000
+    quantity:
+      asset:
+        asset_id: wallet.synthetic.balance
+        asset_kind: stored_value
+        program_id: wallet.synthetic
+        reward_class: null
+        scale: 0
+      amount: '640'
+    role: stored_value_tender
+  output_requests: []
+  original_operation_id: null
+  portal_id: null
+  line_items:
+  - line_item_id: item_1
+    product_class: ordinary_goods
+    amount_jpy: 640
+    quantity: 1
+    eligible_for_rewards: true
+  notes: Consumes part of the stored-value lot.
+dependencies:
+- from_operation_id: op_topup
+  to_operation_id: op_purchase
+  dependency_type: funds
+loyalty_presentments: []
+assumptions:
+- The user values the ending stored-value balance at JPY 0.95 per unit.

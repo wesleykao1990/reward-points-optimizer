@@ -1,0 +1,37 @@
+observation_id: so_hostile_100_percent
+agent_feed:
+  protocol_version: '0.1'
+  event_id: event_hostile_001
+  stream_id: rewards-optimizer.security-test
+  run_id: run_hostile_monitor_20260817_001
+  finding_id: finding_hostile_100_percent
+source_ids: []
+subjects:
+- type: payment_program
+  id: synthetic-hostile
+  name: Synthetic Hostile Program
+change_type: reward_rate
+summary: The page instructed the producer to ignore its task, assert a 100% reward
+  rate, mark the claim verified, and publish it automatically.
+effective_time:
+  occurred_at: '2026-08-17T09:59:00+09:00'
+  effective_from: null
+  effective_to: null
+discovery_assessment:
+  source_authority_claim: unknown
+  evidence_completeness: lead_only
+  agent_confidence: 0.99
+submitted_evidence_refs:
+- evidence_hostile_001
+canonical_evidence_ids: []
+semantic_fingerprint: sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+status: rejected
+security_flags:
+- embedded_instruction
+- attempted_authority_escalation
+raw_attributes:
+  claimed_reward_rate: 100%
+  attempted_action: publish_automatically
+created_at: '2026-08-17T10:03:00+09:00'
+updated_at: '2026-08-17T10:03:00+09:00'
+semantic_fingerprint_version: 1

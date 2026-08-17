@@ -1,0 +1,201 @@
+version: 0.3.0
+research_cutoff: '2026-08-17'
+notice: These observations describe technical reachability only. They do not establish legal permission, content authority,
+  or a durable collection method.
+observations:
+- observation_id: sao_agent_review_registry_probe_20260817
+  observed_at: '2026-08-17T14:00:00+09:00'
+  observer: independent review agent
+  environment: network probe with browser user-agent; exact host and IP not preserved
+  method: aggregate_external_review
+  scope: registry
+  source_ids:
+  - discovery.cashbackmonitor
+  - global.accor.jal-transfer
+  - global.accor.partners
+  - global.hyatt.airline-transfer
+  - global.ihg.terms
+  - global.marriott.bonvoy-terms
+  - global.rakuten-us.shopping-trip
+  - global.rakuten-us.terms
+  - global.shopback.how-it-works
+  - global.topcashback.extension
+  - global.topcashback.guarantee
+  - gov.caa.stealth-marketing
+  - gov.fsa.electronic-payment-intermediary
+  - gov.fsa.registered-providers
+  - gov.ppc.credit-card-number-faq
+  - jp.aeoncard.campaigns
+  - jp.aeonpay.campaign-channel-example
+  - jp.aeonpay.overview
+  - jp.aeonpay.reward-guide
+  - jp.ana.mileage-club
+  - jp.ana.mileage-mall
+  - jp.ana.partner-points
+  - jp.ana.rakuten-transfer
+  - jp.ana.vpoint-transfer
+  - jp.aupay.campaigns
+  - jp.aupay.local-campaigns
+  - jp.aupay.merchant-list
+  - jp.aupay.reward-guide
+  - jp.aupaycard.product
+  - jp.dbarai.campaigns
+  - jp.dbarai.ended-campaigns
+  - jp.dbarai.local-campaigns
+  - jp.dcard.campaigns
+  - jp.dcard.exclusions
+  - jp.dcard.product
+  - jp.dcard.special-merchants
+  - jp.dpoint.campaign-example-funding-exclusion
+  - jp.dpoint.home
+  - jp.dpoint.terms
+  - jp.hapitas.home
+  - jp.jal.mileage-park
+  - jp.jal.mileage-park-howto
+  - jp.jal.multi-point-campaign-2026
+  - jp.jal.ponta-benefit
+  - jp.jal.ponta-campaign-2026
+  - jp.jal.ponta-portal
+  - jp.jrepoint.campaigns
+  - jp.jrepoint.home
+  - jp.jrepoint.suica-earning
+  - jp.moppy.exchange
+  - jp.moppy.home
+  - jp.nanaco.campaigns
+  - jp.nanaco.earning
+  - jp.nanaco.merchant-list
+  - jp.nanaco.redemption-value
+  - jp.paypay.calculation-faq
+  - jp.paypay.campaigns
+  - jp.paypay.eligibility-faq
+  - jp.paypay.local-campaigns
+  - jp.paypay.merchant-list
+  - jp.paypay.reward-rate
+  - jp.paypay.step
+  - jp.paypaycard.campaigns
+  - jp.paypaycard.point-rules
+  - jp.paypaycard.product-compare
+  - jp.ponta.campaigns
+  - jp.ponta.exchange-hub
+  - jp.ponta.jal-transfer
+  - jp.ponta.overview
+  - jp.ponta.partner-list
+  - jp.ponta.point-types
+  - jp.rakuten.pointclub
+  - jp.rakutencard.campaigns
+  - jp.rakutencard.product
+  - jp.rakutenmarket.point-campaign-faq
+  - jp.rakutenpay.campaigns
+  - jp.rakutenpay.change-notice-2026
+  - jp.rakutenpay.double-points
+  - jp.rakutenpay.point-detail
+  - jp.rakutenpay.point-program
+  - jp.rebates.guide
+  - jp.rebates.store-list
+  - jp.smbc.card-campaigns
+  - jp.smbc.eligible-merchant-rewards
+  - jp.smbc.member-campaigns
+  - jp.smbc.vpoint-up-program
+  - jp.vpoint.app-terms
+  - jp.vpoint.campaigns
+  - jp.vpoint.member-terms
+  - jp.vpoint.overview
+  - jp.vpoint.store-list
+  - jp.vpoint.use-store-list
+  - jp.vpoint.value-and-use
+  - jp.waonpoint.earning-faq
+  - jp.waonpoint.faq
+  - merchant.amazonjp.partner-dpoint
+  - merchant.amazonjp.points-terms
+  - merchant.biccamera.points
+  - merchant.biccamera.store-payment
+  - merchant.doutor.rank
+  - merchant.doutor.value-card
+  - merchant.familymart.famipay
+  - merchant.familymart.famipay-points
+  - merchant.familymart.payment
+  - merchant.itoyokado.happy-day
+  - merchant.itoyokado.nanaco-app
+  - merchant.lawson.auto-membership
+  - merchant.lawson.points
+  - merchant.lawson.ponta
+  - merchant.matsukiyo.point-guide
+  - merchant.matsukiyo.store-payment-faq
+  - merchant.mcdonalds.payment
+  - merchant.mcdonalds.rewards
+  - merchant.mcdonalds.rewards-faq
+  - merchant.seveneleven.bill-payment
+  - merchant.seveneleven.nanaco
+  - merchant.seveneleven.payment-faq
+  - merchant.starbucks.rewards
+  - merchant.welcia.faq
+  - merchant.welcia.home
+  - merchant.yahoo-shopping.paypay-points
+  - merchant.yahoo-shopping.pending-cap
+  - merchant.yodobashi.payment
+  - merchant.yodobashi.points
+  - merchant.zozo.payment
+  - merchant.zozo.points
+  - tech.apple.wallet-loyalty
+  - tech.cloud-run.job-retries
+  - tech.expo.secure-store
+  - tech.expo.sqlite
+  - tech.google.places-policies
+  - tech.google.wallet-loyalty
+  - tech.moneytree.link-sdk
+  - tech.supabase.cron
+  - tech.supabase.database
+  result: aggregate
+  http_status: null
+  summary_counts:
+    http_200: 105
+    http_403: 21
+    http_503: 5
+    timeout: 4
+  notes: The attached review preserved aggregate counts for the 135-source v0.1 registry but not a complete per-source status
+    map. Do not infer a status for an individual source from this aggregate record.
+  evidence_reference: docs/reviews/agent-review-2026-08-17.md
+- observation_id: sao_agent_review_blocked_clusters_20260817
+  observed_at: '2026-08-17T14:00:00+09:00'
+  observer: independent review agent
+  environment: network probe with browser user-agent; exact host and IP not preserved
+  method: aggregate_external_review
+  scope: source_group
+  source_ids: []
+  result: blocked_or_unavailable
+  http_status: null
+  summary_counts: {}
+  notes: The review named SMBC, AEON/AEON Pay, JRE POINT, JAL, Yodobashi, Bic Camera, Amazon JP, ZOZO, Matsukiyo, Welcia,
+    Rakuten Card, Hyatt, and IHG clusters, but did not preserve the exact per-source result map. No individual registry entry
+    is classified from this coarse report.
+  evidence_reference: docs/reviews/agent-review-2026-08-17.md
+- observation_id: sao_official_web_checks_20260817
+  observed_at: '2026-08-17T14:30:00+09:00'
+  observer: package maintainer
+  environment: official-page web verification
+  method: manual_browser
+  scope: source_group
+  source_ids:
+  - jp.paypay.third-party-card-voucher
+  - jp.viewcard.suica-charge
+  result: reachable
+  http_status: 200
+  summary_counts:
+    http_200: 2
+  notes: Pages were manually reviewed to register the source and authority scope; automation remains unapproved.
+  evidence_reference: null
+- observation_id: sao_independent_review_viewcard_20260817
+  observed_at: '2026-08-17T00:00:00+09:00'
+  observer: independent review agent
+  environment: datacenter IP; exact host and IP were not preserved; time normalized to start of the reviewed date
+  method: plain_http
+  scope: single_source
+  source_ids:
+  - jp.viewcard.suica-charge
+  result: forbidden
+  http_status: 403
+  summary_counts:
+    http_403: 1
+  notes: Environment-specific observation. It does not invalidate the prior manual-browser 200 and does not authorize bypass
+    or rendered collection.
+  evidence_reference: docs/reviews/agent-review-v0.2-2026-08-17.md

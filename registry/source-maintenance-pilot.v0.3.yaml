@@ -1,0 +1,104 @@
+version: 0.3.0
+duration_days: 30
+purpose: Measure whether a solo operator can maintain evidence-backed reward data before expanding product breadth.
+sources:
+- source_id: gov.ppc.credit-card-number-faq
+  role: regulator
+  volatility: low
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.smbc.eligible-merchant-rewards
+  role: issuer_blocked_cluster
+  volatility: high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.rakutencard.product
+  role: issuer_high_value
+  volatility: medium
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.paypay.reward-rate
+  role: qr_wallet
+  volatility: high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.rakutenpay.point-program
+  role: qr_wallet
+  volatility: high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.dbarai.campaigns
+  role: campaign_directory
+  volatility: very_high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: jp.paypay.campaigns
+  role: campaign_directory
+  volatility: very_high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+- source_id: merchant.familymart.payment
+  role: merchant
+  volatility: high
+  initial_collection_path: manual_capture_first
+  terms_review_required: true
+  measure:
+  - material_changes
+  - human_review_minutes
+  - diff_false_positives
+  - capture_failures
+  - rendering_or_manual_requirement
+weekly_metrics:
+- material_changes_per_source
+- minutes_per_material_change
+- diff_false_positive_rate
+- manual_capture_share
+- source_unavailability_rate
+- stale_rule_incidents
+decision_thresholds:
+  green: Median maintenance <= 3 hours/week and no unresolved high-impact stale rule.
+  amber: 3-6 hours/week or more than 25% manual capture; narrow source breadth and improve the workbench.
+  red: '> 6 hours/week, repeated blocked sources, or unresolved material changes; pause breadth expansion and seek partner
+    data.'

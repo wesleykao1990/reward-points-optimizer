@@ -1,0 +1,468 @@
+scenario_id: JP-SYN-001
+version: 1
+status: golden
+level: L2_STACKING
+title: Synthetic top-up route preserves residual balance without overstating value
+description: Synthetic proof of multi-operation accounting. It is not a current market
+  claim.
+as_of: '2026-08-17T12:30:00+09:00'
+replay_knowledge_at: '2026-08-17T12:30:00+09:00'
+timezone: Asia/Tokyo
+user_state:
+  owned_instrument_ids:
+  - card.synthetic
+  - card.direct
+  - wallet.synthetic
+  owned_loyalty_program_ids: []
+  facts:
+    campaign.synthetic.entered:
+      status: known
+      value: true
+      lower_bound: null
+      upper_bound: null
+      observed_at: '2026-08-17T12:00:00+09:00'
+      source: user_input
+      confidence: '1'
+  asset_lots: []
+  valuation_profile:
+    version: valuation.synthetic.v1
+    entries:
+    - valuation_id: val_points
+      asset_id: point.synthetic.normal
+      reward_class: normal
+      expiry_horizon_days: null
+      jpy_per_unit: '1'
+      basis: face_value
+      assumption:
+        source: face_value_default
+        expected_use_horizon_days: null
+        question_id: null
+        notes: Synthetic normal points valued at face value.
+    - valuation_id: val_balance
+      asset_id: wallet.synthetic.balance
+      reward_class: null
+      expiry_horizon_days: null
+      jpy_per_unit: '0.95'
+      basis: restricted_value
+      assumption:
+        source: explicit_user_answer
+        expected_use_horizon_days: 90
+        question_id: residual_use.wallet.synthetic.balance
+        notes: Synthetic onboarding answer used only to prove valuation isolation.
+  cap_progress: {}
+objective:
+  primary: maximize_guaranteed_net_value
+  probabilistic_reward_policy: guaranteed_only
+  ending_asset_valuation: use_user_profile
+  tie_breakers:
+  - lower_external_funding
+  - fewer_operations
+candidate_plans:
+- plan_id: plan_synthetic_topup_then_pay
+  operations:
+  - operation_id: op_topup
+    sequence: 1
+    occurred_at: '2026-08-17T12:00:00+09:00'
+    operation_type: stored_value_top_up
+    merchant_id: null
+    merchant_location_id: null
+    channel: in_app
+    interface: provider_app
+    payment_instrument_id: card.synthetic
+    funding_source_id: null
+    amount_jpy: 1000
+    asset_inputs:
+    - input_id: in_topup_credit
+      source_lot_id: null
+      quantity:
+        asset:
+          asset_id: credit.synthetic.card
+          asset_kind: credit_limit
+          program_id: card.synthetic
+          reward_class: null
+          scale: 0
+        amount: '1000'
+      role: external_funding
+    output_requests:
+    - request_id: out_wallet_balance
+      created_lot_id: lot_wallet_1000
+      asset:
+        asset_id: wallet.synthetic.balance
+        asset_kind: stored_value
+        program_id: wallet.synthetic
+        reward_class: null
+        scale: 0
+      requested_amount: '1000'
+      role: stored_value
+    original_operation_id: null
+    portal_id: null
+    line_items: []
+    notes: Creates stored value before purchase.
+  - operation_id: op_purchase
+    sequence: 2
+    occurred_at: '2026-08-17T12:01:00+09:00'
+    operation_type: merchant_purchase
+    merchant_id: merchant.synthetic
+    merchant_location_id: null
+    channel: in_store
+    interface: qr_code
+    payment_instrument_id: wallet.synthetic
+    funding_source_id: null
+    amount_jpy: 640
+    asset_inputs:
+    - input_id: in_wallet_tender
+      source_lot_id: lot_wallet_1000
+      quantity:
+        asset:
+          asset_id: wallet.synthetic.balance
+          asset_kind: stored_value
+          program_id: wallet.synthetic
+          reward_class: null
+          scale: 0
+        amount: '640'
+      role: stored_value_tender
+    output_requests: []
+    original_operation_id: null
+    portal_id: null
+    line_items:
+    - line_item_id: item_1
+      product_class: ordinary_goods
+      amount_jpy: 640
+      quantity: 1
+      eligible_for_rewards: true
+    notes: Consumes part of the stored-value lot.
+  dependencies:
+  - from_operation_id: op_topup
+    to_operation_id: op_purchase
+    dependency_type: funds
+  loyalty_presentments: []
+  assumptions:
+  - The user values the ending stored-value balance at JPY 0.95 per unit.
+- plan_id: plan_synthetic_direct_card
+  operations:
+  - operation_id: op_direct_purchase
+    sequence: 1
+    occurred_at: '2026-08-17T12:01:00+09:00'
+    operation_type: merchant_purchase
+    merchant_id: merchant.synthetic
+    merchant_location_id: null
+    channel: in_store
+    interface: contactless_card
+    payment_instrument_id: card.direct
+    funding_source_id: null
+    amount_jpy: 640
+    asset_inputs:
+    - input_id: in_direct_credit
+      source_lot_id: null
+      quantity:
+        asset:
+          asset_id: credit.synthetic.direct
+          asset_kind: credit_limit
+          program_id: card.direct
+          reward_class: null
+          scale: 0
+        amount: '640'
+      role: external_funding
+    output_requests: []
+    original_operation_id: null
+    portal_id: null
+    line_items:
+    - line_item_id: item_1
+      product_class: ordinary_goods
+      amount_jpy: 640
+      quantity: 1
+      eligible_for_rewards: true
+    notes: Direct payment without stored-value residual.
+  dependencies: []
+  loyalty_presentments: []
+  assumptions: []
+expected:
+  outcome_mode: definite
+  definite_winner_plan_id: plan_synthetic_direct_card
+  safe_plan_id: plan_synthetic_direct_card
+  runner_up_plan_id: plan_synthetic_topup_then_pay
+  conditional_winners: []
+  plan_results:
+  - plan_id: plan_synthetic_topup_then_pay
+    eligible: true
+    asset_movements:
+    - movement_id: mov_topup_funding
+      operation_id: op_topup
+      direction: consume
+      movement_role: external_funding
+      quantity:
+        asset:
+          asset_id: credit.synthetic.card
+          asset_kind: credit_limit
+          program_id: card.synthetic
+          reward_class: null
+          scale: 0
+        amount: '1000'
+      source_lot_id: null
+      destination_lot_id: null
+      notes: External card liability/funding consumed by the top-up.
+    - movement_id: mov_topup_create
+      operation_id: op_topup
+      direction: create
+      movement_role: principal_output
+      quantity:
+        asset:
+          asset_id: wallet.synthetic.balance
+          asset_kind: stored_value
+          program_id: wallet.synthetic
+          reward_class: null
+          scale: 0
+        amount: '1000'
+      source_lot_id: null
+      destination_lot_id: lot_wallet_1000
+      notes: Stored value created.
+    - movement_id: mov_purchase_tender
+      operation_id: op_purchase
+      direction: consume
+      movement_role: principal_tender
+      quantity:
+        asset:
+          asset_id: wallet.synthetic.balance
+          asset_kind: stored_value
+          program_id: wallet.synthetic
+          reward_class: null
+          scale: 0
+        amount: '640'
+      source_lot_id: lot_wallet_1000
+      destination_lot_id: null
+      notes: Stored value consumed for the merchant purchase.
+    reward_components:
+    - component_id: cmp_topup_points
+      operation_id: op_topup
+      rule_id: rr_synthetic_topup_base
+      sign: credit
+      quantity:
+        asset:
+          asset_id: point.synthetic.normal
+          asset_kind: reward_point
+          program_id: point.synthetic
+          reward_class: normal
+          scale: 0
+        amount: '10'
+      value_jpy:
+        minimum_jpy: 10
+        maximum_jpy: 10
+        expected_jpy: 10
+      certainty:
+        type: guaranteed
+        probability: null
+        probability_source: null
+      settlement:
+        status: pending
+        expected_posting_from: '2026-09-01T00:00:00+09:00'
+        expected_posting_to: '2026-09-30T23:59:59+09:00'
+        posted_at: null
+      expiry:
+        policy: none
+        expires_at: null
+        duration_days: null
+        timezone: Asia/Tokyo
+      restrictions:
+        transferable: true
+        redeemable_for_cash: false
+        usable_for_payment: true
+        investable: false
+        permitted_destination_ids: []
+        notes: Synthetic normal points.
+      clawback:
+        on_refund: proportional
+        posting_delay_days: null
+        notes: Synthetic.
+      calculation_trace:
+        eligible_basis: JPY 1,000 top-up
+        rounding_stage: floor per operation at JPY 100
+    ending_asset_lots:
+    - lot_id: lot_wallet_residual
+      quantity:
+        asset:
+          asset_id: wallet.synthetic.balance
+          asset_kind: stored_value
+          program_id: wallet.synthetic
+          reward_class: null
+          scale: 0
+        amount: '360'
+      acquired_at: '2026-08-17T12:00:00+09:00'
+      source_operation_id: op_topup
+      settlement:
+        status: available
+        expected_posting_from: null
+        expected_posting_to: null
+        posted_at: '2026-08-17T12:00:00+09:00'
+      expiry:
+        policy: provider_defined
+        expires_at: null
+        duration_days: null
+        timezone: Asia/Tokyo
+      restrictions:
+        transferable: false
+        redeemable_for_cash: false
+        usable_for_payment: true
+        investable: false
+        permitted_destination_ids: []
+        notes: Synthetic restricted balance.
+      provenance_rule_ids: []
+    economics:
+      merchant_value_received_jpy:
+        minimum_jpy: 640
+        maximum_jpy: 640
+        expected_jpy: 640
+      external_funding_jpy:
+        minimum_jpy: 1000
+        maximum_jpy: 1000
+        expected_jpy: 1000
+      opening_asset_value_consumed_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      ending_asset_value_jpy:
+        minimum_jpy: 342
+        maximum_jpy: 342
+        expected_jpy: 342
+      guaranteed_reward_value_jpy:
+        minimum_jpy: 10
+        maximum_jpy: 10
+        expected_jpy: 10
+      probabilistic_expected_reward_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      fee_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      guaranteed_net_value_change_jpy:
+        minimum_jpy: -8
+        maximum_jpy: -8
+        expected_jpy: -8
+      expected_net_value_change_jpy:
+        minimum_jpy: -8
+        maximum_jpy: -8
+        expected_jpy: -8
+    objective_score_jpy:
+      minimum_jpy: -8
+      maximum_jpy: -8
+      expected_jpy: -8
+    nominal_return_basis_points: null
+    applied_rule_ids:
+    - rr_synthetic_topup_base
+    rejected_rule_ids: []
+    rejection_reasons: []
+  - plan_id: plan_synthetic_direct_card
+    eligible: true
+    asset_movements:
+    - movement_id: mov_direct_funding
+      operation_id: op_direct_purchase
+      direction: consume
+      movement_role: external_funding
+      quantity:
+        asset:
+          asset_id: credit.synthetic.direct
+          asset_kind: credit_limit
+          program_id: card.direct
+          reward_class: null
+          scale: 0
+        amount: '640'
+      source_lot_id: null
+      destination_lot_id: null
+      notes: Direct card funding for the purchase.
+    reward_components: []
+    ending_asset_lots: []
+    economics:
+      merchant_value_received_jpy:
+        minimum_jpy: 640
+        maximum_jpy: 640
+        expected_jpy: 640
+      external_funding_jpy:
+        minimum_jpy: 640
+        maximum_jpy: 640
+        expected_jpy: 640
+      opening_asset_value_consumed_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      ending_asset_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      guaranteed_reward_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      probabilistic_expected_reward_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      fee_value_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      guaranteed_net_value_change_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+      expected_net_value_change_jpy:
+        minimum_jpy: 0
+        maximum_jpy: 0
+        expected_jpy: 0
+    objective_score_jpy:
+      minimum_jpy: 0
+      maximum_jpy: 0
+      expected_jpy: 0
+    nominal_return_basis_points: null
+    applied_rule_ids: []
+    rejected_rule_ids: []
+    rejection_reasons: []
+  assertions:
+  - assertion_type: winner_is
+    target_id: plan_synthetic_direct_card
+    expected: true
+    reason: Discounted residual value plus reward does not fully offset the extra
+      JPY 360 funding.
+  - assertion_type: residual_asset_equals
+    target_id: lot_wallet_residual
+    expected: '360'
+    reason: JPY 1,000 created less JPY 640 consumed leaves JPY 360.
+  - assertion_type: net_value_equals
+    target_id: plan_synthetic_topup_then_pay
+    expected: -8
+    reason: 640 merchant value + 342 ending asset value + 10 reward - 1,000 external
+      funding.
+  explanation_tokens:
+  - TOPUP_FIRST
+  - EARN_TOPUP_POINTS
+  - PAY_WITH_STORED_VALUE
+  - RESIDUAL_BALANCE_REMAINS
+  - DISCOUNTED_RESIDUAL_CHANGES_WINNER
+  questions_to_resolve: []
+  valuation_sensitivities:
+  - asset_id: wallet.synthetic.balance
+    reward_class: null
+    current_jpy_per_unit: '0.95'
+    break_even_jpy_per_unit: '0.972222222222222222'
+    winner_at_or_below_threshold_plan_id: plan_synthetic_direct_card
+    winner_above_threshold_plan_id: plan_synthetic_topup_then_pay
+    explanation_token: RESIDUAL_VALUE_BREAK_EVEN
+evidence_ids:
+- ev_synthetic_topup_rate
+review:
+  review_mode: solo_dual_pass
+  calculated_by: fixture-builder
+  verified_by: fixture-builder-second-pass
+  verified_at: '2026-08-18T13:00:00+09:00'
+  cooling_off_completed_at: '2026-08-18T12:30:00+09:00'
+  independent_calculation_artifact: examples/synthetic-calculation-note.md
+  decision: approved
+  notes: Synthetic contract test; not production evidence.
+  required_review_modes:
+  - solo_dual_pass
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: fixture-builder-second-pass
+    completed_at: '2026-08-17T13:00:00+09:00'
+    decision: approved
+    notes: Synthetic v0.4.1 contract fixture.

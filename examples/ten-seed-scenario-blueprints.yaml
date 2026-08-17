@@ -1,0 +1,209 @@
+version: 0.3.0
+research_cutoff: '2026-08-17'
+notice: Evidence-directed candidate scenarios only. Promote under a recorded review mode after immutable capture and an independent
+  calculation method; never infer expected values from the engine.
+scenarios:
+- scenario_id: JP-CVS-002
+  title: Seven-Eleven accepted payment methods without fake reward output
+  level: L1_SINGLE_RULE
+  merchant_or_program: Seven-Eleven
+  purchase_context: &id001
+    channel: provider_defined
+    amount_strategy: Freeze a representative amount and all relevant boundaries.
+  behaviors_under_test:
+  - Payment acceptance independent of reward calculation
+  primary_source_ids:
+  - merchant.seveneleven.payment-faq
+  research_questions:
+  - Which payment instruments and interfaces are accepted for an ordinary in-store purchase?
+  - Which channels or product classes have different acceptance?
+  - What source is authoritative for branch or tenant exceptions?
+  required_negative_assertions:
+  - An unsupported tender is rejected before reward calculation and no zero-point placeholder rule is created.
+  expected_result_status: to_be_researched
+- scenario_id: JP-CVS-006
+  title: Seven Card to nanaco top-up, purchase, and residual balance
+  level: L2_STACKING
+  merchant_or_program: Seven-Eleven / nanaco
+  purchase_context:
+    channel: in_store
+    amount_strategy: Choose a top-up larger than the purchase and preserve the exact residual asset lot.
+  behaviors_under_test:
+  - Multi-operation top-up route
+  - operation-scoped reward/exclusion
+  - asset movements
+  - net economic value
+  primary_source_ids:
+  - merchant.seveneleven.nanaco
+  - jp.nanaco.earning
+  research_questions:
+  - Which card/top-up combinations are permitted and which reward or tier metrics exclude the top-up?
+  - What principal asset is created, in what increment, and with what expiry or usage restrictions?
+  - What value remains after the merchant purchase and how should it affect net route value?
+  required_negative_assertions:
+  - A top-up reward is not earned again at purchase time.
+  - The full top-up cost is not assigned to the smaller purchase and the residual asset does not disappear.
+  expected_result_status: to_be_researched
+- scenario_id: JP-CVS-014
+  title: SMBC smartphone contactless versus physical-card route
+  level: L3_ADVERSARIAL
+  merchant_or_program: Eligible convenience merchant
+  purchase_context: *id001
+  behaviors_under_test:
+  - Interface-specific reward differential
+  - base inclusion
+  - channel exclusion
+  primary_source_ids:
+  - jp.smbc.eligible-merchant-rewards
+  - jp.smbc.vpoint-up-program
+  research_questions:
+  - Which interface receives each reward layer?
+  - Does the advertised maximum include the base reward?
+  - Do mobile order, physical card, and card contactless differ?
+  required_negative_assertions:
+  - A physical-card or otherwise ineligible interface cannot receive a smartphone-contactless-only bonus.
+  expected_result_status: to_be_researched
+- scenario_id: JP-QR-007
+  title: d払い non-d Card funding exclusion
+  level: L3_ADVERSARIAL
+  merchant_or_program: d払い
+  purchase_context: *id001
+  behaviors_under_test:
+  - Funding-source exclusion across reward, tier-progress, and campaign-progress targets
+  primary_source_ids:
+  - jp.dpoint.campaign-example-funding-exclusion
+  - jp.dcard.exclusions
+  research_questions:
+  - Which funding sources disqualify the base or campaign reward?
+  - Is the operation also excluded from period-spend, tier, or campaign-progress metrics?
+  - Are separate exclusions required for separate effect targets?
+  required_negative_assertions:
+  - A reward exclusion and a tier-progress exclusion are not silently treated as the same fact.
+  expected_result_status: to_be_researched
+- scenario_id: JP-QR-008
+  title: PayPay third-party-card voucher availability, increment, and residual value
+  level: L3_ADVERSARIAL
+  merchant_or_program: PayPay
+  purchase_context:
+    channel: provider_defined
+    amount_strategy: Use a purchase materially smaller than the voucher acquisition and freeze user rollout state.
+  behaviors_under_test:
+  - Voucher acquisition
+  - uncertain rollout eligibility
+  - fixed increment
+  - residual asset
+  - reward and channel exclusions
+  - net economic value
+  primary_source_ids:
+  - jp.paypay.third-party-card-voucher
+  - jp.paypay.eligibility-faq
+  - jp.paypay.calculation-faq
+  research_questions:
+  - Is the voucher feature available to the frozen user state?
+  - What acquisition increment, cap, and card/merchant/channel restrictions apply?
+  - How is the ending voucher balance restricted and valued?
+  - Which reward layers are excluded on the voucher-funded portion?
+  required_negative_assertions:
+  - Feature availability is not assumed from a public page.
+  - The full voucher acquisition is not counted as purchase cost without separately valuing the ending balance.
+  - Excluded rewards remain excluded.
+  expected_result_status: to_be_researched
+- scenario_id: JP-CMP-003
+  title: Capped campaign paid as limited-period points
+  level: L1_SINGLE_RULE
+  merchant_or_program: Campaign owner to be frozen
+  purchase_context: *id001
+  behaviors_under_test:
+  - Campaign cap
+  - reward class
+  - posting window
+  - expiry-aware valuation
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.dbarai.campaigns
+  research_questions:
+  - Which specific campaign page is authoritative for the frozen scenario?
+  - Is the reward normal, limited-period, or usage-limited?
+  - When is it posted, when does it expire, and what cap/reset policy applies?
+  required_negative_assertions:
+  - A limited-period campaign point is not valued or transferred as an unrestricted normal point.
+  expected_result_status: to_be_researched
+- scenario_id: JP-CMP-007
+  title: Guaranteed campaign benefit versus lottery headline
+  level: L2_STACKING
+  merchant_or_program: Campaign owner to be frozen
+  purchase_context: *id001
+  behaviors_under_test:
+  - Guaranteed value separated from probabilistic reward
+  - probability provenance
+  primary_source_ids:
+  - jp.paypay.campaigns
+  - jp.aupay.campaigns
+  research_questions:
+  - Which benefit is guaranteed and which is lottery/selection based?
+  - Is a probability officially disclosed?
+  - What objective is allowed to use expected value?
+  required_negative_assertions:
+  - An undisclosed-probability headline cannot enter guaranteed cashback or guaranteed rank.
+  expected_result_status: to_be_researched
+- scenario_id: JP-CMP-009
+  title: Announced rule change postponed before effective date
+  level: L3_ADVERSARIAL
+  merchant_or_program: Rakuten Pay
+  purchase_context: *id001
+  behaviors_under_test:
+  - Announcement time versus economic validity
+  - replay-knowledge time
+  primary_source_ids:
+  - jp.rakutenpay.change-notice-2026
+  research_questions:
+  - What was announced, what was postponed, and what was economically effective?
+  - At what knowledge time did the system learn the postponement?
+  - Which historical replays should change and which must remain unchanged?
+  required_negative_assertions:
+  - An announced but postponed rule does not apply merely because a later secondary source says it did.
+  expected_result_status: to_be_researched
+- scenario_id: JP-XFR-002
+  title: Rakuten Point to ANA transfer with block constraints
+  level: L1_SINGLE_RULE
+  merchant_or_program: Rakuten Point to ANA
+  purchase_context:
+    channel: transfer
+    amount_strategy: Test one below, exact, and one above each minimum or increment, plus the period cap.
+  behaviors_under_test:
+  - Transfer ratio
+  - minimum
+  - increment
+  - period maximum
+  - posting delay
+  - non-transferable reward class
+  primary_source_ids:
+  - jp.ana.rakuten-transfer
+  research_questions:
+  - What are the source/destination ratio, minimum, increment, request maximum, and period maximum?
+  - Which reward classes are transferable?
+  - What posting and cancellation rules apply?
+  required_negative_assertions:
+  - Non-transferable or insufficient point lots do not enter the route, and remainder units are conserved.
+  expected_result_status: to_be_researched
+- scenario_id: JP-ECOM-012
+  title: Online return or cancellation reverses rewards and progress
+  level: L3_ADVERSARIAL
+  merchant_or_program: Online merchant
+  purchase_context: *id001
+  behaviors_under_test:
+  - Refund/reversal operation
+  - debit ledger component
+  - clawback
+  - campaign-progress restoration
+  primary_source_ids:
+  - merchant.amazonjp.points-terms
+  - jp.rebates.guide
+  - merchant.yahoo-shopping.paypay-points
+  research_questions:
+  - Which principal and reward assets reverse after cancellation?
+  - When are pending versus posted rewards clawed back?
+  - Is campaign-cap or tier progress restored, and at what time?
+  required_negative_assertions:
+  - Canceled spend and rewards do not remain in earned or progress totals unless the official rule expressly retains them.
+  expected_result_status: to_be_researched

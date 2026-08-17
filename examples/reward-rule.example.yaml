@@ -1,0 +1,138 @@
+rule_id: rr_synthetic_topup_base
+version: 1
+status: published
+rule_type: base_reward
+name: Synthetic card top-up reward
+description: Synthetic rule proving an operation-scoped top-up reward.
+subject:
+  entity_type: credit_card
+  entity_id: card.synthetic
+scope:
+  countries:
+  - JP
+  operation_types:
+  - stored_value_top_up
+  merchant_ids: []
+  excluded_merchant_ids: []
+  merchant_group_ids: []
+  excluded_merchant_group_ids: []
+  merchant_location_ids: []
+  excluded_merchant_location_ids: []
+  merchant_category_codes: []
+  excluded_merchant_category_codes: []
+  channels:
+  - in_app
+  included_product_classes: []
+  excluded_product_classes: []
+  tax_basis: not_applicable
+eligibility:
+  operation_match:
+    required_loyalty_program_ids: []
+    allowed_payment_instrument_ids:
+    - card.synthetic
+    excluded_payment_instrument_ids: []
+    allowed_payment_instrument_types:
+    - credit_card
+    allowed_funding_source_ids: []
+    excluded_funding_source_ids: []
+    allowed_source_asset_ids: []
+    excluded_source_asset_ids: []
+    allowed_destination_asset_ids:
+    - wallet.synthetic.balance
+    required_interfaces:
+    - provider_app
+    excluded_interfaces: []
+    must_present_before_payment: false
+  user_conditions: []
+  transaction_conditions:
+    minimum_amount_jpy: 100
+    maximum_amount_jpy: null
+    eligible_amount_basis: operation_amount
+    excluded_tender_components: []
+    requires_single_operation: true
+  campaign_conditions:
+    campaign_id: null
+    entry_required: false
+    entry_deadline: null
+    targeted_offer: false
+    identity_verification_required: false
+    first_use_only: false
+calculation:
+  model: points_per_unit
+  reward_units: '1'
+  spend_jpy: 100
+  rounding:
+    aggregation_scope: per_operation
+    eligible_spend_quantum_jpy: 100
+    reward_rounding_mode: floor
+  base_reward_included: false
+output:
+  asset:
+    asset_id: point.synthetic.normal
+    asset_kind: reward_point
+    program_id: point.synthetic
+    reward_class: normal
+    scale: 0
+  sign: credit
+  certainty:
+    type: guaranteed
+    probability: null
+    probability_source: null
+  settlement:
+    status: pending
+    expected_posting_from: '2026-09-01T00:00:00+09:00'
+    expected_posting_to: '2026-09-30T23:59:59+09:00'
+    posted_at: null
+  expiry:
+    policy: none
+    expires_at: null
+    duration_days: null
+    timezone: Asia/Tokyo
+  restrictions:
+    transferable: true
+    redeemable_for_cash: false
+    usable_for_payment: true
+    permitted_destination_ids: []
+    notes: Synthetic normal points.
+    investable: false
+  clawback:
+    on_refund: proportional
+    posting_delay_days: null
+    notes: Synthetic refund reversal.
+caps: []
+stacking:
+  stack_group: card_topup_base
+  mode: additive
+  precedence: 10
+  conflicts_with_rule_ids: []
+  requires_rule_ids: []
+  notes: ''
+validity:
+  announced_at: null
+  valid_from: '2026-08-01T00:00:00+09:00'
+  valid_to: null
+  timezone: Asia/Tokyo
+  recorded_at: '2026-08-17T11:00:00+09:00'
+  superseded_at: null
+provenance:
+  evidence_ids:
+  - ev_synthetic_topup_rate
+  minimum_source_tier: T1_CANONICAL
+  confidence: 1.0
+  human_verified: true
+  review_notes: Synthetic only.
+audit:
+  created_at: '2026-08-17T10:30:00+09:00'
+  created_by: fixture-builder
+  review_mode: solo_dual_pass
+  reviewed_at: '2026-08-17T11:00:00+09:00'
+  reviewed_by: fixture-reviewer
+  change_reason: Initial synthetic example.
+  required_review_modes:
+  - solo_dual_pass
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: fixture-reviewer
+    completed_at: '2026-08-17T13:00:00+09:00'
+    decision: approved
+    notes: Synthetic v0.4.1 contract fixture.

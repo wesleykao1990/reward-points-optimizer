@@ -1,0 +1,626 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/asset.schema.json",
+  "title": "Reward and Value Asset Definition",
+  "description": "Canonical asset definition plus reusable lot, movement, settlement, expiry, certainty, and ledger contracts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset_id",
+    "asset_kind",
+    "display_name",
+    "program_id",
+    "scale",
+    "default_reward_class",
+    "default_expiry",
+    "default_usage_restrictions",
+    "status",
+    "notes"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]+$"
+    },
+    "asset_kind": {
+      "$ref": "#/$defs/assetKind"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 2
+    },
+    "program_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scale": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9
+    },
+    "default_reward_class": {
+      "$ref": "#/$defs/rewardClass"
+    },
+    "default_expiry": {
+      "$ref": "#/$defs/expiry"
+    },
+    "default_usage_restrictions": {
+      "$ref": "#/$defs/usageRestrictions"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "retired",
+        "synthetic"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "decimalString": {
+      "type": "string",
+      "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+    },
+    "assetKind": {
+      "type": "string",
+      "enum": [
+        "fiat",
+        "reward_point",
+        "airline_mile",
+        "hotel_point",
+        "cashback",
+        "stored_value",
+        "voucher",
+        "discount",
+        "credit_limit",
+        "other"
+      ]
+    },
+    "rewardClass": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "normal",
+        "limited_period",
+        "usage_limited",
+        "merchant_limited",
+        "pending",
+        "promotional",
+        "other"
+      ]
+    },
+    "assetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "asset_kind",
+        "program_id",
+        "reward_class",
+        "scale"
+      ],
+      "properties": {
+        "asset_id": {
+          "type": "string",
+          "minLength": 2
+        },
+        "asset_kind": {
+          "$ref": "#/$defs/assetKind"
+        },
+        "program_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reward_class": {
+          "$ref": "#/$defs/rewardClass"
+        },
+        "scale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9
+        }
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset",
+        "amount"
+      ],
+      "properties": {
+        "asset": {
+          "$ref": "#/$defs/assetRef"
+        },
+        "amount": {
+          "$ref": "#/$defs/decimalString"
+        }
+      }
+    },
+    "settlement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "expected_posting_from",
+        "expected_posting_to",
+        "posted_at"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "posted",
+            "available",
+            "reversed",
+            "expired",
+            "unknown"
+          ]
+        },
+        "expected_posting_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "expected_posting_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "posted_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "expiry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "expires_at",
+        "duration_days",
+        "timezone"
+      ],
+      "properties": {
+        "policy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "fixed_date",
+            "relative_to_posting",
+            "provider_defined",
+            "unknown"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "duration_days": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "timezone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "usageRestrictions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transferable",
+        "redeemable_for_cash",
+        "usable_for_payment",
+        "investable",
+        "permitted_destination_ids",
+        "notes"
+      ],
+      "properties": {
+        "transferable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "redeemable_for_cash": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "usable_for_payment": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "investable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "permitted_destination_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "certainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "probability",
+        "probability_source"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "guaranteed",
+            "probabilistic",
+            "conditional_selection"
+          ]
+        },
+        "probability": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+        },
+        "probability_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "official_disclosed",
+            "historical_estimate",
+            "undisclosed"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "probabilistic"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "probability_source": {
+                "type": "string",
+                "enum": [
+                  "official_disclosed",
+                  "historical_estimate",
+                  "undisclosed"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "probabilistic"
+              },
+              "probability_source": {
+                "enum": [
+                  "official_disclosed",
+                  "historical_estimate"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "probability_source"
+            ]
+          },
+          "then": {
+            "properties": {
+              "probability": {
+                "type": "string",
+                "pattern": "^(0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+              }
+            }
+          }
+        }
+      ],
+      "$comment": "Probabilistic rewards require a non-null probability source. A disclosed or historical probability source also requires an explicit probability."
+    },
+    "clawbackPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "on_refund",
+        "posting_delay_days",
+        "notes"
+      ],
+      "properties": {
+        "on_refund": {
+          "type": "string",
+          "enum": [
+            "none",
+            "proportional",
+            "full",
+            "provider_defined",
+            "unknown"
+          ]
+        },
+        "posting_delay_days": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "assetLot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lot_id",
+        "quantity",
+        "acquired_at",
+        "source_operation_id",
+        "settlement",
+        "expiry",
+        "restrictions",
+        "provenance_rule_ids"
+      ],
+      "properties": {
+        "lot_id": {
+          "type": "string",
+          "pattern": "^lot_[a-zA-Z0-9_-]+$"
+        },
+        "quantity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "acquired_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source_operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "settlement": {
+          "$ref": "#/$defs/settlement"
+        },
+        "expiry": {
+          "$ref": "#/$defs/expiry"
+        },
+        "restrictions": {
+          "$ref": "#/$defs/usageRestrictions"
+        },
+        "provenance_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^rr_[a-z0-9_-]+$"
+          }
+        }
+      }
+    },
+    "jpyValueRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_jpy",
+        "maximum_jpy",
+        "expected_jpy"
+      ],
+      "properties": {
+        "minimum_jpy": {
+          "type": "integer"
+        },
+        "maximum_jpy": {
+          "type": "integer"
+        },
+        "expected_jpy": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "assetMovement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "movement_id",
+        "operation_id",
+        "direction",
+        "movement_role",
+        "quantity",
+        "source_lot_id",
+        "destination_lot_id",
+        "notes"
+      ],
+      "properties": {
+        "movement_id": {
+          "type": "string",
+          "pattern": "^mov_[a-zA-Z0-9_-]+$"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^op_[a-zA-Z0-9_-]+$"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "consume",
+            "create",
+            "return",
+            "expire"
+          ]
+        },
+        "movement_role": {
+          "type": "string",
+          "enum": [
+            "external_funding",
+            "principal_tender",
+            "principal_output",
+            "fee",
+            "refund",
+            "reversal",
+            "transfer",
+            "redemption",
+            "other"
+          ]
+        },
+        "quantity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "source_lot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "destination_lot_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "rewardComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component_id",
+        "operation_id",
+        "rule_id",
+        "sign",
+        "quantity",
+        "value_jpy",
+        "certainty",
+        "settlement",
+        "expiry",
+        "restrictions",
+        "clawback",
+        "calculation_trace"
+      ],
+      "properties": {
+        "component_id": {
+          "type": "string",
+          "pattern": "^cmp_[a-zA-Z0-9_-]+$"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^op_[a-zA-Z0-9_-]+$"
+        },
+        "rule_id": {
+          "type": "string",
+          "pattern": "^rr_[a-z0-9_-]+$"
+        },
+        "sign": {
+          "type": "string",
+          "enum": [
+            "credit",
+            "debit"
+          ]
+        },
+        "quantity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "value_jpy": {
+          "$ref": "#/$defs/jpyValueRange"
+        },
+        "certainty": {
+          "$ref": "#/$defs/certainty"
+        },
+        "settlement": {
+          "$ref": "#/$defs/settlement"
+        },
+        "expiry": {
+          "$ref": "#/$defs/expiry"
+        },
+        "restrictions": {
+          "$ref": "#/$defs/usageRestrictions"
+        },
+        "clawback": {
+          "$ref": "#/$defs/clawbackPolicy"
+        },
+        "calculation_trace": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "eligible_basis",
+            "rounding_stage"
+          ],
+          "properties": {
+            "eligible_basis": {
+              "type": "string"
+            },
+            "rounding_stage": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
