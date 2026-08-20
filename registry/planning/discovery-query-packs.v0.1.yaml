@@ -1,0 +1,143 @@
+version: "0.1"
+status: planning
+purpose: >-
+  Broad unknown-world discovery scopes for producers that submit coverage_candidate
+  findings through Agent Feed. These are discovery queries, never canonical economic evidence.
+streams:
+  - stream_id: discovery.jp.reward-portals
+    cadence: daily
+    query_concepts:
+      - "ポイントサイト 新サービス"
+      - "ポイ活 サービス 開始"
+      - "ポイントモール 新設"
+      - "ショッピング 経由 ポイント"
+      - "ポイント交換先 追加"
+      - "ポイントサイト リニューアル"
+    structured_surfaces:
+      - point-site sitemaps
+      - new-offer pages
+      - exchange directories
+      - operator news/notices
+    candidate_types:
+      - new_reward_portal
+      - new_source_for_existing_family
+      - provider_rebrand_or_shutdown
+      - new_transfer_relationship
+
+  - stream_id: discovery.jp.payment-programs
+    cadence: daily
+    query_concepts:
+      - "新ポイントサービス"
+      - "ポイント制度 開始"
+      - "共通ポイント 提携開始"
+      - "新決済サービス"
+      - "QR決済 開始"
+      - "電子マネー 新サービス"
+      - "ポイント制度 リニューアル"
+    structured_surfaces:
+      - corporate newsrooms
+      - regulator/industry announcements
+      - official partner directories
+      - official sitemaps
+    candidate_types:
+      - new_source_family
+      - new_reward_asset
+      - new_payment_interface
+      - provider_rebrand_or_shutdown
+
+  - stream_id: discovery.jp.cards-wallets
+    cadence: daily
+    query_concepts:
+      - "新クレジットカード 発表"
+      - "新カード ポイント還元"
+      - "新ウォレット 決済"
+      - "新プリペイドカード"
+      - "新デビットカード ポイント"
+      - "カード 特典 改定"
+    structured_surfaces:
+      - issuer card catalogues
+      - issuer newsrooms
+      - app-store listings
+      - wallet support/FAQ pages
+    candidate_types:
+      - new_selectable_product
+      - new_source_family
+      - new_payment_interface
+      - new_source_for_existing_family
+
+  - stream_id: discovery.jp.transfer-partners
+    cadence: daily
+    query_concepts:
+      - "ポイント交換 開始"
+      - "マイル交換 開始"
+      - "ポイント移行 パートナー"
+      - "移行レート 変更"
+      - "ポイント増量 交換"
+      - "ホテルポイント マイル 交換"
+    structured_surfaces:
+      - official exchange directories
+      - airline/hotel partner directories
+      - card issuer transfer directories
+      - program campaign pages
+    candidate_types:
+      - new_transfer_relationship
+      - new_source_for_existing_family
+      - new_reward_asset
+
+  - stream_id: discovery.jp.merchant-acceptance
+    cadence: daily
+    query_concepts:
+      - "PayPay 導入"
+      - "楽天ペイ 導入"
+      - "d払い 導入"
+      - "au PAY 導入"
+      - "共通ポイント 導入"
+      - "タッチ決済 対応"
+      - "ポイント 提携 店舗"
+    structured_surfaces:
+      - merchant payment pages
+      - wallet merchant directories
+      - point-program partner directories
+      - merchant newsrooms
+    candidate_types:
+      - new_merchant_or_channel
+      - new_source_for_existing_family
+      - new_payment_interface
+
+  - stream_id: discovery.jp.travel-loyalty
+    cadence: daily
+    query_concepts:
+      - "マイレージ 新提携"
+      - "ホテル ロイヤルティ 新提携"
+      - "ポイント移行 パートナー"
+      - "日本 会員プログラム 開始"
+      - "マイル キャンペーン 交換"
+    structured_surfaces:
+      - airline partner directories
+      - hotel loyalty newsrooms
+      - issuer transfer pages
+      - Japan launch announcements
+    candidate_types:
+      - new_source_family
+      - new_transfer_relationship
+      - new_selectable_product
+
+resolution_requirements:
+  before_human_alert:
+    - compare normalized name against source-family aliases
+    - compare official domain against known domains
+    - compare proposed product against product catalogue
+    - compare transfer relationship against known relationship graph
+    - classify as existing child source, alias/duplicate, new product, or genuinely novel
+
+submission_threshold:
+  require:
+    - concrete entity or relationship claim
+    - at least one evidence reference
+    - reason the candidate appears absent from the current registry
+  prefer:
+    - direct official evidence
+    - repeated independent discovery
+  never:
+    - submit a raw search-result list as individual candidates without normalization
+    - treat discovery-source claims as canonical economic truth
