@@ -1,0 +1,32 @@
+{
+  "candidate_id": "cc_20260820_example",
+  "candidate_type": "new_reward_portal",
+  "proposed_name": "Example Point Portal",
+  "normalized_name": "example point portal",
+  "proposed_domain": "example.jp",
+  "country_scope": "JP",
+  "discovery_stream_id": "discovery.jp.reward-portals",
+  "discovery_run_id": "run_example",
+  "first_seen_at": "2026-08-20T00:00:00Z",
+  "last_seen_at": "2026-08-20T00:00:00Z",
+  "evidence_refs": [
+    "evidence_example_official_announcement"
+  ],
+  "novelty_resolution": {
+    "result": "genuinely_novel",
+    "matched_existing_family_ids": [],
+    "matched_existing_product_ids": [],
+    "matched_aliases": [],
+    "reason": "No matching family, official domain, product, or transfer relationship found in the current planning registry."
+  },
+  "priority_band": "medium",
+  "status": "accepted_for_research",
+  "review_reason": "Potentially usable Japan shopping portal with a point-exchange network; official operator evidence exists.",
+  "canonical_truth_status": "not_canonical",
+  "allowed_next_action": "codex_official_source_research_and_pr",
+  "forbidden_actions": [
+    "publish_reward_rule",
+    "mark_fully_supported",
+    "treat_discovery_evidence_as_canonical"
+  ]
+}
