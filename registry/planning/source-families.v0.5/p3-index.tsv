@@ -1,0 +1,38 @@
+family_id	category	provider_or_scope	current_registry_status	scope	agent_feed_stream	recommended_cadence
+airline.aadvantage	airline_program	American Airlines AAdvantage	missing	Japan	miles.global-americas	weekly
+airline.alaska	airline_program	Alaska Airlines Mileage Plan	missing	Japan	miles.global-americas	weekly
+airline.etihad	airline_program	Etihad Guest	missing	Japan	miles.global-middle-east	weekly
+airline.eva	airline_program	EVA Infinity MileageLands	missing	Japan	miles.global-asia	weekly
+airline.qantas	airline_program	Qantas Frequent Flyer	missing	Japan	miles.global-asia	weekly
+airline.turkish	airline_program	Turkish Airlines Miles&Smiles	missing	Japan	miles.global-europe	weekly
+airline.united	airline_program	United MileagePlus	missing	Japan	miles.global-americas	weekly
+portal.cashbackmonitor	cashback_portal	Cashback Monitor discovery index	covered	International	discovery.global-cashback	daily
+portal.getmoney	cashback_portal	GetMoney!	missing	Japan	portal.jp-long-tail	weekly
+portal.netmile	cashback_portal	NetMile	missing	Japan	portal.jp-long-tail	weekly
+portal.rakuten-us	cashback_portal	Rakuten US cashback	covered	International	portal.global-cashback	weekly
+portal.shopback	cashback_portal	ShopBack	covered	International	portal.global-cashback	weekly
+portal.topcashback	cashback_portal	TopCashback	covered	International	portal.global-cashback	weekly
+card.aplus	credit_card_issuer	APLUS cards	missing	Japan	issuer.long-tail	weekly
+card.netbk-debit	credit_card_issuer	SBI Sumishin Net Bank debit / points	missing	Japan	issuer.debit-jp	weekly
+card.resona-debit	credit_card_issuer	Resona debit / club points	missing	Japan	issuer.debit-jp	weekly
+card.sevenbank-debit	credit_card_issuer	Seven Bank debit / nanaco rewards	missing	Japan	economy.seven-nanaco	weekly
+card.sonybankwallet	credit_card_issuer	Sony Bank WALLET / ANA co-brand	missing	Japan	issuer.debit-travel	weekly
+transit.sapica	e_money_transit	SAPICA	missing	Japan	transit.hokkaido	weekly
+hotel.bestwestern	hotel_program	Best Western Rewards	missing	Japan	hotel.global-other	weekly
+hotel.choice	hotel_program	Choice Privileges	missing	Japan	hotel.global-other	weekly
+hotel.gha	hotel_program	GHA DISCOVERY	missing	Japan	hotel.global-other	weekly
+hotel.jrhotelmembers	hotel_program	JR Hotel Members	missing	Japan	hotel.jp-other	weekly
+hotel.radisson	hotel_program	Radisson Rewards	missing	Japan	hotel.global-other	weekly
+hotel.routeinn	hotel_program	Route Inn / Ponta links	missing	Japan	hotel.jp-other	weekly
+hotel.shangrila	hotel_program	Shangri-La Circle	missing	Japan	hotel.global-asia	weekly
+hotel.toyoko	hotel_program	Toyoko Inn Club	missing	Japan	hotel.jp-other	weekly
+hotel.wyndham	hotel_program	Wyndham Rewards	missing	Japan	hotel.global-other	weekly
+merchant.aeon-cinema	merchant	AEON Cinema	missing	Japan	merchant.jp-entertainment	weekly
+merchant.animate	merchant	Animate	missing	Japan	merchant.jp-entertainment	weekly
+merchant.ikea-jp	merchant	IKEA Japan	missing	Japan	merchant.jp-home-lifestyle	weekly
+merchant.kinokuniya	merchant	Kinokuniya	missing	Japan	merchant.jp-entertainment	weekly
+merchant.menu-delivery	merchant	menu delivery	missing	Japan	merchant.jp-delivery-mobility	weekly
+merchant.toho-cinemas	merchant	TOHO Cinemas	missing	Japan	merchant.jp-entertainment	weekly
+merchant.uber-jp	merchant	Uber Japan	missing	Japan	merchant.jp-delivery-mobility	weekly
+wallet.revolut-jp	payment_wallet	Revolut Japan	missing	Japan	wallet.prepaid	6h
+wallet.wise	payment_wallet	Wise card / balances	missing	International	wallet.international	weekly
