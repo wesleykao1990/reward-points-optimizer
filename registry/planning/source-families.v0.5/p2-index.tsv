@@ -1,0 +1,102 @@
+family_id	category	provider_or_scope	current_registry_status	scope	agent_feed_stream	recommended_cadence
+airline.aeroplan	airline_program	Air Canada Aeroplan	missing	Japan	miles.global-americas	daily
+airline.amex-transfer-set	airline_program	13 airline programs reachable from Amex Japan	missing	Japan	miles.card-transfer-partners	daily
+airline.avios	airline_program	British Airways Club / Avios ecosystem	missing	Japan	miles.global-avios	daily
+airline.cathay	airline_program	Cathay / Asia Miles	missing	Japan	miles.global-asia	daily
+airline.delta	airline_program	Delta SkyMiles	missing	Japan	miles.global-americas	daily
+airline.emirates	airline_program	Emirates Skywards	missing	Japan	miles.global-middle-east	daily
+airline.flyingblue	airline_program	Air France-KLM Flying Blue	missing	Japan	miles.global-europe	daily
+airline.krisflyer	airline_program	Singapore Airlines KrisFlyer	missing	Japan	miles.global-asia	daily
+airline.marriott-transfer-set	airline_program	Marriott Bonvoy airline transfer partners	partial	Japan	miles.hotel-transfer-partners	daily
+airline.qatar	airline_program	Qatar Privilege Club	missing	Japan	miles.global-middle-east	daily
+airline.virgin	airline_program	Virgin Atlantic Flying Club	missing	Japan	miles.global-europe	daily
+network.amex-offers-jp	card_network	Amex Offers and network campaigns	partial	Japan	network.amex-offers	daily
+network.mastercard-jp	card_network	Mastercard Japan offers and promotions	missing	Japan	network.card-offers	daily
+network.visa-jp	card_network	Visa Japan contactless and consumer campaigns	missing	Japan	network.card-offers	daily
+network.vja	card_network	VJA group campaigns	missing	Japan	network.card-offers	daily
+portal.ana-mileage-mall	cashback_portal	ANA Mileage Mall	covered	Japan	portal.airline-shopping	6h
+portal.card-malls	cashback_portal	Issuer shopping malls: J-POINT/EPOS/Saison/JACCS/MUFG/AEON	missing	Japan	portal.card-malls	6h
+portal.chobirich	cashback_portal	Chobirich	missing	Japan	portal.jp-long-tail	6h
+portal.ecnavi	cashback_portal	EC Navi	missing	Japan	portal.jp-long-tail	6h
+portal.jal-mileage-park	cashback_portal	JAL Mileage Park	covered	Japan	portal.airline-shopping	6h
+portal.pointincome	cashback_portal	Point Income	missing	Japan	portal.jp-long-tail	6h
+portal.pointtown	cashback_portal	PointTown	missing	Japan	portal.jp-long-tail	6h
+portal.powl	cashback_portal	Powl	missing	Japan	portal.jp-long-tail	6h
+card.amazon	credit_card_issuer	Amazon Mastercard (Japan)	missing	Japan	issuer.other-major	daily
+card.amex-jp	credit_card_issuer	American Express Japan Membership Rewards	missing	Japan	issuer.amex-jp	daily
+card.ana	credit_card_issuer	ANA Cards	missing	Japan	issuer.airline-cards	daily
+card.diners-jp	credit_card_issuer	Diners Club Japan	missing	Japan	issuer.diners-jp	daily
+card.jal	credit_card_issuer	JAL Card	missing	Japan	issuer.airline-cards	daily
+card.mi	credit_card_issuer	MI Card	missing	Japan	issuer.mi-card	daily
+card.recruit	credit_card_issuer	Recruit Card	missing	Japan	issuer.other-major	daily
+card.tscubic	credit_card_issuer	TS CUBIC / Toyota cards	missing	Japan	issuer.other-major	daily
+discovery.jp.card-comparison	discovery	Japanese card comparison and rewards media	missing	Japan	discovery.jp.card-rewards	daily
+discovery.jp.travel-loyalty	discovery	Airline and hotel loyalty discovery media	missing	International	discovery.travel-loyalty	daily
+transit.jrkyushu	e_money_transit	JR KYUPO / SUGOCA / JQ Card	missing	Japan	transit.jrkyushu	daily
+transit.keikyu	e_money_transit	Keikyu Premium Point / Keikyu Card	missing	Japan	transit.tokyo-private-rail	daily
+transit.keio	e_money_transit	Keio Passport Card / Keio Points	missing	Japan	transit.tokyo-private-rail	daily
+transit.manaca	e_money_transit	manaca / μstar points	missing	Japan	transit.chubu	daily
+transit.metpo	e_money_transit	Metro Point Club / To Me CARD	missing	Japan	transit.tokyo-private-rail	daily
+transit.nimoca	e_money_transit	nimoca	missing	Japan	transit.nimoca	daily
+transit.odakyu	e_money_transit	Odakyu OP Point / OP Card	missing	Japan	transit.tokyo-private-rail	daily
+transit.pitapa-spoint	e_money_transit	PiTaPa / S Point / STACIA	missing	Japan	transit.kansai-private-rail	daily
+transit.teppay	e_money_transit	Upcoming teppay code-payment changes	missing	Japan	transit.future-teppay	weekly
+transit.tobu	e_money_transit	TOBU POINT / Tobu Card	missing	Japan	transit.tokyo-private-rail	daily
+transit.toica	e_money_transit	TOICA / TOKAI STATION POINT	missing	Japan	transit.chubu	daily
+hotel.accor	hotel_program	ALL Accor	covered	Japan	hotel.global-accor	daily
+hotel.apa	hotel_program	APA Hotel points / APA card ecosystem	missing	Japan	hotel.jp-other	daily
+hotel.hilton	hotel_program	Hilton Honors	missing	Japan	hotel.global-hilton	daily
+hotel.hyatt	hotel_program	World of Hyatt	partial	Japan	hotel.global-ihg-hyatt	daily
+hotel.ihg	hotel_program	IHG One Rewards	partial	Japan	hotel.global-ihg-hyatt	daily
+hotel.marriott	hotel_program	Marriott Bonvoy	partial	Japan	hotel.global-marriott	daily
+hotel.oneharmony	hotel_program	One Harmony (Okura Nikko)	missing	Japan	hotel.jp-other	daily
+hotel.seibu-prince	hotel_program	Seibu Prince Global Rewards	missing	Japan	hotel.jp-seibu-prince	daily
+hotel.tokyu	hotel_program	Tokyu Hotels Comfort Members	missing	Japan	hotel.jp-tokyu	daily
+merchant.aupay-market	merchant	au PAY Market	missing	Japan	economy.au-ponta	weekly
+merchant.bookoff	merchant	BOOKOFF	missing	Japan	merchant.jp-entertainment	daily
+merchant.cainz	merchant	Cainz	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.cosmo	merchant	Cosmo Oil	missing	Japan	merchant.jp-fuel	weekly
+merchant.cosmos	merchant	Cosmos Drug	missing	Japan	merchant.jp-drugstore	weekly
+merchant.daimaru	merchant	Daimaru Matsuzakaya	missing	Japan	merchant.jp-department	daily
+merchant.dcm	merchant	DCM	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.demaecan	merchant	Demae-can	missing	Japan	merchant.jp-delivery-mobility	daily
+merchant.dshopping	merchant	d Shopping	missing	Japan	economy.docomo	daily
+merchant.go-taxi	merchant	GO Taxi	missing	Japan	merchant.jp-delivery-mobility	daily
+merchant.hands	merchant	Hands	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.ikyu	merchant	Ikyu / Yahoo Travel	missing	Japan	economy.paypay	weekly
+merchant.inageya	merchant	Inageya	missing	Japan	merchant.jp-supermarket	daily
+merchant.jalan	merchant	Jalan / Recruit Points	missing	Japan	merchant.jp-travel-booking	weekly
+merchant.ksdenki	merchant	K's Denki	missing	Japan	merchant.jp-electronics	daily
+merchant.loft	merchant	Loft	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.mitsukoshi-isetan	merchant	Mitsukoshi Isetan / MI Points	missing	Japan	issuer.mi-card	weekly
+merchant.muji	merchant	MUJI	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.nitori	merchant	Nitori	missing	Japan	merchant.jp-home-lifestyle	daily
+merchant.parco	merchant	PARCO	missing	Japan	merchant.jp-general-retail	weekly
+merchant.qoo10	merchant	Qoo10 Japan	missing	Japan	merchant.jp-ecommerce	weekly
+merchant.rakuten-travel	merchant	Rakuten Travel	missing	Japan	economy.rakuten	weekly
+merchant.seibu-sogo	merchant	Seibu / Sogo	missing	Japan	merchant.jp-department	daily
+merchant.seicomart	merchant	Seicomart	missing	Japan	merchant.jp-convenience	weekly
+merchant.takashimaya	merchant	Takashimaya	missing	Japan	merchant.jp-department	weekly
+merchant.times	merchant	Times Club / parking	missing	Japan	merchant.jp-delivery-mobility	daily
+merchant.tomods	merchant	Tomod’s	missing	Japan	merchant.jp-drugstore	weekly
+merchant.tsutaya	merchant	TSUTAYA	missing	Japan	merchant.jp-entertainment	daily
+merchant.uber-eats	merchant	Uber Eats Japan	missing	Japan	merchant.jp-delivery-mobility	daily
+merchant.uniqlo	merchant	UNIQLO/GU	missing	Japan	merchant.jp-general-retail	weekly
+merchant.yaoko	merchant	Yaoko	missing	Japan	merchant.jp-supermarket	weekly
+interface.open-loop-transit	payment_interface	Open-loop contactless transit in Japan	missing	Japan	interface.open-loop-transit	weekly
+interface.samsung-wallet-jp	payment_interface	Samsung Wallet / Samsung Pay in Japan	missing	Japan	interface.mobile-wallets	weekly
+interface.smart-code	payment_interface	Smart Code	missing	Japan	interface.qr-gateways	weekly
+wallet.anapay	payment_wallet	ANA Pay	missing	Japan	wallet.airline-pay	6h
+wallet.coinplus-airwallet	payment_wallet	COIN+ / AirWallet	missing	Japan	wallet.other	6h
+wallet.jalpay	payment_wallet	JAL Pay	missing	Japan	wallet.airline-pay	6h
+wallet.kyash	payment_wallet	Kyash	missing	Japan	wallet.prepaid	6h
+wallet.toyota	payment_wallet	Toyota Wallet	missing	Japan	wallet.other	6h
+wallet.wesmo	payment_wallet	Wesmo!	missing	Japan	transit.icoca-wester-jwest	daily
+wallet.yuchopay	payment_wallet	Yucho Pay	missing	Japan	wallet.bank-payments	daily
+point.amazon-jp	point_program	Amazon Points Japan	missing	Japan	merchant.jp-ecommerce	daily
+point.majica	point_program	majica points	missing	Japan	merchant.jp-general-retail	daily
+point.mi	point_program	MI Points	missing	Japan	issuer.mi-card	daily
+point.recruit	point_program	Recruit Points	missing	Japan	economy.au-ponta	daily
+point.seibu-smile	point_program	SEIBU Smile / Hotel & Leisure Points	missing	Japan	hotel.jp-seibu-prince	daily
+point.seven-mile	point_program	Seven Mile Program	missing	Japan	economy.seven-nanaco	daily
+point.tokyu	point_program	TOKYU POINT / Comfort Points	missing	Japan	ecosystem.tokyu	daily
