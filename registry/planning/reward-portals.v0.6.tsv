@@ -1,0 +1,27 @@
+family_id	kind	provider_or_scope	priority	status_2026_08_20	stream	representative_url	notes
+portal.hapitas	general_point_site	Hapitas	P1	covered	portal.jp-major	https://hapitas.jp/	Major shopping/service portal; monitor merchant offers, exchange routes, notices and rank benefits.
+portal.moppy	general_point_site	Moppy	P1	covered	portal.jp-major	https://pc.moppy.jp/	Major point site.
+portal.warau	general_point_site	Warau	P1	new_addition	portal.jp-major	https://www.warau.jp/	Active broad point site; shopping, cards, travel and 40+ exchange destinations.
+portal.gmo-poikatsu	general_point_site	GMO PoiKatsu	P1	new_addition	portal.jp-major	https://colleee.net/	Former Colleee/GMO ecosystem; broad shopping/card/travel offers and exchange routes.
+portal.nifty-point-club	general_point_site	Nifty Point Club	P1	new_addition	portal.jp-major	https://point.nifty.com/	Former LifeMedia; shopping/services, campaigns and point exchange.
+portal.rakuten-rebates	general_point_site	Rakuten Rebates	P1	covered	portal.jp-major	https://www.rebates.jp/	Shopping cashback/points portal.
+portal.chobirich	general_point_site	Chobirich	P2	missing	portal.jp-long-tail	https://www.chobirich.com/	Secondary point site.
+portal.ecnavi	general_point_site	EC Navi	P2	missing	portal.jp-long-tail	https://ecnavi.jp/	Secondary point site.
+portal.pointincome	general_point_site	Point Income	P2	missing	portal.jp-long-tail	https://pointi.jp/	Secondary point site.
+portal.pointtown	general_point_site	PointTown by GMO	P2	missing	portal.jp-long-tail	https://www.pointtown.com/	Large/long-running GMO point site.
+portal.powl	general_point_site	Powl	P2	missing	portal.jp-long-tail	https://web.powl.jp/	Secondary point site/app.
+portal.chanceit	general_point_site	Chance It	P2	new_addition	portal.jp-long-tail	https://www.chance.com/	Active shopping/points/monitor/campaign site; include exchange and merchant offers.
+portal.amefri	general_point_site	Amefuri	P2	new_addition	portal.jp-long-tail	https://www.amefri.net/	Active point media with shopping, cards, travel and exchange routes.
+portal.getmoney	general_point_site	GetMoney!	P3	missing	portal.jp-long-tail	https://dietnavi.com/	Long-tail; verify current economics before support.
+portal.sugutama	general_point_site	Sugutama	P3	new_addition	portal.jp-long-tail	https://www.sugutama.jp/	NetMile-linked point site; active operator documentation exists; verify current front-end accessibility.
+portal.pex	point_exchange_hub	PeX	P1	missing	portal.jp-exchange	https://pex.jp/	Exchange hub; model conversion rates/fees/minimums separately from shopping portals.
+portal.dotmoney	point_exchange_hub	DotMoney	P1	missing	portal.jp-exchange	https://d-money.jp/	Exchange hub; important for transfer bonuses and indirect routes.
+portal.gpoint	point_exchange_hub	G-Point	P1	missing	portal.jp-exchange	https://www.gpoint.co.jp/	Exchange hub and shopping/services.
+portal.netmile	point_exchange_hub	NetMile	P3	missing	portal.jp-exchange	https://www.netmile.co.jp/	Exchange hub linked to Sugutama.
+portal.ana-mileage-mall	airline_shopping_portal	ANA Mileage Mall	P2	covered	portal.airline-shopping	https://mileagemall.ana.co.jp/	Mileage earning via merchant click-through.
+portal.jal-mileage-park	airline_shopping_portal	JAL Mileage Park	P2	covered	portal.airline-shopping	https://partner.jal.co.jp/	Mileage earning via merchants/partners.
+portal.card-malls	issuer_shopping_mall_group	Issuer shopping malls	P2	missing	portal.card-malls	https://tamaru.eposcard.co.jp/	Split into issuer-specific child families if economics/maintenance justify it; includes EPOS, Saison, AEON, JCB, MUFG, JACCS etc.
+portal.cashbackmonitor	discovery_comparison	Cashback Monitor	P3	covered	discovery.global-cashback	https://www.cashbackmonitor.com/	Discovery/comparison only; never canonical merchant economics.
+portal.rakuten-us	international_cashback	Rakuten US	P3	covered	portal.global-cashback	https://www.rakuten.com/	International; activate only for relevant user journeys.
+portal.shopback	international_cashback	ShopBack	P3	covered	portal.global-cashback	https://www.shopback.com/	International/region dependent.
+portal.topcashback	international_cashback	TopCashback	P3	covered	portal.global-cashback	https://www.topcashback.com/	International; activate only where usable for Japan-based user route.
