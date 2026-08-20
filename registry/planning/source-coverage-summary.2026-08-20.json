@@ -1,0 +1,50 @@
+{
+  "research_date": "2026-08-20",
+  "source_family_count": 255,
+  "stream_count": 95,
+  "by_priority": {
+    "P0": 44,
+    "P1": 73,
+    "P2": 101,
+    "P3": 37
+  },
+  "by_status": {
+    "covered": 48,
+    "partial": 20,
+    "missing": 187
+  },
+  "by_category": {
+    "credit_card_issuer": 29,
+    "e_money_transit": 20,
+    "merchant": 86,
+    "payment_wallet": 19,
+    "point_program": 24,
+    "regulatory": 4,
+    "airline_program": 20,
+    "card_network": 5,
+    "cashback_portal": 20,
+    "discovery": 5,
+    "payment_interface": 5,
+    "hotel_program": 18
+  },
+  "tier_rollout": {
+    "P0_launch_core": {
+      "family_count": 44,
+      "stream_count": 19
+    },
+    "P0_P1_nationwide_daily_life": {
+      "family_count": 117,
+      "stream_count": 42
+    },
+    "P0_P1_P2_travel_and_breadth": {
+      "family_count": 218,
+      "stream_count": 86
+    },
+    "all_planned": {
+      "family_count": 255,
+      "stream_count": 95
+    }
+  },
+  "baseline_page_records": 140,
+  "recommended_next_step": "Import P0 plus selected P1 families, then run a 30-day two-lane rehearsal."
+}
