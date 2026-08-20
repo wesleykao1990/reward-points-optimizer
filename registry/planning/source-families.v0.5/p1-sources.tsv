@@ -1,0 +1,74 @@
+family_id	url_verification	representative_official_urls	notes
+airline.ana	existing_or_web_verified	https://www.ana.co.jp/ja/jp/amc/ | https://www.ana.co.jp/en/jp/shoppingandlife/point/	
+airline.jal	existing_or_web_verified	https://www.jal.co.jp/ja-jp/jalmile/ | https://www.jal.co.jp/ja-jp/campaign/mileage.html	
+network.jcb-jp	existing_or_web_verified	https://www.jcb.co.jp/campaign/ | https://www.jcb.co.jp/ordercard/add/quicpay/	
+portal.dotmoney	existing_or_web_verified	https://d-money.jp/	
+portal.gpoint	existing_or_web_verified	https://www.gpoint.co.jp/	
+portal.hapitas	existing_or_web_verified	https://hapitas.jp/	
+portal.moppy	existing_or_web_verified	https://pc.moppy.jp/	
+portal.pex	existing_or_web_verified	https://pex.jp/ | https://pex.jp/exchange	
+portal.rakuten-rebates	existing_or_web_verified	https://www.rebates.jp/	
+card.epos	existing_or_web_verified	https://www.eposcard.co.jp/	
+card.jaccs	existing_or_web_verified	https://www.jaccs.co.jp/	
+card.jcb	existing_or_web_verified	https://www.jcb.co.jp/	
+card.life	existing_or_web_verified	https://www.lifecard.co.jp/ | https://vpc.lifecard.co.jp/	
+card.mercard	candidate_to_verify	https://www.mercard.com/	Card reward and marketplace-specific overlay.
+card.mufg	existing_or_web_verified	https://www.cr.mufg.jp/	
+card.orico	existing_or_web_verified	https://www.orico.co.jp/	
+card.saison-uc	existing_or_web_verified	https://www.saisoncard.co.jp/	
+card.seven	existing_or_web_verified	https://www.7card.co.jp/	
+discovery.jp.market-research	existing_or_web_verified	https://mmdlabo.jp/ | https://www.nri.com/jp/	Discovery/prioritization only; never canonical reward evidence.
+discovery.jp.municipal-cashless	candidate_to_verify	https://www.soumu.go.jp/	Dynamic family: wallet campaign directories identify municipalities; onboard each municipality official notice as co-authority.
+discovery.jp.payment-news	candidate_to_verify	https://www.watch.impress.co.jp/ | https://paymentnavi.com/ | https://www.traicy.com/	Use only to discover changes and locate official sources.
+contactless.id	existing_or_web_verified	https://id-credit.com/	
+contactless.quicpay	existing_or_web_verified	https://www.quicpay.jp/ | https://www.quicpay.jp/campaign/	
+emoney.rakuten-edy	existing_or_web_verified	https://edy.rakuten.co.jp/	
+transit.icoca	existing_or_web_verified	https://wester.jr-odekake.net/	
+transit.pasmo	existing_or_web_verified	https://www.pasmo.co.jp/ | https://www.pasmo.co.jp/charge/autocharge/application/	
+merchant.apollostation	existing_registry	https://www.idemitsu.com/jp/apollostation/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.daily-yamazaki	candidate_to_verify	https://www.daily-yamazaki.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.donki	candidate_to_verify	https://www.donki.com/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.doutor	existing_registry	https://www.doutor.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.edion	candidate_to_verify	https://www.edion.com/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.eneos	candidate_to_verify	https://www.eneos.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.joshin	candidate_to_verify	https://www.joshin.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.kfc	candidate_to_verify	https://www.kfc.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.kurasushi	candidate_to_verify	https://www.kurasushi.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.life-supermarket	candidate_to_verify	https://www.lifecorp.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.lumine	candidate_to_verify	https://www.lumine.ne.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.maruetsu	candidate_to_verify	https://www.maruetsu.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.marui	existing_registry	https://www.0101.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.matsuya	candidate_to_verify	https://www.matsuyafoods.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.mercari	existing_registry	https://jp.mercari.com/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.mos	candidate_to_verify	https://www.mos.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.nojima	candidate_to_verify	https://www.nojima.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.ok-store	candidate_to_verify	https://ok-corporation.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.saizeriya	candidate_to_verify	https://www.saizeriya.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.seiyu	candidate_to_verify	https://www.seiyu.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.skylark	candidate_to_verify	https://www.skylark.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.sugi	candidate_to_verify	https://www.sugi-net.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.sukiya	candidate_to_verify	https://www.sukiya.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.summit	candidate_to_verify	https://www.summitstore.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.sundrug	candidate_to_verify	https://www.sundrug.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.sushiro	candidate_to_verify	https://www.akindo-sushiro.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.tokyu-store	candidate_to_verify	https://www.tokyu-store.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.tsuruha	candidate_to_verify	https://www.tsuruha.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.tullys	candidate_to_verify	https://www.tullys.co.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.yamada	candidate_to_verify	https://www.yamada-denki.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.yoshinoya	candidate_to_verify	https://www.yoshinoya.com/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+merchant.zozo	existing_registry	https://zozo.jp/	Exact payment/loyalty/campaign role pages must be captured before the merchant is marked supported.
+interface.apple-pay-jp	existing_or_web_verified	https://support.apple.com/ja-jp/apple-pay | https://support.apple.com/ja-jp/102897 | https://support.apple.com/ja-jp/120474	
+interface.google-wallet-jp	existing_or_web_verified	https://wallet.google/intl/ja_jp/	
+wallet.bankpay	existing_or_web_verified	https://www.bankpay.jp/	
+wallet.jcoin	existing_or_web_verified	https://j-coin.jp/	
+wallet.merpay	existing_or_web_verified	https://www.merpay.com/ | https://jp-news.mercari.com/	
+wallet.vpoint-pay	candidate_to_verify	https://www.smbc-card.com/mem/vpointpay/index.jsp	Stored-value and charge-route overlay.
+point.epos	existing_or_web_verified	https://www.eposcard.co.jp/ | https://tamaru.eposcard.co.jp/	
+point.famima	existing_or_web_verified	https://www.family.co.jp/famipay.html	Keep reward classes and coupon/game rewards separate.
+point.jaccs	existing_or_web_verified	https://www.jaccs.co.jp/	
+point.jcb-jpoint	existing_or_web_verified	https://www.jcb.co.jp/point/	
+point.life	existing_or_web_verified	https://www.lifecard.co.jp/	
+point.mercari	candidate_to_verify	https://help.jp.mercari.com/	Includes limited points and campaign rewards.
+point.mufg-global	existing_or_web_verified	https://www.cr.mufg.jp/	
+point.orico	existing_or_web_verified	https://www.orico.co.jp/	
+point.saison	existing_or_web_verified	https://www.saisoncard.co.jp/ | https://storee.saisoncard.co.jp/	
