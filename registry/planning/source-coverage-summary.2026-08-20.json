@@ -1,17 +1,18 @@
 {
   "research_date": "2026-08-20",
-  "source_family_count": 255,
+  "context_version": "v0.6",
+  "source_family_count": 261,
   "stream_count": 95,
   "by_priority": {
     "P0": 44,
-    "P1": 73,
-    "P2": 101,
-    "P3": 37
+    "P1": 76,
+    "P2": 103,
+    "P3": 38
   },
   "by_status": {
     "covered": 48,
     "partial": 20,
-    "missing": 187
+    "missing": 193
   },
   "by_category": {
     "credit_card_issuer": 29,
@@ -22,7 +23,7 @@
     "regulatory": 4,
     "airline_program": 20,
     "card_network": 5,
-    "cashback_portal": 20,
+    "cashback_portal": 26,
     "discovery": 5,
     "payment_interface": 5,
     "hotel_program": 18
@@ -33,18 +34,29 @@
       "stream_count": 19
     },
     "P0_P1_nationwide_daily_life": {
-      "family_count": 117,
+      "family_count": 120,
       "stream_count": 42
     },
     "P0_P1_P2_travel_and_breadth": {
-      "family_count": 218,
+      "family_count": 223,
       "stream_count": 86
     },
     "all_planned": {
-      "family_count": 255,
+      "family_count": 261,
       "stream_count": 95
     }
   },
   "baseline_page_records": 140,
-  "recommended_next_step": "Import P0 plus selected P1 families, then run a 30-day two-lane rehearsal."
+  "v0_6_additions": {
+    "reward_portal_families_added": 6,
+    "families": [
+      "portal.warau",
+      "portal.gmo-poikatsu",
+      "portal.nifty-point-club",
+      "portal.chanceit",
+      "portal.amefri",
+      "portal.sugutama"
+    ]
+  },
+  "recommended_next_step": "Import P0 plus selected P1 families, pilot unknown-world discovery streams, then run the two-lane maintenance rehearsal."
 }
