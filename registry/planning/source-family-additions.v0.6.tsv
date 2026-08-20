@@ -1,0 +1,7 @@
+family_id	category	provider_or_scope	priority	current_registry_status	scope	agent_feed_stream	recommended_cadence	representative_official_urls	notes
+portal.warau	cashback_portal	Warau	P1	missing	Japan	portal.jp-major	6h	https://www.warau.jp/	Add merchant-offer, exchange-route, rank/bonus, campaign and notice roles.
+portal.gmo-poikatsu	cashback_portal	GMO PoiKatsu	P1	missing	Japan	portal.jp-major	6h	https://colleee.net/	Former Colleee/GMO ecosystem; include merchant offers, exchange routes, rank benefits and notices.
+portal.nifty-point-club	cashback_portal	Nifty Point Club	P1	missing	Japan	portal.jp-major	6h	https://point.nifty.com/	Former LifeMedia; monitor merchant offers, exchange campaigns and service notices.
+portal.chanceit	cashback_portal	Chance It	P2	missing	Japan	portal.jp-long-tail	6h	https://www.chance.com/	Shopping/points/campaign/monitor portal; separate contest-only content from economically usable portal routes.
+portal.amefri	cashback_portal	Amefuri	P2	missing	Japan	portal.jp-long-tail	6h	https://www.amefri.net/	Monitor shopping/service offers, point exchange, rank/bonus and notices.
+portal.sugutama	cashback_portal	Sugutama	P3	missing	Japan	portal.jp-long-tail	weekly	https://www.sugutama.jp/ | https://biz.netmile.co.jp/service/point_media.html	NetMile-linked point site; verify current live route/availability before product support.
