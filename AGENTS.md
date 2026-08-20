@@ -11,15 +11,16 @@ Before making product, data-model, monitoring, or source-coverage changes, read:
 3. `docs/04_implementation_plan.md`
 4. `docs/20_source_coverage_strategy_2026-08-20.md`
 5. `registry/planning/source-families.v0.5/`
-6. `docs/21_product_catalogue_plan.md`
-7. `docs/22_p0_source_onboarding_exec_plan.md`
-8. `docs/23_source_coverage_research_audit_2026-08-20.md`
-9. `docs/01_trust_and_provenance_policy.md`
-10. `docs/15_agent_feed_integration.md`
-11. `docs/17_monitoring_producer_contract.md`
-12. the relevant active implementation prompt or milestone document.
+6. `registry/planning/source-coverage-summary.2026-08-20.json`
+7. `docs/21_product_catalogue_plan.md`
+8. `docs/22_p0_source_onboarding_exec_plan.md`
+9. `docs/23_source_coverage_research_audit_2026-08-20.md`
+10. `docs/01_trust_and_provenance_policy.md`
+11. `docs/15_agent_feed_integration.md`
+12. `docs/17_monitoring_producer_contract.md`
+13. the relevant active implementation prompt or milestone document.
 
-Use `docs/24_full_source_family_directory_v0.5.md` when a human-readable directory is helpful. Use the priority-split TSV registries under `registry/planning/source-families.v0.5/` for programmatic filtering and implementation planning.
+Use the priority-split TSV registries under `registry/planning/source-families.v0.5/` for programmatic filtering and implementation planning. `prompts/CODEX_READ_SOURCE_COVERAGE_CONTEXT.md` is the reusable prompt for explicitly loading and summarizing this context at the start of a Codex session.
 
 ## Non-negotiable invariants
 
@@ -55,4 +56,4 @@ Example: `card.smbc` is one monitored issuer family but may map to many user-sel
 
 ## Working rule
 
-When asked to add coverage, first locate the relevant family in the appropriate priority TSV under `registry/planning/source-families.v0.5/` and inspect `required_source_roles`, then update canonical source/evidence records and product mappings separately. Never collapse planning coverage into production truth.
+When asked to add coverage, first locate the relevant family in the appropriate priority TSV under `registry/planning/source-families.v0.5/` and inspect the source-role requirements for its category, then update canonical source/evidence records and product mappings separately. Never collapse planning coverage into production truth.
