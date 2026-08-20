@@ -1,0 +1,38 @@
+family_id	url_verification	representative_official_urls	notes
+airline.aadvantage	existing_or_web_verified	https://www.aa.com/i18n/aadvantage-program/aadvantage-program.jsp	
+airline.alaska	existing_or_web_verified	https://www.alaskaair.com/content/mileage-plan	
+airline.etihad	existing_or_web_verified	https://www.etihad.com/en/etihadguest	
+airline.eva	existing_or_web_verified	https://www.evaair.com/	
+airline.qantas	existing_or_web_verified	https://www.qantas.com/jp/en/frequent-flyer.html	
+airline.turkish	existing_or_web_verified	https://www.turkishairlines.com/en-int/miles-and-smiles/	
+airline.united	existing_or_web_verified	https://www.united.com/	
+portal.cashbackmonitor	existing_or_web_verified	https://www.cashbackmonitor.com/	Discovery/comparison only; validate against portal and merchant.
+portal.getmoney	existing_or_web_verified	https://dietnavi.com/	
+portal.netmile	existing_or_web_verified	https://www.netmile.co.jp/	
+portal.rakuten-us	existing_or_web_verified	https://www.rakuten.com/	International
+portal.shopback	existing_or_web_verified	https://www.shopback.com/	International
+portal.topcashback	existing_or_web_verified	https://www.topcashback.com/	International
+card.aplus	existing_or_web_verified	https://www.aplus.co.jp/	
+card.netbk-debit	candidate_to_verify	https://www.netbk.co.jp/contents/lineup/debitcard/	Debit route; include only when debit optimization is exposed.
+card.resona-debit	candidate_to_verify	https://www.resonabank.co.jp/kojin/visa_debit/	Debit route; include only when debit optimization is exposed.
+card.sevenbank-debit	candidate_to_verify	https://www.sevenbank.co.jp/personal/account/jcb_debit/	Debit and nanaco overlay.
+card.sonybankwallet	candidate_to_verify	https://moneykit.net/visitor/sbw/	Debit/travel route; include only when debit optimization is exposed.
+transit.sapica	candidate_to_verify	https://www.sapica.jp/	Onboard when Hokkaido coverage is exposed.
+hotel.bestwestern	existing_or_web_verified	https://www.bestwestern.com/en_US/rewards.html	
+hotel.choice	existing_or_web_verified	https://www.choicehotels.com/choice-privileges	
+hotel.gha	existing_or_web_verified	https://www.ghadiscovery.com/	
+hotel.jrhotelmembers	existing_or_web_verified	https://www.jrhotel-m.jp/	
+hotel.radisson	existing_or_web_verified	https://www.radissonhotels.com/en-us/rewards	
+hotel.routeinn	existing_or_web_verified	https://www.route-inn.co.jp/	
+hotel.shangrila	existing_or_web_verified	https://www.shangri-la.com/shangrilacircle/	
+hotel.toyoko	existing_or_web_verified	https://www.toyoko-inn.com/	
+hotel.wyndham	existing_or_web_verified	https://www.wyndhamhotels.com/wyndham-rewards	
+merchant.aeon-cinema	candidate_to_verify	https://www.aeoncinema.com/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.animate	candidate_to_verify	https://www.animate.co.jp/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.ikea-jp	candidate_to_verify	https://www.ikea.com/jp/ja/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.kinokuniya	candidate_to_verify	https://www.kinokuniya.co.jp/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.menu-delivery	candidate_to_verify	https://app.menu.jp/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.toho-cinemas	candidate_to_verify	https://www.tohotheater.jp/	Exact payment/loyalty/campaign role pages must be captured before support.
+merchant.uber-jp	candidate_to_verify	https://www.uber.com/jp/ja/	Exact payment/loyalty/campaign role pages must be captured before support.
+wallet.revolut-jp	existing_or_web_verified	https://www.revolut.com/ja-JP/ | https://www.revolut.com/ja-JP/legal/	
+wallet.wise	candidate_to_verify	https://wise.com/jp/	Travel-payment optimization; primarily fees/FX rather than rewards.
