@@ -20,6 +20,11 @@ These values were independently recomputed from the published tarball after
 release. Floating registry ranges, branch URLs, workspace links, and sibling
 source imports do not satisfy this boundary.
 
+CI keeps the offline foundation validator and package checksum check separate
+from `scripts/verify_agent_feed_artifact.py`. The latter is the explicit
+networked check: it fetches the pinned URL with bounded size/time and verifies
+the downloaded bytes against the locked length, SHA-256, and SHA-512 SRI.
+
 The projects must not:
 
 - share application tables;

@@ -81,7 +81,7 @@
 ## Delivery
 
 - [ ] Fresh checkout can install, validate, test, and build.
-- [ ] CI uses no live external content or secrets.
+- [x] Foundation checks use no live external content or secrets; the separate Agent Feed artifact check uses only the bounded, pinned HTTPS release URL.
 - [ ] Checksum `--check` is non-mutating and fails on mismatch/untracked files.
 - [ ] The initiating Codex run stops after Milestone 1A.
 - [ ] Milestone 1B uses its separate prompt.

@@ -33,6 +33,12 @@ jobs:
       - name: Verify package integrity
         run: python scripts/generate_checksums.py --check
 
+      - name: Verify pinned Agent Feed schema artifact bytes
+        run: python scripts/verify_agent_feed_artifact.py
+
+      - name: Test Agent Feed artifact verifier
+        run: python -m unittest tests/test_verify_agent_feed_artifact.py
+
       - name: Validate foundation contracts
         run: python scripts/validate_package.py
 
