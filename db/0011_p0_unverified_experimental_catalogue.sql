@@ -216,6 +216,30 @@ select
 comment on view app_api.p0_unverified_experimental_catalogue is
     'Private correction-sensitive Nanaco economic canary catalogue; machine_checked data is experimental and never canonical truth.';
 
+-- Explicit effective-time projection for current catalogue/recommendation
+-- consumers. The base view intentionally remains deterministic and
+-- lifecycle-only so historical SQL tests and replay tooling do not depend on
+-- CURRENT_TIMESTAMP.
+create or replace function app_api.p0_unverified_experimental_catalogue_at(
+    p_effective_at timestamptz
+)
+returns setof app_api.p0_unverified_experimental_catalogue
+language sql
+stable
+security invoker
+set search_path = pg_catalog
+as $$
+    select candidate.*
+      from app_api.p0_unverified_experimental_catalogue as candidate
+     where app_private.provisional_rule_valid_at(
+               candidate.candidate_payload,
+               p_effective_at
+           )
+$$;
+
+revoke all on function app_api.p0_unverified_experimental_catalogue_at(timestamptz)
+    from public;
+
 revoke all on app_api.p0_unverified_experimental_catalogue from public;
 revoke execute on function app_private.persist_p0_economic_candidate(text,text,jsonb)
     from public;

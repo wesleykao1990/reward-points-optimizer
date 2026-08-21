@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import { types as nodeTypes } from "node:util";
 import type {
+  P0ImplementationCatalogueOptions,
   P0ImplementationCatalogueStore,
   P0ImplementationFact,
   P0ImplementationFactCorrectionResult,
@@ -423,9 +424,19 @@ function isPostgresStore(
  */
 export function createPostgresImplementationFactCataloguePort(
   store: P0ImplementationCatalogueStore,
+  options: P0ImplementationCatalogueOptions = {},
 ): ImplementationFactCataloguePort {
+  if (options.clock !== undefined && options.now !== undefined)
+    throw new TypeError("p0_implementation_clock_ambiguous");
+  const clock = options.clock ?? options.now ?? (() => new Date());
   return Object.freeze({
     async list(): Promise<ImplementationFactCatalogueSnapshot> {
+      const clockValue = clock();
+      const effectiveAt =
+        clockValue instanceof Date ? clockValue : new Date(clockValue);
+      if (!Number.isFinite(effectiveAt.getTime()))
+        throw new TypeError("p0_implementation_clock_invalid");
+      const snapshotEffectiveAt = effectiveAt.toISOString();
       const records: P0ImplementationFact[] = [];
       let cursor: string | undefined;
       for (
@@ -435,6 +446,7 @@ export function createPostgresImplementationFactCataloguePort(
       ) {
         const result = await store.search({
           limit: DATABASE_PAGE_SIZE,
+          effective_at: snapshotEffectiveAt,
           ...(cursor === undefined ? {} : { cursor }),
         });
         records.push(...result.facts);

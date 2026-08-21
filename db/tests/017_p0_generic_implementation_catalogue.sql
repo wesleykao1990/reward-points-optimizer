@@ -19,6 +19,10 @@ declare
     v_before_rules integer;
     v_before_versions integer;
     v_before_evidence integer;
+    v_current_facts integer;
+    v_later_facts integer;
+    v_current_campaigns integer;
+    v_later_campaigns integer;
     v_sqlstate text;
     v_options text[];
     v_is_definer boolean;
@@ -71,6 +75,165 @@ begin
        or (select count(*) from app_api.p0_active_implementation_facts where family_id = 'point.paypay') <> 22
     then
         raise exception 'P0 implementation family distribution is incorrect';
+    end if;
+
+    -- Effective-at filtering is a projection concern only: all immutable
+    -- facts remain stored, while the browse-only current projection changes
+    -- at the declared top-level campaign boundaries.
+    select count(*) into v_current_facts
+      from app_private.p0_active_implementation_fact_rows_at(
+          '2026-08-22T00:00:00+09:00'::timestamptz
+      );
+    select count(*) into v_later_facts
+      from app_private.p0_active_implementation_fact_rows_at(
+          '2026-09-01T00:00:00+09:00'::timestamptz
+      );
+    select count(*) into v_current_campaigns
+      from app_private.p0_active_implementation_fact_rows_at(
+          '2026-08-22T00:00:00+09:00'::timestamptz
+      )
+     where claim_type = 'campaign_period';
+    select count(*) into v_later_campaigns
+      from app_private.p0_active_implementation_fact_rows_at(
+          '2026-09-01T00:00:00+09:00'::timestamptz
+      )
+     where claim_type = 'campaign_period';
+    if v_current_facts <> 115
+       or v_later_facts <> 85
+       or v_current_campaigns <> 9
+       or v_later_campaigns <> 4
+    then
+        raise exception 'effective-at implementation projection did not change without deleting history';
+    end if;
+    if (select count(*) from app_private.p0_implementation_facts) <> v_before_facts
+       or (select count(*) from app_api.p0_active_implementation_facts) <> 364
+    then
+        raise exception 'effective-at implementation projection changed immutable history';
+    end if;
+    if not exists (
+        select 1
+          from app_private.p0_implementation_facts as fact
+         where fact.claim_type = 'campaign_period'
+           and fact.family_id = 'point.ponta'
+           and fact.parent_claim_id = 'claim.point.ponta.campaign.summer-period.001'
+           and app_private.p0_implementation_window_active(
+               fact.claim_type,
+               fact.reason,
+               fact.applicability,
+               '2026-08-22T00:00:00+09:00'::timestamptz
+           )
+    ) then
+        raise exception 'active Ponta campaign was hidden at its effective date';
+    end if;
+    if not exists (
+        select 1
+          from app_private.p0_implementation_facts as fact
+         where fact.claim_type = 'campaign_period'
+           and fact.family_id = 'point.waon'
+           and fact.parent_claim_id = 'claim.point.waon.campaign.charge-period.001'
+           and app_private.p0_implementation_window_active(
+               fact.claim_type,
+               fact.reason,
+               fact.applicability,
+               '2026-08-22T00:00:00+09:00'::timestamptz
+           )
+    ) then
+        raise exception 'active WAON campaign was hidden at its effective date';
+    end if;
+    if exists (
+        select 1
+         from app_private.p0_active_implementation_fact_rows_at(
+              '2026-08-22T00:00:00+09:00'::timestamptz
+          )
+         where subject like 'Vポイントアプリ新規ダウンロードキャンペーン%'
+    ) then
+        raise exception 'ended V campaign sibling facts leaked into the current projection';
+    end if;
+    if (
+        select count(*)
+          from app_private.p0_active_implementation_fact_rows_at(
+              '2026-08-22T00:00:00+09:00'::timestamptz
+          )
+         where subject = 'Pontaサマーキャンペーン2026'
+    ) <> 5 then
+        raise exception 'active Ponta campaign sibling facts were hidden';
+    end if;
+    if app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-13T23:59:59+09:00'::timestamptz
+       )
+       or not app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-14T00:00:00+09:00'::timestamptz
+       )
+       or not app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-31T23:59:59+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-09-01T00:00:00+09:00'::timestamptz
+       )
+    then
+        raise exception 'campaign effective-at boundaries are not inclusive local calendar days';
+    end if;
+    if app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"bad","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-31","timezone":"UTC"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-02-31","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{"effective_from":"2026-08-14","effective_to":"2026-08-13","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_period', 'non_calculable_fact',
+           '{}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+    then
+        raise exception 'malformed or missing campaign windows were not fail-closed';
+    end if;
+    if app_private.p0_implementation_window_active(
+           'change_notice', 'ended_or_future_inactive', '{}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or not app_private.p0_implementation_window_active(
+           'change_notice', 'ended_or_future_inactive',
+           '{"effective_from":"2026-08-01","effective_to":"2026-08-31","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or not app_private.p0_implementation_window_active(
+           'earn_rule', 'non_calculable_fact', '{}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+       or app_private.p0_implementation_window_active(
+           'campaign_rule', 'insufficient_operation_mapping',
+           '{"effective_from":"2026-04-22","effective_to":"2026-06-30","timezone":"Asia/Tokyo"}'::jsonb,
+           '2026-08-22T00:00:00+09:00'::timestamptz
+       )
+    then
+        raise exception 'non-campaign compatibility window semantics are incorrect';
     end if;
     if exists (
         select 1
@@ -336,6 +499,16 @@ begin
            'app_private.p0_active_implementation_fact_rows()',
            'execute'
        )
+       or has_function_privilege(
+           'public',
+           'app_private.p0_active_implementation_fact_rows_at(timestamptz)',
+           'execute'
+       )
+       or has_function_privilege(
+           'public',
+           'app_private.p0_implementation_window_active(text,text,jsonb,timestamptz)',
+           'execute'
+       )
     then
         raise exception 'generic implementation ACL/view security is too broad';
     end if;
@@ -361,6 +534,7 @@ begin
     execute 'grant usage on schema app_private to p0_impl_adapter_test';
     execute 'grant select on app_api.p0_active_implementation_facts to p0_impl_adapter_test';
     execute 'grant execute on function app_private.p0_active_implementation_fact_rows() to p0_impl_adapter_test';
+    execute 'grant execute on function app_private.p0_active_implementation_fact_rows_at(timestamptz) to p0_impl_adapter_test';
     if has_table_privilege('p0_impl_adapter_test', 'app_private.p0_implementation_facts', 'select') then
         raise exception 'restricted implementation adapter role can read private facts';
     end if;
@@ -369,10 +543,15 @@ $role_test$;
 
 set role p0_impl_adapter_test;
 select count(*) from app_api.p0_active_implementation_facts;
+select count(*) from app_private.p0_active_implementation_fact_rows_at(
+    '2026-08-22T00:00:00+09:00'::timestamptz
+);
 reset role;
 
 revoke select on app_api.p0_active_implementation_facts from p0_impl_adapter_test;
 revoke execute on function app_private.p0_active_implementation_fact_rows()
+    from p0_impl_adapter_test;
+revoke execute on function app_private.p0_active_implementation_fact_rows_at(timestamptz)
     from p0_impl_adapter_test;
 revoke usage on schema app_private from p0_impl_adapter_test;
 revoke usage on schema app_api from p0_impl_adapter_test;

@@ -454,6 +454,22 @@ export function admitNanacoEconomicPilot(
 }
 
 /**
+ * Trusted-host accessors for the sealed executable artifact.  These return
+ * defensive copies; callers cannot mutate the generated candidate that is
+ * used by admission and lifecycle checks.  They are intentionally not part
+ * of any browser DTO.
+ */
+export function getNanacoEconomicPilotCandidate(): ProvisionalRuleCandidate {
+  pilotArtifactCheck();
+  return structuredClone(NANACO_PILOT_CANDIDATE);
+}
+
+export function getNanacoEconomicPilotRule(): ProvisionalRuleCandidate["rule"] {
+  pilotArtifactCheck();
+  return structuredClone(NANACO_PILOT_CANDIDATE.rule);
+}
+
+/**
  * Activate only an exact sealed nanaco candidate whose observation has the
  * canonical shopping-earning evidence and complete review-ready status. The
  * host-supplied verifier is awaited because the observation's evidence ID is

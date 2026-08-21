@@ -10,6 +10,9 @@ import { fileURLToPath } from "node:url";
 import type {
   ExperimentalCataloguePort,
   ExperimentalCorrectionInput,
+  ExperimentalRecommendationInput,
+  ExperimentalRecommendationPort,
+  ExperimentalRecommendationResult,
   ImplementationFactCataloguePort,
   ImplementationFactCorrectionInput,
 } from "./contracts.js";
@@ -18,8 +21,10 @@ import {
   isCanonicalRecommendationId,
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
+  MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES,
   parseCorrectionDraft,
   parseExperimentalCorrection,
+  parseExperimentalRecommendation,
   parseImplementationFactCorrection,
   parseManualAlphaState,
 } from "./contracts.js";
@@ -39,11 +44,17 @@ import {
   listExperimentalCatalogue,
   reportExperimentalCorrection,
 } from "./provisional-catalog.js";
+import {
+  createUnavailableNanacoExperimentalRecommendationPort,
+  ExperimentalRecommendationError,
+} from "./real-experimental-recommendation.js";
+import { createPostgresAppRuntime } from "./runtime.js";
 import { evaluateSynthetic, SYNTHETIC_ALPHA_CONFIG } from "./synthetic.js";
 
 export {
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
+  MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES,
 } from "./contracts.js";
 
 export const LOCALHOST_BIND_HOST = "127.0.0.1" as const;
@@ -107,6 +118,7 @@ export interface AppResponse {
  */
 export interface AppDependencies {
   readonly experimentalCatalogue?: ExperimentalCataloguePort;
+  readonly experimentalRecommendation?: ExperimentalRecommendationPort;
   readonly implementationFacts?: ImplementationFactBackend;
   /** Descriptive alias accepted for the implementation-fact port. */
   readonly implementationCatalogue?: ImplementationFactBackend;
@@ -116,8 +128,32 @@ export interface AppDependencies {
 
 export type AppCatalogueDependency =
   | ExperimentalCataloguePort
+  | ExperimentalRecommendationPort
   | ImplementationFactBackend
   | AppDependencies;
+
+function resolveExperimentalRecommendation(
+  dependency: AppCatalogueDependency | undefined,
+): ExperimentalRecommendationPort {
+  if (dependency === undefined)
+    return createUnavailableNanacoExperimentalRecommendationPort();
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "evaluate" in dependency &&
+    typeof dependency.evaluate === "function"
+  )
+    return dependency as ExperimentalRecommendationPort;
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "experimentalRecommendation" in dependency
+  ) {
+    const port = dependency.experimentalRecommendation;
+    if (port && typeof port.evaluate === "function") return port;
+  }
+  throw requestError(500, "experimental_recommendation_dependency_invalid");
+}
 
 function resolveExperimentalCatalogue(
   dependency: AppCatalogueDependency | undefined,
@@ -324,6 +360,163 @@ function implementationFactCorrectionError(value: unknown): RequestError {
     result.code === "fact_not_found" ? 404 : 409,
     result.code,
   );
+}
+
+function safeExperimentalRecommendation(
+  value: unknown,
+  input: ExperimentalRecommendationInput,
+): ExperimentalRecommendationResult {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw requestError(503, "experimental_recommendation_unavailable");
+  const result = value as Record<string, unknown>;
+  const expected = [
+    "version",
+    "request_id",
+    "mode",
+    "verification_status",
+    "outcome",
+    "selection_id",
+    "payment_method",
+    "merchant_id",
+    "branch_id",
+    "amount_jpy",
+    "tax_exclusive_amount_jpy",
+    "effective_at",
+    "winner_plan_id",
+    "winner",
+    "plans",
+    "assumptions",
+    "blockers",
+  ].sort();
+  if (
+    Object.keys(result).sort().length !== expected.length ||
+    Object.keys(result)
+      .sort()
+      .some((key, index) => key !== expected[index])
+  )
+    throw requestError(503, "experimental_recommendation_unavailable");
+  if (
+    result.version !== "real-experimental-recommendation.v1" ||
+    result.mode !== "experimental_real_data" ||
+    result.verification_status !== "experimental_unverified" ||
+    result.selection_id !== input.selection_id ||
+    result.payment_method !== "nanaco" ||
+    result.merchant_id !== "merchant.seveneleven" ||
+    result.amount_jpy !== input.amount_jpy ||
+    result.tax_exclusive_amount_jpy !== input.tax_exclusive_amount_jpy ||
+    result.effective_at !== input.effective_at ||
+    (result.outcome !== "definite" && result.outcome !== "no_valid_plan")
+  )
+    throw requestError(503, "experimental_recommendation_unavailable");
+  if (
+    typeof result.request_id !== "string" ||
+    result.request_id.length === 0 ||
+    result.request_id.length > 120 ||
+    typeof result.branch_id !== "string" ||
+    result.branch_id !== "location.seveneleven.representative"
+  )
+    throw requestError(503, "experimental_recommendation_unavailable");
+  if (
+    !Number.isSafeInteger(result.amount_jpy) ||
+    !Number.isSafeInteger(result.tax_exclusive_amount_jpy) ||
+    (result.tax_exclusive_amount_jpy as number) < 0 ||
+    (result.tax_exclusive_amount_jpy as number) > (result.amount_jpy as number)
+  )
+    throw requestError(503, "experimental_recommendation_unavailable");
+  const safeStrings = (value: unknown): readonly string[] => {
+    if (
+      !Array.isArray(value) ||
+      value.length > 16 ||
+      value.some(
+        (item) =>
+          typeof item !== "string" ||
+          item.length === 0 ||
+          item.length > 240 ||
+          /https?:\/\//iu.test(item) ||
+          /sha256:[0-9a-f]{16,}/iu.test(item),
+      )
+    )
+      throw requestError(503, "experimental_recommendation_unavailable");
+    return Object.freeze([...value]);
+  };
+  const safePlan = (
+    value: unknown,
+  ): ExperimentalRecommendationResult["winner"] => {
+    if (value === null) return null;
+    if (typeof value !== "object" || Array.isArray(value))
+      throw requestError(503, "experimental_recommendation_unavailable");
+    const plan = value as Record<string, unknown>;
+    const keys = Object.keys(plan).sort();
+    if (
+      keys.join(",") !==
+      [
+        "conditions",
+        "eligible",
+        "objective_score_jpy",
+        "operation_count",
+        "plan_id",
+        "reward_points",
+      ]
+        .sort()
+        .join(",")
+    )
+      throw requestError(503, "experimental_recommendation_unavailable");
+    if (
+      typeof plan.plan_id !== "string" ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(plan.plan_id) ||
+      typeof plan.eligible !== "boolean" ||
+      typeof plan.reward_points !== "string" ||
+      !/^\d{1,32}$/u.test(plan.reward_points) ||
+      (plan.objective_score_jpy !== null &&
+        typeof plan.objective_score_jpy !== "string") ||
+      !Number.isSafeInteger(plan.operation_count) ||
+      (plan.operation_count as number) < 0
+    )
+      throw requestError(503, "experimental_recommendation_unavailable");
+    return Object.freeze({
+      plan_id: plan.plan_id,
+      eligible: plan.eligible,
+      reward_points: plan.reward_points,
+      objective_score_jpy: plan.objective_score_jpy,
+      operation_count: plan.operation_count as number,
+      conditions: safeStrings(plan.conditions),
+    });
+  };
+  if (!Array.isArray(result.plans) || result.plans.length > 16)
+    throw requestError(503, "experimental_recommendation_unavailable");
+  const plans = Object.freeze(
+    result.plans.map((item) => {
+      const parsed = safePlan(item);
+      if (parsed === null)
+        throw requestError(503, "experimental_recommendation_unavailable");
+      return parsed;
+    }),
+  );
+  const winner = safePlan(result.winner);
+  if (
+    result.winner_plan_id !== (winner?.plan_id ?? null) ||
+    (result.outcome === "definite" && winner === null)
+  )
+    throw requestError(503, "experimental_recommendation_unavailable");
+  return Object.freeze({
+    version: "real-experimental-recommendation.v1",
+    request_id: result.request_id,
+    mode: "experimental_real_data",
+    verification_status: "experimental_unverified",
+    outcome: result.outcome,
+    selection_id: result.selection_id,
+    payment_method: "nanaco",
+    merchant_id: "merchant.seveneleven",
+    branch_id: result.branch_id,
+    amount_jpy: result.amount_jpy,
+    tax_exclusive_amount_jpy: result.tax_exclusive_amount_jpy,
+    effective_at: result.effective_at,
+    winner_plan_id: result.winner_plan_id as string | null,
+    winner,
+    plans,
+    assumptions: safeStrings(result.assumptions),
+    blockers: safeStrings(result.blockers),
+  });
 }
 
 type SafeImplementationFactCorrection = Readonly<{
@@ -551,6 +744,7 @@ export async function handleRequest(
       method !== "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
         pathname === "/api/corrections/draft" ||
+        pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -642,6 +836,40 @@ export async function handleRequest(
       )
         rememberRecommendationId(result.request_id);
       return jsonResponse(200, { recommendation: result });
+    }
+    if (pathname === "/api/experimental/recommendation") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const input = parseExperimentalRecommendation(
+        parseJsonBody(request, MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES),
+      );
+      let result: ExperimentalRecommendationResult;
+      try {
+        result =
+          await resolveExperimentalRecommendation(dependency).evaluate(input);
+      } catch (error) {
+        if (error instanceof ExperimentalRecommendationError) {
+          const status =
+            error.code === "selection_not_supported" ||
+            error.code === "amount_invalid" ||
+            error.code === "tax_exclusive_amount_invalid" ||
+            error.code === "balance_invalid" ||
+            error.code === "effective_at_invalid"
+              ? 400
+              : error.code === "rule_not_current"
+                ? 409
+                : 503;
+          throw requestError(status, `experimental_${error.code}`);
+        }
+        throw requestError(503, "experimental_recommendation_unavailable");
+      }
+      return jsonResponse(200, {
+        recommendation: safeExperimentalRecommendation(result, input),
+      });
     }
     if (pathname === "/api/corrections/draft") {
       if (method !== "POST") {
@@ -818,13 +1046,16 @@ async function route(
       method === "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
         pathname === "/api/corrections/draft" ||
+        pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
         ? await readBodyBytes(
             request,
             pathname === "/api/synthetic/evaluate"
               ? MAX_EVALUATE_BODY_BYTES
-              : MAX_CORRECTION_BODY_BYTES,
+              : pathname === "/api/experimental/recommendation"
+                ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
+                : MAX_CORRECTION_BODY_BYTES,
           )
         : undefined;
     sendAppResponse(
@@ -881,5 +1112,34 @@ if (
   process.argv[1] &&
   relative(process.cwd(), process.argv[1]) === "dist/server.js"
 ) {
-  void startServer(Number(process.env.PORT ?? 3000));
+  const databaseUrl = process.env.JRO_DATABASE_URL;
+  if (databaseUrl === undefined) {
+    void startServer(Number(process.env.PORT ?? 3000));
+  } else {
+    const runtime = createPostgresAppRuntime(databaseUrl);
+    void startServer(Number(process.env.PORT ?? 3000), runtime.dependencies)
+      .then((server) => {
+        let closing = false;
+        const close = () => {
+          if (closing) return;
+          closing = true;
+          server.close(() => {
+            void runtime.close().finally(() => {
+              process.exitCode = 0;
+            });
+          });
+        };
+        process.once("SIGINT", close);
+        process.once("SIGTERM", close);
+      })
+      .catch(async (error: unknown) => {
+        await runtime.close();
+        console.error(
+          error instanceof Error
+            ? error.message
+            : "consumer_alpha_start_failed",
+        );
+        process.exitCode = 1;
+      });
+  }
 }

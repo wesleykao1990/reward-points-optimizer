@@ -63,9 +63,9 @@ describe("PostgreSQL generic implementation catalogue", () => {
       valuesSeen = values;
       return { rows };
     });
-    const result = await createPostgresP0ImplementationCatalogueStore(
-      target,
-    ).search({
+    const result = await createPostgresP0ImplementationCatalogueStore(target, {
+      clock: () => new Date("2026-08-22T00:00:00.000Z"),
+    }).search({
       query: "%_' OR 1=1 --",
       family_id: "point.d",
       source_role_id: "earn_rules",
@@ -84,10 +84,52 @@ describe("PostgreSQL generic implementation catalogue", () => {
       "earn_rule",
       null,
       2,
+      "2026-08-22T00:00:00.000Z",
     ]);
     expect(JSON.stringify(result)).not.toMatch(
       /implementation_hash|https?:\/\/|evidence_locator|"value"/iu,
     );
+  });
+
+  it("binds an injected host clock as the effective-at instant", async () => {
+    let valuesSeen: readonly unknown[] | undefined;
+    const target = clientFor((text, values) => {
+      expect(text).toBe(P0_IMPLEMENTATION_FACTS_QUERY);
+      valuesSeen = values;
+      return { rows: [] };
+    });
+    await createPostgresP0ImplementationCatalogueStore(target, {
+      clock: () => new Date("2026-08-31T14:59:59.000Z"),
+    }).list();
+    expect(valuesSeen?.at(-1)).toBe("2026-08-31T14:59:59.000Z");
+  });
+
+  it("uses one caller-captured effective-at instant without rereading the clock", async () => {
+    let clockCalls = 0;
+    let valuesSeen: readonly unknown[] | undefined;
+    const target = clientFor((_text, values) => {
+      valuesSeen = values;
+      return { rows: [] };
+    });
+    await createPostgresP0ImplementationCatalogueStore(target, {
+      clock() {
+        clockCalls += 1;
+        return new Date("2026-09-01T00:00:00.000Z");
+      },
+    }).search({
+      effective_at: "2026-08-31T14:59:59.000Z",
+    });
+    expect(clockCalls).toBe(0);
+    expect(valuesSeen?.at(-1)).toBe("2026-08-31T14:59:59.000Z");
+  });
+
+  it("fails closed for an invalid injected clock", async () => {
+    const target = clientFor(() => ({ rows: [] }));
+    await expect(
+      createPostgresP0ImplementationCatalogueStore(target, {
+        clock: () => new Date("not-a-date"),
+      }).list(),
+    ).rejects.toThrow("p0_implementation_clock_invalid");
   });
 
   it("accepts Japanese paraphrases containing pan as a word and rejects card data", async () => {

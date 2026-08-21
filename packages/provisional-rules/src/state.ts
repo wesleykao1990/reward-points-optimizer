@@ -32,6 +32,7 @@ import {
   PROVISIONAL_CORRECTION_VERSION,
   SEVERE_CORRECTION_CATEGORIES,
 } from "./types.js";
+import { classifyProvisionalRuleValidity } from "./validity.js";
 
 const CORRECTION_KEYS = new Set([
   "version",
@@ -268,6 +269,16 @@ function selectable(
   if (
     options.p0_family_id !== undefined &&
     envelope.candidate.p0_family_id !== options.p0_family_id
+  )
+    return false;
+  // Legacy callers may still inspect lifecycle state without asking for a
+  // current view.  Every recommendation/card path supplies effective_at;
+  // when it does, malformed, scheduled, and expired rectangles are all
+  // non-selectable and the candidate remains in the immutable snapshot.
+  if (
+    options.effective_at !== undefined &&
+    classifyProvisionalRuleValidity(envelope.rule, options.effective_at)
+      .status !== "active"
   )
     return false;
   return true;

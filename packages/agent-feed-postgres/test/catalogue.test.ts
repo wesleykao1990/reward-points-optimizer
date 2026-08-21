@@ -127,6 +127,7 @@ describe("PostgreSQL experimental catalogue store", () => {
       status: "machine_checked",
       checked_at: candidate.machine_check.checked_at,
       valid_from: candidate.rule.validity.valid_from,
+      valid_to: candidate.rule.validity.valid_to,
       source_id: "jp.nanaco.shopping-earning",
       source_label: "nanaco公式情報",
       rule_id: "rr_jp_cvs_006_nanaco_purchase_reward",
@@ -151,6 +152,7 @@ describe("PostgreSQL experimental catalogue store", () => {
       "spend_jpy",
       "status",
       "valid_from",
+      "valid_to",
     ]);
     expect(JSON.stringify(records[0])).not.toMatch(
       /candidate_payload|https?:\/\//iu,

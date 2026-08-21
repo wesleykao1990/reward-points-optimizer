@@ -9,6 +9,7 @@ import {
   type CorrectionCategory,
   createProvisionalRuleStore,
   freezeP0CoverageIndex,
+  isCanonicalProvisionalDateTime,
   P0_SOURCE_ROLE_PLAN_SHA256,
   PROVISIONAL_PUBLICATION_BATCH_VERSION,
   type ProvisionalRuleEnvelope,
@@ -222,7 +223,13 @@ async function initializeCatalogue(): Promise<CatalogueState> {
     if (!item) throw new Error("provisional_candidate_metadata_missing");
     const checkedAt = member.envelope.candidate.machine_check.checked_at;
     const validFrom = member.envelope.rule.validity.valid_from;
-    const card = makeDemoCard(item.display_name_ja, checkedAt, validFrom);
+    const validTo = member.envelope.rule.validity.valid_to;
+    const card = makeDemoCard(
+      item.display_name_ja,
+      checkedAt,
+      validFrom,
+      validTo,
+    );
     return Object.freeze({
       publication_id: publicationId,
       candidate_hash: member.candidate_hash,
@@ -240,6 +247,7 @@ function makeDemoCard(
   displayName: string,
   checkedAt: string,
   validFrom: string,
+  validTo: string | null,
 ): ExperimentalCatalogueCard {
   return Object.freeze({
     // The publication identity is assigned by the host below.  This
@@ -253,6 +261,7 @@ function makeDemoCard(
     source_label: "セブン‐イレブン公式情報",
     checked_at: checkedAt,
     valid_from: validFrom,
+    valid_to: validTo,
   });
 }
 
@@ -276,7 +285,7 @@ function validIsoDate(value: unknown): value is string {
     typeof value === "string" &&
     value.length <= 64 &&
     !hasControlCharacters(value) &&
-    Number.isFinite(Date.parse(value))
+    isCanonicalProvisionalDateTime(value)
   );
 }
 
@@ -311,6 +320,7 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
     "source_label",
     "checked_at",
     "valid_from",
+    "valid_to",
   ] as const;
   if (!exactKeys(value, cardKeys))
     throw new Error("catalogue_card_shape_invalid");
@@ -343,6 +353,8 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
     throw new Error("catalogue_checked_at_invalid");
   if (!validIsoDate(value.valid_from))
     throw new Error("catalogue_valid_from_invalid");
+  if (value.valid_to !== null && !validIsoDate(value.valid_to))
+    throw new Error("catalogue_valid_to_invalid");
   return Object.freeze({
     publication_id: value.publication_id,
     kind: value.kind as ExperimentalCatalogueCard["kind"],
@@ -354,6 +366,7 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
     source_label: value.source_label,
     checked_at: value.checked_at,
     valid_from: value.valid_from,
+    valid_to: value.valid_to,
   });
 }
 
@@ -399,8 +412,9 @@ export function normalizeExperimentalCatalogueSnapshot(
 
 function stateToSnapshot(
   current: CatalogueState,
+  effectiveAt = new Date().toISOString(),
 ): ExperimentalCatalogueSnapshot {
-  const selected = current.store.select();
+  const selected = current.store.select({ effective_at: effectiveAt });
   const byHash = new Map(
     selected.map((envelope) => [envelope.candidate_hash, envelope]),
   );
@@ -448,8 +462,8 @@ function makeDemoPort(): ExperimentalCataloguePort {
   };
 
   return Object.freeze({
-    async list(): Promise<ExperimentalCatalogueSnapshot> {
-      return stateToSnapshot(await currentState());
+    async list(effectiveAt?: string): Promise<ExperimentalCatalogueSnapshot> {
+      return stateToSnapshot(await currentState(), effectiveAt);
     },
 
     async reportCorrection(
@@ -503,8 +517,9 @@ export function getDefaultExperimentalCataloguePort(): ExperimentalCataloguePort
 
 export async function listExperimentalCatalogue(
   port: ExperimentalCataloguePort,
+  effectiveAt?: string,
 ): Promise<ExperimentalCatalogueSnapshot> {
-  return normalizeExperimentalCatalogueSnapshot(await port.list());
+  return normalizeExperimentalCatalogueSnapshot(await port.list(effectiveAt));
 }
 
 export async function reportExperimentalCorrection(

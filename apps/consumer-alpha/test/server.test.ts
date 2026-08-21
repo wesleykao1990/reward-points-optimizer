@@ -85,6 +85,41 @@ describe("M6 localhost consumer shell", () => {
     });
   });
 
+  it("rejects an impossible experimental effective date before evaluator access", async () => {
+    let calls = 0;
+    const body = JSON.stringify({
+      selection_id: "candidate_p0_nanaco_shopping_earning_20260821_v0_1",
+      amount_jpy: 220,
+      tax_exclusive_amount_jpy: 200,
+      nanaco_balance_jpy: 1_000,
+      effective_at: "2026-09-31T00:00:00+09:00",
+    });
+    const response = await handleRequest(
+      {
+        method: "POST",
+        pathname: "/api/experimental/recommendation",
+        headers: {
+          "content-type": "application/json",
+          "content-length": String(Buffer.byteLength(body, "utf8")),
+        },
+        body,
+      },
+      {
+        experimentalRecommendation: {
+          async evaluate() {
+            calls += 1;
+            throw new Error("must not run");
+          },
+        },
+      },
+    );
+    expect(response.status).toBe(400);
+    expect(jsonBody(response)).toMatchObject({
+      error: { code: "experimental_effective_at_invalid" },
+    });
+    expect(calls).toBe(0);
+  });
+
   it("accepts only bounded manual state and never accepts production mode or evaluator inputs", async () => {
     const valid = await jsonRequest(
       "POST",
@@ -265,6 +300,7 @@ describe("M6 localhost consumer shell", () => {
       "summary",
       "title",
       "valid_from",
+      "valid_to",
     ]);
     expect(JSON.stringify(creditCard)).not.toMatch(
       /candidate_hash|definition_hash|source_ids|evidence|rule_id|https?:\/\//iu,
@@ -282,6 +318,7 @@ describe("M6 localhost consumer shell", () => {
       source_label: "公式キャンペーン情報",
       checked_at: "2026-08-21T00:00:00Z",
       valid_from: "2026-08-21T00:00:00Z",
+      valid_to: null,
     } as const;
     let cards = [card];
     const port = {
@@ -387,6 +424,7 @@ describe("M6 localhost consumer shell", () => {
               source_label: "公式情報",
               checked_at: "2026-08-21T00:00:00Z",
               valid_from: "2026-08-21T00:00:00Z",
+              valid_to: null,
               evidence: "do not serialize",
             },
           ],

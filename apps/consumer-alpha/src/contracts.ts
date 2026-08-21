@@ -1,4 +1,5 @@
 import {
+  isCanonicalProvisionalDateTime,
   CORRECTION_CATEGORIES as PROVISIONAL_CORRECTION_CATEGORIES,
   type CorrectionCategory as ProvisionalCorrectionCategory,
 } from "@jro/provisional-rules";
@@ -13,6 +14,7 @@ import { assertAdmitted } from "@jro/recommendation-api";
 
 export const MAX_EVALUATE_BODY_BYTES = 32 * 1024;
 export const MAX_CORRECTION_BODY_BYTES = 12 * 1024;
+export const MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES = 8 * 1024;
 export const MAX_TEXT_LENGTH = 160;
 export const MAX_EXPERIMENTAL_CATALOGUE_CARDS = 128;
 export const MAX_EXPERIMENTAL_TITLE_LENGTH = 120;
@@ -127,6 +129,7 @@ export interface ExperimentalCatalogueCard {
   readonly source_label: string;
   readonly checked_at: string;
   readonly valid_from: string;
+  readonly valid_to: string | null;
 }
 
 export interface ExperimentalCatalogueSnapshot {
@@ -215,8 +218,65 @@ export interface ImplementationFactCataloguePort {
  * any persistence details.
  */
 export interface ExperimentalCataloguePort {
-  list(): Promise<ExperimentalCatalogueSnapshot>;
+  list(effectiveAt?: string): Promise<ExperimentalCatalogueSnapshot>;
   reportCorrection(input: ExperimentalCorrectionInput): Promise<unknown>;
+}
+
+/**
+ * The bounded real-data experiment accepts only a host-owned catalogue
+ * selection and explicit economic inputs.  It is intentionally separate from
+ * the synthetic manual state and from the 364 implementation facts.
+ */
+export const EXPERIMENTAL_NANACO_SELECTION_ID =
+  "candidate_p0_nanaco_shopping_earning_20260821_v0_1" as const;
+export const EXPERIMENTAL_NANACO_PAYMENT_METHOD = "nanaco" as const;
+export const EXPERIMENTAL_NANACO_BRANCH_ID =
+  "location.seveneleven.representative" as const;
+
+export interface ExperimentalRecommendationInput {
+  readonly selection_id: string;
+  /** Gross purchase amount supplied by the caller. */
+  readonly amount_jpy: number;
+  /** Tax-exclusive eligible amount; never inferred from gross. */
+  readonly tax_exclusive_amount_jpy: number;
+  readonly nanaco_balance_jpy: number;
+  readonly effective_at: string;
+}
+
+export interface ExperimentalRecommendationPlan {
+  readonly plan_id: string;
+  readonly eligible: boolean;
+  readonly reward_points: string;
+  readonly objective_score_jpy: string | null;
+  readonly operation_count: number;
+  readonly conditions: readonly string[];
+}
+
+export interface ExperimentalRecommendationResult {
+  readonly version: "real-experimental-recommendation.v1";
+  readonly request_id: string;
+  readonly mode: "experimental_real_data";
+  readonly verification_status: "experimental_unverified";
+  readonly outcome: "definite" | "no_valid_plan";
+  readonly selection_id: string;
+  readonly payment_method: "nanaco";
+  readonly merchant_id: "merchant.seveneleven";
+  readonly branch_id: string;
+  readonly amount_jpy: number;
+  readonly tax_exclusive_amount_jpy: number;
+  readonly effective_at: string;
+  readonly winner_plan_id: string | null;
+  readonly winner: ExperimentalRecommendationPlan | null;
+  readonly plans: readonly ExperimentalRecommendationPlan[];
+  readonly assumptions: readonly string[];
+  readonly blockers: readonly string[];
+}
+
+/** Trusted host boundary for the one executable Nanaco recommendation lane. */
+export interface ExperimentalRecommendationPort {
+  evaluate(
+    input: ExperimentalRecommendationInput,
+  ): Promise<ExperimentalRecommendationResult>;
 }
 
 export interface ManualFactInput {
@@ -285,6 +345,13 @@ const TOP_LEVEL_EXPERIMENTAL_CORRECTION_KEYS = new Set([
 const TOP_LEVEL_IMPLEMENTATION_FACT_CORRECTION_KEYS = new Set([
   "fact_key",
   "category",
+]);
+const TOP_LEVEL_EXPERIMENTAL_RECOMMENDATION_KEYS = new Set([
+  "selection_id",
+  "amount_jpy",
+  "tax_exclusive_amount_jpy",
+  "nanaco_balance_jpy",
+  "effective_at",
 ]);
 const FORBIDDEN_KEY_PARTS = [
   "rule",
@@ -615,6 +682,47 @@ export function parseExperimentalCorrection(
   return Object.freeze({
     publication_id: value.publication_id,
     category: value.category as ExperimentalCorrectionCategory,
+  });
+}
+
+/** Parse the one bounded real-data recommendation request. */
+export function parseExperimentalRecommendation(
+  value: unknown,
+): ExperimentalRecommendationInput {
+  assertNoForbiddenInput(value);
+  if (!isPlainRecord(value)) throw new InputContractError("body_invalid");
+  assertExactKeys(value, TOP_LEVEL_EXPERIMENTAL_RECOMMENDATION_KEYS);
+  if (
+    value.selection_id !== EXPERIMENTAL_NANACO_SELECTION_ID &&
+    value.selection_id !== "nanaco"
+  )
+    throw new InputContractError("experimental_selection_invalid");
+  if (
+    !Number.isSafeInteger(value.amount_jpy) ||
+    (value.amount_jpy as number) < 1 ||
+    (value.amount_jpy as number) > 1_000_000
+  )
+    throw new InputContractError("experimental_amount_invalid");
+  if (
+    !Number.isSafeInteger(value.tax_exclusive_amount_jpy) ||
+    (value.tax_exclusive_amount_jpy as number) < 0 ||
+    (value.tax_exclusive_amount_jpy as number) > (value.amount_jpy as number)
+  )
+    throw new InputContractError("experimental_tax_exclusive_amount_invalid");
+  if (
+    !Number.isSafeInteger(value.nanaco_balance_jpy) ||
+    (value.nanaco_balance_jpy as number) < (value.amount_jpy as number) ||
+    (value.nanaco_balance_jpy as number) > 10_000_000
+  )
+    throw new InputContractError("experimental_balance_invalid");
+  if (!isCanonicalProvisionalDateTime(value.effective_at))
+    throw new InputContractError("experimental_effective_at_invalid");
+  return Object.freeze({
+    selection_id: value.selection_id as string,
+    amount_jpy: value.amount_jpy as number,
+    tax_exclusive_amount_jpy: value.tax_exclusive_amount_jpy as number,
+    nanaco_balance_jpy: value.nanaco_balance_jpy as number,
+    effective_at: value.effective_at,
   });
 }
 

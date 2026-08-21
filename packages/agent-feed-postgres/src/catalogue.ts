@@ -1,9 +1,11 @@
 import {
   CORRECTION_CATEGORIES,
   type CorrectionCategory,
+  classifyProvisionalValidity,
   hashCandidate,
   hashCanonical,
   hashDefinition,
+  isCanonicalProvisionalDateTime,
   type ProvisionalRuleCandidate,
   type Sha256,
 } from "@jro/provisional-rules";
@@ -247,6 +249,7 @@ interface P0ExperimentalCatalogueRecordBase {
   readonly checked_at: string;
   readonly admitted_at: string;
   readonly valid_from: string;
+  readonly valid_to: string | null;
 }
 
 /** The bounded reward-rate record owned by this package; not a browser DTO. */
@@ -305,7 +308,10 @@ export type ExperimentalCatalogueCorrectionResult =
     }>;
 
 export interface ExperimentalCatalogueStore {
-  readonly list: () => Promise<readonly P0ExperimentalCatalogueRecord[]>;
+  /** Optional explicit effective time; omitted means the host's current instant. */
+  readonly list: (
+    effective_at?: string,
+  ) => Promise<readonly P0ExperimentalCatalogueRecord[]>;
   readonly reportCorrection: (
     input: ExperimentalCatalogueCorrectionInput,
   ) => Promise<ExperimentalCatalogueCorrectionResult>;
@@ -415,6 +421,10 @@ function isoDate(value: unknown, field: string): string {
   return text;
 }
 
+function isoDateOrNull(value: unknown, field: string): string | null {
+  return value === null ? null : isoDate(value, field);
+}
+
 function sameInstant(left: string, right: string): boolean {
   return Date.parse(left) === Date.parse(right);
 }
@@ -491,6 +501,7 @@ function validateNanacoCandidate(
   definitionHash: Sha256,
 ): {
   readonly validFrom: string;
+  readonly validTo: string | null;
   readonly rewardUnits: "1";
   readonly spendJpy: 200;
 } {
@@ -564,6 +575,7 @@ function validateNanacoCandidate(
   if (!isPlainRecord(validity))
     throw new TypeError("p0_catalogue_validity_invalid");
   const validFrom = isoDate(validity.valid_from, "valid_from");
+  const validTo = isoDateOrNull(validity.valid_to, "valid_to");
   if (hashCanonical(rule) !== NANACO_P0_RULE_HASH)
     throw new TypeError("p0_catalogue_rule_definition_invalid");
   if (definitionHash !== NANACO_P0_DEFINITION_HASH)
@@ -589,7 +601,7 @@ function validateNanacoCandidate(
     calculation.spend_jpy !== 200
   )
     throw new TypeError("p0_catalogue_calculation_invalid");
-  return { validFrom, rewardUnits: "1", spendJpy: 200 };
+  return { validFrom, validTo, rewardUnits: "1", spendJpy: 200 };
 }
 
 function paymentFamily(value: unknown): SevenElevenPaymentFamily {
@@ -608,6 +620,7 @@ function validatePaymentCandidate(
   definitionHash: Sha256,
 ): {
   readonly validFrom: string;
+  readonly validTo: string | null;
   readonly paymentFamily: SevenElevenPaymentFamily;
   readonly displayNameJa: string;
   readonly allowedPaymentInstrumentId: string;
@@ -689,6 +702,7 @@ function validatePaymentCandidate(
   if (!isPlainRecord(validity))
     throw new TypeError("p0_catalogue_validity_invalid");
   const validFrom = isoDate(validity.valid_from, "valid_from");
+  const validTo = isoDateOrNull(validity.valid_to, "valid_to");
   if (
     hashDefinition(rule) !== definitionHash ||
     definitionHash !== config.definition_hash ||
@@ -815,6 +829,7 @@ function validatePaymentCandidate(
     throw new TypeError("p0_catalogue_candidate_hash_invalid");
   return {
     validFrom,
+    validTo,
     paymentFamily: family,
     displayNameJa: SEVEN_ELEVEN_PAYMENT_FAMILY_LABELS[family],
     allowedPaymentInstrumentId: config.instrument_id,
@@ -839,7 +854,15 @@ function normalizeDatabaseRow(value: unknown): JsonRecord {
   return output;
 }
 
-function recordFromRow(value: unknown): P0ExperimentalCatalogueRecord {
+function candidateValidity(value: unknown): unknown {
+  if (!isPlainRecord(value) || !isPlainRecord(value.rule)) return undefined;
+  return value.rule.validity;
+}
+
+function recordFromRow(
+  value: unknown,
+  effectiveAt: string,
+): P0ExperimentalCatalogueRecord | null {
   const row = normalizeDatabaseRow(value);
   const candidateHash = strictHash(row.candidate_hash, "candidate_hash");
   const definitionHash = strictHash(row.definition_hash, "definition_hash");
@@ -866,12 +889,13 @@ function recordFromRow(value: unknown): P0ExperimentalCatalogueRecord {
     observation_fingerprint: observationFingerprint,
   };
   if (row.p0_family_id === NANACO_P0_FAMILY_ID) {
-    const { validFrom, rewardUnits, spendJpy } = validateNanacoCandidate(
-      boundRow,
-      payload,
-      candidateHash,
-      definitionHash,
-    );
+    const { validFrom, validTo, rewardUnits, spendJpy } =
+      validateNanacoCandidate(boundRow, payload, candidateHash, definitionHash);
+    if (
+      classifyProvisionalValidity(candidateValidity(payload), effectiveAt)
+        .status !== "active"
+    )
+      return null;
     return Object.freeze({
       kind: "reward_rate" as const,
       publication_id: publicationId,
@@ -881,6 +905,7 @@ function recordFromRow(value: unknown): P0ExperimentalCatalogueRecord {
       checked_at: checkedAt,
       admitted_at: admittedAt,
       valid_from: validFrom,
+      valid_to: validTo,
       source_id: NANACO_P0_SOURCE_ID,
       source_label: "nanaco公式情報" as const,
       rule_id: NANACO_P0_RULE_ID,
@@ -899,6 +924,11 @@ function recordFromRow(value: unknown): P0ExperimentalCatalogueRecord {
     candidateHash,
     definitionHash,
   );
+  if (
+    classifyProvisionalValidity(candidateValidity(payload), effectiveAt)
+      .status !== "active"
+  )
+    return null;
   return Object.freeze({
     kind: "payment_acceptance" as const,
     publication_id: publicationId,
@@ -908,6 +938,7 @@ function recordFromRow(value: unknown): P0ExperimentalCatalogueRecord {
     checked_at: checkedAt,
     admitted_at: admittedAt,
     valid_from: payment.validFrom,
+    valid_to: payment.validTo,
     source_id: "merchant.seveneleven.payment-methods" as const,
     source_label: "セブン‐イレブン公式情報" as const,
     payment_family: payment.paymentFamily,
@@ -993,12 +1024,21 @@ function asError(value: unknown, fallback: string): Error {
 export function createPostgresExperimentalCatalogueStore(
   target: QueryTarget,
 ): ExperimentalCatalogueStore {
-  const list = async (): Promise<readonly P0ExperimentalCatalogueRecord[]> => {
+  const list = async (
+    requestedEffectiveAt?: string,
+  ): Promise<readonly P0ExperimentalCatalogueRecord[]> => {
+    const effectiveAt = requestedEffectiveAt ?? new Date().toISOString();
+    if (!isCanonicalProvisionalDateTime(effectiveAt))
+      throw new Error("p0_catalogue_effective_at_invalid");
     const result = await target.query(P0_EXPERIMENTAL_CATALOGUE_QUERY);
     const rows = rowsOf(result, "list");
     if (rows.length > MAX_P0_EXPERIMENTAL_CATALOGUE_ROWS)
       throw new Error("p0_catalogue_too_many_rows");
-    const records = rows.map((row) => recordFromRow(row));
+    const records = rows
+      .map((row) => recordFromRow(row, effectiveAt))
+      .filter(
+        (record): record is P0ExperimentalCatalogueRecord => record !== null,
+      );
     const seen = new Set<string>();
     const seenHashes = new Set<string>();
     for (const record of records) {
@@ -1046,7 +1086,12 @@ export function createPostgresExperimentalCatalogueStore(
       }
       if (lookupRows.length !== 1)
         throw new Error("p0_catalogue_publication_ambiguous");
-      const record = recordFromRow(lookupRows[0]);
+      const record = recordFromRow(lookupRows[0], new Date().toISOString());
+      if (record === null) {
+        await client.query("COMMIT");
+        committed = true;
+        return Object.freeze({ ok: false, code: "publication_not_active" });
+      }
       if (record.publication_id !== input.publication_id)
         throw new Error("p0_catalogue_publication_binding_invalid");
 

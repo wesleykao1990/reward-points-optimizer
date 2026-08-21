@@ -11,6 +11,10 @@ import type {
 export const P0_IMPLEMENTATION_FACTS_VIEW =
   "app_api.p0_active_implementation_facts" as const;
 
+/** The parameterized current projection; the DB owns top-level window checks. */
+export const P0_IMPLEMENTATION_FACT_ROWS_AT_FUNCTION =
+  "app_private.p0_active_implementation_fact_rows_at" as const;
+
 export const MAX_P0_IMPLEMENTATION_FACTS = 128 as const;
 
 /**
@@ -22,7 +26,7 @@ export const P0_IMPLEMENTATION_FACTS_QUERY = `
 select fact_id, implementation_version, fact_version,
        family_id, source_role_id, source_ids, claim_type, subject, predicate,
        short_paraphrase, disposition, reason, reason_detail
-  from ${P0_IMPLEMENTATION_FACTS_VIEW}
+  from ${P0_IMPLEMENTATION_FACT_ROWS_AT_FUNCTION}($7::timestamptz)
  where ($1::text is null or
         lower(subject) like '%' || lower($1::text) || '%' escape '\\'
         or lower(predicate) like '%' || lower($1::text) || '%' escape '\\'
@@ -71,12 +75,21 @@ export interface P0ImplementationFactSearchInput {
   readonly claim_type?: string;
   readonly limit?: number;
   readonly cursor?: string;
+  /** Host-owned instant shared by every page of one catalogue snapshot. */
+  readonly effective_at?: string;
 }
 
 export interface P0ImplementationFactSearchResult {
   readonly facts: readonly P0ImplementationFact[];
   readonly has_more: boolean;
   readonly next_cursor?: string;
+}
+
+/** Host-owned clock used to make the current catalogue deterministic. */
+export interface P0ImplementationCatalogueOptions {
+  readonly clock?: () => Date | string;
+  /** Alias for callers that name the injected clock `now`. */
+  readonly now?: () => Date | string;
 }
 
 export interface P0ImplementationFactCorrectionInput {
@@ -128,6 +141,7 @@ const SEARCH_KEYS = Object.freeze([
   "claim_type",
   "limit",
   "cursor",
+  "effective_at",
 ] as const);
 
 const CORRECTION_KEYS = Object.freeze([
@@ -333,7 +347,13 @@ function searchInput(
 ): Required<
   Pick<
     P0ImplementationFactSearchInput,
-    "query" | "family_id" | "source_role_id" | "claim_type" | "limit" | "cursor"
+    | "query"
+    | "family_id"
+    | "source_role_id"
+    | "claim_type"
+    | "limit"
+    | "cursor"
+    | "effective_at"
   >
 > {
   const input =
@@ -367,6 +387,17 @@ function searchInput(
   )
     throw new RangeError("p0_implementation_limit_out_of_bounds");
   const cursor = input.cursor === undefined ? "" : uuid(input.cursor, "cursor");
+  let effectiveAt = "";
+  if (input.effective_at !== undefined) {
+    if (
+      typeof input.effective_at !== "string" ||
+      input.effective_at.length > 32 ||
+      !Number.isFinite(Date.parse(input.effective_at)) ||
+      new Date(input.effective_at).toISOString() !== input.effective_at
+    )
+      throw new TypeError("p0_implementation_effective_at_invalid");
+    effectiveAt = input.effective_at;
+  }
   return {
     query,
     family_id: familyId,
@@ -374,6 +405,7 @@ function searchInput(
     claim_type: claimType,
     limit,
     cursor,
+    effective_at: effectiveAt,
   };
 }
 
@@ -430,11 +462,26 @@ function asError(value: unknown): Error {
  */
 export function createPostgresP0ImplementationCatalogueStore(
   target: QueryTarget,
+  options: P0ImplementationCatalogueOptions = {},
 ): P0ImplementationCatalogueStore {
+  if (options.clock !== undefined && options.now !== undefined)
+    throw new TypeError("p0_implementation_clock_ambiguous");
+  const clock = options.clock ?? options.now ?? (() => new Date());
+
   const search = async (
     rawInput: P0ImplementationFactSearchInput = {},
   ): Promise<P0ImplementationFactSearchResult> => {
     const input = searchInput(rawInput);
+    let effectiveAt: Date;
+    if (input.effective_at !== "") {
+      effectiveAt = new Date(input.effective_at);
+    } else {
+      const clockValue = clock();
+      effectiveAt =
+        clockValue instanceof Date ? clockValue : new Date(clockValue);
+      if (!Number.isFinite(effectiveAt.getTime()))
+        throw new TypeError("p0_implementation_clock_invalid");
+    }
     const result = await target.query(P0_IMPLEMENTATION_FACTS_QUERY, [
       input.query === "" ? null : escapeLike(input.query),
       input.family_id === "" ? null : input.family_id,
@@ -442,6 +489,7 @@ export function createPostgresP0ImplementationCatalogueStore(
       input.claim_type === "" ? null : input.claim_type,
       input.cursor === "" ? null : input.cursor,
       input.limit + 1,
+      effectiveAt.toISOString(),
     ]);
     const rawRows = rowsOf(result);
     if (rawRows.length > input.limit + 1)

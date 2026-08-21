@@ -23,8 +23,15 @@ import type {
 export const RECOMMENDATION_API_VERSION = "1" as const;
 export type RecommendationApiVersion = typeof RECOMMENDATION_API_VERSION;
 
-export type RecommendationMode = "production" | "synthetic_internal";
-export type VerificationStatus = "verified" | "synthetic_only" | "blocked";
+export type RecommendationMode =
+  | "production"
+  | "synthetic_internal"
+  | "experimental_real_data";
+export type VerificationStatus =
+  | "verified"
+  | "synthetic_only"
+  | "experimental_unverified"
+  | "blocked";
 export type RecommendationOutcome =
   | "definite"
   | "conditional"
@@ -92,6 +99,10 @@ export interface RecommendationRequest {
   readonly version: RecommendationApiVersion;
   readonly request_id: string;
   readonly mode: RecommendationMode;
+  /** Host-only admission marker for the bounded provisional experiment. */
+  readonly experimental_rule_admission?: "unverified_host";
+  /** Explicitly prevents implicit JPY valuation in the experimental lane. */
+  readonly experimental_value_policy?: "unvalued";
   readonly transaction_time: string;
   readonly replay_knowledge_at: string;
   readonly timezone: "Asia/Tokyo";
