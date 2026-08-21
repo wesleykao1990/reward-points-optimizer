@@ -1,0 +1,743 @@
+{
+  "version": "p0-coverage-index.v0.5",
+  "entries": [
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.aeon.sku-select"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.aeon.base"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.aeon.campaign"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.aeon.catalog"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.aeon.change"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.aeon.base"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.aeon.exchange"
+      ]
+    },
+    {
+      "family_id": "card.aeon",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.aeon.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.aupay.catalog"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.aupay.base"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.aupay.campaign"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.aupay.catalog"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.aupay.change"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.aupay.catalog"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.aupay.exchange"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.aupay.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.d.base",
+        "src.card.d.catalog",
+        "src.card.d.platinum"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.d.base"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.d.campaign"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.d.catalog"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.d.change"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.d.base"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.d.exchange"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.d.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.paypay.catalog"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.paypay.base"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.paypay.campaign"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.paypay.catalog"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.paypay.change"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.paypay.base",
+        "src.card.paypay.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.paypay.exchange"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.paypay.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.rakuten.catalog-gold",
+        "src.card.rakuten.catalog-premium"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.rakuten.base"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.rakuten.campaign"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.rakuten.catalog-gold",
+        "src.card.rakuten.catalog-premium"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.rakuten.change"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.rakuten.base"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.rakuten.exchange"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.rakuten.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.smbc.base",
+        "src.card.smbc.gold"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.smbc.base"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.smbc.campaign"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.smbc.base",
+        "src.card.smbc.catalog",
+        "src.card.smbc.gold"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.smbc.change"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.smbc.base"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.smbc.exchange"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.smbc.exclusions"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "annual_fees_and_benefits",
+      "known_source_ids": [
+        "src.card.view.base"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "base_point_rules",
+      "known_source_ids": [
+        "src.card.view.base"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.card.view.campaign"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "card_catalog",
+      "known_source_ids": [
+        "src.card.view.base",
+        "src.card.view.catalog"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.card.view.change"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "merchant_category_bonus_rules",
+      "known_source_ids": [
+        "src.card.view.base"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "point_exchange_directory",
+      "known_source_ids": [
+        "src.card.view.exchange"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "source_role_id": "wallet_or_e_money_exclusions",
+      "known_source_ids": [
+        "src.card.view.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.aeonpay.overview"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.aeonpay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.aeonpay.points"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.aeonpay.points"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.aeonpay.overview"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.aeonpay.local"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.aeonpay.overview"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.aeonpay.overview"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.aupay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.aupay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.aupay.notice"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.aupay.base",
+        "src.wallet.aupay.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.aupay.charge"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.aupay.local"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.aupay.merchant"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.aupay.payment"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.dbarai.base"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.dbarai.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.dbarai.notice"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.dbarai.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.dbarai.charge"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.dbarai.local"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.dbarai.merchant"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.dbarai.base"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.famipay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.famipay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.famipay.notice"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.famipay.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.famipay.charge"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.famipay.local"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.famipay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.famipay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.paypay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.paypay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.paypay.notice"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.paypay.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.paypay.charge"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.paypay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.paypay.merchant"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.paypay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "base_reward_rules",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.campaign"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "change_notices_and_incidents",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.notice"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "eligible_and_excluded_tenders",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.exclusions"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "funding_and_topup_rules",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.charge"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "local_campaign_directory",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.local"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "merchant_acceptance",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.base"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.wallet.rakutenpay.base"
+      ]
+    }
+  ]
+}

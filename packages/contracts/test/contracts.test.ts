@@ -22,8 +22,8 @@ const example = <T>(file: string): T =>
   ) as T;
 
 describe("schema bundle", () => {
-  it("compiles all eleven schemas with relative references", () => {
-    expect(compileAllSchemas().size).toBe(11);
+  it("compiles all twelve schemas with relative references", () => {
+    expect(compileAllSchemas().size).toBe(12);
   });
 
   it("produces byte-stable canonical JSON independent of object insertion order", () => {
@@ -342,6 +342,92 @@ describe("semantic validation contract", () => {
     expect(result.issues.map((issue) => issue.code)).toContain(
       "required_review_mode_missing",
     );
+  });
+
+  it("accepts explicit transfer output while retaining legacy output-less rules", () => {
+    const sourceAsset = {
+      asset_id: "asset.synthetic.transfer.source",
+      asset_kind: "reward_point" as const,
+      program_id: "program.synthetic.source",
+      reward_class: "normal" as const,
+      scale: 0,
+    };
+    const destinationAsset = {
+      asset_id: "asset.synthetic.transfer.destination",
+      asset_kind: "reward_point" as const,
+      program_id: "program.synthetic.destination",
+      reward_class: "normal" as const,
+      scale: 0,
+    };
+    const calculation = {
+      model: "transfer_ratio" as const,
+      source_asset: sourceAsset,
+      destination_asset: destinationAsset,
+      source_units: "1",
+      destination_units: "2",
+      minimum_source_units: null,
+      increment_source_units: null,
+      maximum_source_units_per_request: null,
+      maximum_source_units_per_period: null,
+      maximum_period: null,
+      fee: null,
+      rounding: {
+        aggregation_scope: "transfer_request" as const,
+        eligible_spend_quantum_jpy: null,
+        reward_rounding_mode: "exact" as const,
+      },
+      processing_time_days_min: 1,
+      processing_time_days_max: 3,
+      cancellation_policy: "unknown" as const,
+    };
+    const legacy = structuredClone(
+      example<RewardRule>("reward-rule.example.yaml"),
+    );
+    legacy.rule_type = "transfer";
+    legacy.scope.operation_types = ["point_transfer"];
+    legacy.scope.channels = ["transfer"];
+    legacy.scope.tax_basis = "not_applicable";
+    legacy.calculation = calculation;
+    delete legacy.output;
+    expect(tryValidateDocument(legacy, "reward-rule").valid).toBe(true);
+
+    const explicit = structuredClone(legacy);
+    explicit.rule_id = "rr_synthetic_transfer_explicit";
+    explicit.output = {
+      asset: destinationAsset,
+      sign: "credit",
+      certainty: {
+        type: "guaranteed",
+        probability: null,
+        probability_source: null,
+      },
+      settlement: {
+        status: "pending",
+        expected_posting_from: null,
+        expected_posting_to: null,
+        posted_at: null,
+      },
+      expiry: {
+        policy: "none",
+        expires_at: null,
+        duration_days: null,
+        timezone: null,
+      },
+      restrictions: {
+        transferable: true,
+        redeemable_for_cash: false,
+        usable_for_payment: true,
+        investable: false,
+        permitted_destination_ids: [],
+        notes: "Synthetic transfer output.",
+      },
+      clawback: {
+        on_refund: "none",
+        posting_delay_days: null,
+        notes: "Synthetic transfer output.",
+      },
+    };
+    expect(tryValidateDocument(explicit, "reward-rule").valid).toBe(true);
   });
 
   it("rejects ambiguous bitemporal replay points while accepting half-open boundaries", () => {

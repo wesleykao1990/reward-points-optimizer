@@ -14,8 +14,8 @@ const check = process.argv.includes("--check");
 const files = readdirSync(schemaDirectory)
   .filter((file) => file.endsWith(".schema.json"))
   .sort();
-if (files.length !== 11) {
-  throw new Error(`Expected 11 schemas in ${schemaDirectory}, found ${files.length}`);
+if (files.length !== 12) {
+  throw new Error(`Expected 12 schemas in ${schemaDirectory}, found ${files.length}`);
 }
 
 const banner = [

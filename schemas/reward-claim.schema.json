@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/reward-claim.schema.json",
+  "title": "Structured Reward Claim Document",
+  "description": "An exact, transport-independent structured claim projection. It is not a RewardRule and contains no trust or publication assertions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "claims"],
+  "properties": {
+    "version": {
+      "const": "reward-claim.v1"
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "claim_type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "claim_type": {
+                "enum": [
+                  "points_per_unit",
+                  "fixed",
+                  "percentage",
+                  "transfer_ratio",
+                  "conversion",
+                  "redemption",
+                  "campaign"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": ["subject", "scope", "eligibility", "calculation"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "claim_type": {
+                "enum": [
+                  "points_per_unit",
+                  "fixed",
+                  "percentage",
+                  "transfer_ratio",
+                  "conversion",
+                  "redemption",
+                  "campaign"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": ["output"]
+          }
+        }
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.:-]{2,127}$"
+        },
+        "claim_type": {
+          "type": "string",
+          "enum": [
+            "payment_acceptance",
+            "points_per_unit",
+            "fixed",
+            "percentage",
+            "transfer_ratio",
+            "conversion",
+            "redemption",
+            "exclusion",
+            "campaign"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 3
+        },
+        "description": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["allow", "deny"]
+        },
+        "payment_family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instrument_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject": {
+          "$ref": "reward-rule.schema.json#/$defs/entityRef"
+        },
+        "scope": {
+          "$ref": "reward-rule.schema.json#/$defs/scope"
+        },
+        "eligibility": {
+          "$ref": "reward-rule.schema.json#/$defs/eligibility"
+        },
+        "calculation": {
+          "oneOf": [
+            {
+              "$ref": "reward-rule.schema.json#/$defs/percentageCalculation"
+            },
+            {
+              "$ref": "reward-rule.schema.json#/$defs/pointsPerUnitCalculation"
+            },
+            {
+              "$ref": "reward-rule.schema.json#/$defs/fixedCalculation"
+            },
+            {
+              "$ref": "reward-rule.schema.json#/$defs/transferCalculation"
+            }
+          ]
+        },
+        "output": {
+          "$ref": "reward-rule.schema.json#/$defs/output"
+        },
+        "caps": {
+          "type": "array",
+          "items": {
+            "$ref": "reward-rule.schema.json#/$defs/cap"
+          }
+        },
+        "expiry": {
+          "$ref": "asset.schema.json#/$defs/expiry"
+        },
+        "validity": {
+          "$ref": "reward-rule.schema.json#/$defs/validity"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          }
+        },
+        "campaign_id": {
+          "type": ["string", "null"]
+        },
+        "campaign_conditions": {
+          "$ref": "#/$defs/campaignConditions"
+        },
+        "source_asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "destination_asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "source_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "destination_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "minimum_source_units": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "increment_source_units": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_source_units_per_request": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_source_units_per_period": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "maximum_period": {
+          "type": ["string", "null"],
+          "enum": [null, "day", "month", "year", "campaign_period", "lifetime"]
+        },
+        "fee": {
+          "oneOf": [
+            { "$ref": "asset.schema.json#/$defs/quantity" },
+            { "type": "null" }
+          ]
+        },
+        "rounding": {
+          "$ref": "reward-rule.schema.json#/$defs/rounding"
+        },
+        "processing_time_days_min": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "processing_time_days_max": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "cancellation_policy": {
+          "type": "string",
+          "enum": ["not_cancelable", "cancelable_before_posting", "provider_defined", "unknown"]
+        },
+        "reward_asset": {
+          "$ref": "asset.schema.json#/$defs/assetRef"
+        },
+        "reward_units": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "spend_jpy": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rate_basis_points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fact_key", "operator", "value", "unknown_policy"],
+      "properties": {
+        "fact_key": { "type": "string" },
+        "operator": {
+          "type": "string",
+          "enum": ["eq", "neq", "in", "not_in", "gte", "lte", "exists", "not_exists"]
+        },
+        "value": {},
+        "unknown_policy": {
+          "type": "string",
+          "enum": ["return_conditional", "ask_user", "suppress_rule", "use_lower_bound"]
+        }
+      }
+    },
+    "campaignConditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "campaign_id": { "type": ["string", "null"] },
+        "entry_required": { "type": "boolean" },
+        "entry_deadline": { "type": ["string", "null"], "format": "date-time" },
+        "targeted_offer": { "type": "boolean" },
+        "identity_verification_required": { "type": "boolean" },
+        "first_use_only": { "type": "boolean" }
+      }
+    }
+  }
+}

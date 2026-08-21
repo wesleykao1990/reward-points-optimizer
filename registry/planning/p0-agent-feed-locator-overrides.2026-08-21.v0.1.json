@@ -1,0 +1,36 @@
+{
+  "version": "0.1",
+  "status": "LOCATOR_HINTS_NOT_CANONICAL_EVIDENCE",
+  "recorded_at": "2026-08-21T19:35:00+09:00",
+  "purpose": "Exact first-party locator corrections for the two family-role checks still unresolved after the P0.1 locator-first Scheduled Task occurrence.",
+  "trust_boundary": {
+    "discovery_lead_only": true,
+    "canonical_evidence_created": false,
+    "economic_claim_asserted": false,
+    "publication_allowed": false
+  },
+  "targets": [
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "partner_merchant_directory",
+      "stream_id": "economy.seven-nanaco",
+      "source_url": "https://www.nanaco-net.jp/alliance/index.html",
+      "publisher": "Seven Card Service",
+      "role_marker": "nanacoが使えるお店一覧",
+      "http_status": 200,
+      "content_type": "text/html",
+      "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "transfer_partner_directory",
+      "stream_id": "economy.seven-nanaco",
+      "source_url": "https://www.nanaco-net.jp/how-to/use_point/ana.html",
+      "publisher": "Seven Card Service",
+      "role_marker": "提携先ごとのポイント交換",
+      "http_status": 200,
+      "content_type": "text/html",
+      "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+    }
+  ]
+}

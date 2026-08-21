@@ -749,6 +749,314 @@ button.remove {
   border-top: 1px solid var(--line);
 }
 
+.experimental-section {
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.experimental-disclosure {
+  display: grid;
+  gap: 9px;
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid #465840;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgb(168 242 103 / 10%), transparent 12rem),
+    #182019;
+}
+
+.experimental-disclosure p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.68rem;
+}
+
+.experimental-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 9px;
+  border: 1px solid rgb(168 242 103 / 35%);
+  border-radius: 999px;
+  color: var(--lime-soft);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.experimental-list {
+  display: grid;
+  gap: 14px;
+}
+
+.experimental-card {
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+.experimental-card-header,
+.experimental-card-meta,
+.experimental-card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.experimental-card-header {
+  align-items: flex-start;
+}
+
+.experimental-card-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.94rem;
+  line-height: 1.35;
+}
+
+.experimental-card-claim {
+  margin: 14px 0 0;
+  color: var(--text-soft);
+  font-size: 0.76rem;
+}
+
+.experimental-card-meta {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.experimental-card-meta span {
+  overflow-wrap: anywhere;
+}
+
+.experimental-card-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.experimental-card-actions label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.experimental-card-actions select {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.experimental-card-actions button {
+  width: 100%;
+}
+
+.experimental-status {
+  margin: 12px 0 0;
+  color: var(--lime-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.experimental-status.is-error {
+  color: var(--red);
+}
+
+.home-link {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lime-soft);
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.information-intro {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 100% 0, rgb(168 242 103 / 9%), transparent 70%),
+    var(--surface-raised);
+}
+
+.information-intro .section-title-row {
+  margin-bottom: 8px;
+}
+
+.information-intro p:last-child {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+.information-controls {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+
+.information-controls > label,
+.information-filter-grid label {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.information-controls > input {
+  min-height: 46px;
+}
+
+.information-filter-grid {
+  display: grid;
+  margin-top: 12px;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.information-filter-grid label {
+  margin: 0;
+}
+
+.information-filter-grid select {
+  min-height: 42px;
+}
+
+.information-count {
+  margin: 13px 0 0;
+  color: var(--lime-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.information-list-section {
+  margin-top: 32px;
+}
+
+.information-list-section .group-heading {
+  margin-bottom: 13px;
+}
+
+.information-list {
+  display: grid;
+  gap: 12px;
+}
+
+.information-card {
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+}
+
+.information-card-header {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.information-family,
+.information-claim {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+.information-family {
+  background: #243820;
+  color: var(--lime-soft);
+}
+
+.information-claim {
+  background: #292d29;
+  color: var(--text-soft);
+}
+
+.information-subject {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.information-predicate {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.67rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.information-summary {
+  margin: 11px 0 0;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.information-usage {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 0.63rem;
+}
+
+.information-usage.is-active {
+  color: var(--lime-soft);
+  font-weight: 700;
+}
+
+.information-card-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.information-card-actions label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.63rem;
+}
+
+.information-card-actions select {
+  min-height: 42px;
+  margin-top: 5px;
+}
+
+.information-card-actions button {
+  width: 100%;
+}
+
+.information-status {
+  margin: 10px 0 0;
+  color: var(--lime-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.information-status.is-error {
+  color: var(--red);
+}
+
 .empty-result,
 .empty-state {
   display: grid;
@@ -1153,7 +1461,7 @@ button.remove {
   width: min(100%, 480px);
   min-height: 76px;
   padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-top: 1px solid var(--line);
   background: rgb(20 23 20 / 96%);
   box-shadow: 0 -10px 32px rgb(0 0 0 / 22%);

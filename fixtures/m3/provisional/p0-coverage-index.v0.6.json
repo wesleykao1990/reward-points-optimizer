@@ -1,0 +1,982 @@
+{
+  "version": "p0-coverage-index.v0.6",
+  "entries": [
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "charge_and_autocharge_rules",
+      "known_source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "eligible_cards",
+      "known_source_ids": [
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "known_source_ids": [
+        "src.emoney.nanaco.earn"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.earn",
+        "src.emoney.nanaco.use"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.campaign"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "charge_and_autocharge_rules",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.credit"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "eligible_cards",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.credit"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "known_source_ids": [
+        "src.emoney.waon.base"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.campaign",
+        "src.merchant.7eleven.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.aeon-group.points"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.points"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.biccamera.points"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.familymart.campaign",
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.familymart.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.lawson.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.lawson.payment",
+        "src.merchant.lawson.ponta"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.lawson.payment",
+        "src.merchant.lawson.ponta"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.lawson.campaign",
+        "src.merchant.lawson.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.lawson.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.lawson.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.campaign",
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.matsukiyo.points"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment",
+        "src.merchant.mcdonalds.rewards"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment",
+        "src.merchant.mcdonalds.rewards"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.ministop.waon"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.newdays.payment",
+        "src.merchant.newdays.self"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.newdays.payment",
+        "src.merchant.newdays.self"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.newdays.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.newdays.campaign",
+        "src.merchant.newdays.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.newdays.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.newdays.payment"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.payment",
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.campaign",
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.rakuten-market.points"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.starbucks.stars"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.welcia.campaign",
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.welcia.campaign",
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.welcia.points"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.guide",
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.guide",
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "excluded_products_or_services",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "loyalty_program_rules",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq",
+        "src.merchant.yodobashi.plus"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "online_mobile_order_differences",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "known_source_ids": [
+        "src.merchant.yodobashi.faq"
+      ]
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.reg.jp.caa.advertising.notice",
+        "src.reg.jp.caa.advertising.stealth"
+      ]
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "registered_provider_lists",
+      "known_source_ids": [
+        "src.reg.jp.caa.advertising.stealth"
+      ]
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "rules_and_guidance",
+      "known_source_ids": [
+        "src.reg.jp.caa.advertising.stealth"
+      ]
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "statistics_or_methodology",
+      "known_source_ids": [
+        "src.reg.jp.caa.advertising.notice",
+        "src.reg.jp.caa.advertising.stealth"
+      ]
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.reg.jp.fsa.payments.rules"
+      ]
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "registered_provider_lists",
+      "known_source_ids": [
+        "src.reg.jp.fsa.payments.registry",
+        "src.reg.jp.fsa.payments.rules"
+      ]
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "rules_and_guidance",
+      "known_source_ids": [
+        "src.reg.jp.fsa.payments.rules"
+      ]
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "statistics_or_methodology",
+      "known_source_ids": [
+        "src.reg.jp.fsa.payments.registry",
+        "src.reg.jp.fsa.payments.rules"
+      ]
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ]
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "registered_provider_lists",
+      "known_source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ]
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "rules_and_guidance",
+      "known_source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ]
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "statistics_or_methodology",
+      "known_source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ]
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ]
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "registered_provider_lists",
+      "known_source_ids": [
+        "src.reg.jp.ppc.privacy.directory",
+        "src.reg.jp.ppc.privacy.guidelines"
+      ]
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "rules_and_guidance",
+      "known_source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ]
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "statistics_or_methodology",
+      "known_source_ids": [
+        "src.reg.jp.ppc.privacy.directory",
+        "src.reg.jp.ppc.privacy.guidelines"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.transit.suica.campaign",
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "charge_and_autocharge_rules",
+      "known_source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.mobile",
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "eligible_cards",
+      "known_source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.mobile",
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "known_source_ids": [
+        "src.transit.suica.exchange",
+        "src.transit.suica.service"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "service_terms",
+      "known_source_ids": [
+        "src.transit.suica.exchange",
+        "src.transit.suica.service"
+      ]
+    }
+  ]
+}

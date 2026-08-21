@@ -176,6 +176,16 @@ function quantityKey(quantity: Quantity): string {
   return key(quantity.asset.asset_id, quantity.asset.reward_class);
 }
 
+function assetRefEqual(left: AssetRef, right: AssetRef): boolean {
+  return (
+    left.asset_id === right.asset_id &&
+    left.asset_kind === right.asset_kind &&
+    left.program_id === right.program_id &&
+    left.reward_class === right.reward_class &&
+    left.scale === right.scale
+  );
+}
+
 function quantityFromUnits(asset: AssetRef, units: bigint): Quantity {
   return { asset: clone(asset), amount: amountFromUnits(units, asset.scale) };
 }
@@ -1065,6 +1075,7 @@ function addDerivedOutput(
   direction: "create" | "return",
   role: "transfer" | "redemption" | "refund" | "reversal",
   settlement?: Settlement,
+  ruleOutput?: NonNullable<RewardRule["output"]>,
 ): boolean {
   try {
     const units = unitsFromAmount(amount, request.asset.scale, "exact");
@@ -1081,6 +1092,13 @@ function addDerivedOutput(
     if (lots.has(request.created_lot_id))
       throw new Error(`output lot ${request.created_lot_id} already exists`);
     const created = lotFromRequest(operation, request, units, context, ruleIds);
+    if (ruleOutput) {
+      // AssetLot has no certainty/clawback fields. Preserve only the
+      // representable output policy here; settlement below remains the
+      // processing-time transfer result, not a caller-declared rule value.
+      created.lot.expiry = clone(ruleOutput.expiry);
+      created.lot.restrictions = clone(ruleOutput.restrictions);
+    }
     if (settlement) created.lot.settlement = clone(settlement);
     lots.set(request.created_lot_id, created);
     ledger.movements.push(
@@ -1163,38 +1181,161 @@ function processTransferOperation(
     operation.operation_type === "point_redemption"
       ? "redemption_source"
       : "transfer_source";
-  const source = operation.asset_inputs.find(
+  const destinationRole =
+    operation.operation_type === "point_redemption"
+      ? "redemption_destination"
+      : "transfer_destination";
+  const sourceInputs = operation.asset_inputs.filter(
     (input) => input.role === sourceRole,
   );
+  const feeInputs = operation.asset_inputs.filter(
+    (input) => input.role === "fee",
+  );
   const output = operation.output_requests[0];
-  if (!source || !output || operation.output_requests.length !== 1) {
+  if (
+    sourceInputs.length !== 1 ||
+    !output ||
+    operation.output_requests.length !== 1 ||
+    output.role !== destinationRole ||
+    feeInputs.length !== (calculation.fee === null ? 0 : 1) ||
+    operation.asset_inputs.some(
+      (input) => input.role !== sourceRole && input.role !== "fee",
+    )
+  ) {
     addRejection(ledger, {
       code: "invalid_plan",
-      message: "transfer requires one source input and one destination output",
+      message:
+        "transfer requires exactly one source input, one destination output, and the declared fee inputs",
+      operation_id: operation.operation_id,
+      rule_id: rule.rule_id,
+    });
+    return false;
+  }
+  const source = sourceInputs[0];
+  const feeInput = feeInputs[0];
+  if (!source || !output) return false;
+  const sourceLot = source.source_lot_id
+    ? lots.get(source.source_lot_id)
+    : undefined;
+  if (
+    !assetRefEqual(source.quantity.asset, calculation.source_asset) ||
+    !assetRefEqual(output.asset, calculation.destination_asset) ||
+    !sourceLot ||
+    !assetRefEqual(sourceLot.lot.quantity.asset, calculation.source_asset)
+  ) {
+    addRejection(ledger, {
+      code: "rule_condition_failed",
+      message: `${rule.rule_id}: transfer source or destination AssetRef mismatch`,
+      operation_id: operation.operation_id,
+      rule_id: rule.rule_id,
+    });
+    return false;
+  }
+  const feeLot = feeInput?.source_lot_id
+    ? lots.get(feeInput.source_lot_id)
+    : undefined;
+  if (
+    calculation.fee !== null &&
+    (!feeInput ||
+      !feeInput.source_lot_id ||
+      !assetRefEqual(feeInput.quantity.asset, calculation.fee.asset) ||
+      decimal(feeInput.quantity.amount).cmp(calculation.fee.amount) !== 0 ||
+      !feeLot ||
+      !assetRefEqual(feeLot.lot.quantity.asset, calculation.fee.asset))
+  ) {
+    addRejection(ledger, {
+      code: "rule_condition_failed",
+      message: `${rule.rule_id}: required transfer fee is missing or mismatched`,
       operation_id: operation.operation_id,
       rule_id: rule.rule_id,
     });
     return false;
   }
   if (
-    quantityKey(source.quantity) !==
-      key(
-        calculation.source_asset.asset_id,
-        calculation.source_asset.reward_class,
-      ) ||
-    key(output.asset.asset_id, output.asset.reward_class) !==
-      key(
-        calculation.destination_asset.asset_id,
-        calculation.destination_asset.reward_class,
-      )
+    rule.output &&
+    (rule.output.sign !== "credit" ||
+      !assetRefEqual(rule.output.asset, calculation.destination_asset))
   ) {
     addRejection(ledger, {
       code: "rule_condition_failed",
-      message: `${rule.rule_id}: transfer source or destination asset mismatch`,
+      message: `${rule.rule_id}: transfer rule output must credit the exact destination AssetRef`,
       operation_id: operation.operation_id,
       rule_id: rule.rule_id,
     });
     return false;
+  }
+  const transferLotIds = operation.asset_inputs.map(
+    (input) => input.source_lot_id,
+  );
+  const nonNullTransferLotIds = transferLotIds.filter(
+    (lotId): lotId is string => lotId !== null,
+  );
+  if (
+    nonNullTransferLotIds.length !== transferLotIds.length ||
+    new Set(nonNullTransferLotIds).size !== nonNullTransferLotIds.length
+  ) {
+    addRejection(ledger, {
+      code: "invalid_plan",
+      message: `${rule.rule_id}: transfer inputs must reference distinct reusable lots`,
+      operation_id: operation.operation_id,
+      rule_id: rule.rule_id,
+    });
+    return false;
+  }
+  for (const input of operation.asset_inputs) {
+    const lotId = input.source_lot_id;
+    const current = lotId === null ? undefined : lots.get(lotId);
+    if (!current) {
+      addRejection(ledger, {
+        code: "asset_lot_not_yet_created",
+        message: `${rule.rule_id}: transfer input source lot is unavailable`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      return false;
+    }
+    if (!assetRefEqual(current.lot.quantity.asset, input.quantity.asset)) {
+      addRejection(ledger, {
+        code: "asset_lot_missing",
+        message: `${rule.rule_id}: transfer input source lot AssetRef mismatch`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      return false;
+    }
+    try {
+      const units = quantityUnits(input.quantity);
+      if (units <= 0n || units > current.units) {
+        addRejection(ledger, {
+          code: "insufficient_asset_quantity",
+          message: `${rule.rule_id}: transfer input source lot has insufficient quantity`,
+          operation_id: operation.operation_id,
+          rule_id: rule.rule_id,
+        });
+        return false;
+      }
+      if (
+        current.lot.expiry.expires_at &&
+        parseTime(operation.occurred_at) >=
+          parseTime(current.lot.expiry.expires_at)
+      ) {
+        addRejection(ledger, {
+          code: "asset_expired",
+          message: `${rule.rule_id}: transfer input source lot is expired`,
+          operation_id: operation.operation_id,
+          rule_id: rule.rule_id,
+        });
+        return false;
+      }
+    } catch (error) {
+      addRejection(ledger, {
+        code: "invalid_plan",
+        message: error instanceof Error ? error.message : String(error),
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      return false;
+    }
   }
   const periodState = context.facts[`transfer_period_used:${rule.rule_id}`];
   const periodUsed =
@@ -1224,36 +1365,61 @@ function processTransferOperation(
     });
     return false;
   }
-  if (calculation.fee !== null) {
-    const feeInput = operation.asset_inputs.find(
-      (input) => input.role === "fee",
+  let destinationUnits: bigint;
+  try {
+    destinationUnits = unitsFromAmount(
+      transfer.destination_amount,
+      output.asset.scale,
+      "exact",
     );
+    if (destinationUnits <= 0n)
+      throw new Error("output_amount_must_be_positive");
+    if (output.requested_amount !== null) {
+      const requestedUnits = unitsFromAmount(
+        output.requested_amount,
+        output.asset.scale,
+        "exact",
+      );
+      if (requestedUnits !== destinationUnits)
+        throw new Error("derived_output_amount_mismatch");
+    }
+    if (lots.has(output.created_lot_id))
+      throw new Error(`output lot ${output.created_lot_id} already exists`);
+  } catch (error) {
+    addRejection(ledger, {
+      code: "invalid_plan",
+      message: error instanceof Error ? error.message : String(error),
+      operation_id: operation.operation_id,
+      rule_id: rule.rule_id,
+    });
+    return false;
+  }
+  const lotsBefore = new Map<string, MutableLot>();
+  for (const [lotId, entry] of lots.entries())
+    lotsBefore.set(lotId, { ...entry, lot: clone(entry.lot) });
+  const movementCountBefore = ledger.movements.length;
+  const openingConsumedBefore = clone(ledger.openingConsumed);
+  const movementIndexBefore = movementIndex.value;
+  const rollbackTransfer = (): void => {
+    lots.clear();
+    for (const [lotId, entry] of lotsBefore.entries())
+      lots.set(lotId, { ...entry, lot: clone(entry.lot) });
+    ledger.movements.length = movementCountBefore;
+    ledger.openingConsumed.splice(
+      0,
+      ledger.openingConsumed.length,
+      ...openingConsumedBefore,
+    );
+    movementIndex.value = movementIndexBefore;
+  };
+  for (const input of operation.asset_inputs) {
     if (
-      !feeInput ||
-      quantityKey(feeInput.quantity) !== quantityKey(calculation.fee) ||
-      decimal(feeInput.quantity.amount).cmp(calculation.fee.amount) !== 0
+      !consumeLot(operation, input, lots, openingLotIds, ledger, movementIndex)
     ) {
-      addRejection(ledger, {
-        code: "rule_condition_failed",
-        message: `${rule.rule_id}: required transfer fee is missing or mismatched`,
-        operation_id: operation.operation_id,
-        rule_id: rule.rule_id,
-      });
+      rollbackTransfer();
       return false;
     }
   }
-  let valid = true;
-  for (const input of operation.asset_inputs)
-    valid =
-      consumeLot(
-        operation,
-        input,
-        lots,
-        openingLotIds,
-        ledger,
-        movementIndex,
-      ) && valid;
-  if (!valid) return false;
   const added = addDerivedOutput(
     operation,
     output,
@@ -1266,8 +1432,12 @@ function processTransferOperation(
     "create",
     operation.operation_type === "point_redemption" ? "redemption" : "transfer",
     settlement,
+    rule.output,
   );
-  if (!added) return false;
+  if (!added) {
+    rollbackTransfer();
+    return false;
+  }
   visitedAssetIds.add(calculation.source_asset.asset_id);
   addAppliedRule(ledger, rule.rule_id);
   return true;

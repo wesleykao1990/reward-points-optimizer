@@ -1,0 +1,264 @@
+{
+  "version": "p0-coverage-index.v0.4",
+  "entries": [
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.point.ponta.campaign-directory",
+        "src.point.ponta.campaign-summer-2026"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.point.ponta.change-notices"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.point.ponta.earn-jalan",
+        "src.point.ponta.overview"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "src.point.ponta.point-detail",
+        "src.point.ponta.point-types",
+        "src.point.ponta.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "src.point.ponta.merchant-directory"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "src.point.ponta.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "src.point.ponta.exchange-directory",
+        "src.point.ponta.jal-transfer"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "src.point.ponta.exchange-directory",
+        "src.point.ponta.overview",
+        "src.point.ponta.point-detail",
+        "src.point.ponta.point-types",
+        "src.point.ponta.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.point.rakuten.campaign-directory"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.point.rakuten.change-notice-2022"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.point.rakuten.earn-ichiba",
+        "src.point.rakuten.earn-pay",
+        "src.point.rakuten.earn-rules"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "src.point.rakuten.earn-rules",
+        "src.point.rakuten.expiry-limited"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "src.point.rakuten.merchant-directory"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "src.point.rakuten.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "src.point.rakuten.ana-rakuten",
+        "src.point.rakuten.ana-transfer",
+        "src.point.rakuten.exchange-directory"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "src.point.rakuten.exchange-directory",
+        "src.point.rakuten.program-terms",
+        "src.point.rakuten.use-rules"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.point.v.campaign-app-2026",
+        "src.point.v.campaign-directory"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.point.v.change-news"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.point.v.earn-store",
+        "src.point.v.overview",
+        "src.point.v.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "src.point.v.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "src.point.v.merchant-earn-directory",
+        "src.point.v.merchant-use-directory"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "src.point.v.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "src.point.v.ana-transfer",
+        "src.point.v.use-rules"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "src.point.v.overview",
+        "src.point.v.program-terms",
+        "src.point.v.use-rules"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "src.point.waon.campaign-charge-2026",
+        "src.point.waon.campaign-directory",
+        "src.point.waon.jal-campaign-transfer"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "src.point.waon.change-integration"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "src.point.waon.earn-aeon-card",
+        "src.point.waon.earn-main",
+        "src.point.waon.merchant-network-directory"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "src.point.waon.campaign-charge-2026",
+        "src.point.waon.change-integration",
+        "src.point.waon.earn-aeon-card",
+        "src.point.waon.program-terms",
+        "src.point.waon.receive-periods"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "src.point.waon.merchant-city-directory",
+        "src.point.waon.merchant-network-directory"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "src.point.waon.program-terms"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "src.point.waon.exchange-directory",
+        "src.point.waon.jal-campaign-transfer"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "src.point.waon.point-charge",
+        "src.point.waon.program-terms",
+        "src.point.waon.receive-periods"
+      ]
+    }
+  ]
+}

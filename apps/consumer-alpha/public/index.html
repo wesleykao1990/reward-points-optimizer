@@ -120,6 +120,20 @@
           <div class="empty-result"><span aria-hidden="true">↗</span><strong>条件を入力して比較してみましょう</strong><p>安全な候補と確認すべき質問を表示します。</p></div>
         </section>
 
+        <section id="experimental-section" class="content-section experimental-section" aria-labelledby="experimental-title">
+          <div class="section-title-row">
+            <div><p class="section-kicker">EXPERIMENTAL DATA</p><h2 id="experimental-title">先行公開データ</h2></div>
+            <span class="step-label">自動収集</span>
+          </div>
+          <aside class="experimental-disclosure" aria-label="先行公開データの説明">
+            <span class="experimental-badge">先行公開</span>
+            <p>公式情報をもとに自動収集した先行公開データです。内容が異なる場合はお知らせください。</p>
+          </aside>
+          <div id="experimental-rules" class="experimental-list" aria-live="polite">
+            <p class="helper">先行公開データを読み込んでいます…</p>
+          </div>
+        </section>
+
         <details class="correction-panel">
           <summary><span>表示内容についてフィードバックする</span><span aria-hidden="true">⌄</span></summary>
           <div class="correction-content">
@@ -179,11 +193,44 @@
         </section>
       </section>
 
+      <section id="tab-information" class="tab-panel" data-tab-panel="information" hidden>
+        <header class="app-header">
+          <div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>POINT INFORMATION</small><h1>ポイント情報</h1></div></div>
+          <button type="button" class="home-link" data-tab-target="home">ホーム</button>
+        </header>
+
+        <section class="information-intro" aria-labelledby="information-title">
+          <div class="section-title-row">
+            <div><p class="section-kicker">INFORMATION CATALOGUE</p><h2 id="information-title">ポイント情報</h2></div>
+            <span class="step-label">収録分</span>
+          </div>
+          <p>保存されたポイントに関する情報を、検索・絞り込みできます。ここに表示する情報は比較への使用状況を明示します。</p>
+        </section>
+
+        <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
+          <label for="information-search">キーワード</label>
+          <input id="information-search" type="search" autocomplete="off" placeholder="サービス名や内容で検索">
+          <div class="information-filter-grid">
+            <label for="information-family-filter">サービス</label>
+            <select id="information-family-filter"><option value="">すべて</option></select>
+            <label for="information-claim-filter">情報の種類</label>
+            <select id="information-claim-filter"><option value="">すべて</option></select>
+          </div>
+          <p id="information-count" class="information-count" aria-live="polite">情報を読み込んでいます…</p>
+        </section>
+
+        <section class="information-list-section" aria-labelledby="information-list-title">
+          <div class="group-heading"><h2 id="information-list-title">登録されている情報</h2><button type="button" id="information-reload">更新</button></div>
+          <div id="information-facts" class="information-list" aria-live="polite"><p class="helper">情報を読み込んでいます…</p></div>
+        </section>
+      </section>
+
       <nav class="bottom-nav" aria-label="メインナビゲーション">
         <button type="button" class="is-active" data-tab-target="home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
         <button type="button" data-tab-target="wallet" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
         <button type="button" data-tab-target="history" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
         <button type="button" data-tab-target="settings" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
+        <button type="button" data-tab-target="information" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>情報</span></button>
       </nav>
     </main>
     <script src="/app.js" defer></script>

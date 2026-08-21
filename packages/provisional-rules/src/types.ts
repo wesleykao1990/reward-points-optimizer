@@ -10,6 +10,11 @@ export const PROVISIONAL_RULE_ENVELOPE_VERSION =
   "provisional-rule-envelope.v1" as const;
 export const PROVISIONAL_CORRECTION_VERSION =
   "provisional-correction.v1" as const;
+export const PROVISIONAL_PUBLICATION_BATCH_VERSION =
+  "provisional-publication-batch.v1" as const;
+export const P0_SOURCE_ROLE_PLAN_SHA256 =
+  "sha256:a59447525cb207838439a3cdb8b9cc22d19d875a650a64f50354137a78892003" as const;
+export const MAX_PROVISIONAL_PUBLICATION_BATCH_MEMBERS = 32 as const;
 
 export type ProvisionalSourceAuthorityRole =
   | "primary"
@@ -121,6 +126,7 @@ export type AdmissionIssueCode =
   | "source_ids_invalid"
   | "source_unregistered"
   | "source_observation_mismatch"
+  | "semantic_support_mismatch"
   | "observation_invalid"
   | "observation_status_forbidden"
   | "observation_binding_mismatch"
@@ -283,12 +289,119 @@ export interface ProvisionalRuleStore {
     reason?: string,
   ) => TransitionResult;
   readonly reportCorrection: (signal: unknown) => CorrectionResult;
+  readonly publishBatch: (
+    request: unknown,
+  ) => ProvisionalPublicationBatchResult;
   readonly get: (candidate_hash: Sha256) => ProvisionalRuleEnvelope | null;
   readonly select: (
     options?: SelectionOptions,
   ) => readonly ProvisionalRuleEnvelope[];
   readonly snapshot: () => readonly ProvisionalRuleEnvelope[];
 }
+
+/** Exact host-owned lookup input for the pilot's canonical-evidence gate. */
+export interface NanacoCanonicalEvidenceLookup {
+  readonly observation_id: string;
+  readonly evidence_id: string;
+  readonly source_id: string;
+}
+
+/**
+ * Host-supplied evidence lookup result.  It may be asynchronous; the pilot
+ * awaits it and fails closed unless it resolves to true.  Verifier authenticity
+ * and host isolation are outside this package; an ID in an untrusted
+ * SourceObservation is not proof by itself.
+ */
+export type NanacoCanonicalEvidenceVerifier = (
+  input: NanacoCanonicalEvidenceLookup,
+) => boolean | Promise<boolean>;
+
+/** Public boundary for the sealed, source-bound nanaco economic pilot. */
+export interface NanacoEconomicPilotRoute {
+  readonly admit: (observation: unknown) => ProvisionalAdmissionResult;
+  readonly activate: (
+    candidate_hash: Sha256,
+    observation: unknown,
+    occurred_at: string,
+    reason?: string,
+  ) => Promise<TransitionResult>;
+}
+
+/** One bounded member of a provisional experimental publication batch. */
+export interface ProvisionalPublicationBatchMemberInput {
+  readonly member_id: string;
+  readonly admission_request: ProvisionalRuleAdmissionRequest;
+}
+
+/** Exact hostile-safe request accepted by the batch preflight boundary. */
+export interface ProvisionalPublicationBatchRequest {
+  readonly version: typeof PROVISIONAL_PUBLICATION_BATCH_VERSION;
+  readonly batch_id: string;
+  readonly plan_sha256: typeof P0_SOURCE_ROLE_PLAN_SHA256;
+  readonly published_at: string;
+  readonly members: readonly ProvisionalPublicationBatchMemberInput[];
+}
+
+export interface ProvisionalPublicationBatchMember {
+  readonly member_id: string;
+  readonly candidate_hash: Sha256;
+  readonly definition_hash: Sha256;
+  readonly envelope: ProvisionalRuleEnvelope;
+}
+
+/** Branded, sorted result of complete batch admission and activation. */
+export interface ProvisionalPublicationBatch {
+  readonly version: typeof PROVISIONAL_PUBLICATION_BATCH_VERSION;
+  readonly batch_id: string;
+  readonly plan_sha256: typeof P0_SOURCE_ROLE_PLAN_SHA256;
+  readonly published_at: string;
+  readonly published: readonly ProvisionalPublicationBatchMember[];
+  readonly batch_hash: Sha256;
+}
+
+export type PublicationBatchIssueCode =
+  | "input_invalid"
+  | "batch_shape_invalid"
+  | "batch_id_invalid"
+  | "plan_mismatch"
+  | "published_at_invalid"
+  | "members_invalid"
+  | "member_shape_invalid"
+  | "member_id_invalid"
+  | "duplicate_member_id"
+  | "batch_too_large"
+  | "duplicate_candidate_hash"
+  | "duplicate_candidate_id"
+  | "admission_rejected"
+  | "activation_rejected"
+  | "batch_identity_mismatch"
+  | "candidate_already_present";
+
+export interface PublicationBatchIssue {
+  readonly code: PublicationBatchIssueCode;
+  readonly path: string;
+  readonly message: string;
+  readonly member_id?: string;
+  readonly candidate_hash?: Sha256;
+  readonly admission_issues?: readonly AdmissionIssue[];
+}
+
+export interface ProvisionalPublicationBatchRejected {
+  readonly ok: false;
+  readonly issues: readonly PublicationBatchIssue[];
+}
+
+export interface ProvisionalPublicationBatchAccepted {
+  readonly ok: true;
+  readonly batch: ProvisionalPublicationBatch;
+}
+
+export type ProvisionalPublicationBatchResult =
+  | ProvisionalPublicationBatchAccepted
+  | ProvisionalPublicationBatchRejected;
+
+export type ProvisionalPublicationBatchPreflight =
+  ProvisionalPublicationBatchResult;
 
 /** Keeps the observation type visible to consumers without accepting it as a trust assertion. */
 export type AgentFeedSourceObservation = SourceObservation;

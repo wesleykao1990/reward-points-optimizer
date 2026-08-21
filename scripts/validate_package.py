@@ -33,6 +33,7 @@ EXPECTED_SCHEMA_FILES = {
     "extraction-candidate.schema.json",
     "golden-scenario.schema.json",
     "purchase-plan.schema.json",
+    "reward-claim.schema.json",
     "reward-rule.schema.json",
     "source-access-observation.schema.json",
     "source-observation.schema.json",
@@ -40,7 +41,7 @@ EXPECTED_SCHEMA_FILES = {
     "trusted-source.schema.json",
     "user-state.schema.json",
 }
-EXPECTED_SOURCE_COUNT = 144
+EXPECTED_SOURCE_COUNT = 176
 EXPECTED_SCENARIO_COUNT = 100
 EXPECTED_LEVELS = Counter(
     {"L1_SINGLE_RULE": 40, "L2_STACKING": 40, "L3_ADVERSARIAL": 20}

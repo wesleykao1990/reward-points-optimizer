@@ -194,11 +194,6 @@
           "calculation": {
             "$ref": "#/$defs/transferCalculation"
           }
-        },
-        "not": {
-          "required": [
-            "output"
-          ]
         }
       }
     }

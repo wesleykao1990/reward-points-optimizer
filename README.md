@@ -26,7 +26,7 @@ immutable golden replay fixtures plus private canonical database rows without
 rule or frontend publication;
 operational source maintenance and production consumer use remain blocked:
 
-- `packages/contracts` owns the eleven generated schema type modules plus shared structural and semantic validation;
+- `packages/contracts` owns the twelve generated schema type modules plus shared structural and semantic validation;
 - `packages/rule-engine` owns the pure conservation, reward, valuation, bitemporal, and replay kernel;
 - `packages/test-fixtures` owns schema-valid synthetic fixtures and builders.
 - `db/0003_milestone_2_hardening.sql` and `db/tests/006_m2_persistence_security.sql` own the hardened persistence boundary and adversarial database gate.

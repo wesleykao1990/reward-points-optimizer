@@ -1,7 +1,7 @@
 # `@jro/contracts`
 
 The contracts package is the single structural and semantic validation boundary
-for the Rewards Optimizer. It loads the eleven Draft 2020-12 schemas from the
+for the Rewards Optimizer. It loads the twelve Draft 2020-12 schemas from the
 repository `schemas/` directory, resolves their relative references, exposes
 schema-inferred TypeScript document types, and applies the cross-field rules in
 `docs/13_semantic_validation_contract.md`.

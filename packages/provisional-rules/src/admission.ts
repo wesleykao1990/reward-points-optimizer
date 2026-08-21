@@ -432,6 +432,8 @@ interface ParsedObservation {
   readonly security_flags: readonly string[];
   readonly evidence_completeness: string | null;
   readonly submitted_evidence_refs: readonly string[];
+  readonly change_type: string;
+  readonly raw_attributes: Readonly<Record<string, unknown>>;
 }
 
 const ADMISSIBLE_OBSERVATION_STATUSES = new Set([
@@ -588,6 +590,28 @@ function parseObservation(
         "submitted_evidence_refs must be a string array",
       ),
     );
+  const changeType = record.change_type;
+  const rawAttributes = record.raw_attributes;
+  if (typeof changeType !== "string" || changeType.length === 0)
+    issues.push(
+      issue(
+        "observation_invalid",
+        "/observation/change_type",
+        "change_type is required",
+      ),
+    );
+  if (
+    !rawAttributes ||
+    typeof rawAttributes !== "object" ||
+    Array.isArray(rawAttributes)
+  )
+    issues.push(
+      issue(
+        "observation_invalid",
+        "/observation/raw_attributes",
+        "raw_attributes must be an object",
+      ),
+    );
   if (
     issues.length > 0 ||
     !contractValid ||
@@ -595,6 +619,10 @@ function parseObservation(
     typeof fingerprint !== "string" ||
     !Array.isArray(sourceIds) ||
     typeof status !== "string" ||
+    typeof changeType !== "string" ||
+    !rawAttributes ||
+    typeof rawAttributes !== "object" ||
+    Array.isArray(rawAttributes) ||
     (authorityClaim !== "primary" &&
       authorityClaim !== "official_secondary" &&
       authorityClaim !== "third_party" &&
@@ -614,6 +642,8 @@ function parseObservation(
     submitted_evidence_refs: Array.isArray(submitted)
       ? (submitted as string[])
       : [],
+    change_type: changeType,
+    raw_attributes: rawAttributes as Record<string, unknown>,
   };
 }
 
@@ -753,16 +783,57 @@ function validateRule(
 
 function actualMachineChecks(
   ruleValid: boolean,
+  semanticSupport: boolean,
   sourceBinding: boolean,
   coverage: boolean,
 ): MachineCheckChecks {
   return {
     representation_safe: true,
     rule_structure: ruleValid,
-    rule_semantics: ruleValid,
+    rule_semantics: ruleValid && semanticSupport,
     observation_binding: sourceBinding,
     p0_coverage: coverage,
   };
+}
+
+function merchantAcceptanceSemanticSupport(
+  candidate: ProvisionalRuleCandidate,
+  observation: ParsedObservation,
+): boolean {
+  if (candidate.source_role_id !== "accepted_payment_methods") return true;
+  const effect = candidate.rule.effect;
+  const operationMatch = candidate.rule.eligibility?.operation_match;
+  if (
+    observation.change_type !== "merchant_acceptance" ||
+    candidate.rule.rule_type !== "payment_acceptance" ||
+    effect?.decision !== "allow" ||
+    effect.effect_target !== "operation_eligibility" ||
+    operationMatch === undefined
+  )
+    return false;
+
+  const raw = observation.raw_attributes;
+  const families = new Set<string>();
+  if (typeof raw.accepted_payment_family === "string")
+    families.add(raw.accepted_payment_family);
+  if (Array.isArray(raw.accepted_payment_families)) {
+    for (const value of raw.accepted_payment_families) {
+      if (typeof value === "string") families.add(value);
+    }
+  }
+
+  const prefix = "accepted_payment_family_";
+  const reason = effect.reason_code;
+  if (!reason.startsWith(prefix)) return false;
+  const family = reason.slice(prefix.length);
+  const instruments = operationMatch.allowed_payment_instrument_ids;
+  return (
+    family.length > 0 &&
+    families.has(family) &&
+    Array.isArray(instruments) &&
+    instruments.length === 1 &&
+    instruments[0]?.endsWith(`.${family}`) === true
+  );
 }
 
 function sameChecks(
@@ -956,6 +1027,18 @@ export function admitProvisionalRuleCandidate(
       ),
     );
   const ruleValidation = validateRule(candidate.rule, issues);
+  const semanticSupport = merchantAcceptanceSemanticSupport(
+    candidate,
+    observation,
+  );
+  if (!semanticSupport)
+    issues.push(
+      issue(
+        "semantic_support_mismatch",
+        "/candidate/rule",
+        "candidate payment-family semantics are not explicitly supported by the bound observation",
+      ),
+    );
   const coverageValid =
     entry !== undefined &&
     entry.source_role_id === candidate.source_role_id &&
@@ -964,6 +1047,7 @@ export function admitProvisionalRuleCandidate(
     candidate.source_ids.every((sourceId) => knownSourceIds.has(sourceId));
   const checks = actualMachineChecks(
     ruleValidation.valid,
+    semanticSupport,
     sourceBinding && authorityBinding,
     coverageValid,
   );

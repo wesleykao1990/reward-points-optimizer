@@ -1,3 +1,7 @@
+import {
+  CORRECTION_CATEGORIES as PROVISIONAL_CORRECTION_CATEGORIES,
+  type CorrectionCategory as ProvisionalCorrectionCategory,
+} from "@jro/provisional-rules";
 import { assertAdmitted } from "@jro/recommendation-api";
 
 /**
@@ -10,6 +14,10 @@ import { assertAdmitted } from "@jro/recommendation-api";
 export const MAX_EVALUATE_BODY_BYTES = 32 * 1024;
 export const MAX_CORRECTION_BODY_BYTES = 12 * 1024;
 export const MAX_TEXT_LENGTH = 160;
+export const MAX_EXPERIMENTAL_CATALOGUE_CARDS = 128;
+export const MAX_EXPERIMENTAL_TITLE_LENGTH = 120;
+export const MAX_EXPERIMENTAL_SUMMARY_LENGTH = 320;
+export const MAX_EXPERIMENTAL_SOURCE_LABEL_LENGTH = 120;
 
 /** Canonical ids are host-owned; aliases never cross the browser boundary. */
 export const SYNTHETIC_MERCHANT_ID = "merchant.synthetic" as const;
@@ -53,6 +61,163 @@ export const CORRECTION_NOTE_CODES = [
   "amount_disagrees",
 ] as const;
 export type CorrectionNoteCode = (typeof CORRECTION_NOTE_CODES)[number];
+
+/**
+ * The experimental catalogue has its own deliberately narrower correction
+ * contract.  These categories are imported from the provisional-rules
+ * package; the browser never supplies a candidate hash, credibility, or
+ * severity assertion.
+ */
+export const EXPERIMENTAL_CORRECTION_CATEGORIES = Object.freeze([
+  ...PROVISIONAL_CORRECTION_CATEGORIES,
+]);
+export type ExperimentalCorrectionCategory = ProvisionalCorrectionCategory;
+
+export interface ExperimentalCorrectionInput {
+  readonly publication_id: string;
+  readonly category: ExperimentalCorrectionCategory;
+}
+
+/**
+ * The browser-facing experimental catalogue is intentionally a small display
+ * model.  It is not a projection of a rule envelope: hashes, evidence,
+ * source identifiers, URLs, and lifecycle assertions stay behind the host
+ * port.  `experimental_unverified` is an internal display status used to
+ * keep this lane separate from canonical recommendations; the UI presents
+ * the calmer Japanese `先行公開` label instead.
+ */
+export const EXPERIMENTAL_CATALOGUE_KINDS = Object.freeze([
+  "reward_rate",
+  "campaign",
+  "transfer",
+  "payment_acceptance",
+  "other",
+] as const);
+export type ExperimentalCatalogueKind =
+  (typeof EXPERIMENTAL_CATALOGUE_KINDS)[number];
+
+export const EXPERIMENTAL_DISPLAY_STATUSES = Object.freeze([
+  "experimental_unverified",
+] as const);
+export type ExperimentalDisplayStatus =
+  (typeof EXPERIMENTAL_DISPLAY_STATUSES)[number];
+
+export const EXPERIMENTAL_CONFIDENCE_LEVELS = Object.freeze([
+  "high",
+  "medium",
+  "limited",
+] as const);
+export type ExperimentalConfidence =
+  (typeof EXPERIMENTAL_CONFIDENCE_LEVELS)[number];
+
+export const EXPERIMENTAL_CATALOGUE_STATUSES = Object.freeze([
+  "ready",
+  "partial",
+] as const);
+export type ExperimentalCatalogueStatus =
+  (typeof EXPERIMENTAL_CATALOGUE_STATUSES)[number];
+
+export interface ExperimentalCatalogueCard {
+  readonly publication_id: string;
+  readonly kind: ExperimentalCatalogueKind;
+  readonly title: string;
+  readonly summary: string;
+  readonly display_status: ExperimentalDisplayStatus;
+  readonly confidence: ExperimentalConfidence;
+  readonly source_label: string;
+  readonly checked_at: string;
+  readonly valid_from: string;
+}
+
+export interface ExperimentalCatalogueSnapshot {
+  readonly status: ExperimentalCatalogueStatus;
+  readonly updated_at: string | null;
+  readonly rules: readonly ExperimentalCatalogueCard[];
+}
+
+/**
+ * The implementation-fact catalogue is a separate, deliberately smaller
+ * browser contract.  `fact_key` is an opaque UUID: it is useful only for
+ * binding one correction back to the trusted host and has no claim identity
+ * or source meaning in the UI.  Family and claim are display labels rather
+ * than the internal family/claim-type identifiers.
+ */
+export const IMPLEMENTATION_FACT_CORRECTION_CATEGORIES = Object.freeze([
+  "fact_incorrect",
+  "fact_outdated",
+  "source_unavailable",
+  "scope_incorrect",
+  "other",
+] as const);
+export type ImplementationFactCorrectionCategory =
+  (typeof IMPLEMENTATION_FACT_CORRECTION_CATEGORIES)[number];
+
+export interface ImplementationFactCard {
+  readonly fact_key: string;
+  readonly family: string;
+  readonly claim: string;
+  readonly subject: string;
+  readonly predicate: string;
+  readonly summary: string;
+  readonly use_in_comparison: boolean;
+}
+
+export const IMPLEMENTATION_FACT_CATALOGUE_STATUSES = Object.freeze([
+  "ready",
+  "partial",
+] as const);
+export type ImplementationFactCatalogueStatus =
+  (typeof IMPLEMENTATION_FACT_CATALOGUE_STATUSES)[number];
+
+export interface ImplementationFactCatalogueSnapshot {
+  readonly status: ImplementationFactCatalogueStatus;
+  readonly updated_at: string | null;
+  readonly facts: readonly ImplementationFactCard[];
+}
+
+export interface ImplementationFactCorrectionInput {
+  readonly fact_key: string;
+  readonly category: ImplementationFactCorrectionCategory;
+}
+
+export interface ImplementationFactCorrectionSuccess {
+  readonly ok: true;
+  readonly fact_key: string;
+  readonly category: ImplementationFactCorrectionCategory;
+  readonly outcome: "recorded" | "duplicate";
+}
+
+export interface ImplementationFactCorrectionFailure {
+  readonly ok: false;
+  readonly code:
+    | "fact_not_found"
+    | "fact_not_active"
+    | "correction_not_applied";
+}
+
+export type ImplementationFactCorrectionResult =
+  | ImplementationFactCorrectionSuccess
+  | ImplementationFactCorrectionFailure;
+
+/** Browser-safe host port for the implementation-fact catalogue. */
+export interface ImplementationFactCataloguePort {
+  list(): Promise<ImplementationFactCatalogueSnapshot>;
+  reportCorrection(
+    input: ImplementationFactCorrectionInput,
+  ): Promise<ImplementationFactCorrectionResult>;
+}
+
+/**
+ * Trusted-host integration boundary for the experimental catalogue.  The
+ * implementation may be backed by a database adapter, while the alpha demo
+ * uses an explicit fixture port.  Correction results are intentionally
+ * opaque here: the host owns hashes, credibility, severity, timestamps, and
+ * any persistence details.
+ */
+export interface ExperimentalCataloguePort {
+  list(): Promise<ExperimentalCatalogueSnapshot>;
+  reportCorrection(input: ExperimentalCorrectionInput): Promise<unknown>;
+}
 
 export interface ManualFactInput {
   readonly key: string;
@@ -112,6 +277,14 @@ const TOP_LEVEL_CORRECTION_KEYS = new Set([
   "category",
   "note_code",
   "recommendation_id",
+]);
+const TOP_LEVEL_EXPERIMENTAL_CORRECTION_KEYS = new Set([
+  "publication_id",
+  "category",
+]);
+const TOP_LEVEL_IMPLEMENTATION_FACT_CORRECTION_KEYS = new Set([
+  "fact_key",
+  "category",
 ]);
 const FORBIDDEN_KEY_PARTS = [
   "rule",
@@ -418,5 +591,59 @@ export function parseCorrectionDraft(value: unknown): CorrectionDraftInput {
     category: value.category as CorrectionCategory,
     note_code: value.note_code as CorrectionNoteCode,
     recommendation_id: value.recommendation_id as `sha256:${string}`,
+  });
+}
+
+/** Parse the exact host-issued experimental publication correction DTO. */
+export function parseExperimentalCorrection(
+  value: unknown,
+): ExperimentalCorrectionInput {
+  assertNoForbiddenInput(value);
+  if (!isPlainRecord(value)) throw new InputContractError("body_invalid");
+  assertExactKeys(value, TOP_LEVEL_EXPERIMENTAL_CORRECTION_KEYS);
+  if (
+    !safeText(value.publication_id, 128) ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(value.publication_id)
+  )
+    throw new InputContractError("publication_id_invalid");
+  if (
+    !(EXPERIMENTAL_CORRECTION_CATEGORIES as readonly string[]).includes(
+      value.category as string,
+    )
+  )
+    throw new InputContractError("experimental_correction_category_invalid");
+  return Object.freeze({
+    publication_id: value.publication_id,
+    category: value.category as ExperimentalCorrectionCategory,
+  });
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+/** Parse the exact opaque implementation-fact correction DTO. */
+export function parseImplementationFactCorrection(
+  value: unknown,
+): ImplementationFactCorrectionInput {
+  assertNoForbiddenInput(value);
+  if (!isPlainRecord(value)) throw new InputContractError("body_invalid");
+  assertExactKeys(value, TOP_LEVEL_IMPLEMENTATION_FACT_CORRECTION_KEYS);
+  if (
+    typeof value.fact_key !== "string" ||
+    value.fact_key.length > 80 ||
+    !UUID_PATTERN.test(value.fact_key)
+  )
+    throw new InputContractError("fact_key_invalid");
+  if (
+    !(IMPLEMENTATION_FACT_CORRECTION_CATEGORIES as readonly string[]).includes(
+      value.category as string,
+    )
+  )
+    throw new InputContractError(
+      "implementation_fact_correction_category_invalid",
+    );
+  return Object.freeze({
+    fact_key: value.fact_key,
+    category: value.category as ImplementationFactCorrectionCategory,
   });
 }

@@ -1144,6 +1144,299 @@ sources:
     content_verified_on: null
     status: registered
     notes: ''
+- id: jp.dpoint.campaigns
+  name: d POINT campaign directory
+  publisher: NTT DOCOMO
+  category: campaign_directory
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/campaign/
+  authority_scope:
+  - campaign_discovery
+  - campaign_validity
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: very_high
+  recommended_check_cadence: daily
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.earn-mobile
+  name: d POINT mobile-service earning rules
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/acc/mobile_use/index.html
+  authority_scope:
+  - earn_rules
+  - eligible_basis
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.info
+  name: d POINT notices
+  publisher: NTT DOCOMO
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/info/index.html
+  authority_scope:
+  - service_changes
+  - operational_notices
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.merchant-list
+  name: d POINT participating-store directory
+  publisher: NTT DOCOMO
+  category: merchant_directory
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/store/index.html
+  authority_scope:
+  - merchant_acceptance
+  - earn_acceptance
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.terms-20260701
+  name: d POINT Club member terms effective 2026-07-01
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/instruction/pdf/d_point_club_kiyaku_20260701.pdf
+  authority_scope:
+  - program_terms
+  - earn_rules
+  - expiry_rules
+  - transfer_rules
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: pdf
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.transfer
+  name: d POINT exchange directory
+  publisher: NTT DOCOMO
+  category: transfer_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/store/exchange/index.html
+  authority_scope:
+  - transfer_partners
+  - conversion_routes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.use-limited-faq
+  name: d POINT limited-use points FAQ
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint04.html
+  authority_scope:
+  - expiry_rules
+  - redemption_priority
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.use-rate-faq
+  name: d POINT redemption-value FAQ
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/static/guide/faq/Point/Dpoint07/
+  authority_scope:
+  - redemption_value
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.earn-timing-faq
+  name: d POINT earning-timing FAQ
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint26.html
+  authority_scope:
+  - posting_timing
+  - earn_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.dpoint.use-guide
+  name: d POINT redemption guide
+  publisher: NTT DOCOMO
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://dpoint.docomo.ne.jp/guide/howto_use/index.html
+  authority_scope:
+  - redemption_rules
+  - redemption_routes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
 - id: jp.hapitas.home
   name: Hapitas offers
   publisher: Ozvision
@@ -1377,8 +1670,8 @@ sources:
   verification:
     url_registered_on: '2026-08-17'
     content_verified_on: null
-    status: registered
-    notes: ''
+    status: temporarily_unavailable
+    notes: Research A recorded HTTP 403 on the direct official locator; source identity is retained and the access state is not treated as fetched evidence.
 - id: jp.jrepoint.home
   name: JRE POINT official site
   publisher: JR East
@@ -1434,6 +1727,243 @@ sources:
       observation_ids: []
   verification:
     url_registered_on: '2026-08-17'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.expiry-faq
+  name: JRE POINT expiry FAQ
+  publisher: JR East
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://faq.jrepoint.jp/faq/show/29?site_domain=default
+  authority_scope:
+  - expiry_rules
+  - reward_classes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.family-transfer-faq
+  name: JRE POINT family-transfer FAQ
+  publisher: JR East
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://faq.jrepoint.jp/faq/show/474?site_domain=default
+  authority_scope:
+  - transfer_eligibility
+  - transfer_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.info
+  name: JRE POINT notices
+  publisher: JR East
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.jrepoint.jp/information/list/
+  authority_scope:
+  - service_changes
+  - operational_notices
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.merchant-card
+  name: JRE POINT card/barcode merchant earning page
+  publisher: JR East
+  category: merchant_directory
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.jrepoint.jp/point/append/jrepoint-card/
+  authority_scope:
+  - merchant_acceptance
+  - earn_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: temporarily_unavailable
+    notes: Research A recorded HTTP 403 on the direct official locator; source identity
+      is retained and the access state is not treated as fetched evidence.
+- id: jp.jrepoint.overview
+  name: JRE POINT overview
+  publisher: JR East
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.jrepoint.jp/point/first/
+  authority_scope:
+  - program_overview
+  - merchant_acceptance
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.suica-info
+  name: JRE POINT Suica benefits
+  publisher: JR East
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.jrepoint.jp/information/suica/
+  authority_scope:
+  - earn_rules
+  - suica_registration
+  - redemption_value
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.jrepoint.transfer-terms
+  name: JRE POINT exchange special terms
+  publisher: JR East
+  category: transfer_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.jrepoint.jp/agreement/jrepoint/
+  authority_scope:
+  - program_terms
+  - transfer_rules
+  - conversion_routes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: temporarily_unavailable
+    notes: Research A recorded HTTP 403 on the direct official locator; source identity
+      is retained and the access state is not treated as fetched evidence.
+- id: jp.jrepoint.use-faq
+  name: JRE POINT use FAQ
+  publisher: JR East
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://faq.jrepoint.jp/faq/show/2724?category_id=115&site_domain=default
+  authority_scope:
+  - redemption_rules
+  - redemption_routes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
     content_verified_on: null
     status: registered
     notes: ''
@@ -1502,7 +2032,7 @@ sources:
   category: campaign_directory
   tier: T2_OFFICIAL_SUPPORT
   publication_use: canonical
-  source_url: https://www.nanaco-net.jp/cp/
+  source_url: https://www.nanaco-net.jp/cp/index.html
   authority_scope:
   - campaign_discovery
   - campaign_validity
@@ -1561,7 +2091,7 @@ sources:
   category: merchant_directory
   tier: T2_OFFICIAL_SUPPORT
   publication_use: canonical
-  source_url: https://www.nanaco-net.jp/alliance/
+  source_url: https://www.nanaco-net.jp/alliance/index.html
   authority_scope:
   - merchant_acceptance
   - earn_acceptance
@@ -1677,6 +2207,299 @@ sources:
     content_verified_on: '2026-08-20'
     status: content_verified
     notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
+- id: jp.nanaco.expiry-confirm
+  name: nanaco balance and expiry confirmation
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/how-to/menu/confirm.html
+  authority_scope:
+  - expiry_rules
+  - redemption_priority
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.info-app-end
+  name: nanaco app and online-service change notice
+  publisher: Seven Card Service
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/information/info_00099.html
+  authority_scope:
+  - service_changes
+  - effective_date
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.info
+  name: nanaco notices
+  publisher: Seven Card Service
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/information/index.html
+  authority_scope:
+  - service_changes
+  - operational_notices
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.info-saison-end
+  name: nanaco Saison/UC earning-end notice
+  publisher: Seven Card Service
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/information/info_00093.html
+  authority_scope:
+  - service_changes
+  - effective_date
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.info-vworld-end
+  name: nanaco V Point/World Point exchange-end notice
+  publisher: Seven Card Service
+  category: change_notice
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/information/info_00084.html
+  authority_scope:
+  - service_changes
+  - effective_date
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.terms
+  name: nanaco terms index
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/terms/
+  authority_scope:
+  - program_terms
+  - earn_rules
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.terms-points
+  name: nanaco member terms and point-service special terms
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://entry.nanaco-net.jp/entry_all/kiyaku.html
+  authority_scope:
+  - program_terms
+  - expiry_rules
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.transfer-ana
+  name: nanaco to ANA miles exchange rules
+  publisher: Seven Card Service
+  category: transfer_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/how-to/use_point/ana.html
+  authority_scope:
+  - transfer_partners
+  - conversion_routes
+  - eligibility
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.use
+  name: nanaco point use guide
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/how-to/use_point/index.html
+  authority_scope:
+  - redemption_rules
+  - redemption_routes
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.nanaco.net-faq
+  name: nanaco online-shopping points FAQ
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/support/faq_net.html
+  authority_scope:
+  - earn_rules
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
 - id: jp.sevencard.nanaco-charge
   name: Seven Card Plus nanaco credit-charge rules
   publisher: Seven Card Service
@@ -1710,6 +2533,128 @@ sources:
     content_verified_on: '2026-08-20'
     status: content_verified
     notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
+- id: jp.paypay.balance-points
+  name: PayPay balance and points FAQ
+  publisher: PayPay
+  category: payment_reward_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://paypay.ne.jp/help/c0048/
+  authority_scope:
+  - balance_types
+  - expiry_rules
+  - transfer_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.paypay.points
+  name: PayPay points rules
+  publisher: PayPay
+  category: payment_reward_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://paypay.ne.jp/point/
+  authority_scope:
+  - point_types
+  - expiry_rules
+  - transfer_rules
+  - redemption_rules
+  - redemption_value
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.paypay.points-use
+  name: PayPay points use guide
+  publisher: PayPay
+  category: payment_reward_rules
+  tier: T2_OFFICIAL_SUPPORT
+  publication_use: canonical
+  source_url: https://paypay.ne.jp/guide/point-use/
+  authority_scope:
+  - redemption_rules
+  - redemption_routes
+  - redemption_value
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
+- id: jp.paypay.terms
+  name: PayPay consumer terms
+  publisher: PayPay
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://about.paypay.ne.jp/terms/consumer/rule/
+  authority_scope:
+  - program_terms
+  - transfer_rules
+  - redemption_rules
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: medium
+  recommended_check_cadence: monthly
+  access:
+    retrieval_method: http_html
+    requires_login: false
+    automation_status: requires_terms_review
+    terms_review_status: not_reviewed
+    technical_feasibility:
+      current_classification: unknown
+      last_observed_at: null
+      observation_ids: []
+  verification:
+    url_registered_on: '2026-08-21'
+    content_verified_on: null
+    status: registered
+    notes: ''
 - id: jp.paypay.calculation-faq
   name: PayPay point calculation FAQ
   publisher: PayPay

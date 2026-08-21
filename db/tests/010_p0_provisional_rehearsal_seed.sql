@@ -139,7 +139,8 @@ begin
     end if;
 
     select count(*) into v_view_count
-      from app_api.active_experimental_provisional_rules;
+      from app_api.active_experimental_provisional_rules
+     where candidate_hash = v_candidate.candidate_hash;
     if v_view_count <> 1
        or not exists (
            select 1 from app_api.active_experimental_provisional_rules
@@ -196,7 +197,8 @@ begin
           from app_private.provisional_rule_candidates
          where candidate_hash = v_candidate_hash;
         select count(*) into v_view_count
-          from app_api.active_experimental_provisional_rules;
+          from app_api.active_experimental_provisional_rules
+         where candidate_hash = v_candidate_hash;
         if v_result <> 'disputed'
            or v_status <> 'disputed'
            or v_view_count <> 0
@@ -210,7 +212,8 @@ begin
         null;
     end;
     if (select status from app_private.provisional_rule_candidates where candidate_hash = v_candidate_hash) <> 'active_experimental'
-       or (select count(*) from app_api.active_experimental_provisional_rules) <> 1
+       or (select count(*) from app_api.active_experimental_provisional_rules
+            where candidate_hash = v_candidate_hash) <> 1
     then
         raise exception 'rate correction rollback did not preserve the seeded active candidate';
     end if;
@@ -230,7 +233,8 @@ begin
           from app_private.provisional_rule_candidates
          where candidate_hash = v_candidate_hash;
         select count(*) into v_view_count
-          from app_api.active_experimental_provisional_rules;
+          from app_api.active_experimental_provisional_rules
+         where candidate_hash = v_candidate_hash;
         if v_result <> 'quarantined'
            or v_status <> 'quarantined'
            or v_view_count <> 0
@@ -244,7 +248,8 @@ begin
         null;
     end;
     if (select status from app_private.provisional_rule_candidates where candidate_hash = v_candidate_hash) <> 'active_experimental'
-       or (select count(*) from app_api.active_experimental_provisional_rules) <> 1
+       or (select count(*) from app_api.active_experimental_provisional_rules
+            where candidate_hash = v_candidate_hash) <> 1
        or (select count(*) from app_private.provisional_correction_signals where candidate_hash = v_candidate_hash) <> 0
     then
         raise exception 'source correction rollback did not preserve the seeded active candidate';

@@ -1,6 +1,17 @@
 import { admitProvisionalRuleCandidate } from "./admission.js";
+import {
+  hasPublicationBatchBrand,
+  preflightProvisionalPublicationBatch,
+} from "./batch.js";
 import { brandEnvelope, hasEnvelopeBrand } from "./brand.js";
 import { hashCanonical } from "./canonical.js";
+import {
+  activateExperimental,
+  provisionalTimeRegresses,
+  transitionEnvelope,
+  transitionFailure,
+  validProvisionalTimestamp,
+} from "./lifecycle.js";
 import { deepFreeze, scanPublicValue } from "./security.js";
 import type {
   CorrectionResult,
@@ -8,15 +19,13 @@ import type {
   CorrectionSignalRecord,
   ProvisionalAdmissionResult,
   ProvisionalCorrectionCategory,
+  ProvisionalPublicationBatchResult,
   ProvisionalRuleAdmissionRequest,
   ProvisionalRuleEnvelope,
-  ProvisionalRuleStatus,
   ProvisionalRuleStore,
-  ProvisionalTransition,
   SelectionOptions,
   Sha256,
   TransitionFailure,
-  TransitionResult,
 } from "./types.js";
 import {
   CORRECTION_CATEGORIES,
@@ -40,67 +49,6 @@ const CATEGORIES = new Set<string>([
 const HASH_PATTERN = /^sha256:[0-9a-f]{64}$/u;
 const SIGNAL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 
-function failure(
-  code: TransitionFailure["code"],
-  message: string,
-): TransitionFailure {
-  return Object.freeze({ ok: false as const, code, message });
-}
-
-function validTimestamp(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(
-      value,
-    ) &&
-    Number.isFinite(Date.parse(value))
-  );
-}
-
-function validReason(value: string): boolean {
-  return value.length > 0 && value.length <= 160 && !/[\r\n]/u.test(value);
-}
-
-function timeRegresses(
-  envelope: ProvisionalRuleEnvelope,
-  occurred_at: string,
-): boolean {
-  const lastTransition = envelope.history.at(-1)?.occurred_at;
-  const lastCorrection = envelope.corrections.at(-1)?.reported_at;
-  const previous = [lastTransition, lastCorrection]
-    .filter((value): value is string => value !== undefined)
-    .map((value) => Date.parse(value))
-    .reduce((max, value) => Math.max(max, value), Number.NEGATIVE_INFINITY);
-  return Date.parse(occurred_at) < previous;
-}
-
-function transition(
-  envelope: ProvisionalRuleEnvelope,
-  status: ProvisionalRuleStatus,
-  occurred_at: string,
-  reason: string,
-  correction_hash?: Sha256,
-): ProvisionalRuleEnvelope {
-  if (!hasEnvelopeBrand(envelope)) throw new TypeError("envelope_invalid");
-  const record: ProvisionalTransition = {
-    sequence: envelope.history.length,
-    from_status: envelope.status,
-    to_status: status,
-    occurred_at,
-    reason,
-    candidate_hash: envelope.candidate_hash,
-    ...(correction_hash === undefined ? {} : { correction_hash }),
-  };
-  return brandEnvelope(
-    deepFreeze({
-      ...envelope,
-      status,
-      history: [...envelope.history, record],
-      corrections: [...envelope.corrections],
-    }),
-  );
-}
-
 function appendCorrection(
   envelope: ProvisionalRuleEnvelope,
   signal: CorrectionSignalRecord,
@@ -112,43 +60,6 @@ function appendCorrection(
       corrections: [...envelope.corrections, signal],
     }),
   );
-}
-
-/** Activate only a machine-checked envelope for experimental evaluation. */
-export function activateExperimental(
-  envelope: ProvisionalRuleEnvelope,
-  occurred_at: string,
-  reason = "explicit_experimental_activation",
-): TransitionResult {
-  if (!hasEnvelopeBrand(envelope))
-    return failure(
-      "envelope_invalid",
-      "envelope was not minted by provisional admission",
-    );
-  if (!validTimestamp(occurred_at))
-    return failure("timestamp_invalid", "activation timestamp is invalid");
-  if (timeRegresses(envelope, occurred_at))
-    return failure(
-      "transition_time_regression",
-      "activation timestamp precedes envelope history",
-    );
-  if (
-    envelope.candidate.source_authority_role !== "primary" ||
-    envelope.observation.source_authority_claim !== "primary"
-  )
-    return failure(
-      "source_authority_required_for_activation",
-      "only a primary observation authority may activate experimentally",
-    );
-  if (!validReason(reason))
-    return failure("reason_invalid", "activation reason is invalid");
-  if (envelope.status !== "machine_checked")
-    return failure(
-      "activation_not_allowed",
-      "only machine_checked provisional candidates may become active_experimental",
-    );
-  const next = transition(envelope, "active_experimental", occurred_at, reason);
-  return Object.freeze({ ok: true as const, envelope: next });
 }
 
 function parseCorrection(value: unknown): {
@@ -217,7 +128,7 @@ function parseCorrection(value: unknown): {
       code: "correction_invalid",
       message: "credible must be boolean",
     };
-  if (!validTimestamp(record.reported_at))
+  if (!validProvisionalTimestamp(record.reported_at))
     return {
       signal: null,
       code: "correction_invalid",
@@ -268,19 +179,19 @@ export function recordCorrectionSignal(
   value: unknown,
 ): CorrectionResult {
   if (!hasEnvelopeBrand(envelope))
-    return failure(
+    return transitionFailure(
       "envelope_invalid",
       "envelope was not minted by provisional admission",
     );
   const parsed = parseCorrection(value);
   if (!parsed.signal)
-    return failure(
+    return transitionFailure(
       parsed.code ?? "correction_invalid",
       parsed.message ?? "invalid correction signal",
     );
   const signal = parsed.signal;
   if (signal.candidate_hash !== envelope.candidate_hash)
-    return failure(
+    return transitionFailure(
       "candidate_hash_mismatch",
       "correction is not bound to this candidate hash",
     );
@@ -290,7 +201,7 @@ export function recordCorrectionSignal(
   if (existing) {
     const incomingHash = correctionHash(signal);
     const existingHash = existing.signal_hash;
-    return failure(
+    return transitionFailure(
       incomingHash === existingHash
         ? "duplicate_correction"
         : "tampered_correction",
@@ -299,8 +210,8 @@ export function recordCorrectionSignal(
         : "correction signal ID was reused with different content",
     );
   }
-  if (timeRegresses(envelope, signal.reported_at))
-    return failure(
+  if (provisionalTimeRegresses(envelope, signal.reported_at))
+    return transitionFailure(
       "transition_time_regression",
       "correction timestamp precedes envelope history",
     );
@@ -311,7 +222,7 @@ export function recordCorrectionSignal(
   if (signal.credible) {
     if (severe(signal)) {
       if (next.status !== "quarantined") {
-        next = transition(
+        next = transitionEnvelope(
           next,
           "quarantined",
           signal.reported_at,
@@ -324,7 +235,7 @@ export function recordCorrectionSignal(
       next.status === "active_experimental" ||
       next.status === "machine_checked"
     ) {
-      next = transition(
+      next = transitionEnvelope(
         next,
         "disputed",
         signal.reported_at,
@@ -380,6 +291,10 @@ export function selectProvisionalRules(
 export function createProvisionalRuleStore(): ProvisionalRuleStore {
   const envelopes = new Map<Sha256, ProvisionalRuleEnvelope>();
   const signalHashes = new Map<string, Sha256>();
+  const publicationBatches = new Map<
+    string,
+    import("./types.js").ProvisionalPublicationBatch
+  >();
 
   const store: ProvisionalRuleStore = {
     admit(
@@ -395,7 +310,7 @@ export function createProvisionalRuleStore(): ProvisionalRuleStore {
     activate(candidate_hash, occurred_at, reason) {
       const current = envelopes.get(candidate_hash);
       if (!current)
-        return failure(
+        return transitionFailure(
           "candidate_not_found",
           "candidate hash is not in the store",
         );
@@ -406,7 +321,7 @@ export function createProvisionalRuleStore(): ProvisionalRuleStore {
     reportCorrection(value) {
       const parsed = parseCorrection(value);
       if (!parsed.signal)
-        return failure(
+        return transitionFailure(
           parsed.code ?? "correction_invalid",
           parsed.message ?? "invalid correction signal",
         );
@@ -416,13 +331,13 @@ export function createProvisionalRuleStore(): ProvisionalRuleStore {
         existingSignalHash !== undefined &&
         existingSignalHash !== incomingHash
       )
-        return failure(
+        return transitionFailure(
           "tampered_correction",
           "correction signal ID was reused with different content",
         );
       const current = envelopes.get(parsed.signal.candidate_hash);
       if (!current)
-        return failure(
+        return transitionFailure(
           "candidate_not_found",
           "candidate hash is not in the store",
         );
@@ -432,6 +347,108 @@ export function createProvisionalRuleStore(): ProvisionalRuleStore {
         envelopes.set(parsed.signal.candidate_hash, result.envelope);
       }
       return result;
+    },
+    publishBatch(request): ProvisionalPublicationBatchResult {
+      const preflight = preflightProvisionalPublicationBatch(request);
+      if (!preflight.ok) return preflight;
+      const batch = preflight.batch;
+      if (!hasPublicationBatchBrand(batch))
+        return Object.freeze({
+          ok: false as const,
+          issues: Object.freeze([
+            {
+              code: "batch_identity_mismatch" as const,
+              path: "",
+              message: "publication batch was not minted by this process",
+            },
+          ]),
+        });
+
+      const existingBatch = publicationBatches.get(batch.batch_id);
+      if (existingBatch) {
+        if (existingBatch.batch_hash !== batch.batch_hash)
+          return Object.freeze({
+            ok: false as const,
+            issues: Object.freeze([
+              {
+                code: "batch_identity_mismatch" as const,
+                path: "/batch_id",
+                message:
+                  "batch_id was already used with different publication content",
+              },
+            ]),
+          });
+        // A correction may have replaced an envelope after its batch was
+        // published. Replaying the batch must never resurrect that candidate.
+        for (const member of existingBatch.published) {
+          const current = envelopes.get(member.candidate_hash);
+          if (
+            current !== member.envelope ||
+            current.status !== "active_experimental"
+          )
+            return Object.freeze({
+              ok: false as const,
+              issues: Object.freeze([
+                {
+                  code: "candidate_already_present" as const,
+                  path: `/published/${member.candidate_hash}`,
+                  message:
+                    "exact batch replay is no longer active after a correction",
+                  candidate_hash: member.candidate_hash,
+                },
+              ]),
+            });
+        }
+        return Object.freeze({ ok: true as const, batch: existingBatch });
+      }
+
+      // All preflight and activation checks completed above. Check existing
+      // candidate identities once more before the first mutation, then commit
+      // every envelope as one synchronous map transaction.
+      const existingPublicationIds = new Set(
+        [...publicationBatches.values()].flatMap((existing) =>
+          existing.published.map(
+            (member) =>
+              member.envelope.candidate.candidate_id ?? member.member_id,
+          ),
+        ),
+      );
+      for (const member of batch.published) {
+        const publicationId =
+          member.envelope.candidate.candidate_id ?? member.member_id;
+        if (existingPublicationIds.has(publicationId))
+          return Object.freeze({
+            ok: false as const,
+            issues: Object.freeze([
+              {
+                code: "candidate_already_present" as const,
+                path: `/members/${member.member_id}`,
+                message:
+                  "candidate publication identity is already present in another batch",
+                member_id: member.member_id,
+                candidate_hash: member.candidate_hash,
+              },
+            ]),
+          });
+        if (envelopes.has(member.candidate_hash))
+          return Object.freeze({
+            ok: false as const,
+            issues: Object.freeze([
+              {
+                code: "candidate_already_present" as const,
+                path: `/members/${member.member_id}`,
+                message:
+                  "candidate hash is already present outside this publication batch",
+                member_id: member.member_id,
+                candidate_hash: member.candidate_hash,
+              },
+            ]),
+          });
+      }
+      for (const member of batch.published)
+        envelopes.set(member.candidate_hash, member.envelope);
+      publicationBatches.set(batch.batch_id, batch);
+      return Object.freeze({ ok: true as const, batch });
     },
     get(candidate_hash) {
       return envelopes.get(candidate_hash) ?? null;
@@ -452,3 +469,4 @@ export function createProvisionalRuleStore(): ProvisionalRuleStore {
 
 export const activateExperimentalRule = activateExperimental;
 export const applyCorrectionSignal = recordCorrectionSignal;
+export { activateExperimental };

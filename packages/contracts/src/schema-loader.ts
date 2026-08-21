@@ -11,6 +11,7 @@ export const SCHEMA_NAMES = [
   "extraction-candidate",
   "golden-scenario",
   "purchase-plan",
+  "reward-claim",
   "reward-rule",
   "source-access-observation",
   "source-observation",
@@ -52,7 +53,7 @@ export function findSchemaDirectory(): string {
 
   throw new Error(
     `Unable to locate all contract schemas. Checked: ${candidates.join(", ")}. ` +
-      "Set JRO_SCHEMA_DIR to a directory containing the eleven *.schema.json files.",
+      "Set JRO_SCHEMA_DIR to a directory containing the twelve *.schema.json files.",
   );
 }
 

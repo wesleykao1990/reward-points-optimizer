@@ -1,6 +1,8 @@
 (() => {
   let currentRecommendationId = null;
   let sessionHistoryCount = 0;
+  let informationFacts = [];
+  let informationLoaded = false;
 
   const node = (tag, className) => {
     const value = document.createElement(tag);
@@ -32,6 +34,7 @@
         button.setAttribute("aria-selected", String(active));
       });
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (tabName === "information") void loadInformationFacts();
   };
 
   const addLabel = (parent, labelText, input) => {
@@ -394,6 +397,384 @@
     result.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const experimentalCategoryLabels = Object.freeze({
+    not_accepted: "利用できなかった",
+    reward_missing: "特典が付かなかった",
+    rate_wrong: "還元率が違う",
+    campaign_ended: "キャンペーンが終了していた",
+    registration_required: "登録が必要だった",
+    cap_or_minimum_missing: "上限・最低条件が違う",
+    merchant_wrong: "お店が違う",
+    product_variant_wrong: "商品区分が違う",
+  });
+
+  const experimentalKindLabels = Object.freeze({
+    reward_rate: "還元率",
+    campaign: "キャンペーン",
+    transfer: "移行・交換",
+    payment_acceptance: "支払い方法",
+    other: "その他",
+  });
+
+  const experimentalConfidenceLabels = Object.freeze({
+    high: "高",
+    medium: "中",
+    limited: "参考",
+  });
+
+  const formatExperimentalDate = (value) => {
+    if (typeof value !== "string" || !Number.isFinite(Date.parse(value)))
+      return "確認日不明";
+    return new Date(value).toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const experimentalRulesMessage = (message, className = "helper") => {
+    const list = document.getElementById("experimental-rules");
+    clear(list);
+    list.appendChild(text("p", message, className));
+  };
+
+  const renderExperimentalSnapshot = (snapshot) => {
+    const list = document.getElementById("experimental-rules");
+    clear(list);
+    const rules =
+      snapshot && Array.isArray(snapshot.rules) ? snapshot.rules : [];
+    const partial = snapshot?.status === "partial";
+    if (!Array.isArray(rules) || rules.length === 0) {
+      list.appendChild(
+        text(
+          "p",
+          partial
+            ? "一部のデータを読み込めませんでした。表示できる先行公開データはありません。"
+            : "現在、表示できる先行公開データはありません。",
+          "helper",
+        ),
+      );
+      return;
+    }
+    if (partial)
+      list.appendChild(
+        text("p", "一部の先行公開データを表示しています。", "helper"),
+      );
+    rules.forEach((rule) => {
+      if (!rule || typeof rule !== "object") return;
+      const publicationId =
+        typeof rule.publication_id === "string" ? rule.publication_id : "";
+      if (!publicationId) return;
+      const card = node("article", "experimental-card");
+      const header = node("div", "experimental-card-header");
+      const title = text(
+        "h3",
+        typeof rule.title === "string" ? rule.title : "先行公開データ",
+      );
+      header.appendChild(title);
+      header.appendChild(text("span", "先行公開", "experimental-badge"));
+      card.appendChild(header);
+
+      const claim =
+        typeof rule.summary === "string"
+          ? rule.summary
+          : "先行公開データです。";
+      card.appendChild(text("p", claim, "experimental-card-claim"));
+
+      const meta = node("div", "experimental-card-meta");
+      meta.appendChild(
+        text("span", `種類：${experimentalKindLabels[rule.kind] || "その他"}`),
+      );
+      meta.appendChild(
+        text(
+          "span",
+          `確度：${experimentalConfidenceLabels[rule.confidence] || "参考"}`,
+        ),
+      );
+      meta.appendChild(
+        text(
+          "span",
+          `確認元：${typeof rule.source_label === "string" ? rule.source_label : "情報提供元"}`,
+        ),
+      );
+      meta.appendChild(
+        text("span", `更新日：${formatExperimentalDate(rule.checked_at)}`),
+      );
+      meta.appendChild(
+        text("span", `有効開始：${formatExperimentalDate(rule.valid_from)}`),
+      );
+      card.appendChild(meta);
+
+      const actions = node("div", "experimental-card-actions");
+      const label = node("label");
+      label.appendChild(text("span", "内容を訂正する"));
+      const select = selectField(
+        Object.entries(experimentalCategoryLabels).map(
+          ([value, labelText]) => ({
+            value,
+            label: labelText,
+          }),
+        ),
+      );
+      label.appendChild(select);
+      actions.appendChild(label);
+      const button = node("button", "secondary");
+      button.type = "button";
+      button.textContent = "この情報を訂正する";
+      actions.appendChild(button);
+      card.appendChild(actions);
+      const status = text("p", "", "experimental-status");
+      card.appendChild(status);
+
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        select.disabled = true;
+        status.classList.remove("is-error");
+        status.textContent = "お知らせを受け付けています…";
+        try {
+          const body = await postJson("/api/experimental/corrections", {
+            publication_id: publicationId,
+            category: select.value,
+          });
+          if (body?.correction?.accepted !== true) throw new Error("status");
+          card.remove();
+          if (!list.querySelector(".experimental-card")) {
+            experimentalRulesMessage(
+              "お知らせを受け付けました。このカードを非表示にしました。",
+              "experimental-status",
+            );
+          }
+        } catch {
+          button.disabled = false;
+          select.disabled = false;
+          status.classList.add("is-error");
+          status.textContent =
+            "訂正を反映できませんでした。もう一度お試しください。";
+        }
+      });
+      list.appendChild(card);
+    });
+    if (!list.querySelector(".experimental-card"))
+      experimentalRulesMessage(
+        "現在、表示できる先行公開データはありません。",
+        "helper",
+      );
+  };
+
+  const loadExperimentalRules = async () => {
+    try {
+      const response = await fetch("/api/experimental/rules", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error("request_failed");
+      renderExperimentalSnapshot(body);
+    } catch {
+      experimentalRulesMessage(
+        "先行公開データを読み込めませんでした。",
+        "helper",
+      );
+    }
+  };
+
+  const informationCategoryLabels = Object.freeze({
+    fact_incorrect: "内容が違う",
+    fact_outdated: "情報が古い",
+    source_unavailable: "確認できない",
+    scope_incorrect: "対象範囲が違う",
+    other: "その他",
+  });
+
+  const informationMessage = (message, className = "helper") => {
+    const list = document.getElementById("information-facts");
+    clear(list);
+    list.appendChild(text("p", message, className));
+  };
+
+  const safeInformationFacts = (value) => {
+    if (!value || typeof value !== "object" || !Array.isArray(value.facts))
+      return [];
+    return value.facts.filter(
+      (fact) =>
+        fact &&
+        typeof fact === "object" &&
+        typeof fact.fact_key === "string" &&
+        typeof fact.family === "string" &&
+        typeof fact.claim === "string" &&
+        typeof fact.subject === "string" &&
+        typeof fact.predicate === "string" &&
+        typeof fact.summary === "string" &&
+        typeof fact.use_in_comparison === "boolean",
+    );
+  };
+
+  const appendInformationFilterOptions = () => {
+    const family = document.getElementById("information-family-filter");
+    const claim = document.getElementById("information-claim-filter");
+    const previousFamily = family.value;
+    const previousClaim = claim.value;
+    clear(family);
+    clear(claim);
+    const allFamily = node("option");
+    allFamily.value = "";
+    allFamily.textContent = "すべて";
+    family.appendChild(allFamily);
+    const allClaim = node("option");
+    allClaim.value = "";
+    allClaim.textContent = "すべて";
+    claim.appendChild(allClaim);
+    [...new Set(informationFacts.map((fact) => fact.family))]
+      .sort((left, right) => left.localeCompare(right, "ja"))
+      .forEach((value) => {
+        const option = node("option");
+        option.value = value;
+        option.textContent = value;
+        family.appendChild(option);
+      });
+    [...new Set(informationFacts.map((fact) => fact.claim))]
+      .sort((left, right) => left.localeCompare(right, "ja"))
+      .forEach((value) => {
+        const option = node("option");
+        option.value = value;
+        option.textContent = value;
+        claim.appendChild(option);
+      });
+    family.value = [...family.options].some(
+      (option) => option.value === previousFamily,
+    )
+      ? previousFamily
+      : "";
+    claim.value = [...claim.options].some(
+      (option) => option.value === previousClaim,
+    )
+      ? previousClaim
+      : "";
+  };
+
+  const renderInformationFacts = () => {
+    const list = document.getElementById("information-facts");
+    const search = document
+      .getElementById("information-search")
+      .value.trim()
+      .toLocaleLowerCase("ja-JP");
+    const family = document.getElementById("information-family-filter").value;
+    const claim = document.getElementById("information-claim-filter").value;
+    const visible = informationFacts.filter((fact) => {
+      if (family && fact.family !== family) return false;
+      if (claim && fact.claim !== claim) return false;
+      if (!search) return true;
+      return [
+        fact.family,
+        fact.claim,
+        fact.subject,
+        fact.predicate,
+        fact.summary,
+      ].some((value) => value.toLocaleLowerCase("ja-JP").includes(search));
+    });
+    document.getElementById("information-count").textContent =
+      `${visible.length}件を表示（全${informationFacts.length}件）`;
+    clear(list);
+    if (visible.length === 0) {
+      list.appendChild(
+        text("p", "条件に合うポイント情報はありません。", "helper"),
+      );
+      return;
+    }
+    visible.forEach((fact) => {
+      const card = node("article", "information-card");
+      const header = node("div", "information-card-header");
+      header.appendChild(text("span", fact.family, "information-family"));
+      header.appendChild(text("span", fact.claim, "information-claim"));
+      card.appendChild(header);
+      card.appendChild(text("h3", fact.subject, "information-subject"));
+      card.appendChild(text("p", fact.predicate, "information-predicate"));
+      card.appendChild(text("p", fact.summary, "information-summary"));
+      card.appendChild(
+        text(
+          "p",
+          fact.use_in_comparison
+            ? "この情報は比較に使用しています。"
+            : "この情報は比較には使用していません。",
+          fact.use_in_comparison
+            ? "information-usage is-active"
+            : "information-usage",
+        ),
+      );
+
+      const actions = node("div", "information-card-actions");
+      const label = node("label");
+      label.appendChild(text("span", "内容を訂正する"));
+      const select = selectField(
+        Object.entries(informationCategoryLabels).map(([value, labelText]) => ({
+          value,
+          label: labelText,
+        })),
+      );
+      label.appendChild(select);
+      actions.appendChild(label);
+      const button = node("button", "secondary");
+      button.type = "button";
+      button.textContent = "この情報を訂正する";
+      actions.appendChild(button);
+      card.appendChild(actions);
+      const status = text("p", "", "information-status");
+      card.appendChild(status);
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        select.disabled = true;
+        status.classList.remove("is-error");
+        status.textContent = "訂正を受け付けています…";
+        try {
+          const body = await postJson("/api/experimental/fact-corrections", {
+            fact_key: fact.fact_key,
+            category: select.value,
+          });
+          if (body?.correction?.accepted !== true) throw new Error("status");
+          informationFacts = informationFacts.filter(
+            (candidate) => candidate.fact_key !== fact.fact_key,
+          );
+          appendInformationFilterOptions();
+          renderInformationFacts();
+        } catch {
+          button.disabled = false;
+          select.disabled = false;
+          status.classList.add("is-error");
+          status.textContent =
+            "訂正を反映できませんでした。もう一度お試しください。";
+        }
+      });
+      list.appendChild(card);
+    });
+  };
+
+  const loadInformationFacts = async (force = false) => {
+    if (informationLoaded && !force) {
+      renderInformationFacts();
+      return;
+    }
+    informationMessage("情報を読み込んでいます…");
+    try {
+      const response = await fetch("/api/experimental/facts", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error("request_failed");
+      const facts = safeInformationFacts(body);
+      if (!body || (body.status !== "ready" && body.status !== "partial"))
+        throw new Error("response_invalid");
+      informationFacts = facts;
+      informationLoaded = true;
+      appendInformationFilterOptions();
+      renderInformationFacts();
+    } catch {
+      informationLoaded = false;
+      document.getElementById("information-count").textContent = "";
+      informationMessage("ポイント情報を読み込めませんでした。", "helper");
+    }
+  };
+
   const postJson = async (path, payload) => {
     const response = await fetch(path, {
       method: "POST",
@@ -461,6 +842,18 @@
       activateTab(button.dataset.tabTarget);
     });
   });
+  document
+    .getElementById("information-search")
+    .addEventListener("input", renderInformationFacts);
+  document
+    .getElementById("information-family-filter")
+    .addEventListener("change", renderInformationFacts);
+  document
+    .getElementById("information-claim-filter")
+    .addEventListener("change", renderInformationFacts);
+  document
+    .getElementById("information-reload")
+    .addEventListener("click", () => void loadInformationFacts(true));
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
       activateTab("home");
@@ -569,4 +962,6 @@
         status.textContent = "一時メモを作成できませんでした。";
       }
     });
+
+  void loadExperimentalRules();
 })();

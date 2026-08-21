@@ -2,7 +2,7 @@
 
 Research cutoff: **2026-08-20**
 
-This catalogue contains **144** source seeds. The YAML registry is canonical; this document is a readable index.
+This catalogue contains **176** source seeds. The YAML registry is canonical; this document is a readable index.
 
 > “Trusted” means that the publisher is appropriate for the listed authority scope. Authority does not grant collection permission, and a dated reachability observation is not durable technical truth.
 
@@ -13,8 +13,8 @@ This catalogue contains **144** source seeds. The YAML registry is canonical; th
 | Tier | Count |
 |---|---:|
 | `T0_REGULATOR` | 4 |
-| `T1_CANONICAL` | 99 |
-| `T2_OFFICIAL_SUPPORT` | 40 |
+| `T1_CANONICAL` | 108 |
+| `T2_OFFICIAL_SUPPORT` | 63 |
 | `T3_PARTNER_CONTRACT` | 0 |
 | `T4_DISCOVERY_ONLY` | 1 |
 
@@ -23,7 +23,8 @@ This catalogue contains **144** source seeds. The YAML registry is canonical; th
 | Status | Count |
 |---|---:|
 | `content_verified` | 8 |
-| `registered` | 136 |
+| `registered` | 165 |
+| `temporarily_unavailable` | 3 |
 
 ### Technical-feasibility summary
 
@@ -32,9 +33,9 @@ This catalogue contains **144** source seeds. The YAML registry is canonical; th
 | `plain_http_observed_reachable` | 1 |
 | `environment_dependent_or_mixed` | 1 |
 | `manual_capture_candidate` | 8 |
-| `unknown` | 134 |
+| `unknown` | 166 |
 
-Eight official sources are marked content-verified. Six belong to the project-owner-approved manual Seven-Eleven/nanaco slice; the remaining records preserve their prior verification and environment-specific access classifications. Manual reachability does not authorize automated collection.
+Eight official sources are marked content-verified. Three JRE POINT page identities remain registered as `temporarily_unavailable` because Research A observed HTTP 403 on their direct locators; the source identities are retained without claiming fetched evidence. Six content-verified sources belong to the project-owner-approved manual Seven-Eleven/nanaco slice; the remaining records preserve their prior verification and environment-specific access classifications. Manual reachability does not authorize automated collection.
 
 ## Selection rules
 
@@ -84,7 +85,7 @@ Eight official sources are marked content-verified. Six belong to the project-ow
 | `jp.jal.mileage-park-howto` | `T1_CANONICAL` | Japan Airlines | [JAL Mileage Park earning guide](https://partner.jal.co.jp/howto/) | `card_stack`, `jal_pay_exclusions`, `mileage_rates` | `registered` | `unknown` | high / weekly |
 | `jp.jrepoint.home` | `T1_CANONICAL` | JR East | [JRE POINT official site](https://www.jrepoint.jp/) | `program_overview`, `merchant_discovery` | `registered` | `unknown` | high / weekly |
 | `jp.jrepoint.suica-earning` | `T1_CANONICAL` | JR East | [JRE POINT earning with registered Suica](https://www.jrepoint.jp/point/append/suica/) | `suica_registration`, `merchant_earn_rules` | `registered` | `unknown` | high / weekly |
-| `jp.nanaco.earning` | `T1_CANONICAL` | Seven Card Service | [How to earn nanaco points](https://www.nanaco-net.jp/how-to/save_point/) | `earn_rules`, `rounding` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.earning` | `T1_CANONICAL` | Seven Card Service | [How to earn nanaco points](https://www.nanaco-net.jp/how-to/save_point/) | `earn_rules`, `rounding` | `registered` | `manual_capture_candidate` | high / weekly |
 | `jp.nanaco.redemption-value` | `T1_CANONICAL` | Seven Card Service | [Convert nanaco points to electronic money](https://www.nanaco-net.jp/how-to/use_point/money.html) | `redemption_value`, `conversion_rules` | `content_verified` | `manual_capture_candidate` | medium / monthly |
 | `jp.nanaco.shopping-earning` | `T1_CANONICAL` | Seven Card Service | [nanaco payment earning by merchant](https://www.nanaco-net.jp/how-to/save_point/shopping.html) | `merchant_earn_rules`, `rounding`, `posting_timing`, `product_exclusions` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `jp.sevencard.nanaco-charge` | `T1_CANONICAL` | Seven Card Service | [Seven Card Plus nanaco credit-charge rules](https://www.7card.co.jp/point/save.html) | `nanaco_credit_charge_eligibility`, `nanaco_credit_charge_amount_limits`, `nanaco_credit_charge_increment`, `nanaco_charge_earn_rules`, `posting_timing` | `content_verified` | `manual_capture_candidate` | high / weekly |
@@ -150,7 +151,7 @@ Eight official sources are marked content-verified. Six belong to the project-ow
 | `merchant.mcdonalds.payment` | `T1_CANONICAL` | McDonald's Japan | [McDonald's Japan payment methods by channel](https://www.mcdonalds.co.jp/shop/payment/) | `payment_acceptance`, `channel_scope` | `registered` | `unknown` | high / weekly |
 | `merchant.seveneleven.bill-payment` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven bill and service payment methods](https://www.sej.co.jp/services/payment/) | `product_category_exclusion`, `payment_acceptance` | `registered` | `unknown` | high / weekly |
 | `merchant.seveneleven.nanaco` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven nanaco payment rules](https://www.sej.co.jp/services/cash/nanaco.html) | `payment_combination`, `excluded_products`, `charge_limits` | `content_verified` | `manual_capture_candidate` | high / weekly |
-| `merchant.seveneleven.payment-faq` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven Japan payment FAQ](https://faq.sej.co.jp/article/?knowledge_id=cidqbq4vr0h8m5o3skpg) | `payment_acceptance`, `product_exclusions` | `registered` | `unknown` | high / weekly |
+| `merchant.seveneleven.payment-faq` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven Japan payment FAQ](https://faq.sej.co.jp/article/?knowledge_id=cidqbq4vr0h8m5o3skpg) | `payment_acceptance`, `product_exclusions` | `registered` | `manual_capture_candidate` | high / weekly |
 | `merchant.seveneleven.payment-methods` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven Japan accepted payment methods](https://www.sej.co.jp/services/cash.html) | `payment_acceptance`, `payment_interface`, `ended_payment_rewards` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `merchant.welcia.faq` | `T2_OFFICIAL_SUPPORT` | Welcia Yakkyoku | [Welcia official FAQ](https://www.welcia-yakkyoku.co.jp/inquire) | `payment_acceptance`, `waon_vpoint_rules` | `registered` | `unknown` | high / weekly |
 | `merchant.yodobashi.payment` | `T1_CANONICAL` | Yodobashi Camera | [Yodobashi payment methods](https://www.yodobashi.com/ec/support/beginner/payment/) | `payment_method_rate`, `channel_scope` | `registered` | `unknown` | high / weekly |
@@ -182,7 +183,7 @@ Eight official sources are marked content-verified. Six belong to the project-ow
 | ID | Tier | Publisher | Source | Authority scope | Verification | Technical access | Volatility / cadence |
 |---|---|---|---|---|---|---|---|
 | `jp.aupay.merchant-list` | `T2_OFFICIAL_SUPPORT` | KDDI | [au PAY merchant list](https://aupay.wallet.auone.jp/store/list/) | `merchant_acceptance` | `registered` | `unknown` | high / weekly |
-| `jp.nanaco.merchant-list` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco participating merchants](https://www.nanaco-net.jp/alliance/) | `merchant_acceptance`, `earn_acceptance` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.merchant-list` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco participating merchants](https://www.nanaco-net.jp/alliance/index.html) | `merchant_acceptance`, `earn_acceptance` | `registered` | `unknown` | high / weekly |
 | `jp.paypay.merchant-list` | `T2_OFFICIAL_SUPPORT` | PayPay | [PayPay merchant list](https://paypay.ne.jp/shop/) | `merchant_acceptance` | `registered` | `unknown` | high / weekly |
 | `jp.ponta.partner-list` | `T2_OFFICIAL_SUPPORT` | Loyalty Marketing / Recruit | [Ponta participating services](https://point.recruit.co.jp/point/?tab=pointUseService) | `merchant_participation`, `redemption_acceptance` | `registered` | `unknown` | high / weekly |
 | `jp.vpoint.store-list` | `T2_OFFICIAL_SUPPORT` | V Point | [V Point participating stores](https://t-point.tsite.jp/store/list/) | `merchant_participation`, `earn_acceptance` | `registered` | `unknown` | high / weekly |
@@ -204,8 +205,8 @@ Eight official sources are marked content-verified. Six belong to the project-ow
 | `jp.dbarai.campaigns` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d払い campaigns](https://service.smt.docomo.ne.jp/keitai_payment/campaign/) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
 | `jp.dbarai.local-campaigns` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d払い local-government and regional campaigns](https://service.smt.docomo.ne.jp/keitai_payment/campaign/dpay_ouen/) | `local_campaigns`, `location_scope` | `registered` | `unknown` | very_high / daily |
 | `jp.dcard.campaigns` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d Card campaigns](https://d-card.jp/st/campaigns/nomember.html) | `card_campaigns`, `welcome_offers` | `registered` | `unknown` | very_high / daily |
-| `jp.jrepoint.campaigns` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT campaigns](https://www.jrepoint.jp/campaign/list/) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
-| `jp.nanaco.campaigns` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco campaigns](https://www.nanaco-net.jp/cp/) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
+| `jp.jrepoint.campaigns` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT campaigns](https://www.jrepoint.jp/campaign/list/) | `campaign_discovery`, `campaign_validity` | `temporarily_unavailable` | `unknown` | very_high / daily |
+| `jp.nanaco.campaigns` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco campaigns](https://www.nanaco-net.jp/cp/index.html) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
 | `jp.paypay.campaigns` | `T2_OFFICIAL_SUPPORT` | PayPay | [PayPay campaigns](https://paypay.ne.jp/event/) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
 | `jp.paypay.local-campaigns` | `T2_OFFICIAL_SUPPORT` | PayPay | [PayPay local campaigns](https://paypay.ne.jp/event/support-local/) | `local_campaigns`, `location_scope` | `registered` | `unknown` | very_high / daily |
 | `jp.paypaycard.campaigns` | `T2_OFFICIAL_SUPPORT` | PayPay Card | [PayPay Card campaigns](https://www.paypay-card.co.jp/event/) | `card_campaigns`, `welcome_offers` | `registered` | `unknown` | very_high / daily |
@@ -268,6 +269,45 @@ Eight official sources are marked content-verified. Six belong to the project-ow
 | `jp.moppy.home` | `T1_CANONICAL` | Ceres | [Moppy offers](https://pc.moppy.jp/) | `merchant_rates`, `campaigns` | `registered` | `unknown` | very_high / daily |
 | `jp.rebates.guide` | `T1_CANONICAL` | Rakuten Group | [Rakuten Rebates guide](https://www.rebates.jp/static/guide) | `attribution_rules`, `cashback_process` | `registered` | `unknown` | high / weekly |
 | `jp.rebates.store-list` | `T1_CANONICAL` | Rakuten Group | [Rakuten Rebates store list](https://www.rebates.jp/stores) | `merchant_rates`, `merchant_terms` | `registered` | `unknown` | very_high / daily |
+
+## Research A canonical page additions (32)
+
+These page-level records bind the bounded P0 point-rules research artifact. Existing canonical IDs are reused where the page URL already has a registry identity; these 32 entries cover the remaining official locators. JRE direct locators that returned HTTP 403 remain `temporarily_unavailable` while their source identities are retained.
+
+| ID | Tier | Publisher | Source | Authority scope | Verification | Technical access | Volatility / cadence |
+|---|---|---|---|---|---|---|---|
+| `jp.dpoint.campaigns` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT campaign directory](https://dpoint.docomo.ne.jp/campaign/) | `campaign_discovery`, `campaign_validity` | `registered` | `unknown` | very_high / daily |
+| `jp.dpoint.earn-mobile` | `T1_CANONICAL` | NTT DOCOMO | [d POINT mobile-service earning rules](https://dpoint.docomo.ne.jp/acc/mobile_use/index.html) | `earn_rules`, `eligible_basis` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.info` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT notices](https://dpoint.docomo.ne.jp/info/index.html) | `service_changes`, `operational_notices` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.merchant-list` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT participating-store directory](https://dpoint.docomo.ne.jp/store/index.html) | `merchant_acceptance`, `earn_acceptance` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.terms-20260701` | `T1_CANONICAL` | NTT DOCOMO | [d POINT Club member terms effective 2026-07-01](https://dpoint.docomo.ne.jp/instruction/pdf/d_point_club_kiyaku_20260701.pdf) | `program_terms`, `earn_rules`, `expiry_rules`, `transfer_rules`, `redemption_rules` | `registered` | `unknown` | medium / monthly |
+| `jp.dpoint.transfer` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT exchange directory](https://dpoint.docomo.ne.jp/store/exchange/index.html) | `transfer_partners`, `conversion_routes` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.use-limited-faq` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT limited-use points FAQ](https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint04.html) | `expiry_rules`, `redemption_priority` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.use-rate-faq` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT redemption-value FAQ](https://dpoint.docomo.ne.jp/static/guide/faq/Point/Dpoint07/) | `redemption_value`, `redemption_rules` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.earn-timing-faq` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT earning-timing FAQ](https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint26.html) | `posting_timing`, `earn_rules` | `registered` | `unknown` | high / weekly |
+| `jp.dpoint.use-guide` | `T2_OFFICIAL_SUPPORT` | NTT DOCOMO | [d POINT redemption guide](https://dpoint.docomo.ne.jp/guide/howto_use/index.html) | `redemption_rules`, `redemption_routes` | `registered` | `unknown` | high / weekly |
+| `jp.jrepoint.expiry-faq` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT expiry FAQ](https://faq.jrepoint.jp/faq/show/29?site_domain=default) | `expiry_rules`, `reward_classes` | `registered` | `unknown` | medium / monthly |
+| `jp.jrepoint.family-transfer-faq` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT family-transfer FAQ](https://faq.jrepoint.jp/faq/show/474?site_domain=default) | `transfer_eligibility`, `transfer_rules` | `registered` | `unknown` | high / weekly |
+| `jp.jrepoint.info` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT notices](https://www.jrepoint.jp/information/list/) | `service_changes`, `operational_notices` | `registered` | `unknown` | high / weekly |
+| `jp.jrepoint.merchant-card` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT card/barcode merchant earning page](https://www.jrepoint.jp/point/append/jrepoint-card/) | `merchant_acceptance`, `earn_rules` | `temporarily_unavailable` | `unknown` | high / weekly |
+| `jp.jrepoint.overview` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT overview](https://www.jrepoint.jp/point/first/) | `program_overview`, `merchant_acceptance`, `redemption_rules` | `registered` | `unknown` | high / weekly |
+| `jp.jrepoint.suica-info` | `T1_CANONICAL` | JR East | [JRE POINT Suica benefits](https://www.jrepoint.jp/information/suica/) | `earn_rules`, `suica_registration`, `redemption_value` | `registered` | `unknown` | high / weekly |
+| `jp.jrepoint.transfer-terms` | `T1_CANONICAL` | JR East | [JRE POINT exchange special terms](https://www.jrepoint.jp/agreement/jrepoint/) | `program_terms`, `transfer_rules`, `conversion_routes` | `temporarily_unavailable` | `unknown` | medium / monthly |
+| `jp.jrepoint.use-faq` | `T2_OFFICIAL_SUPPORT` | JR East | [JRE POINT use FAQ](https://faq.jrepoint.jp/faq/show/2724?category_id=115&site_domain=default) | `redemption_rules`, `redemption_routes` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.expiry-confirm` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco balance and expiry confirmation](https://www.nanaco-net.jp/how-to/menu/confirm.html) | `expiry_rules`, `redemption_priority` | `registered` | `unknown` | medium / monthly |
+| `jp.nanaco.info-app-end` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco app and online-service change notice](https://www.nanaco-net.jp/information/info_00099.html) | `service_changes`, `effective_date` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.info` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco notices](https://www.nanaco-net.jp/information/index.html) | `service_changes`, `operational_notices` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.info-saison-end` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco Saison/UC earning-end notice](https://www.nanaco-net.jp/information/info_00093.html) | `service_changes`, `effective_date` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.info-vworld-end` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco V Point/World Point exchange-end notice](https://www.nanaco-net.jp/information/info_00084.html) | `service_changes`, `effective_date` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.terms` | `T1_CANONICAL` | Seven Card Service | [nanaco terms index](https://www.nanaco-net.jp/terms/) | `program_terms`, `earn_rules`, `redemption_rules` | `registered` | `unknown` | medium / monthly |
+| `jp.nanaco.terms-points` | `T1_CANONICAL` | Seven Card Service | [nanaco member terms and point-service special terms](https://entry.nanaco-net.jp/entry_all/kiyaku.html) | `program_terms`, `expiry_rules`, `redemption_rules` | `registered` | `unknown` | medium / monthly |
+| `jp.nanaco.transfer-ana` | `T1_CANONICAL` | Seven Card Service | [nanaco to ANA miles exchange rules](https://www.nanaco-net.jp/how-to/use_point/ana.html) | `transfer_partners`, `conversion_routes`, `eligibility` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.use` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco point use guide](https://www.nanaco-net.jp/how-to/use_point/index.html) | `redemption_rules`, `redemption_routes` | `registered` | `unknown` | high / weekly |
+| `jp.nanaco.net-faq` | `T2_OFFICIAL_SUPPORT` | Seven Card Service | [nanaco online-shopping points FAQ](https://www.nanaco-net.jp/support/faq_net.html) | `earn_rules`, `redemption_rules` | `registered` | `unknown` | high / weekly |
+| `jp.paypay.balance-points` | `T2_OFFICIAL_SUPPORT` | PayPay | [PayPay balance and points FAQ](https://paypay.ne.jp/help/c0048/) | `balance_types`, `expiry_rules`, `transfer_rules` | `registered` | `unknown` | high / weekly |
+| `jp.paypay.points` | `T1_CANONICAL` | PayPay | [PayPay points rules](https://paypay.ne.jp/point/) | `point_types`, `expiry_rules`, `transfer_rules`, `redemption_rules`, `redemption_value` | `registered` | `unknown` | high / weekly |
+| `jp.paypay.points-use` | `T2_OFFICIAL_SUPPORT` | PayPay | [PayPay points use guide](https://paypay.ne.jp/guide/point-use/) | `redemption_rules`, `redemption_routes`, `redemption_value` | `registered` | `unknown` | high / weekly |
+| `jp.paypay.terms` | `T1_CANONICAL` | PayPay | [PayPay consumer terms](https://about.paypay.ne.jp/terms/consumer/rule/) | `program_terms`, `transfer_rules`, `redemption_rules` | `registered` | `unknown` | medium / monthly |
 
 ## Discovery-only change detectors (1)
 
