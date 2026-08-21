@@ -279,6 +279,56 @@ export interface ExperimentalRecommendationPort {
   ): Promise<ExperimentalRecommendationResult>;
 }
 
+/** Browser-safe request for the separate Seven Card Plus -> nanaco route. */
+export const EXPERIMENTAL_NANACO_CREDIT_CHARGE_SELECTION_ID =
+  "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1" as const;
+export const EXPERIMENTAL_NANACO_CREDIT_CHARGE_PAYMENT_METHOD =
+  "seven_card_plus" as const;
+
+export interface NanacoCreditChargeRecommendationInput {
+  readonly selection_id: string;
+  readonly charge_amount_jpy: number;
+  readonly nanaco_balance_jpy: number;
+  readonly seven_card_plus_owned: boolean;
+  readonly nanaco_credit_charge_preregistered: boolean;
+  readonly effective_at: string;
+}
+
+export interface NanacoCreditChargeRecommendationPlan {
+  readonly plan_id: string;
+  readonly eligible: boolean;
+  readonly reward_points: string;
+  readonly objective_score_jpy: string | null;
+  readonly operation_count: number;
+  readonly conditions: readonly string[];
+}
+
+export interface NanacoCreditChargeRecommendationResult {
+  readonly version: "real-experimental-nanaco-credit-charge-recommendation.v1";
+  readonly request_id: string;
+  readonly mode: "experimental_real_data";
+  readonly verification_status: "experimental_unverified";
+  readonly outcome: "definite" | "no_valid_plan";
+  readonly selection_id: string;
+  readonly payment_method: "seven_card_plus";
+  readonly destination: "nanaco";
+  readonly charge_amount_jpy: number;
+  readonly nanaco_balance_before_jpy: number;
+  readonly nanaco_balance_after_jpy: number;
+  readonly effective_at: string;
+  readonly winner_plan_id: string | null;
+  readonly winner: NanacoCreditChargeRecommendationPlan | null;
+  readonly plans: readonly NanacoCreditChargeRecommendationPlan[];
+  readonly assumptions: readonly string[];
+  readonly blockers: readonly string[];
+}
+
+export interface NanacoCreditChargeRecommendationPort {
+  evaluate(
+    input: NanacoCreditChargeRecommendationInput,
+  ): Promise<NanacoCreditChargeRecommendationResult>;
+}
+
 export interface ManualFactInput {
   readonly key: string;
   readonly status: "known" | "unknown";
@@ -351,6 +401,14 @@ const TOP_LEVEL_EXPERIMENTAL_RECOMMENDATION_KEYS = new Set([
   "amount_jpy",
   "tax_exclusive_amount_jpy",
   "nanaco_balance_jpy",
+  "effective_at",
+]);
+const TOP_LEVEL_NANACO_CREDIT_CHARGE_RECOMMENDATION_KEYS = new Set([
+  "selection_id",
+  "charge_amount_jpy",
+  "nanaco_balance_jpy",
+  "seven_card_plus_owned",
+  "nanaco_credit_charge_preregistered",
   "effective_at",
 ]);
 const FORBIDDEN_KEY_PARTS = [
@@ -723,6 +781,49 @@ export function parseExperimentalRecommendation(
     tax_exclusive_amount_jpy: value.tax_exclusive_amount_jpy as number,
     nanaco_balance_jpy: value.nanaco_balance_jpy as number,
     effective_at: value.effective_at,
+  });
+}
+
+/** Parse the exact host-owned credit-charge request DTO. */
+export function parseNanacoCreditChargeRecommendation(
+  value: unknown,
+): NanacoCreditChargeRecommendationInput {
+  assertNoForbiddenInput(value);
+  if (!isPlainRecord(value)) throw new InputContractError("body_invalid");
+  assertExactKeys(value, TOP_LEVEL_NANACO_CREDIT_CHARGE_RECOMMENDATION_KEYS);
+  if (
+    value.selection_id !== EXPERIMENTAL_NANACO_CREDIT_CHARGE_SELECTION_ID &&
+    value.selection_id !== "nanaco-credit-charge"
+  )
+    throw new InputContractError("nanaco_credit_charge_selection_invalid");
+  if (
+    !Number.isSafeInteger(value.charge_amount_jpy) ||
+    (value.charge_amount_jpy as number) < 0 ||
+    (value.charge_amount_jpy as number) > 30_000
+  )
+    throw new InputContractError("nanaco_credit_charge_amount_invalid");
+  if (
+    !Number.isSafeInteger(value.nanaco_balance_jpy) ||
+    (value.nanaco_balance_jpy as number) < 0 ||
+    (value.nanaco_balance_jpy as number) > 50_000
+  )
+    throw new InputContractError("nanaco_credit_charge_balance_invalid");
+  if (typeof value.seven_card_plus_owned !== "boolean")
+    throw new InputContractError("nanaco_credit_charge_ownership_invalid");
+  if (typeof value.nanaco_credit_charge_preregistered !== "boolean")
+    throw new InputContractError(
+      "nanaco_credit_charge_preregistration_invalid",
+    );
+  if (!isCanonicalProvisionalDateTime(value.effective_at))
+    throw new InputContractError("nanaco_credit_charge_effective_at_invalid");
+  return Object.freeze({
+    selection_id: value.selection_id as string,
+    charge_amount_jpy: value.charge_amount_jpy as number,
+    nanaco_balance_jpy: value.nanaco_balance_jpy as number,
+    seven_card_plus_owned: value.seven_card_plus_owned as boolean,
+    nanaco_credit_charge_preregistered:
+      value.nanaco_credit_charge_preregistered as boolean,
+    effective_at: value.effective_at as string,
   });
 }
 

@@ -634,6 +634,43 @@ P0 manifest and compile each sufficiently structured result through the same
 experimental rule path; incomplete claims remain visible reference facts and
 must not be converted into invented economics.
 
+### Interim Milestone 7P.9 — Executable P0 work units and Nanaco credit charge
+
+Implementation checkpoint (2026-08-22): the offline P0 operations driver now
+expands the sealed 44-family / 19-stream / 301-target plan into 44 deterministic
+work-unit requests of no more than eight role targets. It admits prior
+checkpoints or terminal receipts, selects unresolved, stale, or input-changed
+targets for retry, and locally reconciles a returned receipt before the
+PostgreSQL adapter can persist it. Registered URLs remain source hints rather
+than evidence.
+
+The repaired live ChatGPT connector exposed the complete nine-field
+`submit_batch` request. A bounded `point.nanaco` canary used work unit
+`sha256:8a065f31af7c36e225c581b36643885654c7317f3f1e9d3909ba7734ddb1fa65`
+and closed run `01ee07c7-559b-4957-b4eb-aa4fb152bef3` as `partial`: all eight
+required role categories were checked, eight of sixteen registered locators
+were visited, and one source-coverage finding plus one lead-only evidence item
+were accepted. The run explicitly carried no publication authority and did
+not create a canonical economic rule.
+
+The consumer now has a second independent experimental calculation lane for
+Seven Card Plus credit-funded Nanaco top-up. Its immutable database binding
+requires the two existing reviewed evidence records and exact claim, source,
+candidate, and definition identities. The native engine models one
+`stored_value_top_up` operation, conserves Nanaco principal, and returns
+separate Nanaco points at one point per JPY 200. The request requires ownership,
+preregistration, the JPY 5,000 minimum, JPY 1,000 increment, JPY 30,000
+per-charge ceiling, and JPY 50,000 post-charge balance ceiling. The browser
+receives no hashes, rule IDs, evidence IDs, source IDs, or invented JPY value,
+and the result remains `experimental_real_data` / `experimental_unverified`.
+
+The remaining P0 work is operational execution and structured compilation,
+not widening the engine from loose catalogue facts. Each work unit may add a
+new calculation lane only when its captured result supplies an exact operation,
+asset flow, eligibility boundary, rounding basis, validity window, and
+source-bound evidence tuple. Other results stay searchable facts and correction
+targets.
+
 ## Later milestones
 
 - full data-operations console;

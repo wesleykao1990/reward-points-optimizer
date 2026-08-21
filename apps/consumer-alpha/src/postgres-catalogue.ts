@@ -1,5 +1,7 @@
 import {
   createPostgresExperimentalCatalogueStore,
+  createPostgresNanacoCreditChargeRouteStore,
+  type NanacoCreditChargeRouteRecord,
   type P0ExperimentalCatalogueRecord,
   type P0ExperimentalPaymentAcceptanceRecord,
   type P0ExperimentalRewardRateRecord,
@@ -12,6 +14,11 @@ import type {
   ExperimentalCatalogueSnapshot,
   ExperimentalCorrectionInput,
 } from "./contracts.js";
+import {
+  createNanacoCreditChargeRecommendationPort,
+  NANACO_CREDIT_CHARGE_PUBLICATION_ID,
+  type NanacoCreditChargeRuleSource,
+} from "./nanaco-credit-charge-recommendation.js";
 import { normalizeExperimentalCatalogueSnapshot } from "./provisional-catalog.js";
 import {
   createNanacoExperimentalRecommendationPort,
@@ -72,8 +79,29 @@ export function mapPostgresPaymentAcceptanceRecordToCard(
   });
 }
 
+export function mapPostgresNanacoCreditChargeRecordToCard(
+  record: NanacoCreditChargeRouteRecord,
+): ExperimentalCatalogueCard {
+  return Object.freeze({
+    publication_id: record.route_id,
+    kind: "other",
+    title: "セブンカード・プラスからnanacoへチャージ",
+    summary:
+      "事前登録済みのセブンカード・プラスで、5,000円以上・1,000円単位、1回30,000円までnanacoへチャージできます。チャージ後残高は50,000円までです。",
+    display_status: "experimental_unverified",
+    confidence: "high",
+    source_label: "nanaco・セブンカード公式情報",
+    checked_at: record.checked_at,
+    valid_from: record.valid_from,
+    valid_to: record.valid_to,
+  });
+}
+
 function latestDate(
-  records: readonly P0ExperimentalCatalogueRecord[],
+  records: readonly {
+    readonly checked_at: string;
+    readonly admitted_at: string;
+  }[],
 ): string | null {
   let latest: { readonly timestamp: number; readonly value: string } | null =
     null;
@@ -98,13 +126,25 @@ export function createPostgresExperimentalCataloguePort(
   target: QueryTarget,
 ): ExperimentalCataloguePort {
   const store = createPostgresExperimentalCatalogueStore(target);
+  const creditChargeStore = createPostgresNanacoCreditChargeRouteStore(target);
   return Object.freeze({
     async list(effectiveAt?: string): Promise<ExperimentalCatalogueSnapshot> {
-      const records = await store.list(effectiveAt);
+      const [records, creditCharge] = await Promise.all([
+        store.list(effectiveAt),
+        creditChargeStore
+          .current(effectiveAt ?? new Date().toISOString())
+          .catch(() => null),
+      ]);
+      const cards = records.map(mapPostgresCatalogueRecordToCard);
+      if (creditCharge)
+        cards.push(mapPostgresNanacoCreditChargeRecordToCard(creditCharge));
       return normalizeExperimentalCatalogueSnapshot({
         status: "ready",
-        updated_at: latestDate(records),
-        rules: records.map(mapPostgresCatalogueRecordToCard),
+        updated_at: latestDate([
+          ...records,
+          ...(creditCharge ? [creditCharge] : []),
+        ]),
+        rules: cards,
       });
     },
 
@@ -160,3 +200,29 @@ export function createPostgresNanacoExperimentalRecommendationPort(
 
 export const createPostgresExperimentalRecommendationPort =
   createPostgresNanacoExperimentalRecommendationPort;
+
+/** Bind the separate top-up lane to its own evidence-bound DB route. */
+export function createPostgresNanacoCreditChargeRecommendationPort(
+  target: QueryTarget,
+) {
+  const store = createPostgresNanacoCreditChargeRouteStore(target);
+  const source: NanacoCreditChargeRuleSource = Object.freeze({
+    async current(effectiveAt: string) {
+      const record = await store.current(effectiveAt);
+      if (record.route_id !== NANACO_CREDIT_CHARGE_PUBLICATION_ID)
+        throw new Error("nanaco_credit_charge_route_not_current");
+      return {
+        route_id: record.route_id,
+        candidate_id: record.candidate_id,
+        candidate_hash: record.candidate_hash,
+        definition_hash: record.definition_hash,
+        finding_id: record.finding_id,
+        claim_ids: record.claim_ids,
+        evidence_ids: record.evidence_ids,
+        source_ids: record.source_ids,
+        reward_rule: record.reward_rule,
+      };
+    },
+  });
+  return createNanacoCreditChargeRecommendationPort(source);
+}

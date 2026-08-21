@@ -202,3 +202,29 @@ the stale schema when last inspected. Before resuming economic delivery:
 Until that live probe passes, the producer must fail the connector capability
 gate, retain a validated replay candidate, and make no live `submit_batch`
 claim.
+
+### Repaired connector and bounded P0 operations canary
+
+On 2026-08-22 the connected ChatGPT app exposed the complete nine-field
+`submit_batch` declaration. The new deterministic Rewards operations driver
+prepared one `point.nanaco` work unit containing the eight required source-role
+categories and all sixteen registered locator hints. The live run was:
+
+- Run ID: `01ee07c7-559b-4957-b4eb-aa4fb152bef3`
+- Work-unit hash:
+  `sha256:8a065f31af7c36e225c581b36643885654c7317f3f1e9d3909ba7734ddb1fa65`
+- Request hash:
+  `sha256:7f81fafdb01cf606a784dce62ceffa29e014f40af627a235d8483149be47b29d`
+- Terminal status: `partial`
+- Accepted: one batch, one `coverage_candidate`, and one lead-only web
+  evidence record
+- Actual scope: eight role categories and eight official source locators
+  attempted/succeeded
+
+The status is deliberately `partial` because the bounded canary did not visit
+all sixteen registered hints. It does not mean that any role lacks public
+information: every required role category had an official representative page.
+The finding states `publication_authority: none`, the evidence has no asserted
+content hash, and neither object is canonical economic truth. The run therefore
+proves the repaired live submission shape and terminal accounting without
+overstating P0 completion.

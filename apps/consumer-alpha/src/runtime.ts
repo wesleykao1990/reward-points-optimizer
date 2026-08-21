@@ -7,6 +7,7 @@ import { Pool } from "pg";
 import { createPostgresImplementationFactCataloguePort } from "./implementation-catalog.js";
 import {
   createPostgresExperimentalCataloguePort,
+  createPostgresNanacoCreditChargeRecommendationPort,
   createPostgresNanacoExperimentalRecommendationPort,
 } from "./postgres-catalogue.js";
 import type { AppDependencies } from "./server.js";
@@ -46,6 +47,8 @@ export function createPostgresAppDependencies(
     experimentalCatalogue: createPostgresExperimentalCataloguePort(target),
     experimentalRecommendation:
       createPostgresNanacoExperimentalRecommendationPort(target),
+    experimentalNanacoCreditChargeRecommendation:
+      createPostgresNanacoCreditChargeRecommendationPort(target),
     implementationFacts: createPostgresImplementationFactCataloguePort(
       implementationStore,
       options,

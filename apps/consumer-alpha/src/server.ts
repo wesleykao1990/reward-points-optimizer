@@ -7,6 +7,7 @@ import {
 } from "node:http";
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { types as nodeTypes } from "node:util";
 import type {
   ExperimentalCataloguePort,
   ExperimentalCorrectionInput,
@@ -15,6 +16,9 @@ import type {
   ExperimentalRecommendationResult,
   ImplementationFactCataloguePort,
   ImplementationFactCorrectionInput,
+  NanacoCreditChargeRecommendationInput,
+  NanacoCreditChargeRecommendationPort,
+  NanacoCreditChargeRecommendationResult,
 } from "./contracts.js";
 import {
   InputContractError,
@@ -27,6 +31,7 @@ import {
   parseExperimentalRecommendation,
   parseImplementationFactCorrection,
   parseManualAlphaState,
+  parseNanacoCreditChargeRecommendation,
 } from "./contracts.js";
 import {
   adaptImplementationFactBackend,
@@ -34,6 +39,14 @@ import {
   type ImplementationFactBackend,
   normalizeImplementationFactSnapshot,
 } from "./implementation-catalog.js";
+import {
+  createUnavailableNanacoCreditChargeRecommendationPort,
+  NANACO_CREDIT_CHARGE_PLAN_ID,
+  NANACO_CREDIT_CHARGE_PUBLIC_ASSUMPTIONS,
+  NANACO_CREDIT_CHARGE_PUBLIC_BLOCKERS,
+  NANACO_CREDIT_CHARGE_REWARD_QUANTUM_JPY,
+  NanacoCreditChargeRecommendationError,
+} from "./nanaco-credit-charge-recommendation.js";
 import {
   mapCorrectionDraftForBrowser,
   mapRecommendationForBrowser,
@@ -77,6 +90,57 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = Object.freeze({
 const MAX_ISSUED_RECOMMENDATIONS = 128;
 const issuedRecommendationIds = new Set<string>();
 
+/** Descriptor-first admission for trusted-port output; never invokes accessors. */
+function isPlainDataOutput(
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet(),
+  depth = 0,
+): boolean {
+  if (value === null || typeof value === "string" || typeof value === "boolean")
+    return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value !== "object" || depth > 24 || nodeTypes.isProxy(value))
+    return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+
+  const keys = Reflect.ownKeys(value);
+  if (keys.length > 256) return false;
+  if (Array.isArray(value)) {
+    if (Object.getPrototypeOf(value) !== Array.prototype) return false;
+    if (keys.length !== value.length + 1 || !keys.includes("length"))
+      return false;
+    for (let index = 0; index < value.length; index += 1) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+      if (
+        descriptor === undefined ||
+        descriptor.enumerable !== true ||
+        !("value" in descriptor) ||
+        !isPlainDataOutput(descriptor.value, seen, depth + 1)
+      )
+        return false;
+    }
+    seen.delete(value);
+    return true;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return false;
+  for (const key of keys) {
+    if (typeof key !== "string") return false;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (
+      descriptor === undefined ||
+      descriptor.enumerable !== true ||
+      !("value" in descriptor) ||
+      !isPlainDataOutput(descriptor.value, seen, depth + 1)
+    )
+      return false;
+  }
+  seen.delete(value);
+  return true;
+}
+
 /** Reset only volatile test/session state; nothing is persisted. */
 export function resetIssuedRecommendationIds(): void {
   issuedRecommendationIds.clear();
@@ -119,6 +183,7 @@ export interface AppResponse {
 export interface AppDependencies {
   readonly experimentalCatalogue?: ExperimentalCataloguePort;
   readonly experimentalRecommendation?: ExperimentalRecommendationPort;
+  readonly experimentalNanacoCreditChargeRecommendation?: NanacoCreditChargeRecommendationPort;
   readonly implementationFacts?: ImplementationFactBackend;
   /** Descriptive alias accepted for the implementation-fact port. */
   readonly implementationCatalogue?: ImplementationFactBackend;
@@ -129,6 +194,7 @@ export interface AppDependencies {
 export type AppCatalogueDependency =
   | ExperimentalCataloguePort
   | ExperimentalRecommendationPort
+  | NanacoCreditChargeRecommendationPort
   | ImplementationFactBackend
   | AppDependencies;
 
@@ -153,6 +219,33 @@ function resolveExperimentalRecommendation(
     if (port && typeof port.evaluate === "function") return port;
   }
   throw requestError(500, "experimental_recommendation_dependency_invalid");
+}
+
+function resolveNanacoCreditChargeRecommendation(
+  dependency: AppCatalogueDependency | undefined,
+): NanacoCreditChargeRecommendationPort {
+  if (dependency === undefined)
+    return createUnavailableNanacoCreditChargeRecommendationPort();
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "evaluate" in dependency &&
+    typeof dependency.evaluate === "function" &&
+    !("experimentalRecommendation" in dependency)
+  )
+    return dependency as NanacoCreditChargeRecommendationPort;
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "experimentalNanacoCreditChargeRecommendation" in dependency
+  ) {
+    const port = dependency.experimentalNanacoCreditChargeRecommendation;
+    if (port && typeof port.evaluate === "function") return port;
+  }
+  throw requestError(
+    500,
+    "nanaco_credit_charge_recommendation_dependency_invalid",
+  );
 }
 
 function resolveExperimentalCatalogue(
@@ -405,7 +498,7 @@ function safeExperimentalRecommendation(
     result.amount_jpy !== input.amount_jpy ||
     result.tax_exclusive_amount_jpy !== input.tax_exclusive_amount_jpy ||
     result.effective_at !== input.effective_at ||
-    (result.outcome !== "definite" && result.outcome !== "no_valid_plan")
+    result.outcome !== "definite"
   )
     throw requestError(503, "experimental_recommendation_unavailable");
   if (
@@ -510,6 +603,192 @@ function safeExperimentalRecommendation(
     branch_id: result.branch_id,
     amount_jpy: result.amount_jpy,
     tax_exclusive_amount_jpy: result.tax_exclusive_amount_jpy,
+    effective_at: result.effective_at,
+    winner_plan_id: result.winner_plan_id as string | null,
+    winner,
+    plans,
+    assumptions: safeStrings(result.assumptions),
+    blockers: safeStrings(result.blockers),
+  });
+}
+
+function safeNanacoCreditChargeRecommendation(
+  value: unknown,
+  input: NanacoCreditChargeRecommendationInput,
+): NanacoCreditChargeRecommendationResult {
+  if (!isPlainDataOutput(value))
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  const result = value as Record<string, unknown>;
+  const expected = [
+    "version",
+    "request_id",
+    "mode",
+    "verification_status",
+    "outcome",
+    "selection_id",
+    "payment_method",
+    "destination",
+    "charge_amount_jpy",
+    "nanaco_balance_before_jpy",
+    "nanaco_balance_after_jpy",
+    "effective_at",
+    "winner_plan_id",
+    "winner",
+    "plans",
+    "assumptions",
+    "blockers",
+  ].sort();
+  if (
+    Object.keys(result).sort().length !== expected.length ||
+    Object.keys(result)
+      .sort()
+      .some((key, index) => key !== expected[index])
+  )
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  if (
+    result.version !==
+      "real-experimental-nanaco-credit-charge-recommendation.v1" ||
+    result.mode !== "experimental_real_data" ||
+    result.verification_status !== "experimental_unverified" ||
+    result.selection_id !== input.selection_id ||
+    result.payment_method !== "seven_card_plus" ||
+    result.destination !== "nanaco" ||
+    result.charge_amount_jpy !== input.charge_amount_jpy ||
+    result.nanaco_balance_before_jpy !== input.nanaco_balance_jpy ||
+    result.nanaco_balance_after_jpy !==
+      input.nanaco_balance_jpy + input.charge_amount_jpy ||
+    result.effective_at !== input.effective_at ||
+    result.outcome !== "definite"
+  )
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  if (
+    typeof result.request_id !== "string" ||
+    !/^experimental_nanaco_credit_charge_[0-9a-f]{64}$/u.test(result.request_id)
+  )
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  const safeStrings = (value: unknown): readonly string[] => {
+    if (
+      !Array.isArray(value) ||
+      value.length > 16 ||
+      value.some(
+        (item) =>
+          typeof item !== "string" ||
+          item.length === 0 ||
+          item.length > 240 ||
+          /https?:\/\//iu.test(item) ||
+          /sha256:[0-9a-f]{16,}/iu.test(item),
+      )
+    )
+      throw requestError(
+        503,
+        "nanaco_credit_charge_recommendation_unavailable",
+      );
+    return Object.freeze([...value]);
+  };
+  const safePlan = (
+    value: unknown,
+  ): NanacoCreditChargeRecommendationResult["winner"] => {
+    if (value === null) return null;
+    if (typeof value !== "object" || Array.isArray(value))
+      throw requestError(
+        503,
+        "nanaco_credit_charge_recommendation_unavailable",
+      );
+    const plan = value as Record<string, unknown>;
+    const keys = Object.keys(plan).sort();
+    if (
+      keys.join(",") !==
+      [
+        "conditions",
+        "eligible",
+        "objective_score_jpy",
+        "operation_count",
+        "plan_id",
+        "reward_points",
+      ]
+        .sort()
+        .join(",")
+    )
+      throw requestError(
+        503,
+        "nanaco_credit_charge_recommendation_unavailable",
+      );
+    if (
+      typeof plan.plan_id !== "string" ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(plan.plan_id) ||
+      typeof plan.eligible !== "boolean" ||
+      typeof plan.reward_points !== "string" ||
+      !/^\d{1,32}$/u.test(plan.reward_points) ||
+      (plan.objective_score_jpy !== null &&
+        typeof plan.objective_score_jpy !== "string") ||
+      !Number.isSafeInteger(plan.operation_count) ||
+      (plan.operation_count as number) < 0
+    )
+      throw requestError(
+        503,
+        "nanaco_credit_charge_recommendation_unavailable",
+      );
+    return Object.freeze({
+      plan_id: plan.plan_id,
+      eligible: plan.eligible,
+      reward_points: plan.reward_points,
+      objective_score_jpy: plan.objective_score_jpy,
+      operation_count: plan.operation_count as number,
+      conditions: safeStrings(plan.conditions),
+    });
+  };
+  if (!Array.isArray(result.plans) || result.plans.length !== 1)
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  const plans = Object.freeze(
+    result.plans.map((item) => {
+      const plan = safePlan(item);
+      if (plan === null)
+        throw requestError(
+          503,
+          "nanaco_credit_charge_recommendation_unavailable",
+        );
+      return plan;
+    }),
+  );
+  const winner = safePlan(result.winner);
+  const onlyPlan = plans[0];
+  const expectedRewardPoints = String(
+    Math.floor(
+      input.charge_amount_jpy / NANACO_CREDIT_CHARGE_REWARD_QUANTUM_JPY,
+    ),
+  );
+  if (
+    onlyPlan === undefined ||
+    onlyPlan.plan_id !== NANACO_CREDIT_CHARGE_PLAN_ID ||
+    onlyPlan.eligible !== true ||
+    onlyPlan.reward_points !== expectedRewardPoints ||
+    onlyPlan.objective_score_jpy !== null ||
+    onlyPlan.operation_count !== 1 ||
+    onlyPlan.conditions.length !== 0 ||
+    winner === null ||
+    JSON.stringify(winner) !== JSON.stringify(onlyPlan) ||
+    result.winner_plan_id !== (winner?.plan_id ?? null) ||
+    result.winner_plan_id !== NANACO_CREDIT_CHARGE_PLAN_ID ||
+    JSON.stringify(result.assumptions) !==
+      JSON.stringify(NANACO_CREDIT_CHARGE_PUBLIC_ASSUMPTIONS) ||
+    JSON.stringify(result.blockers) !==
+      JSON.stringify(NANACO_CREDIT_CHARGE_PUBLIC_BLOCKERS)
+  )
+    throw requestError(503, "nanaco_credit_charge_recommendation_unavailable");
+  return Object.freeze({
+    version: "real-experimental-nanaco-credit-charge-recommendation.v1",
+    request_id: result.request_id,
+    mode: "experimental_real_data",
+    verification_status: "experimental_unverified",
+    outcome: result.outcome,
+    selection_id: result.selection_id,
+    payment_method: "seven_card_plus",
+    destination: "nanaco",
+    charge_amount_jpy: result.charge_amount_jpy,
+    nanaco_balance_before_jpy: result.nanaco_balance_before_jpy,
+    nanaco_balance_after_jpy: result.nanaco_balance_after_jpy,
     effective_at: result.effective_at,
     winner_plan_id: result.winner_plan_id as string | null,
     winner,
@@ -745,6 +1024,7 @@ export async function handleRequest(
       (pathname === "/api/synthetic/evaluate" ||
         pathname === "/api/corrections/draft" ||
         pathname === "/api/experimental/recommendation" ||
+        pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -869,6 +1149,49 @@ export async function handleRequest(
       }
       return jsonResponse(200, {
         recommendation: safeExperimentalRecommendation(result, input),
+      });
+    }
+    if (pathname === "/api/experimental/nanaco-credit-charge") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const input = parseNanacoCreditChargeRecommendation(
+        parseJsonBody(request, MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES),
+      );
+      let result: NanacoCreditChargeRecommendationResult;
+      try {
+        result =
+          await resolveNanacoCreditChargeRecommendation(dependency).evaluate(
+            input,
+          );
+      } catch (error) {
+        if (error instanceof NanacoCreditChargeRecommendationError) {
+          const status =
+            error.code === "selection_not_supported" ||
+            error.code === "charge_below_minimum" ||
+            error.code === "charge_not_increment" ||
+            error.code === "charge_above_maximum" ||
+            error.code === "balance_limit_exceeded" ||
+            error.code === "balance_invalid" ||
+            error.code === "ownership_required" ||
+            error.code === "preregistration_required" ||
+            error.code === "effective_at_invalid"
+              ? 400
+              : error.code === "rule_not_current"
+                ? 409
+                : 503;
+          throw requestError(status, `nanaco_credit_charge_${error.code}`);
+        }
+        throw requestError(
+          503,
+          "nanaco_credit_charge_recommendation_unavailable",
+        );
+      }
+      return jsonResponse(200, {
+        recommendation: safeNanacoCreditChargeRecommendation(result, input),
       });
     }
     if (pathname === "/api/corrections/draft") {
@@ -1047,6 +1370,7 @@ async function route(
       (pathname === "/api/synthetic/evaluate" ||
         pathname === "/api/corrections/draft" ||
         pathname === "/api/experimental/recommendation" ||
+        pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
         ? await readBodyBytes(
@@ -1055,7 +1379,9 @@ async function route(
               ? MAX_EVALUATE_BODY_BYTES
               : pathname === "/api/experimental/recommendation"
                 ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
-                : MAX_CORRECTION_BODY_BYTES,
+                : pathname === "/api/experimental/nanaco-credit-charge"
+                  ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
+                  : MAX_CORRECTION_BODY_BYTES,
           )
         : undefined;
     sendAppResponse(

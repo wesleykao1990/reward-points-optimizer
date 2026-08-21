@@ -520,6 +520,99 @@
     card.appendChild(section);
   };
 
+  const renderNanacoCreditChargeInteraction = (card, publicationId) => {
+    if (
+      publicationId !==
+      "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1"
+    )
+      return;
+    const section = node("section", "nanaco-experimental");
+    section.appendChild(text("h4", "セブンカード・プラスでnanacoにチャージ"));
+    section.appendChild(
+      text(
+        "p",
+        "所有と事前登録を確認し、チャージ額と現在の残高を入力します。ポイントの円換算は行いません。",
+        "nanaco-experimental-copy",
+      ),
+    );
+    const form = node("form", "nanaco-experimental-form");
+    const field = (labelText, value, max) => {
+      const label = node("label");
+      label.appendChild(text("span", labelText));
+      const input = node("input");
+      input.type = "number";
+      input.min = "0";
+      input.max = String(max);
+      input.step = "1";
+      input.value = String(value);
+      input.required = true;
+      label.appendChild(input);
+      form.appendChild(label);
+      return input;
+    };
+    const charge = field("チャージ額（円）", 5_000, 30_000);
+    const balance = field("現在のnanaco残高（円）", 0, 50_000);
+    const ownership = node("label");
+    const ownershipInput = node("input");
+    ownershipInput.type = "checkbox";
+    ownershipInput.checked = true;
+    ownership.appendChild(ownershipInput);
+    ownership.appendChild(text("span", "セブンカード・プラスを所有しています"));
+    form.appendChild(ownership);
+    const preregistration = node("label");
+    const preregistrationInput = node("input");
+    preregistrationInput.type = "checkbox";
+    preregistrationInput.checked = true;
+    preregistration.appendChild(preregistrationInput);
+    preregistration.appendChild(
+      text("span", "nanacoクレジットチャージを事前登録しています"),
+    );
+    form.appendChild(preregistration);
+    const submit = node("button", "secondary");
+    submit.type = "submit";
+    submit.textContent = "チャージ条件を確認する";
+    form.appendChild(submit);
+    const output = text("p", "", "nanaco-experimental-output");
+    form.appendChild(output);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      output.classList.remove("is-error");
+      output.textContent = "先行実験を計算しています…";
+      try {
+        const body = await postJson("/api/experimental/nanaco-credit-charge", {
+          selection_id: publicationId,
+          charge_amount_jpy: Number(charge.value),
+          nanaco_balance_jpy: Number(balance.value),
+          seven_card_plus_owned: ownershipInput.checked,
+          nanaco_credit_charge_preregistered: preregistrationInput.checked,
+          effective_at: new Date().toISOString(),
+        });
+        const recommendation = body?.recommendation;
+        if (
+          !recommendation ||
+          recommendation.verification_status !== "experimental_unverified"
+        )
+          throw new Error("response_invalid");
+        if (recommendation.outcome === "no_valid_plan") {
+          output.textContent =
+            "先行実験：現在の条件では有効な計画がありません。";
+        } else {
+          const winner = recommendation.winner;
+          output.textContent = `先行実験（未検証）：チャージ後残高 ¥${recommendation.nanaco_balance_after_jpy.toLocaleString("ja-JP")}, nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
+        }
+      } catch {
+        output.classList.add("is-error");
+        output.textContent =
+          "先行実験を実行できませんでした。チャージ条件と現在の情報が有効か確認してください。";
+      } finally {
+        submit.disabled = false;
+      }
+    });
+    section.appendChild(form);
+    card.appendChild(section);
+  };
+
   const renderExperimentalSnapshot = (snapshot) => {
     const list = document.getElementById("experimental-rules");
     clear(list);
@@ -595,6 +688,7 @@
       );
       card.appendChild(meta);
       renderNanacoExperimentalInteraction(card, publicationId);
+      renderNanacoCreditChargeInteraction(card, publicationId);
 
       const actions = node("div", "experimental-card-actions");
       const label = node("label");

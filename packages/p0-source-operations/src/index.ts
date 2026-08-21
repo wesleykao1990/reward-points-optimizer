@@ -2,6 +2,7 @@ import { canonicalize, canonicalSha256 } from "@jro/contracts";
 
 import { deepFreeze, type ShapeIssue, scanPlainData } from "./security.js";
 
+export * from "./driver.js";
 export * from "./operations.js";
 
 export const P0_SOURCE_ROLE_PLAN_VERSION = "p0-source-role-plan.v0.1" as const;

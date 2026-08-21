@@ -15,6 +15,7 @@
     "publication:m3:generate": "node scripts/m3_publication.mjs --sql-write",
     "publication:m3:self-test": "node scripts/m3_publication.mjs --self-test",
     "publication:m3:sql-check": "node scripts/m3_publication.mjs --sql-check",
+    "p0:operations": "node scripts/run_p0_operations.mjs",
     "seed:m3:check": "node scripts/generate_m3_db_seed.mjs --check",
     "seed:m3:generate": "node scripts/generate_m3_db_seed.mjs --write",
     "typecheck": "turbo run typecheck",

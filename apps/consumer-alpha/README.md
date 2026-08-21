@@ -36,6 +36,17 @@ response is always labeled `experimental_real_data` and
 `experimental_unverified`; it is neither a canonical publication nor current
 production advice.
 
+The database-backed shell also exposes a separate Seven Card Plus -> Nanaco
+credit-charge experiment at `POST
+/api/experimental/nanaco-credit-charge`. It requires explicit card ownership,
+Nanaco credit-charge preregistration, charge amount, current Nanaco balance,
+and effective time. The host enforces the reviewed JPY 5,000 minimum, JPY 1,000
+increment, JPY 30,000 per-charge maximum, JPY 50,000 post-charge balance cap,
+and one Nanaco point per JPY 200. This is one stored-value top-up operation;
+the created principal balance and the reward points remain separate, and no
+JPY valuation is invented. The UI labels the output as an unverified advance
+experiment and exposes none of its evidence, source, rule, or hash bindings.
+
 The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.

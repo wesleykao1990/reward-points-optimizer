@@ -46,6 +46,27 @@ export {
   compileSourceObservationClaims,
   createRewardClaimCompiler,
 } from "./compiler.js";
+export type {
+  NanacoCreditChargeCompilationInput,
+  NanacoCreditChargeCompilationResult,
+} from "./nanaco-credit-charge.js";
+export {
+  assertNanacoCreditChargeArtifact,
+  compileNanacoCreditChargeCandidate,
+  getNanacoCreditChargeCandidate,
+  getNanacoCreditChargeRule,
+  NANACO_CREDIT_CHARGE_CANDIDATE,
+  NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
+  NANACO_CREDIT_CHARGE_CLAIM_IDS,
+  NANACO_CREDIT_CHARGE_DEFINITION_HASH,
+  NANACO_CREDIT_CHARGE_EVIDENCE_IDS,
+  NANACO_CREDIT_CHARGE_FAMILY_ID,
+  NANACO_CREDIT_CHARGE_FINDING_ID,
+  NANACO_CREDIT_CHARGE_OBSERVATION_ID,
+  NANACO_CREDIT_CHARGE_RULE_ID,
+  NANACO_CREDIT_CHARGE_SOURCE_IDS,
+  NANACO_CREDIT_CHARGE_SOURCE_ROLE_ID,
+} from "./nanaco-credit-charge.js";
 export {
   activateNanacoEconomicPilot,
   admitNanacoEconomicPilot,
