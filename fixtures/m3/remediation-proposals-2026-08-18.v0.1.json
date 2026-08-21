@@ -1,0 +1,1009 @@
+{
+  "record_type": "m3_remediation_proposal_set",
+  "proposal_set_version": "0.1.0",
+  "proposal_set_id": "m3-remediation-proposals-2026-08-18",
+  "recorded_at": "2026-08-18",
+  "research_cutoff": "2026-08-18",
+  "timezone": "Asia/Tokyo",
+  "append_only": true,
+  "promotion_effect": "BLOCKED",
+  "purpose": "Record non-authoritative, human-reviewable remediation proposals for the nine blocked non-transfer M3 seed scenarios.",
+  "scope": {
+    "included_scenario_ids": [
+      "JP-CVS-002",
+      "JP-CVS-006",
+      "JP-CVS-014",
+      "JP-QR-007",
+      "JP-QR-008",
+      "JP-CMP-003",
+      "JP-CMP-007",
+      "JP-CMP-009",
+      "JP-ECOM-012"
+    ],
+    "excluded_scenario_ids": ["JP-XFR-002"],
+    "proposal_count": 9
+  },
+  "authoritative_refs": [
+    {
+      "kind": "experiment_manifest",
+      "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+      "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+    },
+    {
+      "kind": "experiment_review",
+      "path": "docs/reviews/m3-non-human-experiment-2026-08-18.md",
+      "sha256": "sha256:03b34571fb554d117b2b2fbe9e511192ad5f5b4a405a612127e8eb6741086171"
+    },
+    {
+      "kind": "authoritative_source_mapping",
+      "path": "packages/test-fixtures/src/m3-gate.ts",
+      "symbol": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS",
+      "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+    },
+    {
+      "kind": "seed_blueprint",
+      "path": "examples/ten-seed-scenario-blueprints.yaml",
+      "sha256": "sha256:3d893c9c7337af5c56149c1777cb23c0d6c31072be49fd9f09874b08b067916a"
+    },
+    {
+      "kind": "trusted_source_registry",
+      "path": "registry/trusted-sources.v0.3.json",
+      "sha256": "sha256:358e09442223dd464a711e29063e11532b94a4851ce3e9f55cc52229b42d0f46"
+    },
+    {
+      "kind": "source_review_queue",
+      "path": "registry/source-review-queue.v0.3.yaml",
+      "sha256": "sha256:0f0992245d7457a985be7f66311860ba2cea31fefa947370b830c5da210a7ecc"
+    },
+    {
+      "kind": "source_access_observations",
+      "path": "registry/source-access-observations.v0.3.yaml",
+      "sha256": "sha256:e3101b68f0584a0b7fb362c10a5d1e0805a229f9d50303d38369b45373b92cf6"
+    }
+  ],
+  "mapping_policy": {
+    "mapping_before_is_authoritative": true,
+    "mapping_changes_applied": false,
+    "mapping_after_is_proposal_only": true,
+    "source_ids_registered_or_replaced": false,
+    "approval_required_before_any_mapping_or_scope_change": true
+  },
+  "proposals": [
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CVS-002-v0.1",
+      "scenario_id": "JP-CVS-002",
+      "actions": ["retain_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["merchant.seveneleven.payment-faq"],
+      "mapping_after": ["merchant.seveneleven.payment-faq"],
+      "candidate_source_requirements": [
+        "Current first-party payment-acceptance terms covering ordinary goods, unsupported tenders, and relevant channels.",
+        "An approved terms, capture, storage, and collection-permission decision for the retained source.",
+        "A technical observation that distinguishes permitted automated access from manual reachability."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "merchant.seveneleven.payment-faq",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain the exact first-party payment FAQ mapping because payment acceptance and the unsupported-tender negative assertion are within its declared authority; a reachable page is not yet approved evidence.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Payment acceptance and rejection semantics must come from the merchant or provider's own current terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "No permission or authority is granted by this proposal."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[0] and source_gate.scenario_readiness[0]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CVS-002]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves the acceptance-versus-reward boundary and leaves unsupported tender handling unresolved until approved terms and evidence exist.",
+      "required_work": [
+        "Complete first-party terms and permission review.",
+        "Obtain a permitted technical access observation and immutable capture if allowed.",
+        "Recheck the negative assertion and perform the required independent calculation and review modes."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject the proposal if the first-party terms do not cover the frozen channel or if access is not permitted.",
+        "Keep the authoritative mapping and BLOCKED state unchanged on rejection."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to merchant.seveneleven.payment-faq.",
+          "The mapped source is BLOCKED for the six listed promotion blocker codes.",
+          "Manual reachability was recorded as reachability only and not promotable."
+        ],
+        "inference": [
+          "The retained source is the smallest plausible authority for payment acceptance, subject to review."
+        ],
+        "uncertainty": [
+          "Current terms, permitted capture/storage method, and automatable technical access are unresolved."
+        ],
+        "recommendation": [
+          "Retain the mapping and resolve permission and technical access before evidence work."
+        ],
+        "decisions_required": [
+          "Human approval of terms, collection path, and technical access.",
+          "Human acceptance of any resulting evidence and calculation."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CVS-006-v0.1",
+      "scenario_id": "JP-CVS-006",
+      "actions": ["retain_source", "permission_review", "technical_access", "add_official_source"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["merchant.seveneleven.nanaco", "jp.nanaco.earning"],
+      "mapping_after": ["merchant.seveneleven.nanaco", "jp.nanaco.earning"],
+      "mapping_after_note": "Retain until approval; add_official_source is conditional and cannot alter the mapping without human review.",
+      "candidate_source_requirements": [
+        "Current first-party Seven-Eleven and nanaco terms for credit-funded top-up permission and purchase use.",
+        "If the retained pair does not state credit-load reward, expiry, or limit semantics, a specific first-party page covering each missing fact.",
+        "Approved terms, capture/storage, and technical-access decisions for every retained or conditionally added source."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "merchant.seveneleven.nanaco",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.nanaco.earning",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain the exact top-up and earning mappings; only add a specific first-party source if approved review shows the retained pair cannot establish credit-load reward, expiry, or limit facts.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Top-up permission, reward scope, expiry, and residual-asset semantics are issuer/program terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "Conditional source addition is pending human authority and scope review."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[1] and source_gate.scenario_readiness[1]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CVS-006]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves the top-up, purchase, and residual-balance intent while preventing cash-load semantics or an unverified extra source from being applied to credit loads.",
+      "required_work": [
+        "Resolve first-party permission and technical access for both retained sources.",
+        "Determine whether approved first-party terms are missing for credit-load reward, expiry, or limits; propose a specific addition only then.",
+        "Calculate top-up and residual-asset behavior independently before review."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any conditional source addition that is not first-party, specific to the frozen route, or approved for capture.",
+        "Keep the two-source authoritative mapping and BLOCKED state unchanged on rejection."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to merchant.seveneleven.nanaco and jp.nanaco.earning.",
+          "Both mapped sources are BLOCKED for the six listed promotion blocker codes."
+        ],
+        "inference": [
+          "A targeted first-party addition could be useful only if the retained pair leaves credit-load reward, expiry, or limits unstated."
+        ],
+        "uncertainty": [
+          "Credit-load versus cash-load semantics, expiry, limits, permission, and automatable access remain unresolved."
+        ],
+        "recommendation": [
+          "Retain the mapping; conditionally research a specific official gap source after review."
+        ],
+        "decisions_required": [
+          "Human approval of retained-source access and any conditional official addition.",
+          "Human acceptance of residual-asset and no-double-counting evidence."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CVS-014-v0.1",
+      "scenario_id": "JP-CVS-014",
+      "actions": ["retain_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["jp.smbc.eligible-merchant-rewards", "jp.smbc.vpoint-up-program"],
+      "mapping_after": ["jp.smbc.eligible-merchant-rewards", "jp.smbc.vpoint-up-program"],
+      "candidate_source_requirements": [
+        "Current first-party SMBC terms separating smartphone contactless, physical-card, iD, insertion, and other interfaces.",
+        "A first-party statement that distinguishes the base reward from the V Point Up extra and any advertised maximum.",
+        "Approved permission, capture/storage, and technical-access decisions for both retained sources."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.smbc.eligible-merchant-rewards",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.smbc.vpoint-up-program",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain both mapped SMBC sources because one describes eligible merchant/interface scope and the other describes the V Point Up layer; no extra rule is inferred from a maximum headline.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Interface eligibility and reward-layer composition are issuer-program terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "No eligibility or bonus layer is approved by this proposal."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[2] and source_gate.scenario_readiness[2]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CVS-014]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves the adversarial interface comparison and prevents a smartphone-contactless-only bonus from being assigned to an ineligible physical-card route.",
+      "required_work": [
+        "Resolve terms and access for both SMBC sources.",
+        "Capture approved interface and reward-layer distinctions.",
+        "Complete independent calculation and the required dual review before any replay."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any interpretation that cannot distinguish interface scope or base versus extra reward.",
+        "Keep the existing two-source mapping and BLOCKED state on rejection."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to the two SMBC sources.",
+          "Both mapped sources are BLOCKED for the six listed promotion blocker codes.",
+          "The manual research note is explicitly not approved evidence."
+        ],
+        "inference": [
+          "The retained pair is the appropriate declared authority boundary for interface and V Point Up questions."
+        ],
+        "uncertainty": [
+          "The V Point Up extra, exact interface exclusions, terms, capture permission, and technical access remain unresolved."
+        ],
+        "recommendation": [
+          "Retain the mapping and resolve issuer terms before calculation."
+        ],
+        "decisions_required": [
+          "Human approval of source terms and interface scope.",
+          "Human acceptance of the negative assertion evidence."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-QR-007-v0.1",
+      "scenario_id": "JP-QR-007",
+      "actions": ["retain_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["jp.dpoint.campaign-example-funding-exclusion", "jp.dcard.exclusions"],
+      "mapping_after": ["jp.dpoint.campaign-example-funding-exclusion", "jp.dcard.exclusions"],
+      "candidate_source_requirements": [
+        "Current first-party d払い and dカード exclusion terms distinguishing reward, tier-progress, and campaign-progress targets.",
+        "An approved source-specific capture and storage decision for each exclusion statement.",
+        "Technical observations sufficient to establish permitted access without treating manual reachability as permission."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.dpoint.campaign-example-funding-exclusion",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.dcard.exclusions",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain the declared dポイント and dカード sources because the scenario tests funding-source exclusions across distinct effect targets; do not collapse those targets without explicit terms.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Funding-source and campaign-progress exclusions require provider/card-program authority."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "The negative-assertion lead is not approved evidence."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[3] and source_gate.scenario_readiness[3]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-QR-007]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves separate reward and progress exclusion targets and keeps the funding-source negative assertion unresolved rather than silently merging facts.",
+      "required_work": [
+        "Resolve first-party terms and permission for both sources.",
+        "Capture separate approved statements for each effect target.",
+        "Run independent calculation and review after evidence is approved."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any source statement that does not identify the relevant effect target or frozen funding route.",
+        "Keep the existing mapping and BLOCKED state on rejection."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to the dpoint funding-exclusion and dcard exclusion sources.",
+          "Both mapped sources are BLOCKED for the six listed promotion blocker codes.",
+          "The manual outcome was BLOCKED and no fresh approved capture exists."
+        ],
+        "inference": [
+          "Separate first-party statements are likely needed for separate effect targets, but this is not yet a rule."
+        ],
+        "uncertainty": [
+          "Exact exclusion scope, terms, permitted capture, and technical access remain unresolved."
+        ],
+        "recommendation": [
+          "Retain the mapping and preserve separate assertion targets."
+        ],
+        "decisions_required": [
+          "Human approval of terms and capture scope.",
+          "Human decision on whether each target is evidenced independently."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-QR-008-v0.1",
+      "scenario_id": "JP-QR-008",
+      "actions": ["retain_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing",
+        "manual_reachability_only"
+      ],
+      "mapping_before": ["jp.paypay.third-party-card-voucher", "jp.paypay.eligibility-faq", "jp.paypay.calculation-faq"],
+      "mapping_after": ["jp.paypay.third-party-card-voucher", "jp.paypay.eligibility-faq", "jp.paypay.calculation-faq"],
+      "candidate_source_requirements": [
+        "Current first-party PayPay terms establishing voucher availability for the frozen user state.",
+        "First-party terms for acquisition increment, cap, card/merchant/channel restrictions, residual balance, and excluded rewards.",
+        "A permission decision and technical observation that resolves the manually reachable source's manual-only limitation."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.paypay.third-party-card-voucher",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "manual_reachability_only"
+          ]
+        },
+        {
+          "source_id": "jp.paypay.eligibility-faq",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.paypay.calculation-faq",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain the three declared PayPay sources because availability, eligibility, and calculation/residual-value questions are distinct; manual reachability cannot establish any of them as approved.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Feature rollout, voucher restrictions, and reward exclusions are provider terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown_or_manual_only",
+        "capture_storage": "not_approved",
+        "decision": "Manual reachability is not permission and does not establish current feature availability."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[4] and source_gate.scenario_readiness[4]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-QR-008]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves the availability, increment, residual-voucher, and exclusion tests while explicitly blocking assumptions from a public or manually reachable page.",
+      "required_work": [
+        "Resolve PayPay terms and permission for all three retained sources.",
+        "Resolve manual-only reachability and obtain an approved technical observation if automation is intended.",
+        "Value residual voucher assets independently before any replay."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject the route if availability, residual-value, or excluded-reward terms cannot be established for the frozen user state.",
+        "Keep the three-source mapping and BLOCKED state on rejection."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to three PayPay sources.",
+          "Two sources have unknown technical feasibility and one has manual-only reachability.",
+          "All three sources have unresolved terms and collection paths."
+        ],
+        "inference": [
+          "The retained three-source split matches the declared availability, eligibility, and calculation concerns."
+        ],
+        "uncertainty": [
+          "Current voucher availability, increment, restrictions, residual valuation, permission, and automation remain unknown."
+        ],
+        "recommendation": [
+          "Retain the mapping; require provider terms and an access decision before evidence collection."
+        ],
+        "decisions_required": [
+          "Human approval of PayPay terms and technical path.",
+          "Human acceptance of residual-value and exclusion evidence."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CMP-003-v0.1",
+      "scenario_id": "JP-CMP-003",
+      "actions": ["narrow_split_scenario", "add_official_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["jp.paypay.campaigns", "jp.dbarai.campaigns"],
+      "mapping_after": null,
+      "mapping_after_note": "Pending human approval; retain mapping_before until a same-window campaign owner and specific first-party terms are approved.",
+      "candidate_source_requirements": [
+        "A specific first-party campaign terms page for one frozen campaign owner and date window, not a generic campaign directory.",
+        "First-party statements for reward class, cap/reset, posting window, and expiry or usage limits.",
+        "An approved permission and technical-access decision for the selected campaign source."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.paypay.campaigns",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.dbarai.campaigns",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "The current pair supports a research lead but combines different campaign/date semantics. Narrow or split only after a human chooses the frozen campaign owner and approves a specific first-party terms source; the current mapping remains authoritative until then.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Campaign reward class, posting, cap, and expiry are campaign-owner terms and must be frozen to one comparable window."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "No campaign owner, source narrowing, or split is approved."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[5] and source_gate.scenario_readiness[5]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CMP-003]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Makes the campaign comparison coherent by requiring one frozen owner/window and keeps limited-period points distinct from normal points.",
+      "required_work": [
+        "Choose whether the scenario is narrowed to one campaign owner or split into separate campaign scenarios.",
+        "Add only the specific approved first-party terms source for the chosen scope.",
+        "Resolve permission and technical access, then independently calculate expiry-aware value."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject the narrowing or split if no same-window first-party terms source exists.",
+        "Until approval or rejection, retain mapping_before and BLOCKED; never apply mapping_after automatically."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to PayPay and d払い campaign sources.",
+          "Both mapped sources are BLOCKED for the six listed promotion blocker codes.",
+          "The experiment says the routes have different reward/date semantics and no coherent approved comparison."
+        ],
+        "inference": [
+          "A narrow or split scope is more defensible than treating the two routes as one campaign."
+        ],
+        "uncertainty": [
+          "The campaign owner, exact terms, date window, permission, and technical path are unresolved."
+        ],
+        "recommendation": [
+          "Narrow or split only after human approval; add specific first-party terms and retain the current mapping until then."
+        ],
+        "decisions_required": [
+          "Human choice of campaign owner and scope.",
+          "Human approval of any added official source and resulting scenario identity."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CMP-007-v0.1",
+      "scenario_id": "JP-CMP-007",
+      "actions": ["add_official_source", "permission_review", "technical_access", "narrow_split_scenario"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["jp.paypay.campaigns", "jp.aupay.campaigns"],
+      "mapping_after": null,
+      "mapping_after_note": "Possible narrow/split is pending human approval; no source or scope change is applied.",
+      "candidate_source_requirements": [
+        "Specific first-party PayPay and au PAY campaign terms for the same frozen date/window or an explicitly approved split.",
+        "A first-party disclosure of lottery probability, or an explicit decision that the benefit cannot be used as guaranteed value or rank.",
+        "Approved permission and technical-access decisions for the selected campaign terms."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.paypay.campaigns",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.aupay.campaigns",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Add specific first-party campaign terms to resolve guaranteed versus probabilistic benefits. Narrow or split if the current two campaign directories do not describe a common frozen comparison; do not infer a probability or guarantee.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Guarantees, lottery probabilities, eligibility, and campaign windows must be stated by the campaign owner."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "No probability, guarantee, narrowing, or split is approved."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[6] and source_gate.scenario_readiness[6]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CMP-007]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves the distinction between guaranteed value and lottery value and prevents an undisclosed headline maximum from entering guaranteed cashback or rank.",
+      "required_work": [
+        "Obtain specific first-party campaign terms and probability disclosure if one exists.",
+        "Decide whether a common comparison is valid or whether to narrow/split the scenario.",
+        "Resolve terms, permission, and technical access before independent calculation."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any probability or guarantee not explicitly disclosed by an approved first-party source.",
+        "Keep mapping_before and BLOCKED if the comparison remains incoherent."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to PayPay and au PAY campaign sources.",
+          "Both mapped sources are BLOCKED for the six listed promotion blocker codes.",
+          "The research note says the PayPay maximum is not guaranteed and au PAY probability is absent."
+        ],
+        "inference": [
+          "Specific terms and a possible scope split are needed to avoid comparing unlike benefits."
+        ],
+        "uncertainty": [
+          "Exact current terms, probability, date window, permission, and technical access are unresolved."
+        ],
+        "recommendation": [
+          "Add specific official terms and consider narrowing/splitting only after human approval."
+        ],
+        "decisions_required": [
+          "Human decision on guaranteed versus probabilistic treatment.",
+          "Human approval of any source addition or scope change."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-CMP-009-v0.1",
+      "scenario_id": "JP-CMP-009",
+      "actions": ["retain_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["jp.rakutenpay.change-notice-2026"],
+      "mapping_after": ["jp.rakutenpay.change-notice-2026"],
+      "candidate_source_requirements": [
+        "A fresh first-party notice or terms capture with valid-time/effective-date and postponement details.",
+        "An approved historical capture and replay-knowledge timestamp policy.",
+        "Permission, capture/storage, and technical-access decisions for the retained source."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "jp.rakutenpay.change-notice-2026",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "Retain the declared Rakuten Pay change notice because it is the mapped authority for announcement and postponement; no later rule is applied without a fresh valid-time capture.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Effective dates and postponements must be established from the provider's own notice or terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "Prior review knowledge remains a lead, not approved current evidence."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[7] and source_gate.scenario_readiness[7]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-CMP-009]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves announcement-time versus economic-validity-time replay semantics and prevents a postponed rule from being applied from secondary knowledge.",
+      "required_work": [
+        "Obtain fresh first-party valid-time capture of the notice and postponement.",
+        "Resolve permission and technical access for historical capture.",
+        "Reconcile replay-knowledge time before independent calculation and review."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any change supported only by a secondary or stale source.",
+        "Keep the retained mapping and BLOCKED state if valid-time evidence is absent."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to jp.rakutenpay.change-notice-2026.",
+          "The source is BLOCKED for the six listed promotion blocker codes.",
+          "The experiment records no fresh valid-time capture."
+        ],
+        "inference": [
+          "A fresh first-party capture is the minimum remediation for the historical rule question."
+        ],
+        "uncertainty": [
+          "The effective date, postponement state, terms, permission, and technical access remain unresolved."
+        ],
+        "recommendation": [
+          "Retain the source and require valid-time evidence before any replay interpretation."
+        ],
+        "decisions_required": [
+          "Human approval of valid-time capture and replay-knowledge treatment.",
+          "Human acceptance of the postponed-rule negative assertion."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    },
+    {
+      "proposal_id": "M3-REM-2026-08-18-JP-ECOM-012-v0.1",
+      "scenario_id": "JP-ECOM-012",
+      "actions": ["narrow_split_scenario", "add_official_source", "permission_review", "technical_access"],
+      "reason_codes": [
+        "registry_collection_path_not_permitted",
+        "registry_terms_not_reviewed",
+        "review_queue_collection_path_not_permitted",
+        "review_queue_terms_not_reviewed",
+        "technical_feasibility_unknown",
+        "technical_observation_missing"
+      ],
+      "mapping_before": ["merchant.amazonjp.points-terms", "jp.rebates.guide", "merchant.yahoo-shopping.paypay-points"],
+      "mapping_after": null,
+      "mapping_after_note": "Pending human approval; retain mapping_before until the merchant, cancellation/refund scope, and specific first-party sources are selected.",
+      "candidate_source_requirements": [
+        "Specific first-party terms for the frozen merchant's cancellation/refund behavior, pending and posted rewards, and clawback timing.",
+        "First-party statements for campaign-cap or tier-progress restoration after cancellation.",
+        "An approved decision on whether the current multi-merchant scenario is narrowed or split, plus permission and technical access for each selected source."
+      ],
+      "covered_source_blockers": [
+        {
+          "source_id": "merchant.amazonjp.points-terms",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "jp.rebates.guide",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        },
+        {
+          "source_id": "merchant.yahoo-shopping.paypay-points",
+          "codes": [
+            "registry_collection_path_not_permitted",
+            "registry_terms_not_reviewed",
+            "review_queue_collection_path_not_permitted",
+            "review_queue_terms_not_reviewed",
+            "technical_feasibility_unknown",
+            "technical_observation_missing"
+          ]
+        }
+      ],
+      "authority_scope_justification": "The current three-source mapping spans merchants with materially different cancellation and reward-progress rules. Narrow or split after human selection, then add only specific first-party cancellation/refund/progress terms; no mapping change is applied now.",
+      "first_party_preference": {
+        "required": true,
+        "reason": "Cancellation, refunds, clawbacks, and progress restoration are merchant/program terms."
+      },
+      "terms_and_access_decision": {
+        "status": "PENDING",
+        "registry_terms": "not_reviewed",
+        "review_queue_terms": "not_reviewed",
+        "collection_permission": "not_approved",
+        "technical_access": "unknown",
+        "capture_storage": "not_approved",
+        "decision": "No merchant narrowing, source addition, or progress-restoration rule is approved."
+      },
+      "provenance_refs": [
+        {
+          "path": "fixtures/m3/non-human-seed-experiment-2026-08-18.v0.1.json",
+          "ref": "scenarios[8] and source_gate.scenario_readiness[9]",
+          "sha256": "sha256:423b4739dce5cff9f38f168040218d3206123d54344636f66a710dc3d276ea75"
+        },
+        {
+          "path": "packages/test-fixtures/src/m3-gate.ts",
+          "ref": "M3_AUTHORITATIVE_PRIMARY_SOURCE_IDS[JP-ECOM-012]",
+          "sha256": "sha256:385d5ddafe0dd80c71c183f8f22b14acc5446c11bbd4d6fb35e1e60375d4c89e"
+        }
+      ],
+      "impact_on_scenario_intent": "Preserves cancellation/refund reversal and progress-restoration intent while preventing cross-merchant rules from being conflated.",
+      "required_work": [
+        "Choose a merchant-specific scope or split the scenario.",
+        "Add specific first-party cancellation, refund, clawback, and progress sources after approval.",
+        "Resolve permission and technical access, then independently calculate reversal effects."
+      ],
+      "rollback_or_rejection_plan": [
+        "Reject any source addition that does not state cancellation/refund/progress behavior for the frozen merchant and time window.",
+        "Until approval or rejection, retain mapping_before and BLOCKED; never apply mapping_after automatically."
+      ],
+      "assessment": {
+        "verified_facts": [
+          "The experiment maps this scenario to Amazon, Rebates, and Yahoo sources.",
+          "All three mapped sources are BLOCKED for the six listed promotion blocker codes.",
+          "Amazon was unavailable and the available cancellation observations were partial and not approved captures."
+        ],
+        "inference": [
+          "Merchant-specific narrowing or splitting is needed because cancellation and progress behavior may differ by merchant."
+        ],
+        "uncertainty": [
+          "Principal refund, pending/posted clawback, progress restoration, terms, permission, and technical access remain unresolved."
+        ],
+        "recommendation": [
+          "Narrow or split after human approval and add specific first-party reversal/progress sources."
+        ],
+        "decisions_required": [
+          "Human selection of merchant scope and scenario split.",
+          "Human approval of added sources and cancellation/progress interpretation."
+        ]
+      },
+      "approval": {"human_approval": false, "decision": "pending"},
+      "promotion": {"status": "BLOCKED", "gate_override": false}
+    }
+  ],
+  "summary": {
+    "proposal_count": 9,
+    "retain_only_count": 6,
+    "scope_change_pending_count": 3,
+    "conditional_official_source_count": 1,
+    "official_source_addition_proposals": 3,
+    "replace_source_action_count": 0,
+    "engine_gap_action_count": 0,
+    "human_approval_false_count": 9,
+    "blocked_promotion_count": 9,
+    "gate_override_count": 0,
+    "jp_xfr_proposal_count": 0,
+    "source_blocker_pairs_required_for_evaluated_mapping": 101,
+    "source_blocker_pairs_covered": 101
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "record_type": "m3_jp_cvs_002_independent_expected",
+  "record_version": "0.1.0",
+  "scenario_id": "JP-CVS-002",
+  "method": "manual",
+  "completed_at": "2026-08-20T05:50:00+09:00",
+  "transaction_time": "2026-08-20T05:40:00+09:00",
+  "replay_knowledge_at": "2026-08-20T05:51:00+09:00",
+  "purchase": {
+    "merchant": "Seven-Eleven Japan",
+    "merchant_id": "merchant.seveneleven",
+    "channel": "in_store",
+    "amount_jpy": 640,
+    "product_class": "ordinary"
+  },
+  "source_basis": {
+    "source_id": "merchant.seveneleven.payment-methods",
+    "evidence_id": "ev_m3_seveneleven_payment_methods_20260820",
+    "snapshot_id": "snap_m3_seveneleven_payment_methods_20260820",
+    "accepted_family_used": "credit_card",
+    "unsupported_tender_used": "synthetic_unsupported_tender"
+  },
+  "plans": [
+    {
+      "plan_id": "plan_jp_cvs_002_accepted_credit_card",
+      "payment_family": "credit_card",
+      "independent_expectation": {
+        "payment_acceptance": "accepted",
+        "eligible": true,
+        "reward_components": [],
+        "zero_point_placeholder": false,
+        "financially_ranked": true,
+        "reason": "Acceptance is a non-financial rule; no reward-earning rule is present."
+      }
+    },
+    {
+      "plan_id": "plan_jp_cvs_002_unsupported_tender",
+      "payment_family": "synthetic_unsupported_tender",
+      "independent_expectation": {
+        "payment_acceptance": "rejected",
+        "eligible": false,
+        "reward_components": [],
+        "zero_point_placeholder": false,
+        "financially_ranked": false,
+        "rejection_rule_id": "rr_jp_cvs_002_a_deny_unsupported_tender",
+        "reason": "Unsupported tender is denied by operation eligibility before any reward calculation."
+      }
+    }
+  ],
+  "invariants": [
+    "Accepted payment does not imply reward earning.",
+    "A denied tender does not create a zero-point reward component.",
+    "Exactly these two plans are replayed; no third route is introduced."
+  ],
+  "independence_note": "This artifact is a manually reasoned expectation from the reviewed payment-family evidence and the explicit acceptance-only rule contract. It is written before engine replay; engine output is compared to it rather than used to create it."
+}

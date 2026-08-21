@@ -1,0 +1,469 @@
+{
+  "scenario_id": "JP-CVS-002",
+  "version": 1,
+  "status": "golden",
+  "level": "L1_SINGLE_RULE",
+  "title": "Seven-Eleven Japan credit-card acceptance without reward earning",
+  "description": "Frozen reviewed replay oracle for the payment-family evidence. Rule bindings remain under_review; ephemeral published clones are admitted only for this replay and are not production-authorized.",
+  "as_of": "2026-08-20T05:40:00+09:00",
+  "replay_knowledge_at": "2026-08-20T05:51:00+09:00",
+  "timezone": "Asia/Tokyo",
+  "user_state": {
+    "owned_instrument_ids": [
+      "instrument.seveneleven.credit_card",
+      "instrument.seveneleven.synthetic_unsupported"
+    ],
+    "owned_loyalty_program_ids": [],
+    "facts": {},
+    "asset_lots": [],
+    "valuation_profile": {
+      "version": "valuation.jp-cvs-002.empty.v1",
+      "entries": []
+    },
+    "cap_progress": {}
+  },
+  "asset_definitions": [],
+  "objective": {
+    "primary": "maximize_guaranteed_net_value",
+    "probabilistic_reward_policy": "guaranteed_only",
+    "ending_asset_valuation": "use_user_profile",
+    "tie_breakers": [
+      "lower_external_funding",
+      "fewer_operations"
+    ]
+  },
+  "candidate_plans": [
+    {
+      "plan_id": "plan_jp_cvs_002_accepted_credit_card",
+      "operations": [
+        {
+          "operation_id": "op_jp_cvs_002_accepted_credit_card",
+          "sequence": 1,
+          "occurred_at": "2026-08-20T05:40:00+09:00",
+          "operation_type": "merchant_purchase",
+          "merchant_id": "merchant.seveneleven",
+          "merchant_location_id": "location.seveneleven.representative",
+          "channel": "in_store",
+          "interface": "physical_card",
+          "payment_instrument_id": "instrument.seveneleven.credit_card",
+          "funding_source_id": "funding.instrument_seveneleven_credit_card",
+          "amount_jpy": 640,
+          "asset_inputs": [
+            {
+              "input_id": "in_op_jp_cvs_002_accepted_credit_card_funding",
+              "source_lot_id": null,
+              "quantity": {
+                "asset": {
+                  "asset_id": "asset.jp-cvs-002.external-funding",
+                  "asset_kind": "credit_limit",
+                  "program_id": null,
+                  "reward_class": null,
+                  "scale": 0
+                },
+                "amount": "640"
+              },
+              "role": "external_funding"
+            }
+          ],
+          "output_requests": [],
+          "original_operation_id": null,
+          "portal_id": null,
+          "line_items": [
+            {
+              "line_item_id": "line_op_jp_cvs_002_accepted_credit_card_ordinary",
+              "product_class": "ordinary",
+              "amount_jpy": 640,
+              "quantity": 1,
+              "eligible_for_rewards": true
+            }
+          ],
+          "notes": "Frozen ordinary in-store purchase for JP-CVS-002; no reward rule is included."
+        }
+      ],
+      "dependencies": [],
+      "loyalty_presentments": [],
+      "assumptions": [
+        "The purchase amount is frozen at JPY 640.",
+        "Payment acceptance is evaluated independently from reward earning."
+      ]
+    },
+    {
+      "plan_id": "plan_jp_cvs_002_unsupported_tender",
+      "operations": [
+        {
+          "operation_id": "op_jp_cvs_002_unsupported_tender",
+          "sequence": 1,
+          "occurred_at": "2026-08-20T05:40:00+09:00",
+          "operation_type": "merchant_purchase",
+          "merchant_id": "merchant.seveneleven",
+          "merchant_location_id": "location.seveneleven.representative",
+          "channel": "in_store",
+          "interface": "physical_card",
+          "payment_instrument_id": "instrument.seveneleven.synthetic_unsupported",
+          "funding_source_id": "funding.instrument_seveneleven_synthetic_unsupported",
+          "amount_jpy": 640,
+          "asset_inputs": [
+            {
+              "input_id": "in_op_jp_cvs_002_unsupported_tender_funding",
+              "source_lot_id": null,
+              "quantity": {
+                "asset": {
+                  "asset_id": "asset.jp-cvs-002.external-funding",
+                  "asset_kind": "credit_limit",
+                  "program_id": null,
+                  "reward_class": null,
+                  "scale": 0
+                },
+                "amount": "640"
+              },
+              "role": "external_funding"
+            }
+          ],
+          "output_requests": [],
+          "original_operation_id": null,
+          "portal_id": null,
+          "line_items": [
+            {
+              "line_item_id": "line_op_jp_cvs_002_unsupported_tender_ordinary",
+              "product_class": "ordinary",
+              "amount_jpy": 640,
+              "quantity": 1,
+              "eligible_for_rewards": true
+            }
+          ],
+          "notes": "Frozen ordinary in-store purchase for JP-CVS-002; no reward rule is included."
+        }
+      ],
+      "dependencies": [],
+      "loyalty_presentments": [],
+      "assumptions": [
+        "The purchase amount is frozen at JPY 640.",
+        "Payment acceptance is evaluated independently from reward earning."
+      ]
+    }
+  ],
+  "expected": {
+    "outcome_mode": "definite",
+    "definite_winner_plan_id": "plan_jp_cvs_002_accepted_credit_card",
+    "safe_plan_id": "plan_jp_cvs_002_accepted_credit_card",
+    "runner_up_plan_id": null,
+    "conditional_winners": [],
+    "plan_results": [
+      {
+        "plan_id": "plan_jp_cvs_002_accepted_credit_card",
+        "eligible": true,
+        "asset_movements": [
+          {
+            "movement_id": "mov_jp_cvs_002_accepted_credit_card_0",
+            "operation_id": "op_jp_cvs_002_accepted_credit_card",
+            "direction": "consume",
+            "movement_role": "external_funding",
+            "quantity": {
+              "asset": {
+                "asset_id": "asset.jp-cvs-002.external-funding",
+                "asset_kind": "credit_limit",
+                "program_id": null,
+                "reward_class": null,
+                "scale": 0
+              },
+              "amount": "640"
+            },
+            "source_lot_id": null,
+            "destination_lot_id": null,
+            "notes": "Explicit external funding; not a reusable lot."
+          }
+        ],
+        "reward_components": [],
+        "ending_asset_lots": [],
+        "economics": {
+          "merchant_value_received_jpy": {
+            "minimum_jpy": 640,
+            "maximum_jpy": 640,
+            "expected_jpy": 640
+          },
+          "external_funding_jpy": {
+            "minimum_jpy": 640,
+            "maximum_jpy": 640,
+            "expected_jpy": 640
+          },
+          "opening_asset_value_consumed_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "ending_asset_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "guaranteed_reward_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "probabilistic_expected_reward_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "fee_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "guaranteed_net_value_change_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "expected_net_value_change_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          }
+        },
+        "objective_score_jpy": {
+          "minimum_jpy": 0,
+          "maximum_jpy": 0,
+          "expected_jpy": 0
+        },
+        "nominal_return_basis_points": null,
+        "applied_rule_ids": [
+          "rr_jp_cvs_002_b_accept_credit_card"
+        ],
+        "rejected_rule_ids": [
+          "rr_jp_cvs_002_a_deny_unsupported_tender"
+        ],
+        "rejection_reasons": [
+          "rule_excluded:rr_jp_cvs_002_a_deny_unsupported_tender: payment_instrument_not_allowed"
+        ],
+        "result_origin": "engine",
+        "preflight_rejection": null,
+        "result_artifact_hash": "sha256:49b2dd22f7402844a15de59fff34ffe7cb2ff12b711faf8df21fc0d13ca24524"
+      },
+      {
+        "plan_id": "plan_jp_cvs_002_unsupported_tender",
+        "eligible": false,
+        "asset_movements": [
+          {
+            "movement_id": "mov_jp_cvs_002_unsupported_tender_0",
+            "operation_id": "op_jp_cvs_002_unsupported_tender",
+            "direction": "consume",
+            "movement_role": "external_funding",
+            "quantity": {
+              "asset": {
+                "asset_id": "asset.jp-cvs-002.external-funding",
+                "asset_kind": "credit_limit",
+                "program_id": null,
+                "reward_class": null,
+                "scale": 0
+              },
+              "amount": "640"
+            },
+            "source_lot_id": null,
+            "destination_lot_id": null,
+            "notes": "Explicit external funding; not a reusable lot."
+          }
+        ],
+        "reward_components": [],
+        "ending_asset_lots": [],
+        "economics": {
+          "merchant_value_received_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "external_funding_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "opening_asset_value_consumed_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "ending_asset_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "guaranteed_reward_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "probabilistic_expected_reward_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "fee_value_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "guaranteed_net_value_change_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          },
+          "expected_net_value_change_jpy": {
+            "minimum_jpy": 0,
+            "maximum_jpy": 0,
+            "expected_jpy": 0
+          }
+        },
+        "objective_score_jpy": {
+          "minimum_jpy": 0,
+          "maximum_jpy": 0,
+          "expected_jpy": 0
+        },
+        "nominal_return_basis_points": null,
+        "applied_rule_ids": [],
+        "rejected_rule_ids": [
+          "rr_jp_cvs_002_a_deny_unsupported_tender",
+          "rr_jp_cvs_002_b_accept_credit_card"
+        ],
+        "rejection_reasons": [
+          "rule_excluded:rr_jp_cvs_002_a_deny_unsupported_tender: unsupported_tender_not_accepted",
+          "rule_excluded:rr_jp_cvs_002_b_accept_credit_card: payment_instrument_not_allowed"
+        ],
+        "result_origin": "engine",
+        "preflight_rejection": null,
+        "result_artifact_hash": "sha256:6e647adb9b16aa1d31fda1e14314e86b3ff0dfdf88d8cf041bf00a0166eb3166"
+      }
+    ],
+    "assertions": [
+      {
+        "assertion_type": "plan_is_eligible",
+        "target_id": "plan_jp_cvs_002_accepted_credit_card",
+        "expected": true,
+        "reason": "The reviewed credit-card family is accepted by the engine-origin payment rule."
+      },
+      {
+        "assertion_type": "plan_is_ineligible",
+        "target_id": "plan_jp_cvs_002_unsupported_tender",
+        "expected": true,
+        "reason": "The synthetic unsupported tender is denied before any reward calculation."
+      },
+      {
+        "assertion_type": "reward_equals",
+        "target_id": "plan_jp_cvs_002_accepted_credit_card",
+        "expected": [],
+        "reason": "Payment acceptance is non-financial and no reward-earning rule is present."
+      },
+      {
+        "assertion_type": "reward_equals",
+        "target_id": "plan_jp_cvs_002_unsupported_tender",
+        "expected": [],
+        "reason": "An engine-denied tender must not create a zero-point reward placeholder."
+      },
+      {
+        "assertion_type": "winner_is",
+        "target_id": "plan_jp_cvs_002_accepted_credit_card",
+        "expected": true,
+        "reason": "Only the eligible accepted route enters the financial recommendation ranking."
+      },
+      {
+        "assertion_type": "net_value_equals",
+        "target_id": "plan_jp_cvs_002_accepted_credit_card",
+        "expected": 0,
+        "reason": "JPY 640 merchant value offsets JPY 640 external funding with no reward or fee."
+      }
+    ],
+    "explanation_tokens": [
+      "JP_CVS_002_ACCEPTED_CREDIT_CARD",
+      "JP_CVS_002_PAYMENT_ACCEPTANCE_ONLY",
+      "JP_CVS_002_UNSUPPORTED_TENDER_DENIED"
+    ],
+    "questions_to_resolve": [],
+    "valuation_sensitivities": []
+  },
+  "evidence_ids": [
+    "ev_m3_seveneleven_payment_methods_20260820"
+  ],
+  "rule_version_bindings": [
+    {
+      "rule_id": "rr_jp_cvs_002_a_deny_unsupported_tender",
+      "version": 1,
+      "roles": [
+        "rejected"
+      ],
+      "source_candidate_status": "under_review",
+      "definition_hash": "sha256:05cff6041628934825e139e24fa6fbe17229e3f5fce066e730cb495f80074447",
+      "validity": {
+        "valid_from": "2026-08-20T05:39:00+09:00",
+        "valid_to": null,
+        "timezone": "Asia/Tokyo",
+        "recorded_at": "2026-08-20T05:45:00+09:00",
+        "superseded_at": null
+      },
+      "evidence_ids": [
+        "ev_m3_seveneleven_payment_methods_20260820"
+      ]
+    },
+    {
+      "rule_id": "rr_jp_cvs_002_b_accept_credit_card",
+      "version": 1,
+      "roles": [
+        "applied",
+        "rejected"
+      ],
+      "source_candidate_status": "under_review",
+      "definition_hash": "sha256:ebea92cf5859e2450aef073d14d19b008cfb2e1cf3cfa7030e5e46a194cb8038",
+      "validity": {
+        "valid_from": "2026-08-20T05:39:00+09:00",
+        "valid_to": null,
+        "timezone": "Asia/Tokyo",
+        "recorded_at": "2026-08-20T05:45:00+09:00",
+        "superseded_at": null
+      },
+      "evidence_ids": [
+        "ev_m3_seveneleven_payment_methods_20260820"
+      ]
+    }
+  ],
+  "replay_provenance": {
+    "replay_id": "replay_jp_cvs_002_golden_v1",
+    "rule_admission": "ephemeral_published_clone",
+    "publication_authorized": false,
+    "engine_version": "0.4.1-m1b",
+    "contracts_version": "0.4.1",
+    "valuation_profile_version": "valuation.jp-cvs-002.empty.v1",
+    "input_hash": "sha256:94de5afc0c16fc15e68c018d211061836cbbc835829e86596a606bf450a4f218",
+    "output_hash": "sha256:8bb5337932cec4d16e2f099511a70fe9ee5a3587ee76e445edf970d1b69ea76b",
+    "completed_at": "2026-08-20T05:52:00+09:00",
+    "replay_knowledge_at": "2026-08-20T05:51:00+09:00"
+  },
+  "review": {
+    "review_mode": "agent_challenged",
+    "calculated_by": "m3-jp-cvs-002-builder",
+    "verified_by": "m3-scenario-challenge-verifier",
+    "verified_at": "2026-08-20T06:38:55+09:00",
+    "cooling_off_completed_at": "2026-08-20T06:24:00+09:00",
+    "independent_calculation_artifact": "calc_jp_cvs_002_independent_manual",
+    "decision": "approved",
+    "notes": "Prior accountable review is carried into this immutable replay oracle. Approval freezes reviewed facts and replay output only; it does not publish or authorize either under-review rule.",
+    "required_review_modes": [
+      "solo_dual_pass",
+      "agent_challenged"
+    ],
+    "review_events": [
+      {
+        "mode": "solo_dual_pass",
+        "reviewer_id": "m3-jp-cvs-002-primary-solo-reviewer",
+        "completed_at": "2026-08-20T06:24:00+09:00",
+        "decision": "approved",
+        "notes": "Cooling-off reread reproduced the approved source mapping, the manual expectation, the accepted credit-card result, and the unsupported-tender rejection without reward output."
+      },
+      {
+        "mode": "agent_challenged",
+        "reviewer_id": "m3-scenario-challenge-verifier",
+        "completed_at": "2026-08-20T06:38:55+09:00",
+        "decision": "approved",
+        "notes": "Independent challenge recomputed both plan outcomes, verified the evidence hash and authoritative manual source readiness, and found no promotion-gate discrepancy."
+      }
+    ]
+  }
+}

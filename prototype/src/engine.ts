@@ -1,3 +1,12 @@
+import { validateConservation } from "./contracts.ts";
+import {
+  ceilToIncrement,
+  formatMicros,
+  formatRatio,
+  MICROS_PER_JPY,
+  parseJpyPerUnitToMicros,
+  pointsPerUnit,
+} from "./math.ts";
 import type {
   AssetMovement,
   NativePlanResult,
@@ -8,15 +17,6 @@ import type {
   ValuedPlanResult,
   ValuedRewardComponent,
 } from "./model.ts";
-import {
-  MICROS_PER_JPY,
-  ceilToIncrement,
-  formatMicros,
-  formatRatio,
-  parseJpyPerUnitToMicros,
-  pointsPerUnit,
-} from "./math.ts";
-import { validateConservation } from "./contracts.ts";
 
 function rewardMicrosPerUnit(rewardClass: RewardClass): bigint {
   switch (rewardClass) {
@@ -71,10 +71,7 @@ export function buildNativePlans(input: PurchaseInput): NativePlanResult[] {
   );
   const direct: NativePlanResult = {
     planId: "direct_card",
-    steps: [
-      "Present the selected point card",
-      "Pay directly with Demo Card",
-    ],
+    steps: ["Present the selected point card", "Pay directly with Demo Card"],
     movements: [
       {
         movementId: "mov_direct_funding",
@@ -109,11 +106,7 @@ export function buildNativePlans(input: PurchaseInput): NativePlanResult[] {
       },
       certainty: "guaranteed",
     },
-    ...loyaltyReward(
-      amount,
-      "op_wallet_purchase",
-      input.pointCardPresented,
-    ),
+    ...loyaltyReward(amount, "op_wallet_purchase", input.pointCardPresented),
   ];
 
   if (input.campaignEnrolled) {
@@ -209,8 +202,7 @@ export function valuePlan(
   const rewards: ValuedRewardComponent[] = plan.rewards.map((reward) => ({
     ...reward,
     valueMicros:
-      reward.quantity.units *
-      rewardMicrosPerUnit(reward.quantity.rewardClass),
+      reward.quantity.units * rewardMicrosPerUnit(reward.quantity.rewardClass),
   }));
   const rewardValueMicros = rewards.reduce(
     (sum, reward) => sum + reward.valueMicros,
@@ -231,9 +223,7 @@ export function valuePlan(
 }
 
 export function evaluatePurchase(input: PurchaseInput): Recommendation {
-  const residualMicros = parseJpyPerUnitToMicros(
-    input.residualValueJpyPerUnit,
-  );
+  const residualMicros = parseJpyPerUnitToMicros(input.residualValueJpyPerUnit);
   const plans = buildNativePlans(input)
     .map((plan) => valuePlan(plan, residualMicros))
     .sort((a, b) =>

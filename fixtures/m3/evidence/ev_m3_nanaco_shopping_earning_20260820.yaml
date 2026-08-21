@@ -1,0 +1,45 @@
+evidence_id: ev_m3_nanaco_shopping_earning_20260820
+source_id: jp.nanaco.shopping-earning
+source_snapshot_id: snap_m3_nanaco_shopping_earning_20260820
+source_url: https://www.nanaco-net.jp/how-to/save_point/shopping.html
+captured_at: '2026-08-20T03:13:10+09:00'
+content_hash: sha256:3278e87271845ce091cb3fc88137cca571386eef27ac7f8156da82cf5fa07b48
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized Seven-Eleven nanaco purchase-earning facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_seveneleven_nanaco_ordinary_purchase_earning
+  json_pointer: /claim
+  claim: An eligible Seven-Eleven nanaco purchase earns one nanaco point per JPY 200 before tax, posts immediately for the listed merchant, and remains subject to product exclusions.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: Primary reread and independent challenge confirmed the Seven-Eleven immediate-accrual section, tax-exclusive rate, and exclusion caveat without applying the separate later-posting merchant section.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the paraphrased structured facts and section scope without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge approved after distinguishing the immediate Seven-Eleven section from later-posting merchants.

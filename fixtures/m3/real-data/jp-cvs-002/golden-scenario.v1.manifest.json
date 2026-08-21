@@ -1,0 +1,277 @@
+{
+  "manifest_type": "golden-scenario.v1.canonical-hash-manifest",
+  "scenario_id": "JP-CVS-002",
+  "fixture_path": "golden-scenario.v1.json",
+  "canonicalization": "@jro/rule-engine canonicalize: lexicographically sorted object keys; array order preserved",
+  "canonical_fixture_hash": "sha256:53f7431f52042c493ee300795eb7c77a5c996c0932742a26d362a946e32d8532",
+  "result_artifact_hashes": [
+    {
+      "plan_id": "plan_jp_cvs_002_accepted_credit_card",
+      "result_artifact_hash": "sha256:49b2dd22f7402844a15de59fff34ffe7cb2ff12b711faf8df21fc0d13ca24524"
+    },
+    {
+      "plan_id": "plan_jp_cvs_002_unsupported_tender",
+      "result_artifact_hash": "sha256:6e647adb9b16aa1d31fda1e14314e86b3ff0dfdf88d8cf041bf00a0166eb3166"
+    }
+  ],
+  "replay_hashes": {
+    "input_hash": "sha256:94de5afc0c16fc15e68c018d211061836cbbc835829e86596a606bf450a4f218",
+    "output_hash": "sha256:8bb5337932cec4d16e2f099511a70fe9ee5a3587ee76e445edf970d1b69ea76b"
+  },
+  "hash_projections": {
+    "fixture": "canonicalize(entire fixture JSON)",
+    "result_artifact": "canonicalize(plan result with result_artifact_hash omitted)",
+    "replay_output": "canonicalize({outcome_mode,definite_winner_plan_id,safe_plan_id,runner_up_plan_id,plan_results})",
+    "replay_input": "canonicalize(engine input rebuilt from fixture-bound plans, asset_definitions, user_state, objective, transaction_time, replay_knowledge_at, and definition-bound ephemeral rules)"
+  },
+  "replay_input_projection": {
+    "projection_version": "engine_candidates_input.v1",
+    "base_context": {
+      "rules": [
+        {
+          "audit": {
+            "change_reason": "Initial M3 under-review acceptance candidate; not a canonical publication.",
+            "created_at": "2026-08-20T05:42:00+09:00",
+            "created_by": "m3-jp-cvs-002-builder",
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_events": [
+              {
+                "completed_at": "2026-08-20T05:46:00+09:00",
+                "decision": "approved",
+                "mode": "solo_dual_pass",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision.",
+                "reviewer_id": "m3-jp-cvs-002-fixture-replay-admission"
+              }
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:46:00+09:00",
+            "reviewed_by": "m3-jp-cvs-002-fixture-replay-admission"
+          },
+          "caps": [],
+          "description": "Negative candidate rule for a deliberately unsupported synthetic tender.",
+          "effect": {
+            "decision": "deny",
+            "effect_target": "operation_eligibility",
+            "reason_code": "unsupported_tender_not_accepted",
+            "target_rule_ids": [],
+            "target_stack_groups": []
+          },
+          "eligibility": {
+            "campaign_conditions": {
+              "entry_required": false,
+              "first_use_only": false,
+              "identity_verification_required": false,
+              "targeted_offer": false
+            },
+            "operation_match": {
+              "allowed_destination_asset_ids": [],
+              "allowed_funding_source_ids": [],
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.synthetic_unsupported"
+              ],
+              "allowed_source_asset_ids": [],
+              "excluded_funding_source_ids": [],
+              "excluded_interfaces": [],
+              "excluded_payment_instrument_ids": [],
+              "excluded_source_asset_ids": [],
+              "must_present_before_payment": false,
+              "required_interfaces": [],
+              "required_loyalty_program_ids": []
+            },
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "user_conditions": []
+          },
+          "name": "Seven-Eleven unsupported tender denial",
+          "provenance": {
+            "confidence": 0.95,
+            "evidence_ids": [
+              "ev_m3_seveneleven_payment_methods_20260820"
+            ],
+            "human_verified": true,
+            "minimum_source_tier": "T1_CANONICAL",
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "rule_id": "rr_jp_cvs_002_a_deny_unsupported_tender",
+          "rule_type": "payment_acceptance",
+          "scope": {
+            "channels": [
+              "in_store"
+            ],
+            "countries": [
+              "JP"
+            ],
+            "excluded_product_classes": [],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "tax_basis": "tax_inclusive"
+          },
+          "stacking": {
+            "conflicts_with_rule_ids": [],
+            "mode": "non_reward_acceptance",
+            "notes": "Payment acceptance is intentionally non-financial.",
+            "precedence": 20,
+            "requires_rule_ids": [],
+            "stack_group": "jp_cvs_002_payment_acceptance"
+          },
+          "status": "published",
+          "subject": {
+            "entity_id": "merchant.seveneleven",
+            "entity_type": "merchant"
+          },
+          "validity": {
+            "recorded_at": "2026-08-20T05:45:00+09:00",
+            "superseded_at": null,
+            "timezone": "Asia/Tokyo",
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null
+          },
+          "version": 1
+        },
+        {
+          "audit": {
+            "change_reason": "Initial M3 under-review acceptance candidate; not a canonical publication.",
+            "created_at": "2026-08-20T05:42:00+09:00",
+            "created_by": "m3-jp-cvs-002-builder",
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_events": [
+              {
+                "completed_at": "2026-08-20T05:46:00+09:00",
+                "decision": "approved",
+                "mode": "solo_dual_pass",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision.",
+                "reviewer_id": "m3-jp-cvs-002-fixture-replay-admission"
+              }
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:46:00+09:00",
+            "reviewed_by": "m3-jp-cvs-002-fixture-replay-admission"
+          },
+          "caps": [],
+          "description": "Acceptance-only candidate rule for the evidenced credit-card family.",
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "reason_code": "accepted_payment_family_credit_card",
+            "target_rule_ids": [],
+            "target_stack_groups": []
+          },
+          "eligibility": {
+            "campaign_conditions": {
+              "entry_required": false,
+              "first_use_only": false,
+              "identity_verification_required": false,
+              "targeted_offer": false
+            },
+            "operation_match": {
+              "allowed_destination_asset_ids": [],
+              "allowed_funding_source_ids": [],
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.credit_card"
+              ],
+              "allowed_source_asset_ids": [],
+              "excluded_funding_source_ids": [],
+              "excluded_interfaces": [],
+              "excluded_payment_instrument_ids": [],
+              "excluded_source_asset_ids": [],
+              "must_present_before_payment": false,
+              "required_interfaces": [],
+              "required_loyalty_program_ids": []
+            },
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "user_conditions": []
+          },
+          "name": "Seven-Eleven credit-card acceptance",
+          "provenance": {
+            "confidence": 0.95,
+            "evidence_ids": [
+              "ev_m3_seveneleven_payment_methods_20260820"
+            ],
+            "human_verified": true,
+            "minimum_source_tier": "T1_CANONICAL",
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "rule_id": "rr_jp_cvs_002_b_accept_credit_card",
+          "rule_type": "payment_acceptance",
+          "scope": {
+            "channels": [
+              "in_store"
+            ],
+            "countries": [
+              "JP"
+            ],
+            "excluded_product_classes": [],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "tax_basis": "tax_inclusive"
+          },
+          "stacking": {
+            "conflicts_with_rule_ids": [],
+            "mode": "non_reward_acceptance",
+            "notes": "Payment acceptance is intentionally non-financial.",
+            "precedence": 10,
+            "requires_rule_ids": [],
+            "stack_group": "jp_cvs_002_payment_acceptance"
+          },
+          "status": "published",
+          "subject": {
+            "entity_id": "merchant.seveneleven",
+            "entity_type": "merchant"
+          },
+          "validity": {
+            "recorded_at": "2026-08-20T05:45:00+09:00",
+            "superseded_at": null,
+            "timezone": "Asia/Tokyo",
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null
+          },
+          "version": 1
+        }
+      ]
+    },
+    "fixture_bindings": {
+      "plans": "candidate_plans",
+      "context.asset_definitions": "asset_definitions",
+      "context.user_state": "user_state",
+      "context.user_state.asset_lots": "user_state.asset_lots",
+      "context.user_state.valuation_profile.entries": "user_state.valuation_profile.entries",
+      "context.objective": "objective",
+      "context.replay_knowledge_at": "replay_knowledge_at",
+      "context.transaction_time": "as_of"
+    }
+  },
+  "replay_output_projection": {
+    "projection_version": "golden_replay_output.v1",
+    "mode": "fixture_expected",
+    "fixture_bindings": {
+      "outcome_mode": "expected.outcome_mode",
+      "definite_winner_plan_id": "expected.definite_winner_plan_id",
+      "safe_plan_id": "expected.safe_plan_id",
+      "runner_up_plan_id": "expected.runner_up_plan_id",
+      "plan_results": "expected.plan_results"
+    }
+  }
+}

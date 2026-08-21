@@ -1,0 +1,45 @@
+evidence_id: ev_m3_nanaco_sevencard_earning_20260820
+source_id: jp.nanaco.sevencard-earning
+source_snapshot_id: snap_m3_nanaco_sevencard_earning_20260820
+source_url: https://www.nanaco-net.jp/how-to/save_point/creditcard.html
+captured_at: '2026-08-20T03:13:10+09:00'
+content_hash: sha256:0c6f5022782abfd1c400317e9f310b0d317a94eadff7044f88b804d35475ccd3
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized Seven Card Plus nanaco charge-earning facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_sevencard_plus_nanaco_charge_earning
+  json_pointer: /claim
+  claim: An eligible Seven Card Plus nanaco charge earns one nanaco point per JPY 200 charged.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: Primary reread and independent challenge confirmed the Seven Card Plus nanaco credit-charge earning rate against the exact first-party page.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the paraphrased structured fact without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge approved the exact charge-earning relationship.

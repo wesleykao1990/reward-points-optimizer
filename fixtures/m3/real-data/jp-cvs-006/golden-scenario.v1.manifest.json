@@ -1,0 +1,1351 @@
+{
+  "record_type": "m3_jp_cvs_006_golden_scenario_manifest",
+  "record_version": "1.0.0",
+  "scenario_id": "JP-CVS-006",
+  "fixture_path": "fixtures/m3/real-data/jp-cvs-006/golden-scenario.v1.json",
+  "fixture_hash": "sha256:d0bf84702534f9d0fa4a0c0946e407e73b509aac18aa409888de144db8e76dfa",
+  "canonical_fixture_hash": "sha256:d0bf84702534f9d0fa4a0c0946e407e73b509aac18aa409888de144db8e76dfa",
+  "result_artifact_hashes": [
+    {
+      "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "result_artifact_hash": "sha256:aa049a48ddc89b6cd617678b8e43cfbd42626cd33a21f6a74e27facebf483c1c"
+    },
+    {
+      "plan_id": "plan_jp_cvs_006_invalid_4000_topup",
+      "result_artifact_hash": "sha256:832635d55d8e2f3d46ec076c8a4c875f5a2d63f2c310643544151b6cf3f42642"
+    }
+  ],
+  "hash_basis": "canonical JSON with lexicographically sorted object keys; plan result hashes exclude their own result_artifact_hash field; replay input binds every non-rule context field to the golden fixture and retains only definition-bound ephemeral rule clones",
+  "replay_hashes": {
+    "input_hash": "sha256:052bfa8288e90bd0c193dda5708f7f85ffa48c2504bda6796c8014f9e4a3bd19",
+    "output_hash": "sha256:5909abdae3ecbb4320a6fc1d92b0913b48e7d5116bbf7d12239a0dbf85e778ef"
+  },
+  "replay_input_projection": {
+    "projection_version": "engine_candidates_input.v1",
+    "base_context": {
+      "rules": [
+        {
+          "rule_id": "rr_jp_cvs_006_sevencard_credit_acceptance",
+          "version": 1,
+          "status": "published",
+          "rule_type": "payment_acceptance",
+          "name": "Seven Card Plus nanaco credit-charge acceptance",
+          "description": "Reviewed candidate acceptance rule; it contributes no reward quantity.",
+          "subject": {
+            "entity_type": "credit_card",
+            "entity_id": "instrument.jp.seven-card-plus"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "stored_value_top_up"
+            ],
+            "channels": [
+              "not_applicable"
+            ]
+          },
+          "eligibility": {
+            "operation_match": {
+              "allowed_payment_instrument_ids": [
+                "instrument.jp.seven-card-plus"
+              ],
+              "allowed_funding_source_ids": [
+                "funding.jp.seven-card-plus"
+              ],
+              "allowed_destination_asset_ids": [
+                "asset.jp.nanaco"
+              ]
+            },
+            "user_conditions": [
+              {
+                "fact_key": "nanaco_credit_charge_preregistered",
+                "operator": "eq",
+                "value": true,
+                "unknown_policy": "suppress_rule"
+              }
+            ],
+            "transaction_conditions": {
+              "minimum_amount_jpy": 5000,
+              "maximum_amount_jpy": 30000,
+              "eligible_amount_basis": "operation_amount"
+            },
+            "campaign_conditions": {}
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "sevencard_plus_credit_charge_route"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "rr_jp_cvs_006_sevencard_credit_acceptance_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 0,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": []
+          },
+          "validity": {
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-20T05:50:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_m3_sevencard_nanaco_charge_20260820"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": true,
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "audit": {
+            "created_at": "2026-08-20T05:50:00+09:00",
+            "created_by": "codex-m3-jp-cvs-006-builder",
+            "review_events": [
+              {
+                "mode": "solo_dual_pass",
+                "reviewer_id": "m3-jp-cvs-006-fixture-replay-admission",
+                "completed_at": "2026-08-20T05:52:00+09:00",
+                "decision": "approved",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision."
+              }
+            ],
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:52:00+09:00",
+            "reviewed_by": "m3-jp-cvs-006-fixture-replay-admission",
+            "change_reason": "Under-review candidate encoding for rr_jp_cvs_006_sevencard_credit_acceptance; not a canonical publication."
+          }
+        },
+        {
+          "rule_id": "rr_jp_cvs_006_sevencard_credit_topup_reward",
+          "version": 1,
+          "status": "published",
+          "rule_type": "card_benefit",
+          "name": "Seven Card Plus nanaco credit-charge earning",
+          "description": "Reviewed candidate reward rule with operation-scoped attribution.",
+          "subject": {
+            "entity_type": "credit_card",
+            "entity_id": "instrument.jp.seven-card-plus"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "stored_value_top_up"
+            ],
+            "channels": [
+              "not_applicable"
+            ]
+          },
+          "eligibility": {
+            "operation_match": {
+              "allowed_payment_instrument_ids": [
+                "instrument.jp.seven-card-plus"
+              ],
+              "allowed_funding_source_ids": [
+                "funding.jp.seven-card-plus"
+              ],
+              "allowed_destination_asset_ids": [
+                "asset.jp.nanaco"
+              ]
+            },
+            "user_conditions": [
+              {
+                "fact_key": "nanaco_credit_charge_preregistered",
+                "operator": "eq",
+                "value": true,
+                "unknown_policy": "suppress_rule"
+              }
+            ],
+            "transaction_conditions": {
+              "minimum_amount_jpy": 5000,
+              "maximum_amount_jpy": 30000,
+              "eligible_amount_basis": "operation_amount"
+            },
+            "campaign_conditions": {}
+          },
+          "calculation": {
+            "model": "points_per_unit",
+            "reward_units": "1",
+            "spend_jpy": 200,
+            "rounding": {
+              "aggregation_scope": "per_operation",
+              "eligible_spend_quantum_jpy": 200,
+              "reward_rounding_mode": "floor"
+            }
+          },
+          "output": {
+            "asset": {
+              "asset_id": "asset.jp.nanaco-point",
+              "asset_kind": "reward_point",
+              "program_id": "program.jp.nanaco",
+              "reward_class": "normal",
+              "scale": 0
+            },
+            "sign": "credit",
+            "certainty": {
+              "type": "guaranteed",
+              "probability": null,
+              "probability_source": null
+            },
+            "settlement": {
+              "status": "pending",
+              "expected_posting_from": null,
+              "expected_posting_to": null,
+              "posted_at": null
+            },
+            "expiry": {
+              "policy": "unknown",
+              "expires_at": null,
+              "duration_days": null,
+              "timezone": "Asia/Tokyo"
+            },
+            "restrictions": {
+              "transferable": null,
+              "redeemable_for_cash": null,
+              "usable_for_payment": null,
+              "investable": null,
+              "permitted_destination_ids": [
+                "asset.jp.nanaco"
+              ],
+              "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance."
+            },
+            "clawback": {
+              "on_refund": "unknown",
+              "posting_delay_days": null,
+              "notes": "No refund operation is included in this narrow candidate slice."
+            }
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "rr_jp_cvs_006_sevencard_credit_topup_reward",
+            "mode": "additive",
+            "precedence": 0,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": []
+          },
+          "validity": {
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-20T05:50:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_m3_sevencard_nanaco_charge_20260820",
+              "ev_m3_nanaco_sevencard_earning_20260820"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": true,
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "audit": {
+            "created_at": "2026-08-20T05:50:00+09:00",
+            "created_by": "codex-m3-jp-cvs-006-builder",
+            "review_events": [
+              {
+                "mode": "solo_dual_pass",
+                "reviewer_id": "m3-jp-cvs-006-fixture-replay-admission",
+                "completed_at": "2026-08-20T05:52:00+09:00",
+                "decision": "approved",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision."
+              }
+            ],
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:52:00+09:00",
+            "reviewed_by": "m3-jp-cvs-006-fixture-replay-admission",
+            "change_reason": "Under-review candidate encoding for rr_jp_cvs_006_sevencard_credit_topup_reward; not a canonical publication."
+          }
+        },
+        {
+          "rule_id": "rr_jp_cvs_006_nanaco_payment_acceptance",
+          "version": 1,
+          "status": "published",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven nanaco tender acceptance",
+          "description": "Reviewed candidate acceptance rule; it contributes no reward quantity.",
+          "subject": {
+            "entity_type": "payment_method",
+            "entity_id": "instrument.jp.nanaco"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ]
+          },
+          "eligibility": {
+            "operation_match": {
+              "allowed_payment_instrument_ids": [
+                "instrument.jp.nanaco"
+              ],
+              "allowed_funding_source_ids": [
+                "funding.jp.nanaco"
+              ],
+              "allowed_source_asset_ids": [
+                "asset.jp.nanaco"
+              ],
+              "required_loyalty_program_ids": [
+                "program.jp.nanaco"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {},
+            "campaign_conditions": {}
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "seveneleven_nanaco_tender_accepted"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "rr_jp_cvs_006_nanaco_payment_acceptance_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 0,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": []
+          },
+          "validity": {
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-20T05:50:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_m3_seveneleven_nanaco_20260820"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": true,
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "audit": {
+            "created_at": "2026-08-20T05:50:00+09:00",
+            "created_by": "codex-m3-jp-cvs-006-builder",
+            "review_events": [
+              {
+                "mode": "solo_dual_pass",
+                "reviewer_id": "m3-jp-cvs-006-fixture-replay-admission",
+                "completed_at": "2026-08-20T05:52:00+09:00",
+                "decision": "approved",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision."
+              }
+            ],
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:52:00+09:00",
+            "reviewed_by": "m3-jp-cvs-006-fixture-replay-admission",
+            "change_reason": "Under-review candidate encoding for rr_jp_cvs_006_nanaco_payment_acceptance; not a canonical publication."
+          }
+        },
+        {
+          "rule_id": "rr_jp_cvs_006_nanaco_purchase_reward",
+          "version": 1,
+          "status": "published",
+          "rule_type": "base_reward",
+          "name": "Seven-Eleven ordinary nanaco purchase earning",
+          "description": "Reviewed candidate reward rule with operation-scoped attribution.",
+          "subject": {
+            "entity_type": "stored_value_program",
+            "entity_id": "program.jp.nanaco"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "tax_basis": "tax_exclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [
+                "program.jp.nanaco"
+              ],
+              "allowed_payment_instrument_ids": [
+                "instrument.jp.nanaco"
+              ],
+              "allowed_funding_source_ids": [
+                "funding.jp.nanaco"
+              ],
+              "allowed_source_asset_ids": [
+                "asset.jp.nanaco"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "eligible_line_items"
+            },
+            "campaign_conditions": {}
+          },
+          "calculation": {
+            "model": "points_per_unit",
+            "reward_units": "1",
+            "spend_jpy": 200,
+            "rounding": {
+              "aggregation_scope": "per_operation",
+              "eligible_spend_quantum_jpy": 200,
+              "reward_rounding_mode": "floor"
+            }
+          },
+          "output": {
+            "asset": {
+              "asset_id": "asset.jp.nanaco-point",
+              "asset_kind": "reward_point",
+              "program_id": "program.jp.nanaco",
+              "reward_class": "normal",
+              "scale": 0
+            },
+            "sign": "credit",
+            "certainty": {
+              "type": "guaranteed",
+              "probability": null,
+              "probability_source": null
+            },
+            "settlement": {
+              "status": "posted",
+              "expected_posting_from": null,
+              "expected_posting_to": null,
+              "posted_at": null
+            },
+            "expiry": {
+              "policy": "unknown",
+              "expires_at": null,
+              "duration_days": null,
+              "timezone": "Asia/Tokyo"
+            },
+            "restrictions": {
+              "transferable": null,
+              "redeemable_for_cash": null,
+              "usable_for_payment": null,
+              "investable": null,
+              "permitted_destination_ids": [
+                "asset.jp.nanaco"
+              ],
+              "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance."
+            },
+            "clawback": {
+              "on_refund": "unknown",
+              "posting_delay_days": null,
+              "notes": "No refund operation is included in this narrow candidate slice."
+            }
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "rr_jp_cvs_006_nanaco_purchase_reward",
+            "mode": "additive",
+            "precedence": 0,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": []
+          },
+          "validity": {
+            "valid_from": "2026-08-20T05:39:00+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-20T05:50:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_m3_nanaco_shopping_earning_20260820",
+              "ev_m3_seveneleven_nanaco_20260820"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": true,
+            "review_notes": "Ephemeral fixture-replay admission only; the source candidate remains under_review and is not publishable."
+          },
+          "audit": {
+            "created_at": "2026-08-20T05:50:00+09:00",
+            "created_by": "codex-m3-jp-cvs-006-builder",
+            "review_events": [
+              {
+                "mode": "solo_dual_pass",
+                "reviewer_id": "m3-jp-cvs-006-fixture-replay-admission",
+                "completed_at": "2026-08-20T05:52:00+09:00",
+                "decision": "approved",
+                "notes": "Technical admission for this isolated replay only; not a rule-publication decision."
+              }
+            ],
+            "required_review_modes": [
+              "solo_dual_pass"
+            ],
+            "review_mode": "solo_dual_pass",
+            "reviewed_at": "2026-08-20T05:52:00+09:00",
+            "reviewed_by": "m3-jp-cvs-006-fixture-replay-admission",
+            "change_reason": "Under-review candidate encoding for rr_jp_cvs_006_nanaco_purchase_reward; not a canonical publication."
+          }
+        }
+      ]
+    },
+    "fixture_bindings": {
+      "plans": "candidate_plans[engine_origin]",
+      "context.asset_definitions": "asset_definitions",
+      "context.user_state": "user_state",
+      "context.user_state.asset_lots": "user_state.asset_lots",
+      "context.user_state.valuation_profile.entries": "user_state.valuation_profile.entries",
+      "context.objective": "objective",
+      "context.replay_knowledge_at": "replay_knowledge_at",
+      "context.transaction_time": "as_of"
+    }
+  },
+  "replay_output_projection": {
+    "projection_version": "golden_replay_output.v1",
+    "mode": "manifest_engine_canonical",
+    "fixture_binding": "expected.plan_results",
+    "canonical_output": {
+      "conditional_winners": [],
+      "definite_winner_plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "explanation_tokens": [
+        "ranking.guaranteed_exact"
+      ],
+      "outcome_mode": "definite",
+      "plans": [
+        {
+          "applied_rule_ids": [
+            "rr_jp_cvs_006_nanaco_payment_acceptance",
+            "rr_jp_cvs_006_nanaco_purchase_reward",
+            "rr_jp_cvs_006_sevencard_credit_acceptance",
+            "rr_jp_cvs_006_sevencard_credit_topup_reward"
+          ],
+          "asset_movements": [
+            {
+              "destination_lot_id": null,
+              "direction": "consume",
+              "movement_id": "mov_jp_cvs_006_topup_5000_0",
+              "movement_role": "external_funding",
+              "notes": "Explicit external funding; not a reusable lot.",
+              "operation_id": "op_jp_cvs_006_topup_5000",
+              "quantity": {
+                "amount": "5000",
+                "asset": {
+                  "asset_id": "asset.jp.seven-card-plus-credit",
+                  "asset_kind": "credit_limit",
+                  "program_id": "program.jp.seven-card-plus",
+                  "reward_class": null,
+                  "scale": 0
+                }
+              },
+              "source_lot_id": null
+            },
+            {
+              "destination_lot_id": "lot_jp_cvs_006_nanaco_5000",
+              "direction": "create",
+              "movement_id": "mov_jp_cvs_006_topup_5000_1",
+              "movement_role": "principal_output",
+              "notes": "Created a principal asset lot from explicit funding.",
+              "operation_id": "op_jp_cvs_006_topup_5000",
+              "quantity": {
+                "amount": "5000",
+                "asset": {
+                  "asset_id": "asset.jp.nanaco",
+                  "asset_kind": "stored_value",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": null,
+                  "scale": 0
+                }
+              },
+              "source_lot_id": null
+            },
+            {
+              "destination_lot_id": null,
+              "direction": "consume",
+              "movement_id": "mov_jp_cvs_006_purchase_5000_2",
+              "movement_role": "principal_tender",
+              "notes": "Consumed from an existing asset lot.",
+              "operation_id": "op_jp_cvs_006_purchase_5000",
+              "quantity": {
+                "amount": "660",
+                "asset": {
+                  "asset_id": "asset.jp.nanaco",
+                  "asset_kind": "stored_value",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": null,
+                  "scale": 0
+                }
+              },
+              "source_lot_id": "lot_jp_cvs_006_nanaco_5000"
+            }
+          ],
+          "economics": {
+            "ending_asset_value_jpy": {
+              "expected_jpy": "4340",
+              "maximum_jpy": "4340",
+              "minimum_jpy": "4340"
+            },
+            "expected_net_value_change_jpy": {
+              "expected_jpy": "28",
+              "maximum_jpy": "28",
+              "minimum_jpy": "28"
+            },
+            "external_funding_jpy": {
+              "expected_jpy": "5000",
+              "maximum_jpy": "5000",
+              "minimum_jpy": "5000"
+            },
+            "fee_value_jpy": {
+              "expected_jpy": "0",
+              "maximum_jpy": "0",
+              "minimum_jpy": "0"
+            },
+            "guaranteed_net_value_change_jpy": {
+              "expected_jpy": "28",
+              "maximum_jpy": "28",
+              "minimum_jpy": "28"
+            },
+            "guaranteed_reward_value_jpy": {
+              "expected_jpy": "28",
+              "maximum_jpy": "28",
+              "minimum_jpy": "28"
+            },
+            "merchant_value_received_jpy": {
+              "expected_jpy": "660",
+              "maximum_jpy": "660",
+              "minimum_jpy": "660"
+            },
+            "opening_asset_value_consumed_jpy": {
+              "expected_jpy": "0",
+              "maximum_jpy": "0",
+              "minimum_jpy": "0"
+            },
+            "probabilistic_expected_reward_value_jpy": {
+              "expected_jpy": "0",
+              "maximum_jpy": "0",
+              "minimum_jpy": "0"
+            }
+          },
+          "eligible": true,
+          "ending_asset_lots": [
+            {
+              "acquired_at": "2026-08-20T05:42:00+09:00",
+              "expiry": {
+                "duration_days": null,
+                "expires_at": null,
+                "policy": "unknown",
+                "timezone": "Asia/Tokyo"
+              },
+              "lot_id": "lot_jp_cvs_006_nanaco_5000",
+              "provenance_rule_ids": [
+                "rr_jp_cvs_006_sevencard_credit_topup_reward"
+              ],
+              "quantity": {
+                "amount": "4340",
+                "asset": {
+                  "asset_id": "asset.jp.nanaco",
+                  "asset_kind": "stored_value",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": null,
+                  "scale": 0
+                }
+              },
+              "restrictions": {
+                "investable": null,
+                "notes": "nanaco principal is a stored-value tender; its residual is conserved as principal.",
+                "permitted_destination_ids": [],
+                "redeemable_for_cash": null,
+                "transferable": null,
+                "usable_for_payment": true
+              },
+              "settlement": {
+                "expected_posting_from": null,
+                "expected_posting_to": null,
+                "posted_at": null,
+                "status": "posted"
+              },
+              "source_operation_id": "op_jp_cvs_006_topup_5000"
+            }
+          ],
+          "external_funding_jpy": "5000",
+          "merchant_value_jpy": "660",
+          "native_snapshot": "{\"applied_rule_ids\":[\"rr_jp_cvs_006_nanaco_payment_acceptance\",\"rr_jp_cvs_006_nanaco_purchase_reward\",\"rr_jp_cvs_006_sevencard_credit_acceptance\",\"rr_jp_cvs_006_sevencard_credit_topup_reward\"],\"asset_movements\":[{\"destination_lot_id\":null,\"direction\":\"consume\",\"movement_id\":\"mov_jp_cvs_006_topup_5000_0\",\"movement_role\":\"external_funding\",\"notes\":\"Explicit external funding; not a reusable lot.\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.seven-card-plus-credit\",\"asset_kind\":\"credit_limit\",\"program_id\":\"program.jp.seven-card-plus\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":null},{\"destination_lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"direction\":\"create\",\"movement_id\":\"mov_jp_cvs_006_topup_5000_1\",\"movement_role\":\"principal_output\",\"notes\":\"Created a principal asset lot from explicit funding.\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":null},{\"destination_lot_id\":null,\"direction\":\"consume\",\"movement_id\":\"mov_jp_cvs_006_purchase_5000_2\",\"movement_role\":\"principal_tender\",\"notes\":\"Consumed from an existing asset lot.\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"quantity\":{\"amount\":\"660\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":\"lot_jp_cvs_006_nanaco_5000\"}],\"eligible\":true,\"ending_asset_lots\":[{\"acquired_at\":\"2026-08-20T05:42:00+09:00\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"provenance_rule_ids\":[\"rr_jp_cvs_006_sevencard_credit_topup_reward\"],\"quantity\":{\"amount\":\"4340\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco principal is a stored-value tender; its residual is conserved as principal.\",\"permitted_destination_ids\":[],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":true},\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"posted\"},\"source_operation_id\":\"op_jp_cvs_006_topup_5000\"}],\"operations\":[{\"amount_jpy\":5000,\"asset_inputs\":[{\"input_id\":\"in_jp_cvs_006_topup_5000_funding\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.seven-card-plus-credit\",\"asset_kind\":\"credit_limit\",\"program_id\":\"program.jp.seven-card-plus\",\"reward_class\":null,\"scale\":0}},\"role\":\"external_funding\",\"source_lot_id\":null}],\"channel\":\"not_applicable\",\"funding_source_id\":\"funding.jp.seven-card-plus\",\"interface\":\"not_applicable\",\"line_items\":[],\"merchant_id\":null,\"merchant_location_id\":null,\"notes\":\"Standard Seven Card Plus credit-funded nanaco charge; cash-at-register limits are not applied.\",\"occurred_at\":\"2026-08-20T05:42:00+09:00\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"operation_type\":\"stored_value_top_up\",\"original_operation_id\":null,\"output_requests\":[{\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0},\"created_lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"request_id\":\"out_jp_cvs_006_nanaco_5000\",\"requested_amount\":\"5000\",\"role\":\"stored_value\"}],\"payment_instrument_id\":\"instrument.jp.seven-card-plus\",\"portal_id\":null,\"sequence\":1},{\"amount_jpy\":660,\"asset_inputs\":[{\"input_id\":\"in_jp_cvs_006_nanaco_tender_5000\",\"quantity\":{\"amount\":\"660\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"role\":\"stored_value_tender\",\"source_lot_id\":\"lot_jp_cvs_006_nanaco_5000\"}],\"channel\":\"in_store\",\"funding_source_id\":\"funding.jp.nanaco\",\"interface\":\"not_applicable\",\"line_items\":[{\"amount_jpy\":660,\"eligible_for_rewards\":true,\"line_item_id\":\"line_jp_cvs_006_ordinary_5000\",\"product_class\":\"ordinary\",\"quantity\":1,\"tax_exclusive_amount_jpy\":600}],\"merchant_id\":\"merchant.seveneleven\",\"merchant_location_id\":null,\"notes\":\"Ordinary Seven-Eleven purchase; explicit JPY 600 tax-exclusive basis is used for nanaco purchase earning.\",\"occurred_at\":\"2026-08-20T05:43:00+09:00\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"operation_type\":\"merchant_purchase\",\"original_operation_id\":null,\"output_requests\":[],\"payment_instrument_id\":\"instrument.jp.nanaco\",\"portal_id\":null,\"sequence\":2}],\"plan_id\":\"plan_jp_cvs_006_valid_5000_topup\",\"rejected_rule_ids\":[\"rr_jp_cvs_006_nanaco_payment_acceptance\",\"rr_jp_cvs_006_sevencard_credit_acceptance\"],\"rejection_reasons\":[{\"code\":\"rule_excluded\",\"message\":\"rr_jp_cvs_006_nanaco_payment_acceptance: operation_type_outside_scope\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"rule_id\":\"rr_jp_cvs_006_nanaco_payment_acceptance\"},{\"code\":\"rule_excluded\",\"message\":\"rr_jp_cvs_006_sevencard_credit_acceptance: operation_type_outside_scope\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"rule_id\":\"rr_jp_cvs_006_sevencard_credit_acceptance\"}],\"reward_components\":[{\"calculation_trace\":{\"denominator_jpy\":200,\"eligible_basis\":\"operation_amount\",\"reward_units\":\"1\",\"rounding_stage\":\"per_operation\",\"spend_jpy\":\"5000\",\"stacking_mode\":\"additive\"},\"certainty\":{\"probability\":null,\"probability_source\":null,\"type\":\"guaranteed\"},\"clawback\":{\"notes\":\"No refund operation is included in this narrow candidate slice.\",\"on_refund\":\"unknown\",\"posting_delay_days\":null},\"component_id\":\"cmp_jp_cvs_006_topup_5000_jp_cvs_006_sevencard_credit_topup_reward_0\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"25\",\"asset\":{\"asset_id\":\"asset.jp.nanaco-point\",\"asset_kind\":\"reward_point\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":\"normal\",\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.\",\"permitted_destination_ids\":[\"asset.jp.nanaco\"],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":null},\"rule_id\":\"rr_jp_cvs_006_sevencard_credit_topup_reward\",\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"pending\"},\"sign\":\"credit\",\"value_jpy\":{\"expected_jpy\":\"0\",\"maximum_jpy\":\"0\",\"minimum_jpy\":\"0\"}},{\"calculation_trace\":{\"denominator_jpy\":200,\"eligible_basis\":\"eligible_line_items\",\"reward_units\":\"1\",\"rounding_stage\":\"per_operation\",\"spend_jpy\":\"600\",\"stacking_mode\":\"additive\"},\"certainty\":{\"probability\":null,\"probability_source\":null,\"type\":\"guaranteed\"},\"clawback\":{\"notes\":\"No refund operation is included in this narrow candidate slice.\",\"on_refund\":\"unknown\",\"posting_delay_days\":null},\"component_id\":\"cmp_jp_cvs_006_purchase_5000_jp_cvs_006_nanaco_purchase_reward_1\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"quantity\":{\"amount\":\"3\",\"asset\":{\"asset_id\":\"asset.jp.nanaco-point\",\"asset_kind\":\"reward_point\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":\"normal\",\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.\",\"permitted_destination_ids\":[\"asset.jp.nanaco\"],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":null},\"rule_id\":\"rr_jp_cvs_006_nanaco_purchase_reward\",\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"posted\"},\"sign\":\"credit\",\"value_jpy\":{\"expected_jpy\":\"0\",\"maximum_jpy\":\"0\",\"minimum_jpy\":\"0\"}}]}",
+          "objective_score_jpy": "28",
+          "opening_asset_units_consumed": [],
+          "operations": [
+            {
+              "amount_jpy": 5000,
+              "asset_inputs": [
+                {
+                  "input_id": "in_jp_cvs_006_topup_5000_funding",
+                  "quantity": {
+                    "amount": "5000",
+                    "asset": {
+                      "asset_id": "asset.jp.seven-card-plus-credit",
+                      "asset_kind": "credit_limit",
+                      "program_id": "program.jp.seven-card-plus",
+                      "reward_class": null,
+                      "scale": 0
+                    }
+                  },
+                  "role": "external_funding",
+                  "source_lot_id": null
+                }
+              ],
+              "channel": "not_applicable",
+              "funding_source_id": "funding.jp.seven-card-plus",
+              "interface": "not_applicable",
+              "line_items": [],
+              "merchant_id": null,
+              "merchant_location_id": null,
+              "notes": "Standard Seven Card Plus credit-funded nanaco charge; cash-at-register limits are not applied.",
+              "occurred_at": "2026-08-20T05:42:00+09:00",
+              "operation_id": "op_jp_cvs_006_topup_5000",
+              "operation_type": "stored_value_top_up",
+              "original_operation_id": null,
+              "output_requests": [
+                {
+                  "asset": {
+                    "asset_id": "asset.jp.nanaco",
+                    "asset_kind": "stored_value",
+                    "program_id": "program.jp.nanaco",
+                    "reward_class": null,
+                    "scale": 0
+                  },
+                  "created_lot_id": "lot_jp_cvs_006_nanaco_5000",
+                  "request_id": "out_jp_cvs_006_nanaco_5000",
+                  "requested_amount": "5000",
+                  "role": "stored_value"
+                }
+              ],
+              "payment_instrument_id": "instrument.jp.seven-card-plus",
+              "portal_id": null,
+              "sequence": 1
+            },
+            {
+              "amount_jpy": 660,
+              "asset_inputs": [
+                {
+                  "input_id": "in_jp_cvs_006_nanaco_tender_5000",
+                  "quantity": {
+                    "amount": "660",
+                    "asset": {
+                      "asset_id": "asset.jp.nanaco",
+                      "asset_kind": "stored_value",
+                      "program_id": "program.jp.nanaco",
+                      "reward_class": null,
+                      "scale": 0
+                    }
+                  },
+                  "role": "stored_value_tender",
+                  "source_lot_id": "lot_jp_cvs_006_nanaco_5000"
+                }
+              ],
+              "channel": "in_store",
+              "funding_source_id": "funding.jp.nanaco",
+              "interface": "not_applicable",
+              "line_items": [
+                {
+                  "amount_jpy": 660,
+                  "eligible_for_rewards": true,
+                  "line_item_id": "line_jp_cvs_006_ordinary_5000",
+                  "product_class": "ordinary",
+                  "quantity": 1,
+                  "tax_exclusive_amount_jpy": 600
+                }
+              ],
+              "merchant_id": "merchant.seveneleven",
+              "merchant_location_id": null,
+              "notes": "Ordinary Seven-Eleven purchase; explicit JPY 600 tax-exclusive basis is used for nanaco purchase earning.",
+              "occurred_at": "2026-08-20T05:43:00+09:00",
+              "operation_id": "op_jp_cvs_006_purchase_5000",
+              "operation_type": "merchant_purchase",
+              "original_operation_id": null,
+              "output_requests": [],
+              "payment_instrument_id": "instrument.jp.nanaco",
+              "portal_id": null,
+              "sequence": 2
+            }
+          ],
+          "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+          "rejected_rule_ids": [
+            "rr_jp_cvs_006_nanaco_payment_acceptance",
+            "rr_jp_cvs_006_sevencard_credit_acceptance"
+          ],
+          "rejection_reasons": [
+            {
+              "code": "rule_excluded",
+              "message": "rr_jp_cvs_006_nanaco_payment_acceptance: operation_type_outside_scope",
+              "operation_id": "op_jp_cvs_006_topup_5000",
+              "rule_id": "rr_jp_cvs_006_nanaco_payment_acceptance"
+            },
+            {
+              "code": "rule_excluded",
+              "message": "rr_jp_cvs_006_sevencard_credit_acceptance: operation_type_outside_scope",
+              "operation_id": "op_jp_cvs_006_purchase_5000",
+              "rule_id": "rr_jp_cvs_006_sevencard_credit_acceptance"
+            }
+          ],
+          "reward_components": [
+            {
+              "calculation_trace": {
+                "denominator_jpy": 200,
+                "eligible_basis": "operation_amount",
+                "reward_units": "1",
+                "rounding_stage": "per_operation",
+                "spend_jpy": "5000",
+                "stacking_mode": "additive"
+              },
+              "certainty": {
+                "probability": null,
+                "probability_source": null,
+                "type": "guaranteed"
+              },
+              "clawback": {
+                "notes": "No refund operation is included in this narrow candidate slice.",
+                "on_refund": "unknown",
+                "posting_delay_days": null
+              },
+              "component_id": "cmp_jp_cvs_006_topup_5000_jp_cvs_006_sevencard_credit_topup_reward_0",
+              "expiry": {
+                "duration_days": null,
+                "expires_at": null,
+                "policy": "unknown",
+                "timezone": "Asia/Tokyo"
+              },
+              "operation_id": "op_jp_cvs_006_topup_5000",
+              "quantity": {
+                "amount": "25",
+                "asset": {
+                  "asset_id": "asset.jp.nanaco-point",
+                  "asset_kind": "reward_point",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": "normal",
+                  "scale": 0
+                }
+              },
+              "restrictions": {
+                "investable": null,
+                "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.",
+                "permitted_destination_ids": [
+                  "asset.jp.nanaco"
+                ],
+                "redeemable_for_cash": null,
+                "transferable": null,
+                "usable_for_payment": null
+              },
+              "rule_id": "rr_jp_cvs_006_sevencard_credit_topup_reward",
+              "settlement": {
+                "expected_posting_from": null,
+                "expected_posting_to": null,
+                "posted_at": null,
+                "status": "pending"
+              },
+              "sign": "credit",
+              "value_jpy": {
+                "expected_jpy": "25",
+                "maximum_jpy": "25",
+                "minimum_jpy": "25"
+              },
+              "value_jpy_decimal": "25"
+            },
+            {
+              "calculation_trace": {
+                "denominator_jpy": 200,
+                "eligible_basis": "eligible_line_items",
+                "reward_units": "1",
+                "rounding_stage": "per_operation",
+                "spend_jpy": "600",
+                "stacking_mode": "additive"
+              },
+              "certainty": {
+                "probability": null,
+                "probability_source": null,
+                "type": "guaranteed"
+              },
+              "clawback": {
+                "notes": "No refund operation is included in this narrow candidate slice.",
+                "on_refund": "unknown",
+                "posting_delay_days": null
+              },
+              "component_id": "cmp_jp_cvs_006_purchase_5000_jp_cvs_006_nanaco_purchase_reward_1",
+              "expiry": {
+                "duration_days": null,
+                "expires_at": null,
+                "policy": "unknown",
+                "timezone": "Asia/Tokyo"
+              },
+              "operation_id": "op_jp_cvs_006_purchase_5000",
+              "quantity": {
+                "amount": "3",
+                "asset": {
+                  "asset_id": "asset.jp.nanaco-point",
+                  "asset_kind": "reward_point",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": "normal",
+                  "scale": 0
+                }
+              },
+              "restrictions": {
+                "investable": null,
+                "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.",
+                "permitted_destination_ids": [
+                  "asset.jp.nanaco"
+                ],
+                "redeemable_for_cash": null,
+                "transferable": null,
+                "usable_for_payment": null
+              },
+              "rule_id": "rr_jp_cvs_006_nanaco_purchase_reward",
+              "settlement": {
+                "expected_posting_from": null,
+                "expected_posting_to": null,
+                "posted_at": null,
+                "status": "posted"
+              },
+              "sign": "credit",
+              "value_jpy": {
+                "expected_jpy": "3",
+                "maximum_jpy": "3",
+                "minimum_jpy": "3"
+              },
+              "value_jpy_decimal": "3"
+            }
+          ]
+        }
+      ],
+      "questions_to_resolve": [],
+      "runner_up": null,
+      "safe_plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "valuation_sensitivities": [],
+      "winner": {
+        "applied_rule_ids": [
+          "rr_jp_cvs_006_nanaco_payment_acceptance",
+          "rr_jp_cvs_006_nanaco_purchase_reward",
+          "rr_jp_cvs_006_sevencard_credit_acceptance",
+          "rr_jp_cvs_006_sevencard_credit_topup_reward"
+        ],
+        "asset_movements": [
+          {
+            "destination_lot_id": null,
+            "direction": "consume",
+            "movement_id": "mov_jp_cvs_006_topup_5000_0",
+            "movement_role": "external_funding",
+            "notes": "Explicit external funding; not a reusable lot.",
+            "operation_id": "op_jp_cvs_006_topup_5000",
+            "quantity": {
+              "amount": "5000",
+              "asset": {
+                "asset_id": "asset.jp.seven-card-plus-credit",
+                "asset_kind": "credit_limit",
+                "program_id": "program.jp.seven-card-plus",
+                "reward_class": null,
+                "scale": 0
+              }
+            },
+            "source_lot_id": null
+          },
+          {
+            "destination_lot_id": "lot_jp_cvs_006_nanaco_5000",
+            "direction": "create",
+            "movement_id": "mov_jp_cvs_006_topup_5000_1",
+            "movement_role": "principal_output",
+            "notes": "Created a principal asset lot from explicit funding.",
+            "operation_id": "op_jp_cvs_006_topup_5000",
+            "quantity": {
+              "amount": "5000",
+              "asset": {
+                "asset_id": "asset.jp.nanaco",
+                "asset_kind": "stored_value",
+                "program_id": "program.jp.nanaco",
+                "reward_class": null,
+                "scale": 0
+              }
+            },
+            "source_lot_id": null
+          },
+          {
+            "destination_lot_id": null,
+            "direction": "consume",
+            "movement_id": "mov_jp_cvs_006_purchase_5000_2",
+            "movement_role": "principal_tender",
+            "notes": "Consumed from an existing asset lot.",
+            "operation_id": "op_jp_cvs_006_purchase_5000",
+            "quantity": {
+              "amount": "660",
+              "asset": {
+                "asset_id": "asset.jp.nanaco",
+                "asset_kind": "stored_value",
+                "program_id": "program.jp.nanaco",
+                "reward_class": null,
+                "scale": 0
+              }
+            },
+            "source_lot_id": "lot_jp_cvs_006_nanaco_5000"
+          }
+        ],
+        "economics": {
+          "ending_asset_value_jpy": {
+            "expected_jpy": "4340",
+            "maximum_jpy": "4340",
+            "minimum_jpy": "4340"
+          },
+          "expected_net_value_change_jpy": {
+            "expected_jpy": "28",
+            "maximum_jpy": "28",
+            "minimum_jpy": "28"
+          },
+          "external_funding_jpy": {
+            "expected_jpy": "5000",
+            "maximum_jpy": "5000",
+            "minimum_jpy": "5000"
+          },
+          "fee_value_jpy": {
+            "expected_jpy": "0",
+            "maximum_jpy": "0",
+            "minimum_jpy": "0"
+          },
+          "guaranteed_net_value_change_jpy": {
+            "expected_jpy": "28",
+            "maximum_jpy": "28",
+            "minimum_jpy": "28"
+          },
+          "guaranteed_reward_value_jpy": {
+            "expected_jpy": "28",
+            "maximum_jpy": "28",
+            "minimum_jpy": "28"
+          },
+          "merchant_value_received_jpy": {
+            "expected_jpy": "660",
+            "maximum_jpy": "660",
+            "minimum_jpy": "660"
+          },
+          "opening_asset_value_consumed_jpy": {
+            "expected_jpy": "0",
+            "maximum_jpy": "0",
+            "minimum_jpy": "0"
+          },
+          "probabilistic_expected_reward_value_jpy": {
+            "expected_jpy": "0",
+            "maximum_jpy": "0",
+            "minimum_jpy": "0"
+          }
+        },
+        "eligible": true,
+        "ending_asset_lots": [
+          {
+            "acquired_at": "2026-08-20T05:42:00+09:00",
+            "expiry": {
+              "duration_days": null,
+              "expires_at": null,
+              "policy": "unknown",
+              "timezone": "Asia/Tokyo"
+            },
+            "lot_id": "lot_jp_cvs_006_nanaco_5000",
+            "provenance_rule_ids": [
+              "rr_jp_cvs_006_sevencard_credit_topup_reward"
+            ],
+            "quantity": {
+              "amount": "4340",
+              "asset": {
+                "asset_id": "asset.jp.nanaco",
+                "asset_kind": "stored_value",
+                "program_id": "program.jp.nanaco",
+                "reward_class": null,
+                "scale": 0
+              }
+            },
+            "restrictions": {
+              "investable": null,
+              "notes": "nanaco principal is a stored-value tender; its residual is conserved as principal.",
+              "permitted_destination_ids": [],
+              "redeemable_for_cash": null,
+              "transferable": null,
+              "usable_for_payment": true
+            },
+            "settlement": {
+              "expected_posting_from": null,
+              "expected_posting_to": null,
+              "posted_at": null,
+              "status": "posted"
+            },
+            "source_operation_id": "op_jp_cvs_006_topup_5000"
+          }
+        ],
+        "external_funding_jpy": "5000",
+        "merchant_value_jpy": "660",
+        "native_snapshot": "{\"applied_rule_ids\":[\"rr_jp_cvs_006_nanaco_payment_acceptance\",\"rr_jp_cvs_006_nanaco_purchase_reward\",\"rr_jp_cvs_006_sevencard_credit_acceptance\",\"rr_jp_cvs_006_sevencard_credit_topup_reward\"],\"asset_movements\":[{\"destination_lot_id\":null,\"direction\":\"consume\",\"movement_id\":\"mov_jp_cvs_006_topup_5000_0\",\"movement_role\":\"external_funding\",\"notes\":\"Explicit external funding; not a reusable lot.\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.seven-card-plus-credit\",\"asset_kind\":\"credit_limit\",\"program_id\":\"program.jp.seven-card-plus\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":null},{\"destination_lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"direction\":\"create\",\"movement_id\":\"mov_jp_cvs_006_topup_5000_1\",\"movement_role\":\"principal_output\",\"notes\":\"Created a principal asset lot from explicit funding.\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":null},{\"destination_lot_id\":null,\"direction\":\"consume\",\"movement_id\":\"mov_jp_cvs_006_purchase_5000_2\",\"movement_role\":\"principal_tender\",\"notes\":\"Consumed from an existing asset lot.\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"quantity\":{\"amount\":\"660\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"source_lot_id\":\"lot_jp_cvs_006_nanaco_5000\"}],\"eligible\":true,\"ending_asset_lots\":[{\"acquired_at\":\"2026-08-20T05:42:00+09:00\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"provenance_rule_ids\":[\"rr_jp_cvs_006_sevencard_credit_topup_reward\"],\"quantity\":{\"amount\":\"4340\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco principal is a stored-value tender; its residual is conserved as principal.\",\"permitted_destination_ids\":[],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":true},\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"posted\"},\"source_operation_id\":\"op_jp_cvs_006_topup_5000\"}],\"operations\":[{\"amount_jpy\":5000,\"asset_inputs\":[{\"input_id\":\"in_jp_cvs_006_topup_5000_funding\",\"quantity\":{\"amount\":\"5000\",\"asset\":{\"asset_id\":\"asset.jp.seven-card-plus-credit\",\"asset_kind\":\"credit_limit\",\"program_id\":\"program.jp.seven-card-plus\",\"reward_class\":null,\"scale\":0}},\"role\":\"external_funding\",\"source_lot_id\":null}],\"channel\":\"not_applicable\",\"funding_source_id\":\"funding.jp.seven-card-plus\",\"interface\":\"not_applicable\",\"line_items\":[],\"merchant_id\":null,\"merchant_location_id\":null,\"notes\":\"Standard Seven Card Plus credit-funded nanaco charge; cash-at-register limits are not applied.\",\"occurred_at\":\"2026-08-20T05:42:00+09:00\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"operation_type\":\"stored_value_top_up\",\"original_operation_id\":null,\"output_requests\":[{\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0},\"created_lot_id\":\"lot_jp_cvs_006_nanaco_5000\",\"request_id\":\"out_jp_cvs_006_nanaco_5000\",\"requested_amount\":\"5000\",\"role\":\"stored_value\"}],\"payment_instrument_id\":\"instrument.jp.seven-card-plus\",\"portal_id\":null,\"sequence\":1},{\"amount_jpy\":660,\"asset_inputs\":[{\"input_id\":\"in_jp_cvs_006_nanaco_tender_5000\",\"quantity\":{\"amount\":\"660\",\"asset\":{\"asset_id\":\"asset.jp.nanaco\",\"asset_kind\":\"stored_value\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":null,\"scale\":0}},\"role\":\"stored_value_tender\",\"source_lot_id\":\"lot_jp_cvs_006_nanaco_5000\"}],\"channel\":\"in_store\",\"funding_source_id\":\"funding.jp.nanaco\",\"interface\":\"not_applicable\",\"line_items\":[{\"amount_jpy\":660,\"eligible_for_rewards\":true,\"line_item_id\":\"line_jp_cvs_006_ordinary_5000\",\"product_class\":\"ordinary\",\"quantity\":1,\"tax_exclusive_amount_jpy\":600}],\"merchant_id\":\"merchant.seveneleven\",\"merchant_location_id\":null,\"notes\":\"Ordinary Seven-Eleven purchase; explicit JPY 600 tax-exclusive basis is used for nanaco purchase earning.\",\"occurred_at\":\"2026-08-20T05:43:00+09:00\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"operation_type\":\"merchant_purchase\",\"original_operation_id\":null,\"output_requests\":[],\"payment_instrument_id\":\"instrument.jp.nanaco\",\"portal_id\":null,\"sequence\":2}],\"plan_id\":\"plan_jp_cvs_006_valid_5000_topup\",\"rejected_rule_ids\":[\"rr_jp_cvs_006_nanaco_payment_acceptance\",\"rr_jp_cvs_006_sevencard_credit_acceptance\"],\"rejection_reasons\":[{\"code\":\"rule_excluded\",\"message\":\"rr_jp_cvs_006_nanaco_payment_acceptance: operation_type_outside_scope\",\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"rule_id\":\"rr_jp_cvs_006_nanaco_payment_acceptance\"},{\"code\":\"rule_excluded\",\"message\":\"rr_jp_cvs_006_sevencard_credit_acceptance: operation_type_outside_scope\",\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"rule_id\":\"rr_jp_cvs_006_sevencard_credit_acceptance\"}],\"reward_components\":[{\"calculation_trace\":{\"denominator_jpy\":200,\"eligible_basis\":\"operation_amount\",\"reward_units\":\"1\",\"rounding_stage\":\"per_operation\",\"spend_jpy\":\"5000\",\"stacking_mode\":\"additive\"},\"certainty\":{\"probability\":null,\"probability_source\":null,\"type\":\"guaranteed\"},\"clawback\":{\"notes\":\"No refund operation is included in this narrow candidate slice.\",\"on_refund\":\"unknown\",\"posting_delay_days\":null},\"component_id\":\"cmp_jp_cvs_006_topup_5000_jp_cvs_006_sevencard_credit_topup_reward_0\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"operation_id\":\"op_jp_cvs_006_topup_5000\",\"quantity\":{\"amount\":\"25\",\"asset\":{\"asset_id\":\"asset.jp.nanaco-point\",\"asset_kind\":\"reward_point\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":\"normal\",\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.\",\"permitted_destination_ids\":[\"asset.jp.nanaco\"],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":null},\"rule_id\":\"rr_jp_cvs_006_sevencard_credit_topup_reward\",\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"pending\"},\"sign\":\"credit\",\"value_jpy\":{\"expected_jpy\":\"0\",\"maximum_jpy\":\"0\",\"minimum_jpy\":\"0\"}},{\"calculation_trace\":{\"denominator_jpy\":200,\"eligible_basis\":\"eligible_line_items\",\"reward_units\":\"1\",\"rounding_stage\":\"per_operation\",\"spend_jpy\":\"600\",\"stacking_mode\":\"additive\"},\"certainty\":{\"probability\":null,\"probability_source\":null,\"type\":\"guaranteed\"},\"clawback\":{\"notes\":\"No refund operation is included in this narrow candidate slice.\",\"on_refund\":\"unknown\",\"posting_delay_days\":null},\"component_id\":\"cmp_jp_cvs_006_purchase_5000_jp_cvs_006_nanaco_purchase_reward_1\",\"expiry\":{\"duration_days\":null,\"expires_at\":null,\"policy\":\"unknown\",\"timezone\":\"Asia/Tokyo\"},\"operation_id\":\"op_jp_cvs_006_purchase_5000\",\"quantity\":{\"amount\":\"3\",\"asset\":{\"asset_id\":\"asset.jp.nanaco-point\",\"asset_kind\":\"reward_point\",\"program_id\":\"program.jp.nanaco\",\"reward_class\":\"normal\",\"scale\":0}},\"restrictions\":{\"investable\":null,\"notes\":\"nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.\",\"permitted_destination_ids\":[\"asset.jp.nanaco\"],\"redeemable_for_cash\":null,\"transferable\":null,\"usable_for_payment\":null},\"rule_id\":\"rr_jp_cvs_006_nanaco_purchase_reward\",\"settlement\":{\"expected_posting_from\":null,\"expected_posting_to\":null,\"posted_at\":null,\"status\":\"posted\"},\"sign\":\"credit\",\"value_jpy\":{\"expected_jpy\":\"0\",\"maximum_jpy\":\"0\",\"minimum_jpy\":\"0\"}}]}",
+        "objective_score_jpy": "28",
+        "opening_asset_units_consumed": [],
+        "operations": [
+          {
+            "amount_jpy": 5000,
+            "asset_inputs": [
+              {
+                "input_id": "in_jp_cvs_006_topup_5000_funding",
+                "quantity": {
+                  "amount": "5000",
+                  "asset": {
+                    "asset_id": "asset.jp.seven-card-plus-credit",
+                    "asset_kind": "credit_limit",
+                    "program_id": "program.jp.seven-card-plus",
+                    "reward_class": null,
+                    "scale": 0
+                  }
+                },
+                "role": "external_funding",
+                "source_lot_id": null
+              }
+            ],
+            "channel": "not_applicable",
+            "funding_source_id": "funding.jp.seven-card-plus",
+            "interface": "not_applicable",
+            "line_items": [],
+            "merchant_id": null,
+            "merchant_location_id": null,
+            "notes": "Standard Seven Card Plus credit-funded nanaco charge; cash-at-register limits are not applied.",
+            "occurred_at": "2026-08-20T05:42:00+09:00",
+            "operation_id": "op_jp_cvs_006_topup_5000",
+            "operation_type": "stored_value_top_up",
+            "original_operation_id": null,
+            "output_requests": [
+              {
+                "asset": {
+                  "asset_id": "asset.jp.nanaco",
+                  "asset_kind": "stored_value",
+                  "program_id": "program.jp.nanaco",
+                  "reward_class": null,
+                  "scale": 0
+                },
+                "created_lot_id": "lot_jp_cvs_006_nanaco_5000",
+                "request_id": "out_jp_cvs_006_nanaco_5000",
+                "requested_amount": "5000",
+                "role": "stored_value"
+              }
+            ],
+            "payment_instrument_id": "instrument.jp.seven-card-plus",
+            "portal_id": null,
+            "sequence": 1
+          },
+          {
+            "amount_jpy": 660,
+            "asset_inputs": [
+              {
+                "input_id": "in_jp_cvs_006_nanaco_tender_5000",
+                "quantity": {
+                  "amount": "660",
+                  "asset": {
+                    "asset_id": "asset.jp.nanaco",
+                    "asset_kind": "stored_value",
+                    "program_id": "program.jp.nanaco",
+                    "reward_class": null,
+                    "scale": 0
+                  }
+                },
+                "role": "stored_value_tender",
+                "source_lot_id": "lot_jp_cvs_006_nanaco_5000"
+              }
+            ],
+            "channel": "in_store",
+            "funding_source_id": "funding.jp.nanaco",
+            "interface": "not_applicable",
+            "line_items": [
+              {
+                "amount_jpy": 660,
+                "eligible_for_rewards": true,
+                "line_item_id": "line_jp_cvs_006_ordinary_5000",
+                "product_class": "ordinary",
+                "quantity": 1,
+                "tax_exclusive_amount_jpy": 600
+              }
+            ],
+            "merchant_id": "merchant.seveneleven",
+            "merchant_location_id": null,
+            "notes": "Ordinary Seven-Eleven purchase; explicit JPY 600 tax-exclusive basis is used for nanaco purchase earning.",
+            "occurred_at": "2026-08-20T05:43:00+09:00",
+            "operation_id": "op_jp_cvs_006_purchase_5000",
+            "operation_type": "merchant_purchase",
+            "original_operation_id": null,
+            "output_requests": [],
+            "payment_instrument_id": "instrument.jp.nanaco",
+            "portal_id": null,
+            "sequence": 2
+          }
+        ],
+        "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+        "rejected_rule_ids": [
+          "rr_jp_cvs_006_nanaco_payment_acceptance",
+          "rr_jp_cvs_006_sevencard_credit_acceptance"
+        ],
+        "rejection_reasons": [
+          {
+            "code": "rule_excluded",
+            "message": "rr_jp_cvs_006_nanaco_payment_acceptance: operation_type_outside_scope",
+            "operation_id": "op_jp_cvs_006_topup_5000",
+            "rule_id": "rr_jp_cvs_006_nanaco_payment_acceptance"
+          },
+          {
+            "code": "rule_excluded",
+            "message": "rr_jp_cvs_006_sevencard_credit_acceptance: operation_type_outside_scope",
+            "operation_id": "op_jp_cvs_006_purchase_5000",
+            "rule_id": "rr_jp_cvs_006_sevencard_credit_acceptance"
+          }
+        ],
+        "reward_components": [
+          {
+            "calculation_trace": {
+              "denominator_jpy": 200,
+              "eligible_basis": "operation_amount",
+              "reward_units": "1",
+              "rounding_stage": "per_operation",
+              "spend_jpy": "5000",
+              "stacking_mode": "additive"
+            },
+            "certainty": {
+              "probability": null,
+              "probability_source": null,
+              "type": "guaranteed"
+            },
+            "clawback": {
+              "notes": "No refund operation is included in this narrow candidate slice.",
+              "on_refund": "unknown",
+              "posting_delay_days": null
+            },
+            "component_id": "cmp_jp_cvs_006_topup_5000_jp_cvs_006_sevencard_credit_topup_reward_0",
+            "expiry": {
+              "duration_days": null,
+              "expires_at": null,
+              "policy": "unknown",
+              "timezone": "Asia/Tokyo"
+            },
+            "operation_id": "op_jp_cvs_006_topup_5000",
+            "quantity": {
+              "amount": "25",
+              "asset": {
+                "asset_id": "asset.jp.nanaco-point",
+                "asset_kind": "reward_point",
+                "program_id": "program.jp.nanaco",
+                "reward_class": "normal",
+                "scale": 0
+              }
+            },
+            "restrictions": {
+              "investable": null,
+              "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.",
+              "permitted_destination_ids": [
+                "asset.jp.nanaco"
+              ],
+              "redeemable_for_cash": null,
+              "transferable": null,
+              "usable_for_payment": null
+            },
+            "rule_id": "rr_jp_cvs_006_sevencard_credit_topup_reward",
+            "settlement": {
+              "expected_posting_from": null,
+              "expected_posting_to": null,
+              "posted_at": null,
+              "status": "pending"
+            },
+            "sign": "credit",
+            "value_jpy": {
+              "expected_jpy": "25",
+              "maximum_jpy": "25",
+              "minimum_jpy": "25"
+            },
+            "value_jpy_decimal": "25"
+          },
+          {
+            "calculation_trace": {
+              "denominator_jpy": 200,
+              "eligible_basis": "eligible_line_items",
+              "reward_units": "1",
+              "rounding_stage": "per_operation",
+              "spend_jpy": "600",
+              "stacking_mode": "additive"
+            },
+            "certainty": {
+              "probability": null,
+              "probability_source": null,
+              "type": "guaranteed"
+            },
+            "clawback": {
+              "notes": "No refund operation is included in this narrow candidate slice.",
+              "on_refund": "unknown",
+              "posting_delay_days": null
+            },
+            "component_id": "cmp_jp_cvs_006_purchase_5000_jp_cvs_006_nanaco_purchase_reward_1",
+            "expiry": {
+              "duration_days": null,
+              "expires_at": null,
+              "policy": "unknown",
+              "timezone": "Asia/Tokyo"
+            },
+            "operation_id": "op_jp_cvs_006_purchase_5000",
+            "quantity": {
+              "amount": "3",
+              "asset": {
+                "asset_id": "asset.jp.nanaco-point",
+                "asset_kind": "reward_point",
+                "program_id": "program.jp.nanaco",
+                "reward_class": "normal",
+                "scale": 0
+              }
+            },
+            "restrictions": {
+              "investable": null,
+              "notes": "nanaco points are recorded separately from nanaco principal and are not a second top-up principal balance.",
+              "permitted_destination_ids": [
+                "asset.jp.nanaco"
+              ],
+              "redeemable_for_cash": null,
+              "transferable": null,
+              "usable_for_payment": null
+            },
+            "rule_id": "rr_jp_cvs_006_nanaco_purchase_reward",
+            "settlement": {
+              "expected_posting_from": null,
+              "expected_posting_to": null,
+              "posted_at": null,
+              "status": "posted"
+            },
+            "sign": "credit",
+            "value_jpy": {
+              "expected_jpy": "3",
+              "maximum_jpy": "3",
+              "minimum_jpy": "3"
+            },
+            "value_jpy_decimal": "3"
+          }
+        ]
+      }
+    }
+  }
+}

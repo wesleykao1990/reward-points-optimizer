@@ -1,0 +1,164 @@
+{
+  "protocol_version": "0.1",
+  "run_id": "run_jp_cvs_002_payment_acceptance_local_20260821",
+  "begin": {
+    "protocol_version": "0.1",
+    "idempotency_key": "idem_jp_cvs_002_payment_acceptance_begin_001",
+    "stream_id": "rewards-optimizer.jp-cvs-002",
+    "producer": {
+      "producer_id": "local-jp-cvs-002-rehearsal",
+      "type": "custom_agent",
+      "name": "JP-CVS-002 local Agent Feed rehearsal",
+      "version": "0.1.0"
+    },
+    "task": {
+      "task_type": "semantic_change_monitor",
+      "definition_id": "jp-cvs-002-payment-acceptance",
+      "definition_version": "0.1"
+    },
+    "expected_scope": {
+      "source_ids": [
+        "merchant.seveneleven.payment-methods"
+      ],
+      "subjects": [
+        "merchant.7eleven"
+      ],
+      "queries": [
+        "accepted payment methods"
+      ],
+      "metadata": {
+        "scenario_id": "JP-CVS-002"
+      }
+    },
+    "started_at": "2026-08-21T00:00:00Z",
+    "parent_run_id": null,
+    "metadata": {
+      "mode": "local_rehearsal",
+      "scenario_id": "JP-CVS-002"
+    }
+  },
+  "batches": [
+    {
+      "protocol_version": "0.1",
+      "run_id": "run_jp_cvs_002_payment_acceptance_local_20260821",
+      "batch_id": "batch_jp_cvs_002_payment_acceptance_001",
+      "idempotency_key": "idem_jp_cvs_002_payment_acceptance_batch_001",
+      "sequence_number": 1,
+      "submitted_at": "2026-08-21T00:00:30Z",
+      "findings": [
+        {
+          "finding_id": "finding_jp_cvs_002_payment_acceptance_001",
+          "finding_type": "rewards.merchant_acceptance",
+          "title": "Seven-Eleven lists credit cards among accepted payment families",
+          "summary": "The reviewed Seven-Eleven payment-methods source lists credit cards as an accepted payment family.",
+          "subjects": [
+            {
+              "type": "merchant",
+              "id": "merchant.7eleven",
+              "name": "7-Eleven"
+            }
+          ],
+          "effective_time": {
+            "occurred_at": null,
+            "effective_from": null,
+            "effective_to": null
+          },
+          "assessment": {
+            "novelty": "known",
+            "evidence_completeness": "complete",
+            "agent_confidence": 0.95,
+            "source_authority_claim": "primary"
+          },
+          "evidence_refs": [
+            "ev_m3_seveneleven_payment_methods_20260820"
+          ],
+          "producer_dedupe_key": "JP-CVS-002|merchant.7eleven|credit_card",
+          "routing_tags": [
+            "p0",
+            "merchant-acceptance"
+          ],
+          "attributes": {
+            "change_kind": "merchant_acceptance",
+            "merchant_id": "merchant.7eleven",
+            "accepted_payment_family": "credit_card",
+            "source_id": "merchant.seveneleven.payment-methods",
+            "source_snapshot_id": "snap_m3_seveneleven_payment_methods_20260820"
+          },
+          "security_flags": []
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_id": "ev_m3_seveneleven_payment_methods_20260820",
+          "kind": "web",
+          "source": {
+            "uri": "https://www.sej.co.jp/services/cash.html",
+            "title": null,
+            "publisher": null,
+            "source_id": "merchant.seveneleven.payment-methods"
+          },
+          "captured_at": "2026-08-20T03:13:10+09:00",
+          "published_at": null,
+          "locator": {
+            "type": "manual_note",
+            "value": "Normalized accepted-payment-family facts from a manual review; no source excerpt retained.",
+            "page": null
+          },
+          "excerpt": null,
+          "content_hash": "sha256:637988f93599ec46f8249b954e0e01130311e0491dd1f25a5b126a7264d6985c",
+          "artifact": {
+            "uri": null,
+            "media_type": null,
+            "size_bytes": null
+          },
+          "handling": {
+            "contains_personal_data": false,
+            "contains_secrets": false,
+            "redistribution_restricted": false
+          },
+          "metadata": {
+            "source_snapshot_id": "snap_m3_seveneleven_payment_methods_20260820",
+            "capture_method": "manual_capture",
+            "record_type": "normalized_manual_source_snapshot"
+          }
+        }
+      ],
+      "metadata": {
+        "scenario_id": "JP-CVS-002"
+      }
+    }
+  ],
+  "complete": {
+    "protocol_version": "0.1",
+    "run_id": "run_jp_cvs_002_payment_acceptance_local_20260821",
+    "idempotency_key": "idem_jp_cvs_002_payment_acceptance_complete_001",
+    "status": "completed",
+    "completed_at": "2026-08-21T00:01:00Z",
+    "actual_scope": {
+      "source_ids": [
+        "merchant.seveneleven.payment-methods"
+      ],
+      "subjects": [
+        "merchant.7eleven"
+      ],
+      "queries": [
+        "accepted payment methods"
+      ],
+      "metadata": {
+        "scenario_id": "JP-CVS-002"
+      }
+    },
+    "stats": {
+      "sources_attempted": 1,
+      "sources_succeeded": 1,
+      "findings_submitted": 1,
+      "evidence_submitted": 1,
+      "batches_submitted": 1
+    },
+    "errors": [],
+    "metadata": {
+      "mode": "local_rehearsal",
+      "scenario_id": "JP-CVS-002"
+    }
+  }
+}

@@ -188,6 +188,8 @@ Begin only with the explicit continuation prompt after Milestone 1a passes.
 
 Begin only after Rewards Milestone 2 and Agent Feed Milestones 0–2 pass.
 
+Implementation status (2026-08-18): dependency gates passed and the deliverables below are implemented in the pinned `schema-v0.1.1` consumer, additive 0004 migration, and 007 adversarial SQL suite.
+
 ### Deliverables
 
 - pin Agent Feed protocol `0.1` through its published schema artifact;
@@ -310,6 +312,14 @@ Do not build a source-specific scraper merely because one semantic-monitor query
 
 ## Milestone 6 — Narrow consumer alpha
 
+Implementation checkpoint (2026-08-19): the pure consumer contracts and a
+localhost-only synthetic UI have independent **GO** verdicts. This checkpoint
+is intentionally narrower than the real alpha: it exposes one synthetic Tokyo
+branch, a direct card route, and an optional stored-value top-up route. It has
+no current reward data, official external app link, QR candidate route,
+authentication, persistence, or deployment. The real-data/production gate
+remains blocked by the incomplete M4 operational rehearsal and evidence work.
+
 Initial scope:
 
 - Tokyo;
@@ -335,6 +345,49 @@ Maintain exactly 40 single-rule, 40 stacking, and 20 adversarial scenarios as an
 | Transfer or adversarial historical case | 1–2 working days |
 
 Replace these assumptions with observed throughput after the first ten.
+
+### 2026-08-19 infrastructure checkpoint
+
+The deterministic M7 control plane is implemented and independently verified.
+It strictly admits the canonical 100-target plan, isolates `SYN-M7-*` probes
+from evidence/golden lifecycle states, preflights complete batches before any
+evaluator call, and produces an honest stable progress report. The current
+report is 100 declared/planned, 0 executed, 0 evidence-backed, and 0 golden.
+This is an infrastructure checkpoint only; M3 evidence promotion and M4
+operational readiness remain blocked.
+
+## Interim Milestone 7P — P0 provisional Agent Feed rehearsal
+
+Implementation checkpoint (2026-08-21): **GO for one private experimental
+family-role rehearsal; P0 coverage, publication, and production remain
+incomplete.** This lane was prioritized before Milestone 8 so the prototype can
+exercise correction-driven provisional data without weakening the canonical
+evidence and review gates.
+
+Implemented scope:
+
+- admit an untrusted Agent Feed `SourceObservation` only after hostile-value,
+  shared-contract, source, family-role, and authority checks;
+- keep semantic source role `(family_id, source_role_id)` separate from source
+  authority (`primary`, `corroborating`, or `conflict`);
+- allow only primary-authority, draft/under-review candidates into the private
+  `active_experimental` selection view;
+- persist immutable candidate, transition, and correction records in private
+  PostgreSQL tables with owner-only security-definer adapters;
+- remove disputed or quarantined candidates from experimental selection; and
+- seed one exact, evidence-backed Seven-Eleven credit-card acceptance candidate
+  from a local run bundle for repeatable prototype development.
+
+The seeded receipt is explicitly unsigned/unverified, submitted evidence stays
+`lead_only`, and the rule is neither approved nor published. No provisional
+rule is exposed through the approved-rule API or the consumer frontend.
+
+Before this lane can scale across P0, add authorized producer runs for each
+explicit family-role, deterministic semantic support checks between evidence
+and extracted economics, extractor authenticity, and operational correction
+triage. Do not infer missing rates, products, campaigns, or source
+relationships. Unknown-world `CoverageCandidate` discovery remains a separate
+future milestone.
 
 ## Later milestones
 

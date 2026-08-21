@@ -301,7 +301,7 @@ scenarios:
   level: L1_SINGLE_RULE
   behavior_under_test: Payment acceptance independent of reward calculation
   primary_source_ids:
-  - merchant.seveneleven.payment-faq
+  - merchant.seveneleven.payment-methods
   required_negative_assertion: An unsupported tender must be rejected before ranking.
   status: planned
   golden_gate:
@@ -387,7 +387,9 @@ scenarios:
   behavior_under_test: Multi-operation stored-value route and residual asset accounting
   primary_source_ids:
   - merchant.seveneleven.nanaco
-  - jp.nanaco.earning
+  - jp.nanaco.sevencard-earning
+  - jp.nanaco.shopping-earning
+  - jp.sevencard.nanaco-charge
   - jp.nanaco.redemption-value
   required_negative_assertion: The full top-up amount must not be treated as consumed by a smaller purchase.
   status: planned

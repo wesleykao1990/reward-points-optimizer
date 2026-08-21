@@ -1,0 +1,33 @@
+{
+  "capture_method": "manual_capture",
+  "captured_at": "2026-08-20T05:30:00+09:00",
+  "facts": [
+    {
+      "charge_increment_jpy": 1000,
+      "fact_id": "draft_sevencard_plus_nanaco_credit_charge_boundaries",
+      "funding_instrument": "Seven Card Plus",
+      "maximum_charge_jpy": 30000,
+      "minimum_charge_jpy": 5000,
+      "post_charge_balance_limit_jpy": 50000,
+      "preregistration_required": true,
+      "status": "extracted_pending_review",
+      "target_instrument": "nanaco"
+    },
+    {
+      "eligible_charge_jpy": 200,
+      "fact_id": "draft_sevencard_plus_nanaco_charge_earning_detail",
+      "funding_instrument": "Seven Card Plus",
+      "posting_schedule": "charges from prior-month day 16 through current-month day 15 post together on next-month day 5",
+      "reward_asset": "nanaco_point",
+      "reward_quantity": 1,
+      "status": "extracted_pending_review",
+      "target_instrument": "nanaco"
+    }
+  ],
+  "raw_page_body_stored": false,
+  "record_type": "normalized_manual_source_snapshot",
+  "representation_policy": "project-owner-approved paraphrased structured facts only; no copied page body, screenshot, or excerpt",
+  "source_id": "jp.sevencard.nanaco-charge",
+  "source_snapshot_id": "snap_m3_sevencard_nanaco_charge_20260820",
+  "source_url": "https://www.7card.co.jp/point/save.html"
+}

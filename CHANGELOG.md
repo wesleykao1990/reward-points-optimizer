@@ -1,5 +1,94 @@
 # Changelog
 
+## Unreleased — 2026-08-19
+
+- Added an interim P0 provisional-rule ingestion checkpoint: a fail-closed
+  in-process kernel, private PostgreSQL persistence, correction-driven
+  exclusion/quarantine, and one durable Seven-Eleven payment-acceptance
+  rehearsal imported from a local Agent Feed run bundle.
+- Kept the rehearsal explicitly experimental: its transport receipt is marked
+  unverified, submitted evidence remains lead-only, the rule remains
+  `under_review`, and no canonical rule approval, publication request, or
+  consumer-frontend route is created.
+- Hardened provisional admission against forged/hostile representations,
+  lifecycle and review claims, semantic-role/authority confusion, duplicate
+  family-role coverage, non-primary activation, and database JSON NULL or
+  legacy-field fail-open behavior.
+- Added the first project-owner-approved manual real-data slice for
+  Seven-Eleven/nanaco: five first-party normalized snapshots, hash-bound draft
+  evidence, exact source mappings, and fail-closed review/publication controls.
+- Completed isolated integrated replay, accountable scenario review, exact
+  reviewed rule-version binding, and immutable golden materialization for
+  `JP-CVS-002` and `JP-CVS-006`; both remain unpublished.
+- Added a reproducibly generated private database seed for the six approved
+  EvidenceRecords and two golden scenarios, exact sealed-replay completion and
+  immutability constraints, and an adversarial SQL gate. All six associated
+  rules remain `under_review`, have no publication request, and are excluded
+  from the approved-rule API view.
+- Prepared a deterministic five-rule publication dossier and an all-or-nothing
+  SQL generator. It binds exact definition/evidence/fixture/replay hashes,
+  rejects stale or agent-authored decisions, and refuses to emit publication
+  SQL while the accountable human review remains pending. The deliberately
+  synthetic unsupported-tender rule is explicitly excluded from publication.
+- Extended the golden-scenario contract with rule definition hashes, validity
+  and evidence bindings, replay admission/version/hash provenance, and honest
+  engine-versus-preflight result origins.
+- Added explicit preflight-result provenance to the M3 promotion gate so an
+  invalid candidate is paired with its replay without pretending the reward
+  engine evaluated it.
+- Added explicit per-line tax-exclusive eligible spend to the purchase-plan
+  contract and engine. Tax-exclusive rules now require explicit values and
+  fail closed instead of calculating from tax-inclusive tender amounts.
+- Kept the real nanaco route unpublished while explicit rule-publication review
+  and frontend activation remain pending.
+- Added the Milestone 7 deterministic challenge-track package: strict canonical
+  100-target admission, non-evidentiary `SYN-M7-*` probes, capability-bound
+  all-or-nothing batch execution, and exact progress accounting.
+- Added `pnpm challenge:validate`. Its canonical audit reports 100
+  declared/planned targets and zero executed, evidence-backed, or golden
+  scenarios; production remains blocked by M3/M4.
+- Closed hostile-review bypasses for forged plan/case/result lookalikes,
+  alias-shaped and partial batches, replay-wrapper cleanup, cross-plan case
+  binding, artifact TOCTOU/mutation, and hostile registry representations. The
+  M7 infrastructure decision is **GO**; the real 100-scenario evidence program
+  remains pending.
+- Added the Milestone 6 local synthetic consumer alpha: immutable Tokyo-scoped
+  onboarding state, exact per-asset valuation/cap admission, fail-closed
+  presentation, host-owned synthetic deep links, and hash-bound session-only
+  corrections.
+- Added a loopback-only Node/static-DOM shell with an allowlisted manual-state
+  DTO, deterministic full-input recommendation IDs, bounded issued-result
+  correction authority, strict CSP/Host/Origin/body/query controls, and no
+  browser storage, cookies, source/evidence output, or unsafe HTML rendering.
+- Closed independent hostile-review findings covering Proxy/hidden/accessor
+  input, PAN/token/email data, decimal overflow, empty or reordered state,
+  forged/blocked output, unresolved questions labeled definite, duplicate
+  fallback, request-ID collisions, unissued corrections, evidence leakage,
+  and misleading official-link labels. The M6 decision is **GO only for the
+  local synthetic checkpoint**; real-data and production use remain blocked.
+- Added the Milestone 5 pure offline recommendation boundary for an
+  internal/synthetic foundation: exact merchant/branch and frozen-purchase
+  matching, explicit bitemporal inputs, versioned trust/evidence admission,
+  deterministic candidate partitioning and hash verification, and a hard
+  production blocker.
+- Added security admission, allowlisted redacted history/retention decisions,
+  and host-authorized hash-bound fixture/incident replay contracts. These are
+  in-process ports only; no HTTP, database, authentication, or current-reward
+  production beta is enabled.
+- Recorded the independent Milestone 5 core and security **GO** reviews while
+  retaining the M4 `insufficient_data` operational gate and deferred
+  `JP-XFR-002` human experiment.
+- Added the Milestone 4 two-lane maintenance foundation with an immutable
+  eight-source cohort, fail-closed direct-check records, deterministic rehearsal
+  metrics, and synthetic-only fixtures.
+- Added pinned-schema local Agent Feed run-bundle validation and normalization
+  with a single immutable atomic-batch persistence boundary.
+- Added hostile regressions for method and scope substitution, forged records,
+  malformed coverage, incomplete run visibility, validation races, and partial
+  callback persistence.
+- Deferred the detailed `JP-XFR-002` experiment while retaining the owner's ANA
+  2:1 conversion statement as a non-evidentiary research note.
+
 ## 0.4.1 — 2026-08-17
 
 - Applied the pre-implementation review fixes and added runnable prototype code.
@@ -7,6 +96,9 @@
 - Conserved assets by asset plus reward class and removed generic adjust movements.
 - Added required review modes/events, monitoring liveness, hostile Agent Feed regression, receipt redaction, and observation transition controls.
 - Pinned the published Agent Feed `@agent-feed/schema@0.1.1` artifact by exact release URL, source commit, SHA-256, size, and SHA-512 integrity.
+- Implemented Milestone 2.5 with the pinned Agent Feed `schema-v0.1.1` artifact, exact-byte signed intake, transport/semantic dedupe separation, and acknowledgement after atomic persistence.
+- Added canonical `SourceObservation` storage, lead-only evidence acquisition/promotion gates, run lifecycle/liveness incidents, and redacted dead-letter/replay diagnostics.
+- Added the 0004 migration, 007 adversarial SQL gate, tagged hostile run-bundle fixture, fresh/non-super PostgreSQL verification, and legacy-data upgrade coverage.
 
 
 ## 0.4.0 — 2026-08-17

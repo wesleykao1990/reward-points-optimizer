@@ -1,8 +1,8 @@
 # Trusted Data Source Catalogue v0.3
 
-Research cutoff: **2026-08-17**
+Research cutoff: **2026-08-20**
 
-This catalogue contains **140** source seeds. The YAML registry is canonical; this document is a readable index.
+This catalogue contains **144** source seeds. The YAML registry is canonical; this document is a readable index.
 
 > “Trusted” means that the publisher is appropriate for the listed authority scope. Authority does not grant collection permission, and a dated reachability observation is not durable technical truth.
 
@@ -13,7 +13,7 @@ This catalogue contains **140** source seeds. The YAML registry is canonical; th
 | Tier | Count |
 |---|---:|
 | `T0_REGULATOR` | 4 |
-| `T1_CANONICAL` | 95 |
+| `T1_CANONICAL` | 99 |
 | `T2_OFFICIAL_SUPPORT` | 40 |
 | `T3_PARTNER_CONTRACT` | 0 |
 | `T4_DISCOVERY_ONLY` | 1 |
@@ -22,8 +22,8 @@ This catalogue contains **140** source seeds. The YAML registry is canonical; th
 
 | Status | Count |
 |---|---:|
-| `content_verified` | 2 |
-| `registered` | 138 |
+| `content_verified` | 8 |
+| `registered` | 136 |
 
 ### Technical-feasibility summary
 
@@ -31,9 +31,10 @@ This catalogue contains **140** source seeds. The YAML registry is canonical; th
 |---|---:|
 | `plain_http_observed_reachable` | 1 |
 | `environment_dependent_or_mixed` | 1 |
-| `unknown` | 138 |
+| `manual_capture_candidate` | 8 |
+| `unknown` | 134 |
 
-Exactly **2** newly added official sources are marked content-verified. One is currently classified reachable from the recorded manual environment; the other retains conflicting environment observations. The original v0.1 records were conservatively retained as `registered` because an aggregate URL probe is not evidence that the relevant content was manually verified.
+Eight official sources are marked content-verified. Six belong to the project-owner-approved manual Seven-Eleven/nanaco slice; the remaining records preserve their prior verification and environment-specific access classifications. Manual reachability does not authorize automated collection.
 
 ## Selection rules
 
@@ -71,7 +72,7 @@ Exactly **2** newly added official sources are marked content-verified. One is c
 | `tech.supabase.database` | `T1_CANONICAL` | Supabase | [Supabase Database overview](https://supabase.com/docs/guides/database/overview) | `postgres`, `postgis`, `extensions` | `registered` | `unknown` | medium / monthly |
 | `tech.supabase.rls` | `T1_CANONICAL` | Supabase | [Supabase Row Level Security guidance](https://supabase.com/docs/guides/database/postgres/row-level-security) | `row_level_security`, `database_access_control` | `registered` | `unknown` | medium / quarterly |
 
-## Point, mileage, and loyalty program rules (19)
+## Point, mileage, and loyalty program rules (20)
 
 | ID | Tier | Publisher | Source | Authority scope | Verification | Technical access | Volatility / cadence |
 |---|---|---|---|---|---|---|---|
@@ -84,7 +85,9 @@ Exactly **2** newly added official sources are marked content-verified. One is c
 | `jp.jrepoint.home` | `T1_CANONICAL` | JR East | [JRE POINT official site](https://www.jrepoint.jp/) | `program_overview`, `merchant_discovery` | `registered` | `unknown` | high / weekly |
 | `jp.jrepoint.suica-earning` | `T1_CANONICAL` | JR East | [JRE POINT earning with registered Suica](https://www.jrepoint.jp/point/append/suica/) | `suica_registration`, `merchant_earn_rules` | `registered` | `unknown` | high / weekly |
 | `jp.nanaco.earning` | `T1_CANONICAL` | Seven Card Service | [How to earn nanaco points](https://www.nanaco-net.jp/how-to/save_point/) | `earn_rules`, `rounding` | `registered` | `unknown` | high / weekly |
-| `jp.nanaco.redemption-value` | `T1_CANONICAL` | Seven Card Service | [Convert nanaco points to electronic money](https://www.nanaco-net.jp/how-to/use_point/money.html) | `redemption_value`, `conversion_rules` | `registered` | `unknown` | medium / monthly |
+| `jp.nanaco.redemption-value` | `T1_CANONICAL` | Seven Card Service | [Convert nanaco points to electronic money](https://www.nanaco-net.jp/how-to/use_point/money.html) | `redemption_value`, `conversion_rules` | `content_verified` | `manual_capture_candidate` | medium / monthly |
+| `jp.nanaco.shopping-earning` | `T1_CANONICAL` | Seven Card Service | [nanaco payment earning by merchant](https://www.nanaco-net.jp/how-to/save_point/shopping.html) | `merchant_earn_rules`, `rounding`, `posting_timing`, `product_exclusions` | `content_verified` | `manual_capture_candidate` | high / weekly |
+| `jp.sevencard.nanaco-charge` | `T1_CANONICAL` | Seven Card Service | [Seven Card Plus nanaco credit-charge rules](https://www.7card.co.jp/point/save.html) | `nanaco_credit_charge_eligibility`, `nanaco_credit_charge_amount_limits`, `nanaco_credit_charge_increment`, `nanaco_charge_earn_rules`, `posting_timing` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `jp.ponta.overview` | `T1_CANONICAL` | Loyalty Marketing / Recruit | [Ponta program overview](https://point.recruit.co.jp/pontaweb/about/ponta/) | `program_overview`, `earn_rules`, `redemption_rules` | `registered` | `unknown` | medium / monthly |
 | `jp.ponta.point-types` | `T1_CANONICAL` | Loyalty Marketing / Recruit | [Ponta point types](https://point.recruit.co.jp/pontaweb/about/point/) | `point_types`, `expiry` | `registered` | `unknown` | medium / monthly |
 | `jp.rakuten.pointclub` | `T1_CANONICAL` | Rakuten Group | [Rakuten PointClub](https://point.rakuten.co.jp/) | `point_balance`, `program_overview`, `campaign_discovery` | `registered` | `unknown` | high / weekly |
@@ -120,10 +123,11 @@ Exactly **2** newly added official sources are marked content-verified. One is c
 | `jp.paypaycard.product-compare` | `T1_CANONICAL` | PayPay Card | [PayPay Card product comparison](https://www.paypay-card.co.jp/service/card/compare/) | `annual_fee`, `product_benefits` | `registered` | `unknown` | medium / monthly |
 | `jp.rakutencard.product` | `T1_CANONICAL` | Rakuten Card | [Rakuten Card product overview](https://www.rakuten-card.co.jp/card/rakuten-card/) | `annual_fee`, `base_earn`, `product_eligibility` | `registered` | `unknown` | medium / monthly |
 
-## Card reward and exclusion rules (6)
+## Card reward and exclusion rules (7)
 
 | ID | Tier | Publisher | Source | Authority scope | Verification | Technical access | Volatility / cadence |
 |---|---|---|---|---|---|---|---|
+| `jp.nanaco.sevencard-earning` | `T1_CANONICAL` | Seven Card Service | [Seven Card Plus purchase and nanaco charge earning](https://www.nanaco-net.jp/how-to/save_point/creditcard.html) | `card_purchase_earn_rules`, `nanaco_charge_earn_rules`, `rounding` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `jp.dcard.exclusions` | `T1_CANONICAL` | NTT DOCOMO | [d Card point exclusions and posting timing](https://d-card.jp/st/services/dcard_attention.html) | `excluded_transactions`, `posting_timing` | `registered` | `unknown` | high / weekly |
 | `jp.dcard.special-merchants` | `T1_CANONICAL` | NTT DOCOMO | [d Card special merchant benefits](https://d-card.jp/st/services/points/use.html) | `merchant_bonus`, `base_earn` | `registered` | `unknown` | high / weekly |
 | `jp.paypaycard.point-rules` | `T1_CANONICAL` | PayPay Card | [PayPay Card point rules](https://www.paypay-card.co.jp/service/benefit/point/) | `base_earn`, `excluded_transactions` | `registered` | `unknown` | high / weekly |
@@ -131,7 +135,7 @@ Exactly **2** newly added official sources are marked content-verified. One is c
 | `jp.smbc.vpoint-up-program` | `T1_CANONICAL` | Sumitomo Mitsui Card | [SMBC V Point Up Program](https://www.smbc-card.com/nyukai/merit/vpoint_up_program.jsp) | `user_conditions`, `merchant_bonus`, `payment_channel` | `registered` | `unknown` | high / weekly |
 | `jp.viewcard.suica-charge` | `T1_CANONICAL` | JR East / View Card | [View Card Mobile Suica charge reward rules](https://www.jreast.co.jp/card/first/viewsuica.html) | `mobile_suica_charge`, `charge_reward`, `payment_interface`, `reward_rate` | `content_verified` | `environment_dependent_or_mixed` | high / weekly |
 
-## Merchant payment and points rules (15)
+## Merchant payment and points rules (16)
 
 | ID | Tier | Publisher | Source | Authority scope | Verification | Technical access | Volatility / cadence |
 |---|---|---|---|---|---|---|---|
@@ -145,8 +149,9 @@ Exactly **2** newly added official sources are marked content-verified. One is c
 | `merchant.matsukiyo.store-payment-faq` | `T2_OFFICIAL_SUPPORT` | MatsukiyoCocokara & Co. | [Matsukiyo Cocokara store payment FAQ](https://faq.matsukiyococokara-online.com/kb/article/%E5%BA%97%E8%88%97%E3%81%A7%E5%88%A9%E7%94%A8%E5%8F%AF%E8%83%BD%E3%81%AA%E3%81%8A%E6%94%AF%E6%89%95%E6%96%B9%E6%B3%95%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/) | `branch_variation`, `payment_acceptance`, `cash_only_items` | `registered` | `unknown` | high / weekly |
 | `merchant.mcdonalds.payment` | `T1_CANONICAL` | McDonald's Japan | [McDonald's Japan payment methods by channel](https://www.mcdonalds.co.jp/shop/payment/) | `payment_acceptance`, `channel_scope` | `registered` | `unknown` | high / weekly |
 | `merchant.seveneleven.bill-payment` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven bill and service payment methods](https://www.sej.co.jp/services/payment/) | `product_category_exclusion`, `payment_acceptance` | `registered` | `unknown` | high / weekly |
-| `merchant.seveneleven.nanaco` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven nanaco payment rules](https://www.sej.co.jp/services/cash/nanaco.html) | `payment_combination`, `excluded_products`, `charge_limits` | `registered` | `unknown` | high / weekly |
+| `merchant.seveneleven.nanaco` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven nanaco payment rules](https://www.sej.co.jp/services/cash/nanaco.html) | `payment_combination`, `excluded_products`, `charge_limits` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `merchant.seveneleven.payment-faq` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven Japan payment FAQ](https://faq.sej.co.jp/article/?knowledge_id=cidqbq4vr0h8m5o3skpg) | `payment_acceptance`, `product_exclusions` | `registered` | `unknown` | high / weekly |
+| `merchant.seveneleven.payment-methods` | `T1_CANONICAL` | Seven-Eleven Japan | [Seven-Eleven Japan accepted payment methods](https://www.sej.co.jp/services/cash.html) | `payment_acceptance`, `payment_interface`, `ended_payment_rewards` | `content_verified` | `manual_capture_candidate` | high / weekly |
 | `merchant.welcia.faq` | `T2_OFFICIAL_SUPPORT` | Welcia Yakkyoku | [Welcia official FAQ](https://www.welcia-yakkyoku.co.jp/inquire) | `payment_acceptance`, `waon_vpoint_rules` | `registered` | `unknown` | high / weekly |
 | `merchant.yodobashi.payment` | `T1_CANONICAL` | Yodobashi Camera | [Yodobashi payment methods](https://www.yodobashi.com/ec/support/beginner/payment/) | `payment_method_rate`, `channel_scope` | `registered` | `unknown` | high / weekly |
 | `merchant.zozo.payment` | `T1_CANONICAL` | ZOZO | [ZOZOTOWN payment methods](https://zozo.jp/_help/?id=62b3e9ae27c0cc0022163376) | `payment_acceptance`, `channel_scope` | `registered` | `unknown` | high / weekly |

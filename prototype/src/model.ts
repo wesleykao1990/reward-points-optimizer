@@ -1,4 +1,9 @@
-export type RewardClass = "normal" | "limited_period" | "usage_limited" | "stored_value" | null;
+export type RewardClass =
+  | "normal"
+  | "limited_period"
+  | "usage_limited"
+  | "stored_value"
+  | null;
 export type MovementDirection = "create" | "consume" | "return" | "expire";
 
 export interface AssetQuantity {

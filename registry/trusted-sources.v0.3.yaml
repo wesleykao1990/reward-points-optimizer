@@ -1,5 +1,5 @@
 registry_version: 0.3.0
-research_cutoff: '2026-08-17'
+research_cutoff: '2026-08-20'
 purpose: Seed registry of trusted sources for a Japanese rewards and payment-route optimizer.
 important_notice: Authority, legal permission, and technical collection feasibility are separate. Do not automate collection
   until a source-specific policy is approved; a successful or blocked probe does not grant permission.
@@ -1546,9 +1546,10 @@ sources:
     automation_status: requires_terms_review
     terms_review_status: not_reviewed
     technical_feasibility:
-      current_classification: unknown
-      last_observed_at: null
-      observation_ids: []
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
   verification:
     url_registered_on: '2026-08-17'
     content_verified_on: null
@@ -1599,19 +1600,116 @@ sources:
   volatility: medium
   recommended_check_cadence: monthly
   access:
-    retrieval_method: http_html
+    retrieval_method: manual_browser
     requires_login: false
-    automation_status: requires_terms_review
-    terms_review_status: not_reviewed
+    automation_status: manual_only
+    terms_review_status: approved
     technical_feasibility:
-      current_classification: unknown
-      last_observed_at: null
-      observation_ids: []
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
   verification:
     url_registered_on: '2026-08-17'
-    content_verified_on: null
-    status: registered
-    notes: ''
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
+- id: jp.nanaco.sevencard-earning
+  name: Seven Card Plus purchase and nanaco charge earning
+  publisher: Seven Card Service
+  category: card_reward_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/how-to/save_point/creditcard.html
+  authority_scope:
+  - card_purchase_earn_rules
+  - nanaco_charge_earn_rules
+  - rounding
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: manual_browser
+    requires_login: false
+    automation_status: manual_only
+    terms_review_status: approved
+    technical_feasibility:
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
+  verification:
+    url_registered_on: '2026-08-20'
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
+- id: jp.nanaco.shopping-earning
+  name: nanaco payment earning by merchant
+  publisher: Seven Card Service
+  category: program_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.nanaco-net.jp/how-to/save_point/shopping.html
+  authority_scope:
+  - merchant_earn_rules
+  - rounding
+  - posting_timing
+  - product_exclusions
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: manual_browser
+    requires_login: false
+    automation_status: manual_only
+    terms_review_status: approved
+    technical_feasibility:
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
+  verification:
+    url_registered_on: '2026-08-20'
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
+- id: jp.sevencard.nanaco-charge
+  name: Seven Card Plus nanaco credit-charge rules
+  publisher: Seven Card Service
+  category: card_reward_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.7card.co.jp/point/save.html
+  authority_scope:
+  - nanaco_credit_charge_eligibility
+  - nanaco_credit_charge_amount_limits
+  - nanaco_credit_charge_increment
+  - nanaco_charge_earn_rules
+  - posting_timing
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: manual_browser
+    requires_login: false
+    automation_status: manual_only
+    terms_review_status: approved
+    technical_feasibility:
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T05:30:00+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
+  verification:
+    url_registered_on: '2026-08-20'
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
 - id: jp.paypay.calculation-faq
   name: PayPay point calculation FAQ
   publisher: PayPay
@@ -3460,19 +3558,20 @@ sources:
   volatility: high
   recommended_check_cadence: weekly
   access:
-    retrieval_method: http_html
+    retrieval_method: manual_browser
     requires_login: false
-    automation_status: requires_terms_review
-    terms_review_status: not_reviewed
+    automation_status: manual_only
+    terms_review_status: approved
     technical_feasibility:
-      current_classification: unknown
-      last_observed_at: null
-      observation_ids: []
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
   verification:
     url_registered_on: '2026-08-17'
-    content_verified_on: null
-    status: registered
-    notes: ''
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
 - id: merchant.seveneleven.payment-faq
   name: Seven-Eleven Japan payment FAQ
   publisher: Seven-Eleven Japan
@@ -3494,14 +3593,46 @@ sources:
     automation_status: requires_terms_review
     terms_review_status: not_reviewed
     technical_feasibility:
-      current_classification: unknown
-      last_observed_at: null
-      observation_ids: []
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
   verification:
     url_registered_on: '2026-08-17'
     content_verified_on: null
     status: registered
     notes: ''
+- id: merchant.seveneleven.payment-methods
+  name: Seven-Eleven Japan accepted payment methods
+  publisher: Seven-Eleven Japan
+  category: merchant_rules
+  tier: T1_CANONICAL
+  publication_use: canonical
+  source_url: https://www.sej.co.jp/services/cash.html
+  authority_scope:
+  - payment_acceptance
+  - payment_interface
+  - ended_payment_rewards
+  locale: ja-JP
+  geography: JP
+  evidence_format: html
+  volatility: high
+  recommended_check_cadence: weekly
+  access:
+    retrieval_method: manual_browser
+    requires_login: false
+    automation_status: manual_only
+    terms_review_status: approved
+    technical_feasibility:
+      current_classification: manual_capture_candidate
+      last_observed_at: '2026-08-20T03:13:10+09:00'
+      observation_ids:
+      - sao_m3_seveneleven_nanaco_manual_20260820
+  verification:
+    url_registered_on: '2026-08-20'
+    content_verified_on: '2026-08-20'
+    status: content_verified
+    notes: Project-owner-approved manual use of paraphrased structured facts; no copied page body and no automated collection.
 - id: merchant.starbucks.rewards
   name: Starbucks Rewards Japan
   publisher: Starbucks Coffee Japan

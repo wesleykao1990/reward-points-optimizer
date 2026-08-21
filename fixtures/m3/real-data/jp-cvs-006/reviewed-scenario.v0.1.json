@@ -1,0 +1,179 @@
+{
+  "record_type": "m3_scenario_record",
+  "record_version": "0.1.0",
+  "scenario_id": "JP-CVS-006",
+  "status": "reviewed",
+  "primary_source_ids": [
+    "merchant.seveneleven.nanaco",
+    "jp.nanaco.redemption-value",
+    "jp.nanaco.sevencard-earning",
+    "jp.nanaco.shopping-earning",
+    "jp.sevencard.nanaco-charge"
+  ],
+  "evidence_ids": [
+    "ev_m3_seveneleven_nanaco_20260820",
+    "ev_m3_nanaco_redemption_value_20260820",
+    "ev_m3_nanaco_sevencard_earning_20260820",
+    "ev_m3_nanaco_shopping_earning_20260820",
+    "ev_m3_sevencard_nanaco_charge_20260820"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "ev_m3_seveneleven_nanaco_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "merchant.seveneleven.nanaco"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_redemption_value_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "jp.nanaco.redemption-value"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_sevencard_earning_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "jp.nanaco.sevencard-earning"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_shopping_earning_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "jp.nanaco.shopping-earning"
+    },
+    {
+      "evidence_id": "ev_m3_sevencard_nanaco_charge_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "jp.sevencard.nanaco-charge"
+    }
+  ],
+  "candidate_plans": [
+    {
+      "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "input_path": "packages/test-fixtures/src/m3-real-data-jp-cvs-006.ts"
+    },
+    {
+      "plan_id": "plan_jp_cvs_006_invalid_4000_topup",
+      "input_path": "packages/test-fixtures/src/m3-real-data-jp-cvs-006.ts"
+    }
+  ],
+  "plan_results": [
+    {
+      "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "result_artifact_id": "result_jp_cvs_006_valid_5000_topup",
+      "replay_id": "replay_jp_cvs_006_candidate",
+      "produced_by": "engine"
+    },
+    {
+      "plan_id": "plan_jp_cvs_006_invalid_4000_topup",
+      "result_artifact_id": "preflight_jp_cvs_006_invalid_4000_topup",
+      "replay_id": "replay_jp_cvs_006_candidate",
+      "produced_by": "preflight",
+      "preflight_rejection": {
+        "eligible": false,
+        "rejection_code": "credit_charge_below_minimum",
+        "reward_calculation_performed": false
+      }
+    }
+  ],
+  "independent_calculation": {
+    "artifact_id": "calc_jp_cvs_006_manual_v0_1",
+    "status": "completed",
+    "completed_at": "2026-08-20T05:47:00+09:00",
+    "method": "manual",
+    "plan_ids": [
+      "plan_jp_cvs_006_valid_5000_topup",
+      "plan_jp_cvs_006_invalid_4000_topup"
+    ]
+  },
+  "engine_replay": {
+    "replay_id": "replay_jp_cvs_006_candidate",
+    "status": "passed",
+    "completed_at": "2026-08-20T05:57:00+09:00",
+    "result_plan_ids": [
+      "plan_jp_cvs_006_valid_5000_topup",
+      "plan_jp_cvs_006_invalid_4000_topup"
+    ]
+  },
+  "required_negative_assertions": [
+    "jp_cvs_006_topup_reward_not_reapplied_at_purchase",
+    "jp_cvs_006_residual_nanaco_principal_not_disappeared",
+    "jp_cvs_006_cash_register_49000_boundary_not_used_for_credit_charge",
+    "jp_cvs_006_below_minimum_topup_has_no_reward_calculation"
+  ],
+  "negative_assertions": [
+    {
+      "assertion_id": "jp_cvs_006_topup_reward_not_reapplied_at_purchase",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1"
+    },
+    {
+      "assertion_id": "jp_cvs_006_residual_nanaco_principal_not_disappeared",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1"
+    },
+    {
+      "assertion_id": "jp_cvs_006_cash_register_49000_boundary_not_used_for_credit_charge",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1"
+    },
+    {
+      "assertion_id": "jp_cvs_006_below_minimum_topup_has_no_reward_calculation",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1"
+    }
+  ],
+  "conservation": {
+    "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1",
+    "status": "passed",
+    "checked_at": "2026-08-20T05:57:00+09:00"
+  },
+  "replay": {
+    "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1",
+    "status": "passed",
+    "checked_at": "2026-08-20T05:57:00+09:00"
+  },
+  "builder_id": "codex-m3-jp-cvs-006-builder",
+  "primary_reviewer_id": "m3-jp-cvs-006-primary-solo-reviewer",
+  "review": {
+    "required_review_modes": [
+      "solo_dual_pass",
+      "agent_challenged"
+    ],
+    "review_mode": "agent_challenged",
+    "calculated_by": "codex-m3-jp-cvs-006-builder",
+    "decision": "approved",
+    "review_events": [
+      {
+        "mode": "solo_dual_pass",
+        "reviewer_id": "m3-jp-cvs-006-primary-solo-reviewer",
+        "completed_at": "2026-08-20T06:24:00+09:00",
+        "decision": "approved",
+        "notes": "Cooling-off reread reproduced all five approved source mappings, 25 top-up points, 3 purchase points, JPY 4,340 residual principal, and the below-minimum preflight rejection."
+      },
+      {
+        "mode": "agent_challenged",
+        "reviewer_id": "m3-scenario-challenge-verifier",
+        "completed_at": "2026-08-20T06:38:55+09:00",
+        "decision": "approved",
+        "notes": "Independent challenge recomputed the arithmetic, verified all evidence hashes and authoritative manual source readiness, and reproduced zero evaluator calls for missing preregistration."
+      }
+    ]
+  },
+  "notes": [
+    "This is a reviewed scenario record, not a published golden fixture.",
+    "The ordered solo-dual-pass and agent-challenged events approve only the scenario review transition.",
+    "The JPY 49,000 limit is retained as a cash-at-register boundary and is not applied to the Seven Card Plus credit route."
+  ]
+}

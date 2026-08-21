@@ -1,0 +1,21 @@
+{
+  "capture_method": "manual_capture",
+  "captured_at": "2026-08-20T03:13:10+09:00",
+  "facts": [
+    {
+      "eligible_charge_jpy": 200,
+      "fact_id": "draft_sevencard_plus_nanaco_charge_earning",
+      "funding_instrument": "Seven Card Plus",
+      "reward_asset": "nanaco_point",
+      "reward_quantity": 1,
+      "status": "extracted_pending_review",
+      "target_instrument": "nanaco"
+    }
+  ],
+  "raw_page_body_stored": false,
+  "record_type": "normalized_manual_source_snapshot",
+  "representation_policy": "project-owner-approved paraphrased structured facts only; no copied page body, screenshot, or excerpt",
+  "source_id": "jp.nanaco.sevencard-earning",
+  "source_snapshot_id": "snap_m3_nanaco_sevencard_earning_20260820",
+  "source_url": "https://www.nanaco-net.jp/how-to/save_point/creditcard.html"
+}

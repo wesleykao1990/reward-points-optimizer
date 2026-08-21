@@ -1,0 +1,102 @@
+export type { CanonicalJsonValue } from "./canonical.js";
+export {
+  canonicalJson,
+  canonicalSha256,
+  deepFreeze,
+  isValidIsoDateTime,
+  verifyCanonicalHash,
+} from "./canonical.js";
+export type {
+  CohortDrift,
+  CohortDriftCode,
+  CohortValidationResult,
+  M4CohortManifest,
+  M4CohortSource,
+  M4SourceId,
+  M4SourceRole,
+  M4SourceVolatility,
+} from "./cohort.js";
+export {
+  assertM4Cohort,
+  createM4CohortManifest,
+  isM4SourceId,
+  M4_COHORT_MANIFEST,
+  M4_COHORT_MANIFEST_HASH,
+  M4_COHORT_REGISTRY_ID,
+  M4_COHORT_SOURCE_IDS,
+  M4_COHORT_VERSION,
+  M4_PLANNED_WINDOW_DAYS,
+  M4_REHEARSAL_VERSION,
+  validateM4Cohort,
+} from "./cohort.js";
+export type {
+  AccessObservation,
+  AccessObservationResult,
+  AccessObservationScope,
+  CaptureMethod,
+  DiffArtifact,
+  DiffClassification,
+  DirectCheckBlocker,
+  DirectCheckBlockerCode,
+  DirectCheckPermission,
+  DirectCheckState,
+  Materiality,
+  MaterialityArtifact,
+  RehearsalCheck,
+  RehearsalCheckInput,
+  RepresentationKind,
+  SnapshotArtifact,
+  SnapshotCompleteness,
+  TechnicalClassification,
+  TermsReviewStatus,
+} from "./direct-check.js";
+export {
+  createDiffArtifact,
+  createMaterialityArtifact,
+  createSnapshotArtifact,
+  evaluateDirectCheck,
+  verifyDiffArtifact,
+  verifyMaterialityArtifact,
+  verifySnapshotArtifact,
+} from "./direct-check.js";
+export type {
+  DuplicateKind,
+  EvaluationLane,
+  EvaluationLedger,
+  EvaluationRecord,
+  GroundTruthEvent,
+  GroundTruthEventInput,
+  LaneDetection,
+  LaneDetectionInput,
+  LaneInput,
+  RunLedger,
+  RunLedgerInput,
+  RunStatus,
+  WinnerImpact,
+} from "./ledger.js";
+export {
+  appendEvaluationRecord,
+  assertNoCanonicalEvidence,
+  createEvaluationLedger,
+  createGroundTruthEvent,
+  createLaneDetection,
+  createRunLedger,
+  normalizeLane,
+  verifyEvaluationRecord,
+} from "./ledger.js";
+export type {
+  LaneMetrics,
+  M4Coverage,
+  M4Decision,
+  M4DecisionStatus,
+  M4Metrics,
+  M4RehearsalInput,
+  M4Window,
+  MetricRate,
+  WeeklyMaintenanceBucket,
+  WeeklyMaintenanceSummary,
+} from "./metrics.js";
+export {
+  calculateM4Metrics,
+  M4_REQUIRED_COMPLETE_WEEKS,
+} from "./metrics.js";

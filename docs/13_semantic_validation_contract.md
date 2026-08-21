@@ -99,6 +99,18 @@ Null end values mean positive infinity. The database exclusion constraint and en
 - candidate plans do not contain engine-calculated rewards, movements, ending lots, economics, or winners;
 - every candidate completes the same frozen merchant purchase or transfer objective.
 
+### Tax-exclusive eligible spend
+
+`line_items[].amount_jpy` remains the tax-inclusive tender component and must reconcile to the merchant operation amount. When a reward rule declares `scope.tax_basis = tax_exclusive`, it must also use `eligible_amount_basis = eligible_line_items`, and every reward-eligible line must provide `tax_exclusive_amount_jpy`.
+
+For each line:
+
+```text
+0 <= tax_exclusive_amount_jpy <= amount_jpy
+```
+
+The engine sums the explicit tax-exclusive values for reward-eligible lines. It must reject the rule calculation when any required value is missing or invalid; it must not derive pre-tax spend by assuming a tax rate.
+
 ## 6. Asset conservation
 
 For each reusable asset:

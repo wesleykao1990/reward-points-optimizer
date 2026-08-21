@@ -1,0 +1,48 @@
+evidence_id: ev_m3_seveneleven_nanaco_20260820
+source_id: merchant.seveneleven.nanaco
+source_snapshot_id: snap_m3_seveneleven_nanaco_20260820
+source_url: https://www.sej.co.jp/services/cash/nanaco.html
+captured_at: '2026-08-20T03:13:10+09:00'
+content_hash: sha256:d7e9eb661c734abe316adcc4f004f2fbded3544c1a8af70a392ce38f6c4a5c51
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized nanaco charge-limit and tender-combination facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_seveneleven_nanaco_cash_charge_limits
+  json_pointer: /claim
+  claim: At Seven-Eleven, cash nanaco charges use JPY 1,000 increments, a JPY 49,000 single-charge limit, and a JPY 50,000 post-charge balance limit.
+- artifact_id: draft_seveneleven_nanaco_tender_exclusions
+  json_pointer: /claim/cannot_combine_with
+  claim: A nanaco tender cannot be combined with the recorded payment families for the same Seven-Eleven purchase.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: Primary reread and independent challenge confirmed the cash-at-register limits and listed tender non-combinations while keeping them isolated from credit charging.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the paraphrased cash-channel facts without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge approved the cash-only boundaries and tender exclusions.

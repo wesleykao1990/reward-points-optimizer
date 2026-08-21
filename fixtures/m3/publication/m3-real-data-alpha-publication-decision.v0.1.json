@@ -1,0 +1,30 @@
+{
+  "decision_version": "m3.real-data-alpha-publication-decision.v0.1",
+  "candidate_hash": "sha256:4c20331b2481e7a4707e00a725a1c6805747473d062406992c9ab9bf6a242ac2",
+  "status": "pending",
+  "reviewer_id": null,
+  "reviewed_at": null,
+  "confirmations": [
+    {
+      "confirmation_id": "official_source_facts_match",
+      "confirmed": false,
+      "notes": null
+    },
+    {
+      "confirmation_id": "calculation_and_boundaries_match",
+      "confirmed": false,
+      "notes": null
+    },
+    {
+      "confirmation_id": "five_rule_scope_only",
+      "confirmed": false,
+      "notes": null
+    },
+    {
+      "confirmation_id": "correction_and_rollback_understood",
+      "confirmed": false,
+      "notes": null
+    }
+  ],
+  "decision_notes": null
+}

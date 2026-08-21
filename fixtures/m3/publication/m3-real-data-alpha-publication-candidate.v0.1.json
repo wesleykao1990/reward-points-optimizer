@@ -1,0 +1,202 @@
+{
+  "candidate_version": "m3.real-data-alpha-publication-candidate.v0.1",
+  "generated_from": {
+    "evidence_index": "fixtures/m3/real-data-alpha-evidence-index.v0.1.json",
+    "scenario_manifests": [
+      "fixtures/m3/real-data/jp-cvs-002/golden-scenario.v1.manifest.json",
+      "fixtures/m3/real-data/jp-cvs-006/golden-scenario.v1.manifest.json"
+    ]
+  },
+  "scope": {
+    "scenario_ids": [
+      "JP-CVS-002",
+      "JP-CVS-006"
+    ],
+    "rule_count": 5,
+    "excluded_rule_count": 1,
+    "frontend_activation": false,
+    "production_authorization": false,
+    "human_review_not_before": "2026-08-20T06:38:55+09:00"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "JP-CVS-002",
+      "fixture_version": 1,
+      "fixture_hash": "sha256:53f7431f52042c493ee300795eb7c77a5c996c0932742a26d362a946e32d8532",
+      "replay_input_hash": "sha256:94de5afc0c16fc15e68c018d211061836cbbc835829e86596a606bf450a4f218",
+      "replay_output_hash": "sha256:8bb5337932cec4d16e2f099511a70fe9ee5a3587ee76e445edf970d1b69ea76b",
+      "scenario_reviewed_at": "2026-08-20T06:38:55+09:00",
+      "evidence_ids": [
+        "ev_m3_seveneleven_payment_methods_20260820"
+      ],
+      "publication_authorized": false
+    },
+    {
+      "scenario_id": "JP-CVS-006",
+      "fixture_version": 1,
+      "fixture_hash": "sha256:d0bf84702534f9d0fa4a0c0946e407e73b509aac18aa409888de144db8e76dfa",
+      "replay_input_hash": "sha256:052bfa8288e90bd0c193dda5708f7f85ffa48c2504bda6796c8014f9e4a3bd19",
+      "replay_output_hash": "sha256:5909abdae3ecbb4320a6fc1d92b0913b48e7d5116bbf7d12239a0dbf85e778ef",
+      "scenario_reviewed_at": "2026-08-20T06:38:55+09:00",
+      "evidence_ids": [
+        "ev_m3_nanaco_redemption_value_20260820",
+        "ev_m3_nanaco_sevencard_earning_20260820",
+        "ev_m3_nanaco_shopping_earning_20260820",
+        "ev_m3_sevencard_nanaco_charge_20260820",
+        "ev_m3_seveneleven_nanaco_20260820"
+      ],
+      "publication_authorized": false
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "rr_jp_cvs_002_b_accept_credit_card",
+      "source_version": 1,
+      "publication_version": 2,
+      "definition_hash": "sha256:ebea92cf5859e2450aef073d14d19b008cfb2e1cf3cfa7030e5e46a194cb8038",
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "source_recorded_at": "2026-08-20T05:45:00+09:00",
+      "evidence_ids": [
+        "ev_m3_seveneleven_payment_methods_20260820"
+      ],
+      "scenario_ids": [
+        "JP-CVS-002"
+      ],
+      "roles": [
+        "applied",
+        "rejected"
+      ],
+      "risk_flags": [
+        "financial_rule",
+        "funding_source_or_tender_acceptance"
+      ]
+    },
+    {
+      "rule_id": "rr_jp_cvs_006_nanaco_payment_acceptance",
+      "source_version": 1,
+      "publication_version": 2,
+      "definition_hash": "sha256:a0d462859736733ea5b17126bcacf3b2a226a2af8ca09fd6b396b01680000652",
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "source_recorded_at": "2026-08-20T05:50:00+09:00",
+      "evidence_ids": [
+        "ev_m3_seveneleven_nanaco_20260820"
+      ],
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "roles": [
+        "applied",
+        "rejected"
+      ],
+      "risk_flags": [
+        "financial_rule",
+        "funding_source_or_tender_acceptance"
+      ]
+    },
+    {
+      "rule_id": "rr_jp_cvs_006_nanaco_purchase_reward",
+      "source_version": 1,
+      "publication_version": 2,
+      "definition_hash": "sha256:9f8cb5de0af689ee8ca751a3ae6a34c2d974eb1c79c29c60bd555da4db116746",
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "source_recorded_at": "2026-08-20T05:50:00+09:00",
+      "evidence_ids": [
+        "ev_m3_nanaco_shopping_earning_20260820",
+        "ev_m3_seveneleven_nanaco_20260820"
+      ],
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "roles": [
+        "applied"
+      ],
+      "risk_flags": [
+        "financial_rule",
+        "reward_rate"
+      ]
+    },
+    {
+      "rule_id": "rr_jp_cvs_006_sevencard_credit_acceptance",
+      "source_version": 1,
+      "publication_version": 2,
+      "definition_hash": "sha256:19f2f228952d6952e97d907f694074a49bf9e859e0a1aa05d485a05e0ab7ba1a",
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "source_recorded_at": "2026-08-20T05:50:00+09:00",
+      "evidence_ids": [
+        "ev_m3_sevencard_nanaco_charge_20260820"
+      ],
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "roles": [
+        "applied",
+        "boundary_source",
+        "rejected"
+      ],
+      "risk_flags": [
+        "financial_rule",
+        "funding_source_or_tender_acceptance",
+        "material_spend_commitment"
+      ]
+    },
+    {
+      "rule_id": "rr_jp_cvs_006_sevencard_credit_topup_reward",
+      "source_version": 1,
+      "publication_version": 2,
+      "definition_hash": "sha256:36ac956c7a331fa20121c173c78fefb7c89dccf252f5e25fa365b008294fe58d",
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "source_recorded_at": "2026-08-20T05:50:00+09:00",
+      "evidence_ids": [
+        "ev_m3_nanaco_sevencard_earning_20260820",
+        "ev_m3_sevencard_nanaco_charge_20260820"
+      ],
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "roles": [
+        "applied",
+        "boundary_source"
+      ],
+      "risk_flags": [
+        "financial_rule",
+        "material_spend_commitment",
+        "reward_rate"
+      ]
+    }
+  ],
+  "non_publishable_rules": [
+    {
+      "rule_id": "rr_jp_cvs_002_a_deny_unsupported_tender",
+      "source_version": 1,
+      "definition_hash": "sha256:05cff6041628934825e139e24fa6fbe17229e3f5fce066e730cb495f80074447",
+      "scenario_ids": [
+        "JP-CVS-002"
+      ],
+      "reason": "Deliberately synthetic negative-test tender; retained only in the immutable golden fixture."
+    }
+  ],
+  "required_human_confirmations": [
+    {
+      "confirmation_id": "official_source_facts_match",
+      "instruction": "Verify the paraphrased facts against the listed official pages, especially tender exclusions, preregistration, charge limits, and both reward rates."
+    },
+    {
+      "confirmation_id": "calculation_and_boundaries_match",
+      "instruction": "Confirm JP-CVS-002 accepts the supported credit-card family and rejects the unsupported tender; confirm JP-CVS-006 gives 25 charge points plus 3 purchase points, JPY 4,340 residual, rejects JPY 4,000, and requires preregistration."
+    },
+    {
+      "confirmation_id": "five_rule_scope_only",
+      "instruction": "Confirm authorization is limited to the five listed version-2 rules; the deliberately synthetic unsupported-tender rule stays unpublished, and neither frontend nor production mode is activated."
+    },
+    {
+      "confirmation_id": "correction_and_rollback_understood",
+      "instruction": "Confirm any later correction must create a new evidence record and rule version; a published definition will not be edited in place."
+    }
+  ],
+  "candidate_hash": "sha256:4c20331b2481e7a4707e00a725a1c6805747473d062406992c9ab9bf6a242ac2"
+}

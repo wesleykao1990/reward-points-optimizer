@@ -1,5 +1,5 @@
 version: 0.3.0
-research_cutoff: '2026-08-17'
+research_cutoff: '2026-08-20'
 notice: These observations describe technical reachability only. They do not establish legal permission, content authority,
   or a durable collection method.
 observations:
@@ -199,3 +199,25 @@ observations:
   notes: Environment-specific observation. It does not invalidate the prior manual-browser 200 and does not authorize bypass
     or rendered collection.
   evidence_reference: docs/reviews/agent-review-v0.2-2026-08-17.md
+- observation_id: sao_m3_seveneleven_nanaco_manual_20260820
+  observed_at: '2026-08-20T05:30:00+09:00'
+  observer: package maintainer
+  environment: Codex in-app browser manual inspection; network identity and response headers not preserved
+  method: manual_browser
+  scope: source_group
+  source_ids:
+  - jp.nanaco.earning
+  - jp.nanaco.redemption-value
+  - jp.nanaco.sevencard-earning
+  - jp.nanaco.shopping-earning
+  - jp.sevencard.nanaco-charge
+  - merchant.seveneleven.nanaco
+  - merchant.seveneleven.payment-faq
+  - merchant.seveneleven.payment-methods
+  result: reachable
+  http_status: null
+  summary_counts: {}
+  notes: The registered landing pages and exact first-party detail pages rendered visibly without authentication. No page
+    body or screenshot was retained. The subsequent project-owner decision permits manual use of paraphrased structured
+    facts only; it does not permit automated collection or assert publisher-issued licensing.
+  evidence_reference: docs/reviews/m3-real-data-alpha-candidate-2026-08-20.md

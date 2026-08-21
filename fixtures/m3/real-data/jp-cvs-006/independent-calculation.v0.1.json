@@ -1,0 +1,78 @@
+{
+  "record_type": "m3_jp_cvs_006_independent_calculation",
+  "record_version": "0.1.0",
+  "scenario_id": "JP-CVS-006",
+  "status": "completed",
+  "method": "manual",
+  "completed_at": "2026-08-20T05:47:00+09:00",
+  "basis": {
+    "currency": "JPY",
+    "credit_charge_minimum_jpy": 5000,
+    "credit_charge_increment_jpy": 1000,
+    "credit_charge_maximum_jpy": 30000,
+    "credit_balance_limit_jpy": 50000,
+    "purchase_gross_jpy": 660,
+    "purchase_tax_exclusive_jpy": 600,
+    "reward_quantum_jpy": 200,
+    "cash_register_single_charge_limit_jpy": 49000,
+    "cash_register_boundary_is_not_used_for_credit_charge": true
+  },
+  "calculations": [
+    {
+      "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "status": "completed",
+      "top_up": {
+        "amount_jpy": 5000,
+        "funding_instrument": "Seven Card Plus",
+        "destination_instrument": "nanaco",
+        "reward_formula": "floor(5000 / 200)",
+        "reward_asset": "nanaco_point",
+        "reward_quantity": 25
+      },
+      "purchase": {
+        "gross_amount_jpy": 660,
+        "tax_exclusive_amount_jpy": 600,
+        "tender_asset": "nanaco",
+        "reward_formula": "floor(600 / 200)",
+        "reward_asset": "nanaco_point",
+        "reward_quantity": 3
+      },
+      "principal_conservation": {
+        "created_nanaco_principal_jpy": 5000,
+        "consumed_nanaco_principal_jpy": 660,
+        "residual_nanaco_principal_jpy": 4340,
+        "identity": "5000 - 660 = 4340"
+      },
+      "reward_operation_attribution": {
+        "top_up_reward_operation": "op_jp_cvs_006_topup_5000",
+        "purchase_reward_operation": "op_jp_cvs_006_purchase_5000",
+        "top_up_reward_reapplied_at_purchase": false
+      }
+    },
+    {
+      "plan_id": "plan_jp_cvs_006_invalid_4000_topup",
+      "status": "rejected",
+      "top_up": {
+        "amount_jpy": 4000,
+        "funding_instrument": "Seven Card Plus",
+        "destination_instrument": "nanaco"
+      },
+      "rejection": {
+        "code": "credit_charge_below_minimum",
+        "message": "A standard Seven Card Plus nanaco credit charge below JPY 5,000 is not an eligible candidate.",
+        "minimum_amount_jpy": 5000,
+        "reward_calculation_performed": false
+      },
+      "reward_calculation": null,
+      "principal_conservation": null
+    }
+  ],
+  "source_evidence_ids": [
+    "ev_m3_seveneleven_nanaco_20260820",
+    "ev_m3_nanaco_redemption_value_20260820",
+    "ev_m3_nanaco_sevencard_earning_20260820",
+    "ev_m3_nanaco_shopping_earning_20260820",
+    "ev_m3_sevencard_nanaco_charge_20260820"
+  ],
+  "independence_statement": "This arithmetic was written before any rule-engine evaluation. The rejected plan has no reward or residual calculation."
+}

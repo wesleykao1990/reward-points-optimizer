@@ -1,0 +1,64 @@
+{
+  "index_version": "0.1.0",
+  "publication_status": "verified_required_reviews_complete_scenarios_reviewed_not_published",
+  "records": [
+    {
+      "evidence_id": "ev_m3_sevencard_nanaco_charge_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_sevencard_nanaco_charge_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_sevencard_nanaco_charge_20260820.json",
+      "source_snapshot_id": "snap_m3_sevencard_nanaco_charge_20260820"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_redemption_value_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_nanaco_redemption_value_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_nanaco_redemption_value_20260820.json",
+      "source_snapshot_id": "snap_m3_nanaco_redemption_value_20260820"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_sevencard_earning_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_nanaco_sevencard_earning_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_nanaco_sevencard_earning_20260820.json",
+      "source_snapshot_id": "snap_m3_nanaco_sevencard_earning_20260820"
+    },
+    {
+      "evidence_id": "ev_m3_nanaco_shopping_earning_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_nanaco_shopping_earning_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_nanaco_shopping_earning_20260820.json",
+      "source_snapshot_id": "snap_m3_nanaco_shopping_earning_20260820"
+    },
+    {
+      "evidence_id": "ev_m3_seveneleven_nanaco_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_seveneleven_nanaco_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-006"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_seveneleven_nanaco_20260820.json",
+      "source_snapshot_id": "snap_m3_seveneleven_nanaco_20260820"
+    },
+    {
+      "evidence_id": "ev_m3_seveneleven_payment_methods_20260820",
+      "evidence_path": "fixtures/m3/evidence/ev_m3_seveneleven_payment_methods_20260820.yaml",
+      "scenario_ids": [
+        "JP-CVS-002"
+      ],
+      "snapshot_path": "fixtures/m3/source-snapshots/snap_m3_seveneleven_payment_methods_20260820.json",
+      "source_snapshot_id": "snap_m3_seveneleven_payment_methods_20260820"
+    }
+  ],
+  "required_review_modes": [
+    "solo_dual_pass",
+    "agent_challenged"
+  ]
+}

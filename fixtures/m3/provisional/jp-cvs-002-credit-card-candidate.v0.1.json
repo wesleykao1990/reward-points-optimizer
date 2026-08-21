@@ -1,0 +1,132 @@
+{
+  "version": "provisional-rule-candidate.v1",
+  "candidate_id": "candidate_jp_cvs_002_credit_card_local_v0_1",
+  "observation_id": "so_finding_jp_cvs_002_payment_acceptance_001_27170bd69424f4e0",
+  "observation_fingerprint": "sha256:27170bd69424f4e047cc1217d2c78bbf73eb1408f0db025dc398b6244354f612",
+  "p0_family_id": "merchant.7eleven",
+  "source_role_id": "accepted_payment_methods",
+  "source_authority_role": "primary",
+  "source_ids": [
+    "merchant.seveneleven.payment-methods"
+  ],
+  "rule": {
+    "rule_id": "rr_jp_cvs_002_b_accept_credit_card",
+    "version": 1,
+    "status": "under_review",
+    "rule_type": "payment_acceptance",
+    "name": "Seven-Eleven credit-card acceptance",
+    "description": "Acceptance-only candidate rule for the evidenced credit-card family.",
+    "subject": {
+      "entity_type": "merchant",
+      "entity_id": "merchant.seveneleven"
+    },
+    "scope": {
+      "countries": [
+        "JP"
+      ],
+      "operation_types": [
+        "merchant_purchase"
+      ],
+      "merchant_ids": [
+        "merchant.seveneleven"
+      ],
+      "channels": [
+        "in_store"
+      ],
+      "included_product_classes": [
+        "ordinary"
+      ],
+      "excluded_product_classes": [],
+      "tax_basis": "tax_inclusive"
+    },
+    "eligibility": {
+      "operation_match": {
+        "required_loyalty_program_ids": [],
+        "excluded_payment_instrument_ids": [],
+        "allowed_funding_source_ids": [],
+        "excluded_funding_source_ids": [],
+        "allowed_source_asset_ids": [],
+        "excluded_source_asset_ids": [],
+        "allowed_destination_asset_ids": [],
+        "required_interfaces": [],
+        "excluded_interfaces": [],
+        "must_present_before_payment": false,
+        "allowed_payment_instrument_ids": [
+          "instrument.seveneleven.credit_card"
+        ]
+      },
+      "user_conditions": [],
+      "transaction_conditions": {
+        "eligible_amount_basis": "not_applicable",
+        "requires_single_operation": true
+      },
+      "campaign_conditions": {
+        "entry_required": false,
+        "targeted_offer": false,
+        "identity_verification_required": false,
+        "first_use_only": false
+      }
+    },
+    "effect": {
+      "decision": "allow",
+      "effect_target": "operation_eligibility",
+      "target_rule_ids": [],
+      "target_stack_groups": [],
+      "reason_code": "accepted_payment_family_credit_card"
+    },
+    "caps": [],
+    "stacking": {
+      "stack_group": "jp_cvs_002_payment_acceptance",
+      "mode": "non_reward_acceptance",
+      "precedence": 10,
+      "conflicts_with_rule_ids": [],
+      "requires_rule_ids": [],
+      "notes": "Payment acceptance is intentionally non-financial."
+    },
+    "validity": {
+      "valid_from": "2026-08-20T05:39:00+09:00",
+      "valid_to": null,
+      "timezone": "Asia/Tokyo",
+      "recorded_at": "2026-08-20T05:45:00+09:00",
+      "superseded_at": null
+    },
+    "provenance": {
+      "evidence_ids": [
+        "ev_m3_seveneleven_payment_methods_20260820"
+      ],
+      "minimum_source_tier": "T1_CANONICAL",
+      "confidence": 0.95,
+      "human_verified": false,
+      "review_notes": "Payment family was reviewed from the first-party Seven-Eleven payment-methods source; this rule carries no reward calculation."
+    },
+    "audit": {
+      "created_at": "2026-08-20T05:42:00+09:00",
+      "created_by": "m3-jp-cvs-002-builder",
+      "review_events": [],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "review_mode": null,
+      "reviewed_at": null,
+      "reviewed_by": null,
+      "change_reason": "Initial M3 under-review acceptance candidate; not a canonical publication."
+    }
+  },
+  "extractor": {
+    "name": "local-agent-feed-rehearsal",
+    "version": "0.1"
+  },
+  "machine_check": {
+    "checker": "p0-local-rehearsal",
+    "checker_version": "0.1",
+    "checked_at": "2026-08-21T00:03:00Z",
+    "checks": {
+      "representation_safe": true,
+      "rule_structure": true,
+      "rule_semantics": true,
+      "observation_binding": true,
+      "p0_coverage": true
+    }
+  }
+}

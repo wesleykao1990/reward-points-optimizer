@@ -1,0 +1,45 @@
+evidence_id: ev_m3_nanaco_redemption_value_20260820
+source_id: jp.nanaco.redemption-value
+source_snapshot_id: snap_m3_nanaco_redemption_value_20260820
+source_url: https://www.nanaco-net.jp/how-to/use_point/money.html
+captured_at: '2026-08-20T03:13:10+09:00'
+content_hash: sha256:4d838c8de8b79652338c217886ed6c6262ce8f9c4384386743cc17694902ac6a
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized nanaco point-to-electronic-money conversion facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_nanaco_point_redemption_value
+  json_pointer: /claim
+  claim: One nanaco point converts to one yen of nanaco electronic money without a conversion fee; the conversion cannot be cancelled and is available at listed locations including Seven-Eleven.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: Primary reread and independent challenge confirmed the normalized conversion rate, fee, irreversibility, and listed-location claim against the exact first-party page.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the paraphrased structured facts without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge initially questioned the fee claim, then approved it after exact-page re-review.

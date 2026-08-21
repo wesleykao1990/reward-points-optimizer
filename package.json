@@ -1,0 +1,44 @@
+{
+  "name": "japan-rewards-optimizer",
+  "version": "0.4.1",
+  "private": true,
+  "packageManager": "pnpm@8.15.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "challenge:validate": "pnpm --filter @jro/challenge-track challenge:validate",
+    "lint": "biome check .",
+    "publication:m3:authorize-check": "node scripts/m3_publication.mjs --authorize-check",
+    "publication:m3:check": "node scripts/m3_publication.mjs --check",
+    "publication:m3:generate": "node scripts/m3_publication.mjs --sql-write",
+    "publication:m3:self-test": "node scripts/m3_publication.mjs --self-test",
+    "publication:m3:sql-check": "node scripts/m3_publication.mjs --sql-check",
+    "seed:m3:check": "node scripts/generate_m3_db_seed.mjs --check",
+    "seed:m3:generate": "node scripts/generate_m3_db_seed.mjs --write",
+    "typecheck": "turbo run typecheck",
+    "validate:schemas": "pnpm --filter @jro/contracts validate:schemas",
+    "validate:registry": "pnpm --filter @jro/contracts validate:registry",
+    "validate:examples": "pnpm --filter @jro/contracts validate:examples",
+    "test": "turbo run test",
+    "test:property": "turbo run test:property",
+    "test:db": "python3 scripts/test_database.py"
+  },
+  "dependencies": {
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "decimal.js": "10.6.0",
+    "yaml": "2.8.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@types/node": "22.17.1",
+    "fast-check": "4.2.0",
+    "json-schema-to-typescript": "15.0.4",
+    "tsx": "4.20.4",
+    "turbo": "2.5.6",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  }
+}

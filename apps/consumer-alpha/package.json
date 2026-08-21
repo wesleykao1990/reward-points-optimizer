@@ -1,0 +1,22 @@
+{
+  "name": "@jro/consumer-alpha-app",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@jro/consumer-alpha": "workspace:*",
+    "@jro/recommendation-api": "workspace:*",
+    "@jro/test-fixtures": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.17.1",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  }
+}

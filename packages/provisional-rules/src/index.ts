@@ -1,0 +1,63 @@
+export {
+  admitProvisionalRule,
+  admitProvisionalRuleCandidate,
+  createMachineCheckRecord,
+} from "./admission.js";
+export {
+  candidateIdentityProjection,
+  freezeP0CoverageIndex,
+  hashCandidate,
+  hashCanonical,
+  hashDefinition,
+  hashProvisionalRuleEnvelope,
+  normalizeCoverageIndex,
+  serializeProvisionalRuleEnvelope,
+} from "./canonical.js";
+export { deepFreeze, isDeeplyFrozen, scanPublicValue } from "./security.js";
+export {
+  activateExperimental,
+  activateExperimentalRule,
+  applyCorrectionSignal,
+  createProvisionalRuleStore,
+  recordCorrectionSignal,
+  selectProvisionalRules,
+} from "./state.js";
+export type {
+  AdmissionAccepted,
+  AdmissionIssue,
+  AdmissionIssueCode,
+  AdmissionRejected,
+  AgentFeedSourceObservation,
+  CorrectionCategory,
+  CorrectionResult,
+  CorrectionSignalInput,
+  CorrectionSignalRecord,
+  MachineCheckChecks,
+  MachineCheckRecord,
+  P0CoverageEntry,
+  P0CoverageIndex,
+  ProvisionalAdmissionResult,
+  ProvisionalCorrectionCategory,
+  ProvisionalExtractor,
+  ProvisionalObservationBinding,
+  ProvisionalRuleAdmissionOptions,
+  ProvisionalRuleAdmissionRequest,
+  ProvisionalRuleCandidate,
+  ProvisionalRuleEnvelope,
+  ProvisionalRuleStatus,
+  ProvisionalRuleStore,
+  ProvisionalSourceAuthorityRole,
+  ProvisionalTransition,
+  SelectionOptions,
+  Sha256,
+  TransitionFailure,
+  TransitionResult,
+} from "./types.js";
+export {
+  CORRECTION_CATEGORIES,
+  PROVISIONAL_CORRECTION_VERSION,
+  PROVISIONAL_RULE_CANDIDATE_VERSION,
+  PROVISIONAL_RULE_ENVELOPE_VERSION,
+  PROVISIONAL_RULE_STATUSES,
+  SEVERE_CORRECTION_CATEGORIES,
+} from "./types.js";
