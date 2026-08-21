@@ -1,0 +1,796 @@
+{
+  "version": "p0-source-role-plan.v0.1",
+  "provenance": {
+    "source_branch": "codex-context/source-coverage-v0.6",
+    "source_commit": "53169b92619a4e2deba3560470227600d2eae37e",
+    "source_path": "registry/planning/source-families.v0.5/p0.tsv",
+    "source_sha256": "sha256:4a85de81eb5a5fcfcd31b9605ef536fca7e161d465065b8c683e3c74d69b35a4"
+  },
+  "families": [
+    {
+      "family_id": "card.aeon",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "AEON Card",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.aeon-waon",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.aupay",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "au PAY Card",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "economy.au-ponta",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.d",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "d Card",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.docomo",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.paypay",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "PayPay Card",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.paypay",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.rakuten",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "Rakuten Card",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.rakuten",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.smbc",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "SMBC/Vpass cards including NL",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.vpoint-smbc",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "card.view",
+      "category": "credit_card_issuer",
+      "provider_or_scope": "View Card / Bic Camera Suica",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "transit.jre-suica-view",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "card_catalog",
+        "annual_fees_and_benefits",
+        "base_point_rules",
+        "merchant_category_bonus_rules",
+        "wallet_or_e_money_exclusions",
+        "point_exchange_directory",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "category": "e_money_transit",
+      "provider_or_scope": "nanaco e-money",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.seven-nanaco",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "emoney.waon",
+      "category": "e_money_transit",
+      "provider_or_scope": "WAON / WAON Touch",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "economy.aeon-waon",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "category": "merchant",
+      "provider_or_scope": "7-Eleven",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-convenience",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "category": "merchant",
+      "provider_or_scope": "AEON/MaxValu/MyBasket",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "merchant.jp-supermarket",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "category": "merchant",
+      "provider_or_scope": "Amazon Japan",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-ecommerce",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "category": "merchant",
+      "provider_or_scope": "Bic Camera",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-electronics",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.familymart",
+      "category": "merchant",
+      "provider_or_scope": "FamilyMart",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-convenience",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "category": "merchant",
+      "provider_or_scope": "Ito-Yokado",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-supermarket",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.lawson",
+      "category": "merchant",
+      "provider_or_scope": "Lawson",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-convenience",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "category": "merchant",
+      "provider_or_scope": "Matsukiyo/Cocokara",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-drugstore",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "category": "merchant",
+      "provider_or_scope": "McDonald’s Japan",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-food",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.ministop",
+      "category": "merchant",
+      "provider_or_scope": "MiniStop",
+      "priority": "P0",
+      "baseline_planning_status": "missing",
+      "stream_id": "merchant.jp-convenience",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.newdays",
+      "category": "merchant",
+      "provider_or_scope": "NewDays / KIOSK",
+      "priority": "P0",
+      "baseline_planning_status": "missing",
+      "stream_id": "merchant.jp-convenience",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "category": "merchant",
+      "provider_or_scope": "Rakuten Ichiba",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "economy.rakuten",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "category": "merchant",
+      "provider_or_scope": "Starbucks Japan",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-food",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.welcia",
+      "category": "merchant",
+      "provider_or_scope": "Welcia",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-drugstore",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "category": "merchant",
+      "provider_or_scope": "Yahoo Shopping",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.paypay",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "category": "merchant",
+      "provider_or_scope": "Yodobashi",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "merchant.jp-electronics",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "category": "point_program",
+      "provider_or_scope": "d POINT",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.docomo",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "category": "point_program",
+      "provider_or_scope": "JRE POINT",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "transit.jre-suica-view",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "category": "point_program",
+      "provider_or_scope": "nanaco Points",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.seven-nanaco",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "category": "point_program",
+      "provider_or_scope": "PayPay Points",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.paypay",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.ponta",
+      "category": "point_program",
+      "provider_or_scope": "Ponta",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.au-ponta",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.rakuten",
+      "category": "point_program",
+      "provider_or_scope": "Rakuten Point",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.rakuten",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.v",
+      "category": "point_program",
+      "provider_or_scope": "V Point",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.vpoint-smbc",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "point.waon",
+      "category": "point_program",
+      "provider_or_scope": "WAON POINT",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "economy.aeon-waon",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "program_terms",
+        "earn_rules",
+        "use_redemption_rules",
+        "expiry_and_reward_classes",
+        "transfer_partner_directory",
+        "campaign_directory",
+        "change_notices",
+        "partner_merchant_directory"
+      ]
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "category": "regulatory",
+      "provider_or_scope": "Consumer Affairs Agency advertising/affiliate disclosure",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "regulatory.jp.advertising",
+      "recommended_cadence_seconds": 2592000,
+      "required_source_roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "category": "regulatory",
+      "provider_or_scope": "FSA payment/intermediary registrations",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "regulatory.jp.payments",
+      "recommended_cadence_seconds": 604800,
+      "required_source_roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "category": "regulatory",
+      "provider_or_scope": "METI cashless statistics and policy",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "regulatory.jp.cashless",
+      "recommended_cadence_seconds": 2592000,
+      "required_source_roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "category": "regulatory",
+      "provider_or_scope": "Personal Information Protection Commission",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "regulatory.jp.privacy",
+      "recommended_cadence_seconds": 2592000,
+      "required_source_roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "transit.suica",
+      "category": "e_money_transit",
+      "provider_or_scope": "Suica / Mobile Suica",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "transit.jre-suica-view",
+      "recommended_cadence_seconds": 86400,
+      "required_source_roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ]
+    },
+    {
+      "family_id": "wallet.aeonpay",
+      "category": "payment_wallet",
+      "provider_or_scope": "AEON Pay",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.aeon-waon",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    },
+    {
+      "family_id": "wallet.aupay",
+      "category": "payment_wallet",
+      "provider_or_scope": "au PAY",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.au-ponta",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    },
+    {
+      "family_id": "wallet.dbarai",
+      "category": "payment_wallet",
+      "provider_or_scope": "d払い",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.docomo",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    },
+    {
+      "family_id": "wallet.famipay",
+      "category": "payment_wallet",
+      "provider_or_scope": "FamiPay",
+      "priority": "P0",
+      "baseline_planning_status": "partial",
+      "stream_id": "wallet.famipay",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    },
+    {
+      "family_id": "wallet.paypay",
+      "category": "payment_wallet",
+      "provider_or_scope": "PayPay",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.paypay",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    },
+    {
+      "family_id": "wallet.rakutenpay",
+      "category": "payment_wallet",
+      "provider_or_scope": "Rakuten Pay",
+      "priority": "P0",
+      "baseline_planning_status": "covered",
+      "stream_id": "economy.rakuten",
+      "recommended_cadence_seconds": 21600,
+      "required_source_roles": [
+        "service_terms",
+        "base_reward_rules",
+        "funding_and_topup_rules",
+        "eligible_and_excluded_tenders",
+        "merchant_acceptance",
+        "campaign_directory",
+        "local_campaign_directory",
+        "change_notices_and_incidents"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "version": "p0-coverage-index.v0.3",
+  "entries": [
+    {
+      "family_id": "point.d",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "jp.dpoint.campaigns"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "jp.dpoint.info"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "jp.dpoint.earn-mobile",
+        "jp.dpoint.earn-timing-faq",
+        "jp.dpoint.terms-20260701"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "jp.dpoint.terms-20260701",
+        "jp.dpoint.use-limited-faq"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "jp.dpoint.merchant-list"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "jp.dpoint.terms-20260701"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.dpoint.terms-20260701",
+        "jp.dpoint.transfer"
+      ]
+    },
+    {
+      "family_id": "point.d",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "jp.dpoint.terms-20260701",
+        "jp.dpoint.use-guide",
+        "jp.dpoint.use-limited-faq",
+        "jp.dpoint.use-rate-faq"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "jp.jrepoint.campaigns"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "jp.jrepoint.info"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "jp.jrepoint.overview",
+        "jp.jrepoint.suica-info"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "jp.jrepoint.expiry-faq"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "jp.jrepoint.merchant-card",
+        "jp.jrepoint.overview"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "jp.jrepoint.transfer-terms"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.jrepoint.family-transfer-faq",
+        "jp.jrepoint.transfer-terms"
+      ]
+    },
+    {
+      "family_id": "point.jre",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "jp.jrepoint.overview",
+        "jp.jrepoint.suica-info",
+        "jp.jrepoint.use-faq"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "jp.nanaco.campaigns"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "jp.nanaco.info",
+        "jp.nanaco.info-app-end",
+        "jp.nanaco.info-saison-end",
+        "jp.nanaco.info-vworld-end"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "jp.nanaco.net-faq",
+        "jp.nanaco.sevencard-earning",
+        "jp.nanaco.shopping-earning"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "jp.nanaco.expiry-confirm",
+        "jp.nanaco.terms-points"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "jp.nanaco.merchant-list"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "jp.nanaco.terms",
+        "jp.nanaco.terms-points"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.nanaco.transfer-ana"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "jp.nanaco.redemption-value",
+        "jp.nanaco.terms-points",
+        "jp.nanaco.use"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "campaign_directory",
+      "known_source_ids": [
+        "jp.paypay.campaigns",
+        "jp.paypay.local-campaigns"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "change_notices",
+      "known_source_ids": [
+        "jp.paypay.calculation-faq",
+        "jp.paypay.eligibility-faq",
+        "jp.paypay.third-party-card-voucher"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "jp.paypay.calculation-faq",
+        "jp.paypay.eligibility-faq",
+        "jp.paypay.step",
+        "jp.paypay.third-party-card-voucher"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "expiry_and_reward_classes",
+      "known_source_ids": [
+        "jp.paypay.balance-points",
+        "jp.paypay.points"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "partner_merchant_directory",
+      "known_source_ids": [
+        "jp.paypay.merchant-list"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "program_terms",
+      "known_source_ids": [
+        "jp.paypay.terms"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.paypay.balance-points",
+        "jp.paypay.points"
+      ]
+    },
+    {
+      "family_id": "point.paypay",
+      "source_role_id": "use_redemption_rules",
+      "known_source_ids": [
+        "jp.paypay.points",
+        "jp.paypay.points-use",
+        "jp.paypay.third-party-card-voucher"
+      ]
+    }
+  ]
+}

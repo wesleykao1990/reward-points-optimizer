@@ -69,6 +69,8 @@ export type {
   PlanResult,
   PurchasePlan,
   Quantity,
+  RewardClaim,
+  RewardClaimDocument,
   RewardClass,
   RewardComponent,
   RewardRule,

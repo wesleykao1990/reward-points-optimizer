@@ -8,6 +8,7 @@ import type * as EvidenceSchema from "./generated/evidence-record.js";
 import type * as ExtractionSchema from "./generated/extraction-candidate.js";
 import type * as GoldenSchema from "./generated/golden-scenario.js";
 import type * as PlanSchema from "./generated/purchase-plan.js";
+import type * as ClaimSchema from "./generated/reward-claim.js";
 import type * as RuleSchema from "./generated/reward-rule.js";
 import type * as AccessSchema from "./generated/source-access-observation.js";
 import type * as ObservationSchema from "./generated/source-observation.js";
@@ -44,6 +45,8 @@ export type CapProgressState = UserSchema.CapProgressState;
 export type ComparableBound = UserSchema.ComparableBound;
 
 export type PurchasePlan = PlanSchema.CandidatePurchaseOrConversionPlan;
+export type RewardClaimDocument = ClaimSchema.StructuredRewardClaimDocument;
+export type RewardClaim = ClaimSchema.Claim;
 export type Operation = PlanSchema.Operation;
 export type AssetInput = PlanSchema.AssetInput;
 export type OutputRequest = PlanSchema.OutputRequest;
@@ -74,6 +77,7 @@ export type ExpectedOutcome = GoldenSchema.Expected;
 /** Namespaces expose every generated definition without flattening collisions. */
 export type {
   AssetSchema,
+  ClaimSchema,
   EvidenceSchema,
   ExtractionSchema,
   GoldenSchema,

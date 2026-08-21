@@ -17,6 +17,7 @@ import {
   type PurchasePlan,
   type RewardRule,
   type StateValue,
+  validateConservation,
 } from "../src/index.js";
 
 function fixedRule(rewardUnits = "3"): RewardRule {
@@ -43,6 +44,175 @@ function knownFact(value: unknown): StateValue {
     observed_at: "2026-08-17T00:00:00+09:00",
     source: "user_input",
   };
+}
+
+function transferFixture(): {
+  sourceAsset: AssetRef;
+  destinationAsset: AssetRef;
+  feeAsset: AssetRef;
+  rule: RewardRule;
+  opening: ReturnType<typeof makeOpeningWalletLot>;
+  feeOpening: ReturnType<typeof makeOpeningWalletLot>;
+  plan: PurchasePlan;
+} {
+  const sourceAsset: AssetRef = {
+    ...normalPointAsset,
+    asset_id: "point.transfer.source",
+  };
+  const destinationAsset: AssetRef = {
+    ...normalPointAsset,
+    asset_id: "point.transfer.destination",
+  };
+  const feeAsset: AssetRef = {
+    ...normalPointAsset,
+    asset_id: "point.transfer.fee",
+  };
+  const rule = makeRewardRule({
+    ruleId: "rr_m1b_transfer_explicit",
+    operationTypes: ["point_transfer"],
+    channel: "transfer",
+    ruleType: "transfer",
+    calculation: {
+      model: "transfer_ratio",
+      source_asset: sourceAsset,
+      destination_asset: destinationAsset,
+      source_units: "1",
+      destination_units: "2",
+      minimum_source_units: "100",
+      increment_source_units: "10",
+      maximum_source_units_per_request: "500",
+      maximum_source_units_per_period: null,
+      maximum_period: null,
+      fee: { asset: feeAsset, amount: "3" },
+      rounding: {
+        aggregation_scope: "transfer_request",
+        reward_rounding_mode: "exact",
+      },
+      processing_time_days_min: 1,
+      processing_time_days_max: 3,
+      cancellation_policy: "cancelable_before_posting",
+    },
+  });
+  rule.scope.merchant_ids = [];
+  const ruleOutput = rule.output;
+  if (!ruleOutput) throw new Error("transfer fixture output missing");
+  rule.output = {
+    ...ruleOutput,
+    asset: destinationAsset,
+    sign: "credit",
+    settlement: {
+      status: "posted",
+      expected_posting_from: null,
+      expected_posting_to: null,
+      posted_at: "2026-08-17T12:00:00+09:00",
+    },
+    expiry: {
+      policy: "fixed_date",
+      expires_at: "2026-12-31T23:59:59+09:00",
+      duration_days: null,
+      timezone: "Asia/Tokyo",
+    },
+    restrictions: {
+      transferable: false,
+      redeemable_for_cash: false,
+      usable_for_payment: true,
+      investable: false,
+      permitted_destination_ids: ["merchant.synthetic"],
+      notes: "Explicit transfer restriction.",
+    },
+  };
+  const opening = {
+    ...makeOpeningWalletLot(100),
+    lot_id: "lot_transfer_explicit_source",
+    quantity: { asset: sourceAsset, amount: "100" },
+  };
+  const feeOpening = {
+    ...makeOpeningWalletLot(3),
+    lot_id: "lot_transfer_explicit_fee",
+    quantity: { asset: feeAsset, amount: "3" },
+  };
+  const plan: PurchasePlan = {
+    plan_id: "plan_m1b_transfer_explicit",
+    operations: [
+      {
+        operation_id: "op_m1b_transfer_explicit",
+        sequence: 1,
+        occurred_at: "2026-08-17T12:00:00+09:00",
+        operation_type: "point_transfer",
+        merchant_id: null,
+        merchant_location_id: null,
+        channel: "transfer",
+        interface: "manual_transfer",
+        payment_instrument_id: null,
+        funding_source_id: null,
+        amount_jpy: null,
+        asset_inputs: [
+          {
+            input_id: "in_m1b_transfer_explicit_source",
+            source_lot_id: opening.lot_id,
+            quantity: { asset: sourceAsset, amount: "100" },
+            role: "transfer_source",
+          },
+          {
+            input_id: "in_m1b_transfer_explicit_fee",
+            source_lot_id: feeOpening.lot_id,
+            quantity: { asset: feeAsset, amount: "3" },
+            role: "fee",
+          },
+        ],
+        output_requests: [
+          {
+            request_id: "out_m1b_transfer_explicit_destination",
+            created_lot_id: "lot_transfer_explicit_destination",
+            asset: destinationAsset,
+            requested_amount: "200",
+            role: "transfer_destination",
+          },
+        ],
+        original_operation_id: null,
+        portal_id: null,
+        line_items: [],
+        notes: "Synthetic explicit transfer.",
+      },
+    ],
+    dependencies: [],
+    loyalty_presentments: [],
+    assumptions: [],
+  };
+  return {
+    sourceAsset,
+    destinationAsset,
+    feeAsset,
+    rule,
+    opening,
+    feeOpening,
+    plan,
+  };
+}
+
+function transferOperation(
+  fixture: ReturnType<typeof transferFixture>,
+): PurchasePlan["operations"][number] {
+  const operation = fixture.plan.operations[0];
+  if (!operation) throw new Error("transfer fixture operation missing");
+  return operation;
+}
+
+function transferInput(
+  fixture: ReturnType<typeof transferFixture>,
+  index: number,
+): PurchasePlan["operations"][number]["asset_inputs"][number] {
+  const input = transferOperation(fixture).asset_inputs[index];
+  if (!input) throw new Error("transfer fixture input missing");
+  return input;
+}
+
+function transferOutput(
+  fixture: ReturnType<typeof transferFixture>,
+): PurchasePlan["operations"][number]["output_requests"][number] {
+  const output = transferOperation(fixture).output_requests[0];
+  if (!output) throw new Error("transfer fixture output request missing");
+  return output;
 }
 
 describe("Milestone 1B integrated engine adapters", () => {
@@ -486,6 +656,200 @@ describe("Milestone 1B integrated engine adapters", () => {
       "fee",
       "transfer",
     ]);
+  });
+
+  it("retains explicit transfer expiry/restrictions while settlement stays processing-time", () => {
+    const fixture = transferFixture();
+    const result = evaluateNativePlan(
+      fixture.plan,
+      makeEngineContext("1", {
+        rules: [fixture.rule],
+        opening_asset_lots: [fixture.opening, fixture.feeOpening],
+      }),
+    );
+    expect(result.eligible).toBe(true);
+    expect(result.reward_components).toHaveLength(0);
+    expect(result.asset_movements).toHaveLength(3);
+    expect(result.ending_asset_lots).toHaveLength(1);
+    expect(result.ending_asset_lots[0]).toMatchObject({
+      quantity: { asset: fixture.destinationAsset, amount: "200" },
+      settlement: {
+        status: "pending",
+        expected_posting_from: "2026-08-18T03:00:00.000Z",
+        expected_posting_to: "2026-08-20T03:00:00.000Z",
+        posted_at: null,
+      },
+      expiry: fixture.rule.output?.expiry,
+      restrictions: fixture.rule.output?.restrictions,
+    });
+    validateConservation(
+      [fixture.opening, fixture.feeOpening],
+      result.asset_movements,
+      result.ending_asset_lots,
+    );
+  });
+
+  it("applies explicit redemption output with redemption-specific roles", () => {
+    const fixture = transferFixture();
+    fixture.rule.rule_id = "rr_m1b_redemption_explicit";
+    fixture.rule.rule_type = "redemption";
+    fixture.rule.scope.operation_types = ["point_redemption"];
+    const operation = transferOperation(fixture);
+    operation.operation_type = "point_redemption";
+    transferInput(fixture, 0).role = "redemption_source";
+    transferOutput(fixture).role = "redemption_destination";
+    const result = evaluateNativePlan(
+      fixture.plan,
+      makeEngineContext("1", {
+        rules: [fixture.rule],
+        opening_asset_lots: [fixture.opening, fixture.feeOpening],
+      }),
+    );
+    expect(result.eligible).toBe(true);
+    expect(result.asset_movements.map((item) => item.movement_role)).toEqual([
+      "redemption",
+      "fee",
+      "redemption",
+    ]);
+    expect(result.reward_components).toHaveLength(0);
+    expect(result.ending_asset_lots[0]?.quantity).toEqual({
+      asset: fixture.destinationAsset,
+      amount: "200",
+    });
+  });
+
+  it("atomically rejects insufficient and duplicate transfer lots regardless of input order", () => {
+    const cases = [
+      {
+        name: "fee-first insufficient source",
+        setup: (fixture: ReturnType<typeof transferFixture>) => {
+          fixture.opening.quantity.amount = "50";
+          const operation = transferOperation(fixture);
+          operation.asset_inputs.reverse();
+        },
+      },
+      {
+        name: "source-first insufficient source",
+        setup: (fixture: ReturnType<typeof transferFixture>) => {
+          fixture.opening.quantity.amount = "50";
+        },
+      },
+      {
+        name: "source-first insufficient fee",
+        setup: (fixture: ReturnType<typeof transferFixture>) => {
+          fixture.feeOpening.quantity.amount = "2";
+        },
+      },
+      {
+        name: "fee-first duplicate lot reference",
+        setup: (fixture: ReturnType<typeof transferFixture>) => {
+          const operation = transferOperation(fixture);
+          const feeInput = transferInput(fixture, 1);
+          feeInput.source_lot_id = fixture.opening.lot_id;
+          operation.asset_inputs.reverse();
+        },
+      },
+    ] as const;
+    for (const testCase of cases) {
+      const fixture = transferFixture();
+      testCase.setup(fixture);
+      const result = evaluateNativePlan(
+        fixture.plan,
+        makeEngineContext("1", {
+          rules: [fixture.rule],
+          opening_asset_lots: [fixture.opening, fixture.feeOpening],
+        }),
+      );
+      expect(result.eligible, testCase.name).toBe(false);
+      expect(result.asset_movements, testCase.name).toHaveLength(0);
+      expect(result.reward_components, testCase.name).toHaveLength(0);
+      expect(result.applied_rule_ids, testCase.name).toEqual([]);
+      expect(result.ending_asset_lots, testCase.name).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            lot_id: fixture.opening.lot_id,
+            quantity: fixture.opening.quantity,
+          }),
+          expect.objectContaining({
+            lot_id: fixture.feeOpening.lot_id,
+            quantity: fixture.feeOpening.quantity,
+          }),
+        ]),
+      );
+      expect(
+        result.ending_asset_lots.some(
+          (lot) => lot.lot_id === "lot_transfer_explicit_destination",
+        ),
+        testCase.name,
+      ).toBe(false);
+    }
+  });
+
+  it("rejects transfer role, sign, and full AssetRef mismatches", () => {
+    const cases = [
+      {
+        name: "destination role",
+        mutate: (fixture: ReturnType<typeof transferFixture>) => {
+          transferOutput(fixture).role = "redemption_destination";
+        },
+      },
+      {
+        name: "source program binding",
+        mutate: (fixture: ReturnType<typeof transferFixture>) => {
+          transferInput(fixture, 0).quantity.asset = {
+            ...fixture.sourceAsset,
+            program_id: "program.other",
+          };
+        },
+      },
+      {
+        name: "destination scale binding",
+        mutate: (fixture: ReturnType<typeof transferFixture>) => {
+          transferOutput(fixture).asset = {
+            ...fixture.destinationAsset,
+            scale: 1,
+          };
+        },
+      },
+      {
+        name: "output sign",
+        mutate: (fixture: ReturnType<typeof transferFixture>) => {
+          const ruleOutput = fixture.rule.output;
+          if (!ruleOutput) throw new Error("transfer fixture output missing");
+          ruleOutput.sign = "debit";
+        },
+      },
+      {
+        name: "fee program binding",
+        mutate: (fixture: ReturnType<typeof transferFixture>) => {
+          transferInput(fixture, 1).quantity.asset = {
+            ...fixture.feeAsset,
+            program_id: "program.other",
+          };
+        },
+      },
+    ] as const;
+    for (const testCase of cases) {
+      const fixture = transferFixture();
+      testCase.mutate(fixture);
+      const result = evaluateNativePlan(
+        fixture.plan,
+        makeEngineContext("1", {
+          rules: [fixture.rule],
+          opening_asset_lots: [fixture.opening, fixture.feeOpening],
+        }),
+      );
+      expect(result.eligible, testCase.name).toBe(false);
+      expect(result.reward_components, testCase.name).toHaveLength(0);
+      expect(result.asset_movements, testCase.name).toHaveLength(0);
+      expect(result.ending_asset_lots, testCase.name).toHaveLength(2);
+      expect(
+        result.ending_asset_lots.some(
+          (lot) => lot.lot_id === "lot_transfer_explicit_destination",
+        ),
+        testCase.name,
+      ).toBe(false);
+    }
   });
 
   it("returns refund principal and emits a proportional reward clawback", () => {

@@ -1,0 +1,1765 @@
+{
+  "version": "p0-chatgpt-agent-feed-task-pack.v0.1",
+  "source_plan_sha256": "sha256:a59447525cb207838439a3cdb8b9cc22d19d875a650a64f50354137a78892003",
+  "generated_at": "2026-08-21T19:30:00+09:00",
+  "protocol_version": "0.1",
+  "producer_id": "chatgpt-scheduled-task",
+  "lifecycle_tools": [
+    "begin_run",
+    "submit_batch",
+    "complete_run"
+  ],
+  "execution_policy": {
+    "work_unit": "Process exactly one family/stream per occurrence, with no more than its eight declared role targets. Close that run before selecting another work unit. A broad category task is a queue of bounded work units, not permission to open every stream at once.",
+    "resume": "Carry forward the last successful locator and terminal role outcome keyed by family_id/source_role_id. Recheck successful locators directly and spend discovery effort only on unresolved or stale keys. Never replace a prior success with a later timeout or search miss; preserve both attempts and report cumulative coverage separately from this-occurrence coverage.",
+    "source_selection": "Recheck the supplied registered_source_hints and recovered_role_locator_hints first. Use direct first-party official pages for the exact family-role; search only when the supplied hints do not cover it. Every hint remains a locator lead until evidence admission succeeds.",
+    "evidence_status": "untrusted_lead_only",
+    "publication_policy": "Never publish RewardRuleVersion records. Submit bounded findings and evidence for Rewards-side admission and correction handling.",
+    "completion_policy": "Complete every begun run. Use partial or failed when any declared target was not actually checked; never convert missing work into a zero-finding completion.",
+    "credentials_policy": "Never place credentials, account data, tokens, or dynamic payment data in prompts, findings, evidence, or diagnostics.",
+    "submission_contract": "Before submit_batch, validate the exact root keys protocol_version, run_id, batch_id, idempotency_key, sequence_number, submitted_at, findings, evidence, and metadata; then validate exact finding/evidence shapes with no extra keys, unique IDs, resolved evidence_refs, strict date-times, and null for unknown nullable fields. Use sequence_number starting at 1 per run and never submit an empty findings+evidence batch. Leave content_hash null unless it was actually computed. On rejection, preserve the exact safe error code and failed JSON path in the terminal diagnostic.",
+    "connector_capability_gate": "Before constructing an economic batch, inspect the callable submit_batch tool contract. It must expose all nine required root fields. If the connector exposes only findings/evidence or otherwise omits required roots, do not call it: record connector_schema_incompatible, close the run honestly, and retain the validated local candidate for replay after deployment repair.",
+    "economic_claim_work_unit": "Economic extraction is a separate phase after locator coverage. Submit at most five source-bound claims and their evidence in one batch for one stream. Every quantitative term must be explicitly present on the fetched first-party page; omit unknown values and never infer a relationship, rate, date, cap, eligibility rule, or exception.",
+    "coverage_contract": "Record a checked family-role when the official page was actually fetched and its role marker or equivalent first-party content was observed. Emit an exact per-role attempt ledger with locator, observed_at, outcome, and receipt linkage. Locator success is separate from economic-claim extraction and does not by itself create a RewardRuleVersion."
+  },
+  "totals": {
+    "scheduled_tasks": 6,
+    "source_families": 44,
+    "agent_feed_streams": 19,
+    "required_source_roles": 301
+  },
+  "all_stream_ids": [
+    "economy.aeon-waon",
+    "economy.au-ponta",
+    "economy.docomo",
+    "economy.paypay",
+    "economy.rakuten",
+    "economy.seven-nanaco",
+    "economy.vpoint-smbc",
+    "merchant.jp-convenience",
+    "merchant.jp-drugstore",
+    "merchant.jp-ecommerce",
+    "merchant.jp-electronics",
+    "merchant.jp-food",
+    "merchant.jp-supermarket",
+    "regulatory.jp.advertising",
+    "regulatory.jp.cashless",
+    "regulatory.jp.payments",
+    "regulatory.jp.privacy",
+    "transit.jre-suica-view",
+    "wallet.famipay"
+  ],
+  "tasks": [
+    {
+      "task_id": "p0.1-core-point-ecosystems",
+      "display_name": "Core point ecosystems",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "point.d",
+          "provider_or_scope": "d POINT",
+          "stream_id": "economy.docomo",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.dpoint.campaign-example-funding-exclusion",
+              "source_url": "https://dpoint.docomo.ne.jp/cp_2/section/poincosquare/pacelacp_2606/index.html",
+              "authority_scope": [
+                "entry_requirement",
+                "funding_source_exclusion",
+                "mobile_order_exclusion"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.campaigns",
+              "source_url": "https://dpoint.docomo.ne.jp/campaign/",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.earn-mobile",
+              "source_url": "https://dpoint.docomo.ne.jp/acc/mobile_use/index.html",
+              "authority_scope": [
+                "earn_rules",
+                "eligible_basis"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.earn-timing-faq",
+              "source_url": "https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint26.html",
+              "authority_scope": [
+                "earn_rules",
+                "posting_timing"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.home",
+              "source_url": "https://dpoint.docomo.ne.jp/index.html",
+              "authority_scope": [
+                "campaign_discovery",
+                "program_overview"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.info",
+              "source_url": "https://dpoint.docomo.ne.jp/info/index.html",
+              "authority_scope": [
+                "operational_notices",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.merchant-list",
+              "source_url": "https://dpoint.docomo.ne.jp/store/index.html",
+              "authority_scope": [
+                "earn_acceptance",
+                "merchant_acceptance"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.terms",
+              "source_url": "https://dpoint.docomo.ne.jp/global/terms/agreement.html",
+              "authority_scope": [
+                "earn_rules",
+                "membership_terms",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.terms-20260701",
+              "source_url": "https://dpoint.docomo.ne.jp/instruction/pdf/d_point_club_kiyaku_20260701.pdf",
+              "authority_scope": [
+                "earn_rules",
+                "expiry_rules",
+                "program_terms",
+                "redemption_rules",
+                "transfer_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.transfer",
+              "source_url": "https://dpoint.docomo.ne.jp/store/exchange/index.html",
+              "authority_scope": [
+                "conversion_routes",
+                "transfer_partners"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.use-guide",
+              "source_url": "https://dpoint.docomo.ne.jp/guide/howto_use/index.html",
+              "authority_scope": [
+                "redemption_routes",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.use-limited-faq",
+              "source_url": "https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint04.html",
+              "authority_scope": [
+                "expiry_rules",
+                "redemption_priority"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.dpoint.use-rate-faq",
+              "source_url": "https://dpoint.docomo.ne.jp/static/guide/faq/Point/Dpoint07/",
+              "authority_scope": [
+                "redemption_rules",
+                "redemption_value"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "point.jre",
+          "provider_or_scope": "JRE POINT",
+          "stream_id": "transit.jre-suica-view",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.jrepoint.campaigns",
+              "source_url": "https://www.jrepoint.jp/campaign/list/",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "temporarily_unavailable",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.expiry-faq",
+              "source_url": "https://faq.jrepoint.jp/faq/show/29?site_domain=default",
+              "authority_scope": [
+                "expiry_rules",
+                "reward_classes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.family-transfer-faq",
+              "source_url": "https://faq.jrepoint.jp/faq/show/474?site_domain=default",
+              "authority_scope": [
+                "transfer_eligibility",
+                "transfer_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.home",
+              "source_url": "https://www.jrepoint.jp/",
+              "authority_scope": [
+                "merchant_discovery",
+                "program_overview"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.info",
+              "source_url": "https://www.jrepoint.jp/information/list/",
+              "authority_scope": [
+                "operational_notices",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.merchant-card",
+              "source_url": "https://www.jrepoint.jp/point/append/jrepoint-card/",
+              "authority_scope": [
+                "earn_rules",
+                "merchant_acceptance"
+              ],
+              "registration_status": "temporarily_unavailable",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.overview",
+              "source_url": "https://www.jrepoint.jp/point/first/",
+              "authority_scope": [
+                "merchant_acceptance",
+                "program_overview",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.suica-earning",
+              "source_url": "https://www.jrepoint.jp/point/append/suica/",
+              "authority_scope": [
+                "merchant_earn_rules",
+                "suica_registration"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.suica-info",
+              "source_url": "https://www.jrepoint.jp/information/suica/",
+              "authority_scope": [
+                "earn_rules",
+                "redemption_value",
+                "suica_registration"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.transfer-terms",
+              "source_url": "https://www.jrepoint.jp/agreement/jrepoint/",
+              "authority_scope": [
+                "conversion_routes",
+                "program_terms",
+                "transfer_rules"
+              ],
+              "registration_status": "temporarily_unavailable",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.jrepoint.use-faq",
+              "source_url": "https://faq.jrepoint.jp/faq/show/2724?category_id=115&site_domain=default",
+              "authority_scope": [
+                "redemption_routes",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "campaign_directory",
+              "source_url": "https://www.jrepoint.jp/campaign/list/",
+              "publisher": "JR East",
+              "role_marker": "キャンペーン",
+              "exact_registered_source_id": "jp.jrepoint.campaigns",
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "change_notices",
+              "source_url": "https://www.jrepoint.jp/information/list/",
+              "publisher": "JR East",
+              "role_marker": "お知らせ",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.jrepoint.home"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "partner_merchant_directory",
+              "source_url": "https://www.jrepoint.jp/point/append/jrepoint-card/",
+              "publisher": "JR East",
+              "role_marker": "JRE POINT加盟店",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.jrepoint.home"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "transfer_partner_directory",
+              "source_url": "https://www.jrepoint.jp/agreement/jrepoint/",
+              "publisher": "JR East",
+              "role_marker": "ポイント交換に関する特約",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.jrepoint.home"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        },
+        {
+          "family_id": "point.nanaco",
+          "provider_or_scope": "nanaco Points",
+          "stream_id": "economy.seven-nanaco",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.nanaco.campaigns",
+              "source_url": "https://www.nanaco-net.jp/cp/index.html",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.earning",
+              "source_url": "https://www.nanaco-net.jp/how-to/save_point/",
+              "authority_scope": [
+                "earn_rules",
+                "rounding"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.expiry-confirm",
+              "source_url": "https://www.nanaco-net.jp/how-to/menu/confirm.html",
+              "authority_scope": [
+                "expiry_rules",
+                "redemption_priority"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.info",
+              "source_url": "https://www.nanaco-net.jp/information/index.html",
+              "authority_scope": [
+                "operational_notices",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.info-app-end",
+              "source_url": "https://www.nanaco-net.jp/information/info_00099.html",
+              "authority_scope": [
+                "effective_date",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.info-saison-end",
+              "source_url": "https://www.nanaco-net.jp/information/info_00093.html",
+              "authority_scope": [
+                "effective_date",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.info-vworld-end",
+              "source_url": "https://www.nanaco-net.jp/information/info_00084.html",
+              "authority_scope": [
+                "effective_date",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.merchant-list",
+              "source_url": "https://www.nanaco-net.jp/alliance/index.html",
+              "authority_scope": [
+                "earn_acceptance",
+                "merchant_acceptance"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.net-faq",
+              "source_url": "https://www.nanaco-net.jp/support/faq_net.html",
+              "authority_scope": [
+                "earn_rules",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.redemption-value",
+              "source_url": "https://www.nanaco-net.jp/how-to/use_point/money.html",
+              "authority_scope": [
+                "conversion_rules",
+                "redemption_value"
+              ],
+              "registration_status": "content_verified",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.sevencard-earning",
+              "source_url": "https://www.nanaco-net.jp/how-to/save_point/creditcard.html",
+              "authority_scope": [
+                "card_purchase_earn_rules",
+                "nanaco_charge_earn_rules",
+                "rounding"
+              ],
+              "registration_status": "content_verified",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.shopping-earning",
+              "source_url": "https://www.nanaco-net.jp/how-to/save_point/shopping.html",
+              "authority_scope": [
+                "merchant_earn_rules",
+                "posting_timing",
+                "product_exclusions",
+                "rounding"
+              ],
+              "registration_status": "content_verified",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.terms",
+              "source_url": "https://www.nanaco-net.jp/terms/",
+              "authority_scope": [
+                "earn_rules",
+                "program_terms",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.terms-points",
+              "source_url": "https://entry.nanaco-net.jp/entry_all/kiyaku.html",
+              "authority_scope": [
+                "expiry_rules",
+                "program_terms",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.transfer-ana",
+              "source_url": "https://www.nanaco-net.jp/how-to/use_point/ana.html",
+              "authority_scope": [
+                "conversion_routes",
+                "eligibility",
+                "transfer_partners"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.nanaco.use",
+              "source_url": "https://www.nanaco-net.jp/how-to/use_point/index.html",
+              "authority_scope": [
+                "redemption_routes",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "partner_merchant_directory",
+              "source_url": "https://www.nanaco-net.jp/alliance/index.html",
+              "publisher": "Seven Card Service",
+              "role_marker": "nanacoが使えるお店一覧",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "transfer_partner_directory",
+              "source_url": "https://www.nanaco-net.jp/how-to/use_point/ana.html",
+              "publisher": "Seven Card Service",
+              "role_marker": "提携先ごとのポイント交換",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        },
+        {
+          "family_id": "point.paypay",
+          "provider_or_scope": "PayPay Points",
+          "stream_id": "economy.paypay",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.paypay.balance-points",
+              "source_url": "https://paypay.ne.jp/help/c0048/",
+              "authority_scope": [
+                "balance_types",
+                "expiry_rules",
+                "transfer_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.calculation-faq",
+              "source_url": "https://paypay.ne.jp/help/c0373/",
+              "authority_scope": [
+                "eligible_basis",
+                "rounding",
+                "split_payment"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.campaigns",
+              "source_url": "https://paypay.ne.jp/event/",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.eligibility-faq",
+              "source_url": "https://paypay.ne.jp/help/c0111/",
+              "authority_scope": [
+                "identity_verification",
+                "points_used_basis",
+                "service_changes"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.local-campaigns",
+              "source_url": "https://paypay.ne.jp/event/support-local/",
+              "authority_scope": [
+                "local_campaigns",
+                "location_scope"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.merchant-list",
+              "source_url": "https://paypay.ne.jp/shop/",
+              "authority_scope": [
+                "merchant_acceptance"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.points",
+              "source_url": "https://paypay.ne.jp/point/",
+              "authority_scope": [
+                "expiry_rules",
+                "point_types",
+                "redemption_rules",
+                "redemption_value",
+                "transfer_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.points-use",
+              "source_url": "https://paypay.ne.jp/guide/point-use/",
+              "authority_scope": [
+                "redemption_routes",
+                "redemption_rules",
+                "redemption_value"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.reward-rate",
+              "source_url": "https://paypay.ne.jp/article/reward-rate/",
+              "authority_scope": [
+                "base_earn",
+                "eligible_basis"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.step",
+              "source_url": "https://paypay.ne.jp/event/paypaystep/",
+              "authority_scope": [
+                "identity_verification",
+                "monthly_progress",
+                "tier_conditions"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.terms",
+              "source_url": "https://about.paypay.ne.jp/terms/consumer/rule/",
+              "authority_scope": [
+                "program_terms",
+                "redemption_rules",
+                "transfer_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.paypay.third-party-card-voucher",
+              "source_url": "https://paypay.ne.jp/help/c0551/",
+              "authority_scope": [
+                "funding_route",
+                "merchant_exclusions",
+                "purchase_increment",
+                "residual_balance",
+                "reward_exclusions",
+                "rollout_eligibility",
+                "voucher_purchase"
+              ],
+              "registration_status": "content_verified",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "point.ponta",
+          "provider_or_scope": "Ponta",
+          "stream_id": "economy.au-ponta",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.ponta.campaigns",
+              "source_url": "https://point.recruit.co.jp/point/?tab=campaign",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.ponta.exchange-hub",
+              "source_url": "https://point.recruit.co.jp/point/?tab=excPoint",
+              "authority_scope": [
+                "conversion_routes",
+                "transfer_partners"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.ponta.jal-transfer",
+              "source_url": "https://point.recruit.co.jp/pontaweb/excpoint/pontajal/",
+              "authority_scope": [
+                "conversion_ratio",
+                "eligibility",
+                "minimum_transfer"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.ponta.overview",
+              "source_url": "https://point.recruit.co.jp/pontaweb/about/ponta/",
+              "authority_scope": [
+                "earn_rules",
+                "program_overview",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.ponta.partner-list",
+              "source_url": "https://point.recruit.co.jp/point/?tab=pointUseService",
+              "authority_scope": [
+                "merchant_participation",
+                "redemption_acceptance"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.ponta.point-types",
+              "source_url": "https://point.recruit.co.jp/pontaweb/about/point/",
+              "authority_scope": [
+                "expiry",
+                "point_types"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "change_notices",
+              "source_url": "https://point.recruit.co.jp/point/",
+              "publisher": "Recruit / Loyalty Marketing",
+              "role_marker": "お知らせ",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.ponta.overview"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "expiry_and_reward_classes",
+              "source_url": "https://www.ponta.jp/c/point-detail/",
+              "publisher": "Loyalty Marketing",
+              "role_marker": "有効期限",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.ponta.point-types"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "program_terms",
+              "source_url": "https://www.ponta.jp/c/ppm/terms/",
+              "publisher": "Loyalty Marketing",
+              "role_marker": "会員規約",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.ponta.overview"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        },
+        {
+          "family_id": "point.rakuten",
+          "provider_or_scope": "Rakuten Point",
+          "stream_id": "economy.rakuten",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.ana.rakuten-transfer",
+              "source_url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_rakutenpoint/",
+              "authority_scope": [
+                "conversion_ratio",
+                "transfer_conditions"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.rakuten.pointclub",
+              "source_url": "https://point.rakuten.co.jp/",
+              "authority_scope": [
+                "campaign_discovery",
+                "point_balance",
+                "program_overview"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "change_notices",
+              "source_url": "https://point.rakuten.co.jp/doc/announcement/20211001/",
+              "publisher": "Rakuten Group",
+              "role_marker": "ポイント進呈ルールの変更",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.rakuten.pointclub"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        },
+        {
+          "family_id": "point.v",
+          "provider_or_scope": "V Point",
+          "stream_id": "economy.vpoint-smbc",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.ana.vpoint-transfer",
+              "source_url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_tpoint/",
+              "authority_scope": [
+                "conversion_ratio",
+                "transfer_conditions"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.app-terms",
+              "source_url": "https://privacy.vpoint.co.jp/terms/point-app/",
+              "authority_scope": [
+                "app_terms",
+                "barcode_usage"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.campaigns",
+              "source_url": "https://cpn.tsite.jp/list/all",
+              "authority_scope": [
+                "campaign_discovery",
+                "campaign_validity"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.member-terms",
+              "source_url": "https://tsite.jp/tm/pc/register/STKIp0108001.do",
+              "authority_scope": [
+                "earn_rules",
+                "membership_terms",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.overview",
+              "source_url": "https://web.tsite.jp/vpoint/",
+              "authority_scope": [
+                "program_overview"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.store-list",
+              "source_url": "https://t-point.tsite.jp/store/list/",
+              "authority_scope": [
+                "earn_acceptance",
+                "merchant_participation"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.use-store-list",
+              "source_url": "https://t-point.tsite.jp/store/tpointuse/",
+              "authority_scope": [
+                "merchant_participation",
+                "redemption_acceptance"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.vpoint.value-and-use",
+              "source_url": "https://t-point.tsite.jp/use/about/",
+              "authority_scope": [
+                "redemption_methods",
+                "redemption_value"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "campaign_directory",
+              "source_url": "https://cpn.tsite.jp/list/all",
+              "publisher": "V Point",
+              "role_marker": "キャンペーン",
+              "exact_registered_source_id": "jp.vpoint.campaigns",
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "change_notices",
+              "source_url": "https://www.vpoint.co.jp/news/",
+              "publisher": "V Point Marketing",
+              "role_marker": "ニュース",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.vpoint.overview"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        },
+        {
+          "family_id": "point.waon",
+          "provider_or_scope": "WAON POINT",
+          "stream_id": "economy.aeon-waon",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "earn_rules",
+            "expiry_and_reward_classes",
+            "partner_merchant_directory",
+            "program_terms",
+            "transfer_partner_directory",
+            "use_redemption_rules"
+          ],
+          "registered_source_hints": [
+            {
+              "source_id": "jp.waonpoint.earning-faq",
+              "source_url": "https://faq.waonpoint.jp/category/show/11?site_domain=default",
+              "authority_scope": [
+                "earn_rules",
+                "presentation_requirement"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            },
+            {
+              "source_id": "jp.waonpoint.faq",
+              "source_url": "https://faq.waonpoint.jp/category/show/1?site_domain=default",
+              "authority_scope": [
+                "program_rules",
+                "redemption_rules"
+              ],
+              "registration_status": "registered",
+              "hint_status": "registered_locator_not_canonical_evidence"
+            }
+          ],
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "program_terms",
+              "source_url": "https://www.smartwaon.com/ext/001/terms/service.html",
+              "publisher": "AEON Marketing",
+              "role_marker": "WAON POINTサービス規約",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.waonpoint.faq"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
+        }
+      ],
+      "allowed_stream_ids": [
+        "economy.aeon-waon",
+        "economy.au-ponta",
+        "economy.docomo",
+        "economy.paypay",
+        "economy.rakuten",
+        "economy.seven-nanaco",
+        "economy.vpoint-smbc",
+        "transit.jre-suica-view"
+      ]
+    },
+    {
+      "task_id": "p0.2-core-wallets",
+      "display_name": "Core wallets and payment apps",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "wallet.aeonpay",
+          "provider_or_scope": "AEON Pay",
+          "stream_id": "economy.aeon-waon",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "wallet.aupay",
+          "provider_or_scope": "au PAY",
+          "stream_id": "economy.au-ponta",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "wallet.dbarai",
+          "provider_or_scope": "d払い",
+          "stream_id": "economy.docomo",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "wallet.famipay",
+          "provider_or_scope": "FamiPay",
+          "stream_id": "wallet.famipay",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "wallet.paypay",
+          "provider_or_scope": "PayPay",
+          "stream_id": "economy.paypay",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "wallet.rakutenpay",
+          "provider_or_scope": "Rakuten Pay",
+          "stream_id": "economy.rakuten",
+          "recommended_cadence_seconds": 21600,
+          "required_source_roles": [
+            "base_reward_rules",
+            "campaign_directory",
+            "change_notices_and_incidents",
+            "eligible_and_excluded_tenders",
+            "funding_and_topup_rules",
+            "local_campaign_directory",
+            "merchant_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        }
+      ],
+      "allowed_stream_ids": [
+        "economy.aeon-waon",
+        "economy.au-ponta",
+        "economy.docomo",
+        "economy.paypay",
+        "economy.rakuten",
+        "wallet.famipay"
+      ]
+    },
+    {
+      "task_id": "p0.3-core-card-issuers",
+      "display_name": "Core card issuers",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "card.aeon",
+          "provider_or_scope": "AEON Card",
+          "stream_id": "economy.aeon-waon",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.aupay",
+          "provider_or_scope": "au PAY Card",
+          "stream_id": "economy.au-ponta",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.d",
+          "provider_or_scope": "d Card",
+          "stream_id": "economy.docomo",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.paypay",
+          "provider_or_scope": "PayPay Card",
+          "stream_id": "economy.paypay",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.rakuten",
+          "provider_or_scope": "Rakuten Card",
+          "stream_id": "economy.rakuten",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.smbc",
+          "provider_or_scope": "SMBC/Vpass cards including NL",
+          "stream_id": "economy.vpoint-smbc",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "card.view",
+          "provider_or_scope": "View Card / Bic Camera Suica",
+          "stream_id": "transit.jre-suica-view",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "annual_fees_and_benefits",
+            "base_point_rules",
+            "campaign_directory",
+            "card_catalog",
+            "change_notices",
+            "merchant_category_bonus_rules",
+            "point_exchange_directory",
+            "wallet_or_e_money_exclusions"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        }
+      ],
+      "allowed_stream_ids": [
+        "economy.aeon-waon",
+        "economy.au-ponta",
+        "economy.docomo",
+        "economy.paypay",
+        "economy.rakuten",
+        "economy.vpoint-smbc",
+        "transit.jre-suica-view"
+      ]
+    },
+    {
+      "task_id": "p0.4-core-merchants",
+      "display_name": "Core merchants",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "merchant.7eleven",
+          "provider_or_scope": "7-Eleven",
+          "stream_id": "merchant.jp-convenience",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.aeon-group",
+          "provider_or_scope": "AEON/MaxValu/MyBasket",
+          "stream_id": "merchant.jp-supermarket",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.amazon-jp",
+          "provider_or_scope": "Amazon Japan",
+          "stream_id": "merchant.jp-ecommerce",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.biccamera",
+          "provider_or_scope": "Bic Camera",
+          "stream_id": "merchant.jp-electronics",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.familymart",
+          "provider_or_scope": "FamilyMart",
+          "stream_id": "merchant.jp-convenience",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.itoyokado",
+          "provider_or_scope": "Ito-Yokado",
+          "stream_id": "merchant.jp-supermarket",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.lawson",
+          "provider_or_scope": "Lawson",
+          "stream_id": "merchant.jp-convenience",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.matsukiyo",
+          "provider_or_scope": "Matsukiyo/Cocokara",
+          "stream_id": "merchant.jp-drugstore",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.mcdonalds",
+          "provider_or_scope": "McDonald’s Japan",
+          "stream_id": "merchant.jp-food",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.ministop",
+          "provider_or_scope": "MiniStop",
+          "stream_id": "merchant.jp-convenience",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.newdays",
+          "provider_or_scope": "NewDays / KIOSK",
+          "stream_id": "merchant.jp-convenience",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.rakuten-market",
+          "provider_or_scope": "Rakuten Ichiba",
+          "stream_id": "economy.rakuten",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.starbucks",
+          "provider_or_scope": "Starbucks Japan",
+          "stream_id": "merchant.jp-food",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.welcia",
+          "provider_or_scope": "Welcia",
+          "stream_id": "merchant.jp-drugstore",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.yahoo-shopping",
+          "provider_or_scope": "Yahoo Shopping",
+          "stream_id": "economy.paypay",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "merchant.yodobashi",
+          "provider_or_scope": "Yodobashi",
+          "stream_id": "merchant.jp-electronics",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "accepted_payment_methods",
+            "excluded_products_or_services",
+            "loyalty_program_rules",
+            "merchant_campaigns_and_coupons",
+            "online_mobile_order_differences",
+            "store_locator_and_branch_overrides"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        }
+      ],
+      "allowed_stream_ids": [
+        "economy.paypay",
+        "economy.rakuten",
+        "merchant.jp-convenience",
+        "merchant.jp-drugstore",
+        "merchant.jp-ecommerce",
+        "merchant.jp-electronics",
+        "merchant.jp-food",
+        "merchant.jp-supermarket"
+      ]
+    },
+    {
+      "task_id": "p0.5-transit-emoney",
+      "display_name": "Transit and e-money foundations",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "emoney.nanaco",
+          "provider_or_scope": "nanaco e-money",
+          "stream_id": "economy.seven-nanaco",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "charge_and_autocharge_rules",
+            "earn_rules",
+            "eligible_cards",
+            "merchant_or_rail_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "emoney.waon",
+          "provider_or_scope": "WAON / WAON Touch",
+          "stream_id": "economy.aeon-waon",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "charge_and_autocharge_rules",
+            "earn_rules",
+            "eligible_cards",
+            "merchant_or_rail_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "transit.suica",
+          "provider_or_scope": "Suica / Mobile Suica",
+          "stream_id": "transit.jre-suica-view",
+          "recommended_cadence_seconds": 86400,
+          "required_source_roles": [
+            "campaign_directory",
+            "change_notices",
+            "charge_and_autocharge_rules",
+            "earn_rules",
+            "eligible_cards",
+            "merchant_or_rail_acceptance",
+            "service_terms"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        }
+      ],
+      "allowed_stream_ids": [
+        "economy.aeon-waon",
+        "economy.seven-nanaco",
+        "transit.jre-suica-view"
+      ]
+    },
+    {
+      "task_id": "p0.6-regulatory",
+      "display_name": "Regulatory sources",
+      "schedule_mode": "operator_selected",
+      "targets": [
+        {
+          "family_id": "reg.jp.caa.advertising",
+          "provider_or_scope": "Consumer Affairs Agency advertising/affiliate disclosure",
+          "stream_id": "regulatory.jp.advertising",
+          "recommended_cadence_seconds": 2592000,
+          "required_source_roles": [
+            "change_notices",
+            "registered_provider_lists",
+            "rules_and_guidance",
+            "statistics_or_methodology"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "reg.jp.fsa.payments",
+          "provider_or_scope": "FSA payment/intermediary registrations",
+          "stream_id": "regulatory.jp.payments",
+          "recommended_cadence_seconds": 604800,
+          "required_source_roles": [
+            "change_notices",
+            "registered_provider_lists",
+            "rules_and_guidance",
+            "statistics_or_methodology"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "reg.jp.meti.cashless",
+          "provider_or_scope": "METI cashless statistics and policy",
+          "stream_id": "regulatory.jp.cashless",
+          "recommended_cadence_seconds": 2592000,
+          "required_source_roles": [
+            "change_notices",
+            "registered_provider_lists",
+            "rules_and_guidance",
+            "statistics_or_methodology"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        },
+        {
+          "family_id": "reg.jp.ppc.privacy",
+          "provider_or_scope": "Personal Information Protection Commission",
+          "stream_id": "regulatory.jp.privacy",
+          "recommended_cadence_seconds": 2592000,
+          "required_source_roles": [
+            "change_notices",
+            "registered_provider_lists",
+            "rules_and_guidance",
+            "statistics_or_methodology"
+          ],
+          "registered_source_hints": [],
+          "recovered_role_locator_hints": []
+        }
+      ],
+      "allowed_stream_ids": [
+        "regulatory.jp.advertising",
+        "regulatory.jp.cashless",
+        "regulatory.jp.payments",
+        "regulatory.jp.privacy"
+      ]
+    }
+  ],
+  "pack_sha256": "sha256:08f0734b9055894ca47b2506d8c46c2013cc5d135c3cd38c401e82cc64a7ab83"
+}

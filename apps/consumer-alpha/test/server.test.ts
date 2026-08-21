@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { resetExperimentalCatalogue } from "../src/provisional-catalog.js";
 import {
   handleRequest,
   LOCALHOST_BIND_HOST,
@@ -55,7 +56,8 @@ describe("M6 localhost consumer shell", () => {
     expect(response.headers["Access-Control-Allow-Origin"]).toBeUndefined();
     expect(jsonBody(response)).toMatchObject({
       status: "ok",
-      synthetic_only: true,
+      synthetic_recommendations_only: true,
+      experimental_catalogue: true,
       bind_host: "127.0.0.1",
     });
   });
@@ -225,5 +227,302 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("localStorage");
     expect(source).not.toContain("sessionStorage");
     expect(source).not.toContain("document.cookie");
+  });
+
+  it("returns the exact browser-safe experimental snapshot", async () => {
+    resetExperimentalCatalogue();
+    const response = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/rules",
+    });
+    expect(response.status).toBe(200);
+    const body = jsonBody(response);
+    expect(Object.keys(body).sort()).toEqual(["rules", "status", "updated_at"]);
+    expect(body.status).toBe("ready");
+    expect(body.updated_at).toBe("2026-08-21T04:53:00.000Z");
+    const rules = body.rules as JsonRecord[];
+    expect(rules).toHaveLength(11);
+    const creditCard = rules.find(
+      (item) =>
+        item.publication_id ===
+        "candidate_p0_seveneleven_credit_card_20260821_v0_1",
+    );
+    expect(creditCard).toMatchObject({
+      publication_id: "candidate_p0_seveneleven_credit_card_20260821_v0_1",
+      kind: "payment_acceptance",
+      title: "セブン‐イレブンの支払い方法",
+      display_status: "experimental_unverified",
+      confidence: "high",
+      source_label: "セブン‐イレブン公式情報",
+    });
+    expect(Object.keys(creditCard ?? {}).sort()).toEqual([
+      "checked_at",
+      "confidence",
+      "display_status",
+      "kind",
+      "publication_id",
+      "source_label",
+      "summary",
+      "title",
+      "valid_from",
+    ]);
+    expect(JSON.stringify(creditCard)).not.toMatch(
+      /candidate_hash|definition_hash|source_ids|evidence|rule_id|https?:\/\//iu,
+    );
+  });
+
+  it("composes an injected port and distinguishes partial and empty snapshots", async () => {
+    const card = {
+      publication_id: "publication_alpha_v1",
+      kind: "campaign",
+      title: "春のキャンペーン",
+      summary: "公式情報をもとに自動収集した先行公開情報です。",
+      display_status: "experimental_unverified",
+      confidence: "medium",
+      source_label: "公式キャンペーン情報",
+      checked_at: "2026-08-21T00:00:00Z",
+      valid_from: "2026-08-21T00:00:00Z",
+    } as const;
+    let cards = [card];
+    const port = {
+      async list() {
+        return {
+          status: "partial" as const,
+          updated_at: null,
+          rules: cards,
+        };
+      },
+      async reportCorrection(input: {
+        publication_id: string;
+        category: string;
+      }) {
+        cards = cards.filter(
+          (item) => item.publication_id !== input.publication_id,
+        );
+        return {
+          ok: true as const,
+          publication_id: input.publication_id,
+          category: input.category,
+          accepted: true as const,
+          candidate_hash: `sha256:${"f".repeat(64)}`,
+          status: "disputed",
+        };
+      },
+    };
+    const initial = await handleRequest(
+      { method: "GET", pathname: "/api/experimental/rules" },
+      { experimentalCatalogue: port },
+    );
+    expect(initial.status).toBe(200);
+    expect(jsonBody(initial)).toEqual({
+      status: "partial",
+      updated_at: null,
+      rules: [card],
+    });
+    // Pass the injected port directly to assert server composition and exact
+    // publication binding.
+    const injectedCorrection = await handleRequest(
+      {
+        method: "POST",
+        pathname: "/api/experimental/corrections",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          publication_id: card.publication_id,
+          category: "not_accepted",
+        }),
+      },
+      port,
+    );
+    expect(injectedCorrection.status).toBe(200);
+    expect(jsonBody(injectedCorrection)).toEqual({
+      correction: {
+        publication_id: card.publication_id,
+        category: "not_accepted",
+        accepted: true,
+      },
+    });
+    const empty = await handleRequest(
+      { method: "GET", pathname: "/api/experimental/rules" },
+      port,
+    );
+    expect(empty.status).toBe(200);
+    expect(jsonBody(empty)).toEqual({
+      status: "partial",
+      updated_at: null,
+      rules: [],
+    });
+  });
+
+  it("fails closed when an injected port throws or returns a malformed row", async () => {
+    const throwingPort = {
+      async list() {
+        throw new Error("private database details");
+      },
+      async reportCorrection() {
+        throw new Error("private correction details");
+      },
+    };
+    const thrown = await handleRequest(
+      { method: "GET", pathname: "/api/experimental/rules" },
+      throwingPort,
+    );
+    expect(thrown.status).toBe(503);
+    expect(thrown.body).not.toContain("private database details");
+
+    const malformedPort = {
+      async list() {
+        return {
+          status: "ready" as const,
+          updated_at: "2026-08-21T00:00:00Z",
+          rules: [
+            {
+              publication_id: "publication_malformed",
+              kind: "other",
+              title: "表示用カード",
+              summary: "先行公開情報",
+              display_status: "experimental_unverified",
+              confidence: "limited",
+              source_label: "公式情報",
+              checked_at: "2026-08-21T00:00:00Z",
+              valid_from: "2026-08-21T00:00:00Z",
+              evidence: "do not serialize",
+            },
+          ],
+        };
+      },
+      async reportCorrection() {
+        return { ok: false, code: "correction_not_applied" };
+      },
+    };
+    const malformed = await handleRequest(
+      { method: "GET", pathname: "/api/experimental/rules" },
+      malformedPort,
+    );
+    expect(malformed.status).toBe(503);
+    expect(malformed.body).not.toContain("do not serialize");
+    expect(malformed.body).not.toContain("evidence");
+  });
+
+  it("rejects hostile authority on provisional catalogue reads", async () => {
+    const response = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/rules",
+      headers: {
+        host: "attacker.invalid",
+        origin: "https://attacker.invalid",
+      },
+    });
+    expect(response.status).toBe(400);
+    expect(jsonBody(response)).toMatchObject({
+      error: { code: "host_invalid" },
+    });
+  });
+
+  it("accepts only an exact publication/category correction and removes that version", async () => {
+    resetExperimentalCatalogue();
+    const initial = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/rules",
+    });
+    const publicationId = (jsonBody(initial).rules as JsonRecord[])[0]
+      ?.publication_id;
+    if (typeof publicationId !== "string")
+      throw new Error("publication missing");
+
+    const corrected = await jsonRequest(
+      "POST",
+      "/api/experimental/corrections",
+      { publication_id: publicationId, category: "not_accepted" },
+    );
+    expect(corrected.status).toBe(200);
+    expect(jsonBody(corrected)).toMatchObject({
+      correction: {
+        publication_id: publicationId,
+        category: "not_accepted",
+        accepted: true,
+      },
+    });
+    expect(JSON.stringify(jsonBody(corrected))).not.toMatch(
+      /candidate_hash|definition_hash|reported_at|disputed|severity|credible/iu,
+    );
+    const removed = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/rules",
+    });
+    const remaining = jsonBody(removed).rules as JsonRecord[];
+    expect(remaining).toHaveLength(10);
+    expect(
+      remaining.some((item) => item.publication_id === publicationId),
+    ).toBe(false);
+
+    const repeated = await jsonRequest(
+      "POST",
+      "/api/experimental/corrections",
+      { publication_id: publicationId, category: "not_accepted" },
+    );
+    expect(repeated.status).toBe(409);
+    expect(jsonBody(repeated)).toMatchObject({
+      error: { code: "publication_not_active" },
+    });
+  });
+
+  it("rejects unknown, extra-field, and proxy-ish correction payloads", async () => {
+    resetExperimentalCatalogue();
+    const unknown = await jsonRequest("POST", "/api/experimental/corrections", {
+      publication_id: "candidate_unknown",
+      category: "not_accepted",
+    });
+    expect(unknown.status).toBe(404);
+    expect(jsonBody(unknown)).toMatchObject({
+      error: { code: "publication_not_found" },
+    });
+
+    const extra = await jsonRequest("POST", "/api/experimental/corrections", {
+      publication_id: "candidate_unknown",
+      category: "not_accepted",
+      candidate_hash: `sha256:${"0".repeat(64)}`,
+    });
+    expect(extra.status).toBe(400);
+    expect(jsonBody(extra)).toMatchObject({
+      error: { code: "unknown_field" },
+    });
+
+    const proxyish = await jsonRequest(
+      "POST",
+      "/api/experimental/corrections",
+      {
+        publication_id: "candidate_unknown",
+        category: "not_accepted",
+        source: { value: "https://attacker.invalid" },
+      },
+    );
+    expect(proxyish.status).toBe(400);
+    expect(jsonBody(proxyish)).toMatchObject({
+      error: { code: "forbidden_field" },
+    });
+  });
+
+  it("keeps the Japanese experimental card and synthetic links DOM-safe", () => {
+    const html = readFileSync(
+      new URL("../public/index.html", import.meta.url),
+      "utf8",
+    );
+    const source = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    expect(html).toContain("先行公開データ");
+    expect(html).toContain("先行公開");
+    expect(html).toContain("公式情報をもとに自動収集した先行公開データです");
+    expect(html).not.toContain("最終確認前");
+    expect(html).not.toContain("未検証");
+    expect(html).not.toContain("現在のおすすめには使わない");
+    expect(source).toContain("/api/experimental/rules");
+    expect(source).toContain("/api/experimental/corrections");
+    expect(source).toContain("textContent");
+    expect(source).not.toContain("innerHTML");
+    expect(source).not.toContain("localStorage");
   });
 });

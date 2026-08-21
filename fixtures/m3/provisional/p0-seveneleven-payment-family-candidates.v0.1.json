@@ -1,0 +1,1503 @@
+{
+  "version": "p0-payment-acceptance-candidate-set.v0.1",
+  "source_run_bundle": "fixtures/m3/agent-feed/p0-seveneleven-payment-families.run-bundle.v0.1.json",
+  "source_snapshot": "snap_p0_seveneleven_payment_methods_20260821",
+  "candidates": [
+    {
+      "payment_family": "barcode_payment",
+      "display_name_ja": "バーコード決済",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_barcode_payment_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_barcode_payment",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven バーコード決済 acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced バーコード決済 payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.barcode_payment"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_barcode_payment"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "brand_debit_card",
+      "display_name_ja": "ブランドデビット",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_brand_debit_card_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_brand_debit_card",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven ブランドデビット acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced ブランドデビット payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.brand_debit_card"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_brand_debit_card"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "brand_prepaid_card",
+      "display_name_ja": "ブランドプリペイド",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_brand_prepaid_card_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_brand_prepaid_card",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven ブランドプリペイド acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced ブランドプリペイド payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.brand_prepaid_card"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_brand_prepaid_card"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "credit_card",
+      "display_name_ja": "クレジットカード",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_credit_card_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_credit_card",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven クレジットカード acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced クレジットカード payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.credit_card"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_credit_card"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "gift_certificate",
+      "display_name_ja": "共通商品券",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_gift_certificate_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_gift_certificate",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven 共通商品券 acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced 共通商品券 payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.gift_certificate"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_gift_certificate"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "id",
+      "display_name_ja": "iD",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_id_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_id",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven iD acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced iD payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.id"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_id"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "nanaco",
+      "display_name_ja": "nanaco",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_nanaco_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_nanaco",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven nanaco acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced nanaco payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.nanaco"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_nanaco"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "quo_card",
+      "display_name_ja": "QUOカード",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_quo_card_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_quo_card",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven QUOカード acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced QUOカード payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.quo_card"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_quo_card"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "quicpay",
+      "display_name_ja": "QUICPay",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_quicpay_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_quicpay",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven QUICPay acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced QUICPay payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.quicpay"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_quicpay"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "rakuten_edy",
+      "display_name_ja": "楽天Edy",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_rakuten_edy_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_rakuten_edy",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven 楽天Edy acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced 楽天Edy payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.rakuten_edy"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_rakuten_edy"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    },
+    {
+      "payment_family": "transport_e_money",
+      "display_name_ja": "交通系電子マネー",
+      "candidate": {
+        "version": "provisional-rule-candidate.v1",
+        "candidate_id": "candidate_p0_seveneleven_transport_e_money_20260821_v0_1",
+        "observation_id": "so_finding_p0_seveneleven_payment_families_20260821_81fb0e1867d59197",
+        "observation_fingerprint": "sha256:81fb0e1867d59197d932134ca5c94fe8f93018769dfda1d1ebe57df2bb41bf9c",
+        "p0_family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods",
+        "source_authority_role": "primary",
+        "source_ids": [
+          "merchant.seveneleven.payment-methods"
+        ],
+        "rule": {
+          "rule_id": "rr_p0_seveneleven_accept_transport_e_money",
+          "version": 1,
+          "status": "under_review",
+          "rule_type": "payment_acceptance",
+          "name": "Seven-Eleven 交通系電子マネー acceptance",
+          "description": "Acceptance-only provisional candidate for the evidenced 交通系電子マネー payment family.",
+          "subject": {
+            "entity_type": "merchant",
+            "entity_id": "merchant.seveneleven"
+          },
+          "scope": {
+            "countries": [
+              "JP"
+            ],
+            "operation_types": [
+              "merchant_purchase"
+            ],
+            "merchant_ids": [
+              "merchant.seveneleven"
+            ],
+            "channels": [
+              "in_store"
+            ],
+            "included_product_classes": [
+              "ordinary"
+            ],
+            "excluded_product_classes": [],
+            "tax_basis": "tax_inclusive"
+          },
+          "eligibility": {
+            "operation_match": {
+              "required_loyalty_program_ids": [],
+              "excluded_payment_instrument_ids": [],
+              "allowed_funding_source_ids": [],
+              "excluded_funding_source_ids": [],
+              "allowed_source_asset_ids": [],
+              "excluded_source_asset_ids": [],
+              "allowed_destination_asset_ids": [],
+              "required_interfaces": [],
+              "excluded_interfaces": [],
+              "must_present_before_payment": false,
+              "allowed_payment_instrument_ids": [
+                "instrument.seveneleven.transport_e_money"
+              ]
+            },
+            "user_conditions": [],
+            "transaction_conditions": {
+              "eligible_amount_basis": "not_applicable",
+              "requires_single_operation": true
+            },
+            "campaign_conditions": {
+              "entry_required": false,
+              "targeted_offer": false,
+              "identity_verification_required": false,
+              "first_use_only": false
+            }
+          },
+          "effect": {
+            "decision": "allow",
+            "effect_target": "operation_eligibility",
+            "target_rule_ids": [],
+            "target_stack_groups": [],
+            "reason_code": "accepted_payment_family_transport_e_money"
+          },
+          "caps": [],
+          "stacking": {
+            "stack_group": "jp_cvs_002_payment_acceptance",
+            "mode": "non_reward_acceptance",
+            "precedence": 10,
+            "conflicts_with_rule_ids": [],
+            "requires_rule_ids": [],
+            "notes": "Payment acceptance is intentionally non-financial."
+          },
+          "validity": {
+            "valid_from": "2026-08-21T13:49:24+09:00",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo",
+            "recorded_at": "2026-08-21T13:52:00+09:00",
+            "superseded_at": null
+          },
+          "provenance": {
+            "evidence_ids": [
+              "ev_p0_seveneleven_payment_methods_20260821"
+            ],
+            "minimum_source_tier": "T1_CANONICAL",
+            "confidence": 0.95,
+            "human_verified": false,
+            "review_notes": "The first-party payment-methods page was checked in a bounded manual source run. This provisional rule carries no reward calculation."
+          },
+          "audit": {
+            "created_at": "2026-08-21T13:51:00+09:00",
+            "created_by": "p0-payment-family-extractor",
+            "review_events": [],
+            "required_review_modes": [
+              "solo_dual_pass",
+              "agent_challenged"
+            ],
+            "review_mode": null,
+            "reviewed_at": null,
+            "reviewed_by": null,
+            "change_reason": "Machine-extracted payment-acceptance candidate for correction-driven provisional publication."
+          }
+        },
+        "extractor": {
+          "name": "p0-payment-family-extractor",
+          "version": "0.1"
+        },
+        "machine_check": {
+          "checker": "p0-payment-family-semantic-check",
+          "checker_version": "0.1",
+          "checked_at": "2026-08-21T04:52:00Z",
+          "checks": {
+            "representation_safe": true,
+            "rule_structure": true,
+            "rule_semantics": true,
+            "observation_binding": true,
+            "p0_coverage": true
+          }
+        }
+      }
+    }
+  ]
+}

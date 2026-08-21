@@ -7,19 +7,38 @@ import {
 } from "node:http";
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import type {
+  ExperimentalCataloguePort,
+  ExperimentalCorrectionInput,
+  ImplementationFactCataloguePort,
+  ImplementationFactCorrectionInput,
+} from "./contracts.js";
 import {
   InputContractError,
   isCanonicalRecommendationId,
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
   parseCorrectionDraft,
+  parseExperimentalCorrection,
+  parseImplementationFactCorrection,
   parseManualAlphaState,
 } from "./contracts.js";
+import {
+  adaptImplementationFactBackend,
+  getDefaultImplementationFactCataloguePort,
+  type ImplementationFactBackend,
+  normalizeImplementationFactSnapshot,
+} from "./implementation-catalog.js";
 import {
   mapCorrectionDraftForBrowser,
   mapRecommendationForBrowser,
   resolveOfficialLink,
 } from "./presentation-adapter.js";
+import {
+  getDefaultExperimentalCataloguePort,
+  listExperimentalCatalogue,
+  reportExperimentalCorrection,
+} from "./provisional-catalog.js";
 import { evaluateSynthetic, SYNTHETIC_ALPHA_CONFIG } from "./synthetic.js";
 
 export {
@@ -81,6 +100,106 @@ export interface AppResponse {
   readonly body: string;
 }
 
+/**
+ * The localhost alpha uses the explicit fixture port by default.  A
+ * production/server composition can pass either the port directly or a
+ * dependency object, without importing a database package into this shell.
+ */
+export interface AppDependencies {
+  readonly experimentalCatalogue?: ExperimentalCataloguePort;
+  readonly implementationFacts?: ImplementationFactBackend;
+  /** Descriptive alias accepted for the implementation-fact port. */
+  readonly implementationCatalogue?: ImplementationFactBackend;
+  /** Explicit alias for callers that prefer the full feature name. */
+  readonly implementationFactCatalogue?: ImplementationFactBackend;
+}
+
+export type AppCatalogueDependency =
+  | ExperimentalCataloguePort
+  | ImplementationFactBackend
+  | AppDependencies;
+
+function resolveExperimentalCatalogue(
+  dependency: AppCatalogueDependency | undefined,
+): ExperimentalCataloguePort {
+  if (dependency === undefined) return getDefaultExperimentalCataloguePort();
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "list" in dependency &&
+    typeof dependency.list === "function" &&
+    "reportCorrection" in dependency &&
+    typeof dependency.reportCorrection === "function"
+  )
+    return dependency as ExperimentalCataloguePort;
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "experimentalCatalogue" in dependency
+  ) {
+    const port = dependency.experimentalCatalogue;
+    if (
+      port !== null &&
+      typeof port === "object" &&
+      typeof port.list === "function" &&
+      typeof port.reportCorrection === "function"
+    )
+      return port;
+  }
+  throw requestError(500, "experimental_catalogue_dependency_invalid");
+}
+
+function resolveImplementationCatalogue(
+  dependency: AppCatalogueDependency | undefined,
+): ImplementationFactCataloguePort {
+  if (dependency === undefined)
+    return getDefaultImplementationFactCataloguePort();
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "implementationFacts" in dependency
+  ) {
+    const backend = dependency.implementationFacts;
+    if (backend !== undefined && backend !== null)
+      return adaptImplementationFactBackend(backend);
+  }
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "implementationCatalogue" in dependency
+  ) {
+    const backend = dependency.implementationCatalogue;
+    if (backend !== undefined && backend !== null)
+      return adaptImplementationFactBackend(backend);
+  }
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "implementationFactCatalogue" in dependency
+  ) {
+    const backend = dependency.implementationFactCatalogue;
+    if (backend !== undefined && backend !== null)
+      return adaptImplementationFactBackend(backend);
+  }
+  // A direct generic PostgreSQL store is unambiguous because it exposes the
+  // bounded `search` method. Browser ports should use AppDependencies so
+  // they cannot be confused with the existing experimental rules port.
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "search" in dependency &&
+    typeof dependency.search === "function" &&
+    "list" in dependency &&
+    typeof dependency.list === "function" &&
+    "reportCorrection" in dependency &&
+    typeof dependency.reportCorrection === "function"
+  )
+    return adaptImplementationFactBackend(
+      dependency as ImplementationFactBackend,
+    );
+  throw requestError(500, "implementation_fact_catalogue_dependency_invalid");
+}
+
 function requestError(status: number, code: string): RequestError {
   return { status, code };
 }
@@ -121,6 +240,121 @@ function errorResponse(error: RequestError): AppResponse {
   });
 }
 
+const EXPERIMENTAL_CORRECTION_FAILURE_CODES = new Set<
+  "publication_not_found" | "publication_not_active" | "correction_not_applied"
+>([
+  "publication_not_found",
+  "publication_not_active",
+  "correction_not_applied",
+]);
+
+const IMPLEMENTATION_FACT_CORRECTION_FAILURE_CODES = new Set<
+  "fact_not_found" | "fact_not_active" | "correction_not_applied"
+>(["fact_not_found", "fact_not_active", "correction_not_applied"]);
+
+type SafeExperimentalCorrection = Readonly<{
+  readonly publication_id: string;
+  readonly category: ExperimentalCorrectionInput["category"];
+  readonly accepted: true;
+}>;
+
+function safeExperimentalCorrection(
+  value: unknown,
+  input: ExperimentalCorrectionInput,
+): SafeExperimentalCorrection {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw requestError(503, "experimental_catalogue_unavailable");
+  const result = value as Record<string, unknown>;
+  if (result.ok !== true)
+    throw requestError(503, "experimental_catalogue_unavailable");
+  // Adapters may return private fields (hashes, signal details, and
+  // lifecycle status) for their own bookkeeping.  Never copy them into the
+  // HTTP response; only verify optional identity echoes before reducing.
+  if (
+    result.publication_id !== undefined &&
+    result.publication_id !== input.publication_id
+  )
+    throw requestError(503, "experimental_catalogue_unavailable");
+  if (result.category !== undefined && result.category !== input.category)
+    throw requestError(503, "experimental_catalogue_unavailable");
+  return Object.freeze({
+    publication_id: input.publication_id,
+    category: input.category,
+    accepted: true,
+  });
+}
+
+function experimentalCorrectionError(value: unknown): RequestError {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return requestError(503, "experimental_catalogue_unavailable");
+  const result = value as Record<string, unknown>;
+  if (
+    result.ok !== false ||
+    typeof result.code !== "string" ||
+    !EXPERIMENTAL_CORRECTION_FAILURE_CODES.has(
+      result.code as
+        | "publication_not_found"
+        | "publication_not_active"
+        | "correction_not_applied",
+    )
+  )
+    return requestError(503, "experimental_catalogue_unavailable");
+  return requestError(
+    result.code === "publication_not_found" ? 404 : 409,
+    result.code,
+  );
+}
+
+function implementationFactCorrectionError(value: unknown): RequestError {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return requestError(503, "implementation_fact_catalogue_unavailable");
+  const result = value as Record<string, unknown>;
+  if (
+    result.ok !== false ||
+    typeof result.code !== "string" ||
+    !IMPLEMENTATION_FACT_CORRECTION_FAILURE_CODES.has(
+      result.code as
+        | "fact_not_found"
+        | "fact_not_active"
+        | "correction_not_applied",
+    )
+  )
+    return requestError(503, "implementation_fact_catalogue_unavailable");
+  return requestError(
+    result.code === "fact_not_found" ? 404 : 409,
+    result.code,
+  );
+}
+
+type SafeImplementationFactCorrection = Readonly<{
+  readonly fact_key: string;
+  readonly category: ImplementationFactCorrectionInput["category"];
+  readonly accepted: true;
+}>;
+
+function safeImplementationFactCorrection(
+  value: unknown,
+  input: ImplementationFactCorrectionInput,
+): SafeImplementationFactCorrection {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw requestError(503, "implementation_fact_catalogue_unavailable");
+  const result = value as Record<string, unknown>;
+  if (
+    result.ok !== true ||
+    (result.fact_key !== undefined && result.fact_key !== input.fact_key) ||
+    (result.category !== undefined && result.category !== input.category) ||
+    (result.outcome !== undefined &&
+      result.outcome !== "recorded" &&
+      result.outcome !== "duplicate")
+  )
+    throw requestError(503, "implementation_fact_catalogue_unavailable");
+  return Object.freeze({
+    fact_key: input.fact_key,
+    category: input.category,
+    accepted: true,
+  });
+}
+
 function contentTypeIsJson(
   headers: Readonly<Record<string, string | undefined>> | undefined,
 ): boolean {
@@ -138,12 +372,11 @@ function validLocalHost(value: string): boolean {
 }
 
 function validateRequestAuthority(request: AppRequest): void {
-  const method = request.method.toUpperCase();
   const host = request.headers?.host;
-  if (method === "POST" && host !== undefined && !validLocalHost(host))
+  if (host !== undefined && !validLocalHost(host))
     throw requestError(400, "host_invalid");
   const origin = request.headers?.origin;
-  if (method !== "POST" || origin === undefined) return;
+  if (origin === undefined) return;
   if (!host || origin === "null") throw requestError(403, "origin_invalid");
   const normalizedHost = host.toLocaleLowerCase("en-US");
   try {
@@ -289,7 +522,10 @@ function linkIdFromPath(pathname: string): string | null {
   return match?.[1] ?? null;
 }
 
-export async function handleRequest(request: AppRequest): Promise<AppResponse> {
+export async function handleRequest(
+  request: AppRequest,
+  dependency?: AppCatalogueDependency,
+): Promise<AppResponse> {
   try {
     const method = request.method.toUpperCase();
     const pathname = request.pathname;
@@ -304,7 +540,8 @@ export async function handleRequest(request: AppRequest): Promise<AppResponse> {
         status: "ok",
         service: "consumer-alpha",
         bind_host: LOCALHOST_BIND_HOST,
-        synthetic_only: true,
+        synthetic_recommendations_only: true,
+        experimental_catalogue: true,
       });
     }
     if (method === "GET" && pathname === "/config") {
@@ -313,13 +550,63 @@ export async function handleRequest(request: AppRequest): Promise<AppResponse> {
     if (
       method !== "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
-        pathname === "/api/corrections/draft")
+        pathname === "/api/corrections/draft" ||
+        pathname === "/api/experimental/corrections" ||
+        pathname === "/api/experimental/fact-corrections")
     ) {
       return errorResponseWithHeaders(requestError(405, "method_not_allowed"), {
         Allow: "POST",
       });
     }
+    if (method !== "GET" && pathname === "/api/experimental/facts") {
+      return errorResponseWithHeaders(requestError(405, "method_not_allowed"), {
+        Allow: "GET",
+      });
+    }
     if (method === "GET") {
+      if (pathname === "/api/experimental/facts") {
+        try {
+          const snapshot =
+            await resolveImplementationCatalogue(dependency).list();
+          return jsonResponse(
+            200,
+            normalizeImplementationFactSnapshot(
+              snapshot,
+            ) as unknown as Readonly<Record<string, unknown>>,
+          );
+        } catch (error) {
+          if (
+            error &&
+            typeof error === "object" &&
+            "status" in error &&
+            "code" in error
+          )
+            throw error;
+          throw requestError(503, "implementation_fact_catalogue_unavailable");
+        }
+      }
+      if (pathname === "/api/experimental/rules") {
+        try {
+          const snapshot = await listExperimentalCatalogue(
+            resolveExperimentalCatalogue(dependency),
+          );
+          // The catalogue snapshot is already a strict, browser-safe DTO;
+          // preserve its exact top-level shape for the API contract.
+          return jsonResponse(
+            200,
+            snapshot as unknown as Readonly<Record<string, unknown>>,
+          );
+        } catch (error) {
+          if (
+            error &&
+            typeof error === "object" &&
+            "status" in error &&
+            "code" in error
+          )
+            throw error;
+          throw requestError(503, "experimental_catalogue_unavailable");
+        }
+      }
       const linkId = linkIdFromPath(pathname);
       if (linkId) {
         const target = resolveOfficialLink(linkId);
@@ -375,6 +662,83 @@ export async function handleRequest(request: AppRequest): Promise<AppResponse> {
         ),
       });
     }
+    if (pathname === "/api/experimental/corrections") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const input = parseExperimentalCorrection(
+        parseJsonBody(request, MAX_CORRECTION_BODY_BYTES),
+      );
+      let result: unknown;
+      try {
+        result = await reportExperimentalCorrection(
+          resolveExperimentalCatalogue(dependency),
+          input,
+        );
+      } catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "status" in error &&
+          "code" in error
+        )
+          throw error;
+        throw requestError(503, "experimental_catalogue_unavailable");
+      }
+      if (
+        result === null ||
+        typeof result !== "object" ||
+        Array.isArray(result) ||
+        (result as Record<string, unknown>).ok !== true
+      ) {
+        const error = experimentalCorrectionError(result);
+        return errorResponse(error);
+      }
+      return jsonResponse(200, {
+        correction: safeExperimentalCorrection(result, input),
+      });
+    }
+    if (pathname === "/api/experimental/fact-corrections") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const input = parseImplementationFactCorrection(
+        parseJsonBody(request, MAX_CORRECTION_BODY_BYTES),
+      );
+      let result: unknown;
+      try {
+        result =
+          await resolveImplementationCatalogue(dependency).reportCorrection(
+            input,
+          );
+      } catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "status" in error &&
+          "code" in error
+        )
+          throw error;
+        throw requestError(503, "implementation_fact_catalogue_unavailable");
+      }
+      if (
+        result === null ||
+        typeof result !== "object" ||
+        Array.isArray(result) ||
+        (result as Record<string, unknown>).ok !== true
+      ) {
+        return errorResponse(implementationFactCorrectionError(result));
+      }
+      return jsonResponse(200, {
+        correction: safeImplementationFactCorrection(result, input),
+      });
+    }
     return errorResponse(requestError(404, "not_found"));
   } catch (error) {
     if (
@@ -421,6 +785,7 @@ function sendAppResponse(response: ServerResponse, result: AppResponse): void {
 async function route(
   request: IncomingMessage,
   response: ServerResponse,
+  dependency: AppCatalogueDependency | undefined,
 ): Promise<void> {
   let pathname: string;
   try {
@@ -452,7 +817,9 @@ async function route(
     const body =
       method === "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
-        pathname === "/api/corrections/draft")
+        pathname === "/api/corrections/draft" ||
+        pathname === "/api/experimental/corrections" ||
+        pathname === "/api/experimental/fact-corrections")
         ? await readBodyBytes(
             request,
             pathname === "/api/synthetic/evaluate"
@@ -462,7 +829,7 @@ async function route(
         : undefined;
     sendAppResponse(
       response,
-      await handleRequest({ method, pathname, headers, body }),
+      await handleRequest({ method, pathname, headers, body }, dependency),
     );
   } catch (error) {
     if (
@@ -483,14 +850,17 @@ async function route(
   }
 }
 
-export function createAppServer(): Server {
+export function createAppServer(dependency?: AppCatalogueDependency): Server {
   return createServer((request, response) => {
-    void route(request, response);
+    void route(request, response, dependency);
   });
 }
 
-export async function startServer(port = 0): Promise<Server> {
-  const server = createAppServer();
+export async function startServer(
+  port = 0,
+  dependency?: AppCatalogueDependency,
+): Promise<Server> {
+  const server = createAppServer(dependency);
   await new Promise<void>((resolve, reject) => {
     const onError = (error: Error) => {
       server.off("listening", onListening);

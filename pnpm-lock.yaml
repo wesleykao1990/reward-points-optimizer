@@ -48,9 +48,18 @@ importers:
 
   apps/consumer-alpha:
     dependencies:
+      '@jro/agent-feed-consumer':
+        specifier: workspace:*
+        version: link:../../packages/agent-feed-consumer
+      '@jro/agent-feed-postgres':
+        specifier: workspace:*
+        version: link:../../packages/agent-feed-postgres
       '@jro/consumer-alpha':
         specifier: workspace:*
         version: link:../../packages/consumer-alpha
+      '@jro/provisional-rules':
+        specifier: workspace:*
+        version: link:../../packages/provisional-rules
       '@jro/recommendation-api':
         specifier: workspace:*
         version: link:../../packages/recommendation-api
@@ -79,6 +88,25 @@ importers:
       ajv-formats:
         specifier: 3.0.1
         version: 3.0.1(ajv@8.17.1)
+    devDependencies:
+      '@types/node':
+        specifier: 22.17.1
+        version: 22.17.1
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@22.17.1)(tsx@4.20.4)(yaml@2.8.1)
+
+  packages/agent-feed-postgres:
+    dependencies:
+      '@jro/agent-feed-consumer':
+        specifier: workspace:*
+        version: link:../agent-feed-consumer
+      '@jro/provisional-rules':
+        specifier: workspace:*
+        version: link:../provisional-rules
     devDependencies:
       '@types/node':
         specifier: 22.17.1
@@ -149,6 +177,22 @@ importers:
       tsx:
         specifier: 4.20.4
         version: 4.20.4
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@22.17.1)(tsx@4.20.4)(yaml@2.8.1)
+
+  packages/p0-source-operations:
+    dependencies:
+      '@jro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: 22.17.1
+        version: 22.17.1
       typescript:
         specifier: 5.9.2
         version: 5.9.2

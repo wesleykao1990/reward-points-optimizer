@@ -1,0 +1,183 @@
+{
+  "protocol_version": "0.1",
+  "run_id": "run_p0_seveneleven_payment_families_20260821",
+  "begin": {
+    "protocol_version": "0.1",
+    "idempotency_key": "idem_p0_seveneleven_payment_families_begin_001",
+    "stream_id": "merchant.jp-convenience",
+    "producer": {
+      "producer_id": "codex-p0-manual-source-check",
+      "type": "human",
+      "name": "P0 bounded manual source check",
+      "version": "0.1.0"
+    },
+    "task": {
+      "task_type": "semantic_change_monitor",
+      "definition_id": "p0-seveneleven-payment-families",
+      "definition_version": "0.1"
+    },
+    "expected_scope": {
+      "source_ids": [
+        "merchant.seveneleven.payment-methods"
+      ],
+      "subjects": [
+        "merchant.7eleven"
+      ],
+      "queries": [
+        "accepted payment families"
+      ],
+      "metadata": {
+        "family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods"
+      }
+    },
+    "started_at": "2026-08-21T04:49:24Z",
+    "parent_run_id": null,
+    "metadata": {
+      "mode": "manual_source_check",
+      "publication_lane": "provisional_only"
+    }
+  },
+  "batches": [
+    {
+      "protocol_version": "0.1",
+      "run_id": "run_p0_seveneleven_payment_families_20260821",
+      "batch_id": "batch_p0_seveneleven_payment_families_001",
+      "idempotency_key": "idem_p0_seveneleven_payment_families_batch_001",
+      "sequence_number": 1,
+      "submitted_at": "2026-08-21T04:50:00Z",
+      "findings": [
+        {
+          "finding_id": "finding_p0_seveneleven_payment_families_20260821",
+          "finding_type": "rewards.merchant_acceptance",
+          "title": "Seven-Eleven lists eleven accepted payment families",
+          "summary": "The current first-party Seven-Eleven payment-methods page lists the recorded barcode, electronic-money, card, debit/prepaid, gift-certificate, and QUO payment families.",
+          "subjects": [
+            {
+              "type": "merchant",
+              "id": "merchant.7eleven",
+              "name": "7-Eleven"
+            }
+          ],
+          "effective_time": {
+            "occurred_at": null,
+            "effective_from": null,
+            "effective_to": null
+          },
+          "assessment": {
+            "novelty": "known",
+            "evidence_completeness": "complete",
+            "agent_confidence": 0.95,
+            "source_authority_claim": "primary"
+          },
+          "evidence_refs": [
+            "ev_p0_seveneleven_payment_methods_20260821"
+          ],
+          "producer_dedupe_key": "merchant.7eleven|accepted_payment_methods|2026-08-21",
+          "routing_tags": [
+            "p0",
+            "merchant-acceptance",
+            "provisional"
+          ],
+          "attributes": {
+            "change_kind": "merchant_acceptance",
+            "merchant_id": "merchant.7eleven",
+            "accepted_payment_families": [
+              "barcode_payment",
+              "brand_debit_card",
+              "brand_prepaid_card",
+              "credit_card",
+              "gift_certificate",
+              "id",
+              "nanaco",
+              "quo_card",
+              "quicpay",
+              "rakuten_edy",
+              "transport_e_money"
+            ],
+            "source_id": "merchant.seveneleven.payment-methods",
+            "source_snapshot_id": "snap_p0_seveneleven_payment_methods_20260821"
+          },
+          "security_flags": []
+        }
+      ],
+      "evidence": [
+        {
+          "evidence_id": "ev_p0_seveneleven_payment_methods_20260821",
+          "kind": "web",
+          "source": {
+            "uri": "https://www.sej.co.jp/services/cash.html",
+            "title": "ご利用可能なお支払方法",
+            "publisher": "Seven-Eleven Japan",
+            "source_id": "merchant.seveneleven.payment-methods"
+          },
+          "captured_at": "2026-08-21T13:49:24+09:00",
+          "published_at": null,
+          "locator": {
+            "type": "manual_note",
+            "value": "Normalized payment-family labels from a bounded current-source check; no source excerpt retained.",
+            "page": null
+          },
+          "excerpt": null,
+          "content_hash": "sha256:b4eeb2c6869c288f4d14e89e74a10674a093ae6758d8deb01337ba49b9722460",
+          "artifact": {
+            "uri": null,
+            "media_type": null,
+            "size_bytes": null
+          },
+          "handling": {
+            "contains_personal_data": false,
+            "contains_secrets": false,
+            "redistribution_restricted": false
+          },
+          "metadata": {
+            "source_snapshot_id": "snap_p0_seveneleven_payment_methods_20260821",
+            "capture_method": "manual_capture",
+            "record_type": "normalized_manual_source_snapshot",
+            "local_snapshot_path": "fixtures/m3/agent-feed/p0-seveneleven-payment-methods.normalized-source.v0.1.json",
+            "local_snapshot_size_bytes": 965,
+            "publication_lane": "provisional_only"
+          }
+        }
+      ],
+      "metadata": {
+        "family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods"
+      }
+    }
+  ],
+  "complete": {
+    "protocol_version": "0.1",
+    "run_id": "run_p0_seveneleven_payment_families_20260821",
+    "idempotency_key": "idem_p0_seveneleven_payment_families_complete_001",
+    "status": "completed",
+    "completed_at": "2026-08-21T04:50:30Z",
+    "actual_scope": {
+      "source_ids": [
+        "merchant.seveneleven.payment-methods"
+      ],
+      "subjects": [
+        "merchant.7eleven"
+      ],
+      "queries": [
+        "accepted payment families"
+      ],
+      "metadata": {
+        "family_id": "merchant.7eleven",
+        "source_role_id": "accepted_payment_methods"
+      }
+    },
+    "stats": {
+      "sources_attempted": 1,
+      "sources_succeeded": 1,
+      "findings_submitted": 1,
+      "evidence_submitted": 1,
+      "batches_submitted": 1
+    },
+    "errors": [],
+    "metadata": {
+      "mode": "manual_source_check",
+      "publication_lane": "provisional_only"
+    }
+  }
+}

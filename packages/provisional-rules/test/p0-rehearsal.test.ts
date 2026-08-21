@@ -280,5 +280,23 @@ describe("JP-CVS-002 local provisional-rule rehearsal", () => {
           (issue) => issue.code === "source_unregistered",
         ),
       ).toBe(true);
+
+    const unsupportedFamily = structuredClone(candidate);
+    if (!unsupportedFamily.rule.effect)
+      throw new Error("fixture payment effect missing");
+    unsupportedFamily.rule.effect.reason_code =
+      "accepted_payment_family_invented_wallet";
+    const semanticRejected = createProvisionalRuleStore().admit({
+      candidate: unsupportedFamily,
+      observation,
+      p0_coverage_index: coverage,
+    });
+    expect(semanticRejected.ok).toBe(false);
+    if (!semanticRejected.ok)
+      expect(
+        semanticRejected.issues.some(
+          (issue) => issue.code === "semantic_support_mismatch",
+        ),
+      ).toBe(true);
   });
 });

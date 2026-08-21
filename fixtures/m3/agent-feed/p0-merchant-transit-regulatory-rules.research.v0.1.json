@@ -1,0 +1,4828 @@
+{
+  "artifact_type": "p0_point_rules_research",
+  "schema_version": "0.1",
+  "schema": {
+    "id": "p0-point-rules-research-v0.1",
+    "required_root_keys": [
+      "artifact_type",
+      "schema_version",
+      "schema",
+      "metadata",
+      "sources",
+      "role_results",
+      "claims",
+      "summary"
+    ],
+    "source_required_fields": [
+      "source_id",
+      "family_id",
+      "roles",
+      "url",
+      "title",
+      "publisher",
+      "official_domain",
+      "retrieval"
+    ],
+    "claim_required_fields": [
+      "claim_id",
+      "family_id",
+      "source_role_id",
+      "source_ids",
+      "claim_type",
+      "subject",
+      "predicate",
+      "value",
+      "applicability",
+      "exclusions",
+      "evidence_locator",
+      "short_paraphrase"
+    ],
+    "role_result_outcomes": [
+      "claims_found",
+      "no_economic_claim_found",
+      "partially_checked",
+      "fetch_failed"
+    ],
+    "sort_order": "sources by source_id; role_results by family_id then source_role_id; claims by claim_id",
+    "source_policy": "First-party official operator, merchant, e-money, transit and regulator pages only; planning URLs are not evidence until fetched.",
+    "quote_policy": "No verbatim quotation fields are used; evidence_locator points to fetched official page sections."
+  },
+  "metadata": {
+    "artifact_id": "p0-merchant-transit-regulatory-rules.research.v0.1",
+    "protocol_version": "0.1",
+    "task_id": "p0.1-merchant-transit-regulatory-rules",
+    "producer": "research-data-builder-a",
+    "families": [
+      "emoney.nanaco",
+      "emoney.waon",
+      "merchant.7eleven",
+      "merchant.aeon-group",
+      "merchant.amazon-jp",
+      "merchant.biccamera",
+      "merchant.familymart",
+      "merchant.itoyokado",
+      "merchant.lawson",
+      "merchant.matsukiyo",
+      "merchant.mcdonalds",
+      "merchant.ministop",
+      "merchant.newdays",
+      "merchant.rakuten-market",
+      "merchant.starbucks",
+      "merchant.welcia",
+      "merchant.yahoo-shopping",
+      "merchant.yodobashi",
+      "reg.jp.caa.advertising",
+      "reg.jp.fsa.payments",
+      "reg.jp.meti.cashless",
+      "reg.jp.ppc.privacy",
+      "transit.suica"
+    ],
+    "merchant_roles": [
+      "accepted_payment_methods",
+      "loyalty_program_rules",
+      "merchant_campaigns_and_coupons",
+      "online_mobile_order_differences",
+      "store_locator_and_branch_overrides",
+      "excluded_products_or_services"
+    ],
+    "emoney_transit_roles": [
+      "service_terms",
+      "charge_and_autocharge_rules",
+      "eligible_cards",
+      "earn_rules",
+      "merchant_or_rail_acceptance",
+      "campaign_directory",
+      "change_notices"
+    ],
+    "regulatory_roles": [
+      "rules_and_guidance",
+      "registered_provider_lists",
+      "statistics_or_methodology",
+      "change_notices"
+    ],
+    "excluded_precovered_rows": [
+      "merchant.7eleven|accepted_payment_methods"
+    ],
+    "bounded_run": {
+      "started_at": "2026-08-22T02:15:00+09:00",
+      "ended_at": "2026-08-22T04:50:00+09:00",
+      "timezone": "Asia/Tokyo",
+      "scope": "Live first-party pages reachable from P0 planning leads and official linked pages, bounded to visible/reachable content during this run.",
+      "truncation": "Dynamic directories were recorded only as rendered/reachable; unrendered children and blocked pages were not inferred.",
+      "fetch_policy": "Admitted claims map to official fetched pages; METI official locator is preserved as HTTP 403 failure."
+    },
+    "publisher_policy": "Official first-party operator/merchant/regulator domains only; search snippets and third-party authority were not evidence.",
+    "pii_or_secret_check": "No credentials, account data, payment data, tokens or personal identifiers included."
+  },
+  "sources": [
+    {
+      "source_id": "src.emoney.nanaco.charge",
+      "family_id": "emoney.nanaco",
+      "roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "campaign_directory"
+      ],
+      "url": "https://www.nanaco-net.jp/how-to/charge/index.html",
+      "title": "チャージ(入金)する",
+      "publisher": "セブン・カードサービス",
+      "official_domain": "www.nanaco-net.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.nanaco.credit",
+      "family_id": "emoney.nanaco",
+      "roles": [
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "change_notices"
+      ],
+      "url": "https://www.nanaco-net.jp/how-to/creditcharge/",
+      "title": "クレジットチャージ",
+      "publisher": "セブン・カードサービス",
+      "official_domain": "www.nanaco-net.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.nanaco.earn",
+      "family_id": "emoney.nanaco",
+      "roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ],
+      "url": "https://www.nanaco-net.jp/how-to/save_point/shopping.html",
+      "title": "nanaco支払いでためる",
+      "publisher": "セブン・カードサービス",
+      "official_domain": "www.nanaco-net.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.nanaco.use",
+      "family_id": "emoney.nanaco",
+      "roles": [
+        "service_terms"
+      ],
+      "url": "https://www.nanaco-net.jp/how-to/use_point/money.html",
+      "title": "電子マネーに交換する",
+      "publisher": "セブン・カードサービス",
+      "official_domain": "www.nanaco-net.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.waon.base",
+      "family_id": "emoney.waon",
+      "roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ],
+      "url": "https://www.aeon.co.jp/waon/about/base/",
+      "title": "WAONの基本",
+      "publisher": "イオン",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.waon.campaign",
+      "family_id": "emoney.waon",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://www.waon.net/campaign/",
+      "title": "WAON キャンペーン一覧",
+      "publisher": "イオン",
+      "official_domain": "www.waon.net",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.waon.credit",
+      "family_id": "emoney.waon",
+      "roles": [
+        "charge_and_autocharge_rules",
+        "eligible_cards"
+      ],
+      "url": "https://www.aeon.co.jp/waon/charge/credit_card/",
+      "title": "クレジットカードでチャージする",
+      "publisher": "イオン",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.emoney.waon.integration",
+      "family_id": "emoney.waon",
+      "roles": [
+        "service_terms",
+        "earn_rules",
+        "change_notices"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point_integration/",
+      "title": "WAON POINT統合",
+      "publisher": "イオン",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.7eleven.7now",
+      "family_id": "merchant.7eleven",
+      "roles": [
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.sej.co.jp/services/7now/delivery.html",
+      "title": "7NOW ご利用ガイド",
+      "publisher": "セブン‐イレブン・ジャパン",
+      "official_domain": "www.sej.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.7eleven.campaign",
+      "family_id": "merchant.7eleven",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://www.sej.co.jp/company/news_release/news/2026/202606301400.html",
+      "title": "7NOW ポッカサッポロ キャンペーン",
+      "publisher": "セブン‐イレブン・ジャパン",
+      "official_domain": "www.sej.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.7eleven.payment",
+      "family_id": "merchant.7eleven",
+      "roles": [
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.sej.co.jp/services/cash.html",
+      "title": "お支払いについて",
+      "publisher": "セブン‐イレブン・ジャパン",
+      "official_domain": "www.sej.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.aeon-group.points",
+      "family_id": "merchant.aeon-group",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.aeon.co.jp/point/save/anytime/",
+      "title": "いつでもポイント2倍",
+      "publisher": "イオン",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.amazon-jp.pay",
+      "family_id": "merchant.amazon-jp",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://pay.amazon.co.jp/help/201754650",
+      "title": "Amazon Payのお支払い方法",
+      "publisher": "Amazon Pay",
+      "official_domain": "pay.amazon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.amazon-jp.points",
+      "family_id": "merchant.amazon-jp",
+      "roles": [
+        "loyalty_program_rules"
+      ],
+      "url": "https://www.amazon.co.jp/b?node=8123221051",
+      "title": "Amazon ポイント",
+      "publisher": "Amazon Japan",
+      "official_domain": "www.amazon.co.jp",
+      "retrieval": {
+        "status": "fetch_failed",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 503,
+        "content_type": "text/html",
+        "failure_reason": "official points page returned HTTP 503"
+      },
+      "notes": "No loyalty claim inferred."
+    },
+    {
+      "source_id": "src.merchant.biccamera.points",
+      "family_id": "merchant.biccamera",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.biccamera.com/bc/c/info/point/index.jsp",
+      "title": "ビックポイントのご案内",
+      "publisher": "ビックカメラ",
+      "official_domain": "www.biccamera.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.familymart.campaign",
+      "family_id": "merchant.familymart",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://www.family.co.jp/famipay/point-campaign.html",
+      "title": "FamiPay ポイントキャンペーン",
+      "publisher": "ファミリーマート",
+      "official_domain": "www.family.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.familymart.famipay",
+      "family_id": "merchant.familymart",
+      "roles": [
+        "loyalty_program_rules",
+        "online_mobile_order_differences",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.family.co.jp/services/payment/famipay.html",
+      "title": "FamiPayについて",
+      "publisher": "ファミリーマート",
+      "official_domain": "www.family.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.familymart.payment",
+      "family_id": "merchant.familymart",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.family.co.jp/services/payment.html",
+      "title": "お支払い方法",
+      "publisher": "ファミリーマート",
+      "official_domain": "www.family.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.itoyokado.campaign",
+      "family_id": "merchant.itoyokado",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://senmonten.itoyokado.co.jp/web/event/nanaco/index.html",
+      "title": "専門店街 nanacoポイント4倍",
+      "publisher": "イトーヨーカ堂",
+      "official_domain": "senmonten.itoyokado.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.lawson.campaign",
+      "family_id": "merchant.lawson",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://www.lawson.co.jp/recommend/sale/index.html",
+      "title": "セール・キャンペーン",
+      "publisher": "ローソン",
+      "official_domain": "www.lawson.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.lawson.payment",
+      "family_id": "merchant.lawson",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.lawson.co.jp/service/payment/settlement/",
+      "title": "決済手段について",
+      "publisher": "ローソン",
+      "official_domain": "www.lawson.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.lawson.ponta",
+      "family_id": "merchant.lawson",
+      "roles": [
+        "loyalty_program_rules",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.lawson.co.jp/ponta/",
+      "title": "Pontaについて",
+      "publisher": "ローソン",
+      "official_domain": "www.lawson.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.matsukiyo.campaign",
+      "family_id": "merchant.matsukiyo",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://www.matsukiyococokara-online.com/point/prize/",
+      "title": "ポイント交換賞品一覧 | ドラッグストア マツキヨココカラオンラインストア",
+      "publisher": "マツキヨココカラオンラインストア",
+      "official_domain": "www.matsukiyococokara-online.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official points-prize page displays the d-point transfer campaign period and maximum bonus; child campaign conditions remain bounded to the visible page."
+    },
+    {
+      "source_id": "src.merchant.matsukiyo.points",
+      "family_id": "merchant.matsukiyo",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.matsukiyococokara-online.com/point/about/",
+      "title": "ポイントについて",
+      "publisher": "マツキヨココカラ",
+      "official_domain": "www.matsukiyococokara-online.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.mcdonalds.payment",
+      "family_id": "merchant.mcdonalds",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.mcdonalds.co.jp/shop/payment/",
+      "title": "店舗・モバイルオーダーのお支払い方法",
+      "publisher": "日本マクドナルド",
+      "official_domain": "www.mcdonalds.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.mcdonalds.rewards",
+      "family_id": "merchant.mcdonalds",
+      "roles": [
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://www.mcdonalds.co.jp/company/news/2026/0202a/",
+      "title": "My McDonald's Rewards",
+      "publisher": "日本マクドナルド",
+      "official_domain": "www.mcdonalds.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.ministop.waon",
+      "family_id": "merchant.ministop",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.ministop.co.jp/waon/campaign/",
+      "title": "WAON キャンペーン",
+      "publisher": "ミニストップ",
+      "official_domain": "www.ministop.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Dynamic directory heading; no bounded child rule."
+    },
+    {
+      "source_id": "src.merchant.newdays.campaign",
+      "family_id": "merchant.newdays",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://retail.jr-cross.co.jp/newdays/campaign/appjrep.html",
+      "title": "JRE POINTアプリキャンペーン",
+      "publisher": "JR東日本クロスステーション",
+      "official_domain": "retail.jr-cross.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.newdays.payment",
+      "family_id": "merchant.newdays",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://retail.jr-cross.co.jp/newdays/kessai/",
+      "title": "NewDays お支払い方法",
+      "publisher": "JR東日本クロスステーション",
+      "official_domain": "retail.jr-cross.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.newdays.self",
+      "family_id": "merchant.newdays",
+      "roles": [
+        "accepted_payment_methods",
+        "excluded_products_or_services"
+      ],
+      "url": "https://retail.jr-cross.co.jp/newdays/kessai/self_regi.html",
+      "title": "NewDays セルフレジ",
+      "publisher": "JR東日本クロスステーション",
+      "official_domain": "retail.jr-cross.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.rakuten-market.campaign",
+      "family_id": "merchant.rakuten-market",
+      "roles": [
+        "merchant_campaigns_and_coupons"
+      ],
+      "url": "https://event.rakuten.co.jp/campaign/rank/point/",
+      "title": "楽天市場 ご愛顧感謝デー",
+      "publisher": "楽天",
+      "official_domain": "event.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.rakuten-market.payment",
+      "family_id": "merchant.rakuten-market",
+      "roles": [
+        "accepted_payment_methods"
+      ],
+      "url": "https://ichiba.faq.rakuten.net/detail/000006458?From=Search",
+      "title": "楽天市場 クレジットカード決済",
+      "publisher": "楽天",
+      "official_domain": "ichiba.faq.rakuten.net",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.rakuten-market.points",
+      "family_id": "merchant.rakuten-market",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://point.rakuten.co.jp/get/shopping/ichiba/",
+      "title": "楽天市場のお買い物で貯める",
+      "publisher": "楽天",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.starbucks.stars",
+      "family_id": "merchant.starbucks",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.starbucks.co.jp/mystarbucks/policy/card.html",
+      "title": "Starの獲得・利用条件",
+      "publisher": "スターバックス",
+      "official_domain": "www.starbucks.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.welcia.campaign",
+      "family_id": "merchant.welcia",
+      "roles": [
+        "merchant_campaigns_and_coupons",
+        "excluded_products_or_services"
+      ],
+      "url": "https://m.e-welcia.com/drug/20260601_summer_campaign",
+      "title": "夏のボーナスポイントキャンペーン",
+      "publisher": "ウエルシア",
+      "official_domain": "m.e-welcia.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.welcia.points",
+      "family_id": "merchant.welcia",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.e-welcia.com/point",
+      "title": "ポイントについて",
+      "publisher": "ウエルシア",
+      "official_domain": "www.e-welcia.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.yahoo-shopping.guide",
+      "family_id": "merchant.yahoo-shopping",
+      "roles": [
+        "merchant_campaigns_and_coupons",
+        "excluded_products_or_services"
+      ],
+      "url": "https://shopping.yahoo.co.jp/promotion/campaign/guide/",
+      "title": "キャンペーン・ポイントのご案内",
+      "publisher": "LINEヤフー",
+      "official_domain": "shopping.yahoo.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.yahoo-shopping.step",
+      "family_id": "merchant.yahoo-shopping",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://shopping.yahoo.co.jp/promotion/campaign/paypaystep/",
+      "title": "PayPayステップ",
+      "publisher": "LINEヤフー",
+      "official_domain": "shopping.yahoo.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.yodobashi.faq",
+      "family_id": "merchant.yodobashi",
+      "roles": [
+        "accepted_payment_methods",
+        "loyalty_program_rules",
+        "merchant_campaigns_and_coupons",
+        "online_mobile_order_differences",
+        "store_locator_and_branch_overrides",
+        "excluded_products_or_services"
+      ],
+      "url": "https://www.yodobashi.com/ec/support/faq/detail/1213342329340/index.html",
+      "title": "店舗とヨドバシ.comのポイント率",
+      "publisher": "ヨドバシカメラ",
+      "official_domain": "www.yodobashi.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.merchant.yodobashi.plus",
+      "family_id": "merchant.yodobashi",
+      "roles": [
+        "loyalty_program_rules"
+      ],
+      "url": "https://www.yodobashi.com/ec/news/2000091700/?kind=0002&pagetype_smartphone=pc&store=0018",
+      "title": "ゴールドポイントカード・プラス",
+      "publisher": "ヨドバシカメラ",
+      "official_domain": "www.yodobashi.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.caa.advertising.notice",
+      "family_id": "reg.jp.caa.advertising",
+      "roles": [
+        "statistics_or_methodology",
+        "change_notices"
+      ],
+      "url": "https://www.caa.go.jp/notice/entry/024740/",
+      "title": "景品表示法に基づく法的措置件数",
+      "publisher": "消費者庁",
+      "official_domain": "www.caa.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.caa.advertising.stealth",
+      "family_id": "reg.jp.caa.advertising",
+      "roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ],
+      "url": "https://www.caa.go.jp/policies/policy/representation/fair_labeling/stealth_marketing",
+      "title": "ステルスマーケティング",
+      "publisher": "消費者庁",
+      "official_domain": "www.caa.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.fsa.payments.registry",
+      "family_id": "reg.jp.fsa.payments",
+      "roles": [
+        "registered_provider_lists",
+        "statistics_or_methodology"
+      ],
+      "url": "https://www.fsa.go.jp/menkyo/menkyo.html",
+      "title": "免許・許可・登録等を受けている事業者一覧",
+      "publisher": "金融庁",
+      "official_domain": "www.fsa.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.fsa.payments.rules",
+      "family_id": "reg.jp.fsa.payments",
+      "roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ],
+      "url": "https://www.fsa.go.jp/common/shinsei/dendai/dentori.html",
+      "title": "電子決済手段等取引業",
+      "publisher": "金融庁",
+      "official_domain": "www.fsa.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.meti.cashless.statistics",
+      "family_id": "reg.jp.meti.cashless",
+      "roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ],
+      "url": "https://www.meti.go.jp/press/2025/03/20260331006/20260331006.html",
+      "title": "2025年キャッシュレス決済比率",
+      "publisher": "経済産業省",
+      "official_domain": "www.meti.go.jp",
+      "retrieval": {
+        "status": "fetch_failed",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 403,
+        "content_type": "text/html",
+        "failure_reason": "official METI URL returned HTTP 403"
+      },
+      "notes": "No statistic inferred."
+    },
+    {
+      "source_id": "src.reg.jp.ppc.privacy.directory",
+      "family_id": "reg.jp.ppc.privacy",
+      "roles": [
+        "registered_provider_lists",
+        "statistics_or_methodology"
+      ],
+      "url": "https://www.ppc.go.jp/personalinfo/legal/",
+      "title": "法令･ガイドライン等",
+      "publisher": "個人情報保護委員会",
+      "official_domain": "www.ppc.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.reg.jp.ppc.privacy.guidelines",
+      "family_id": "reg.jp.ppc.privacy",
+      "roles": [
+        "rules_and_guidance",
+        "registered_provider_lists",
+        "statistics_or_methodology",
+        "change_notices"
+      ],
+      "url": "https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/",
+      "title": "個人情報保護法ガイドライン（通則編）",
+      "publisher": "個人情報保護委員会",
+      "official_domain": "www.ppc.go.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.transit.suica.autocharge",
+      "family_id": "transit.suica",
+      "roles": [
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules"
+      ],
+      "url": "https://www.jreast.co.jp/card/function/autocharge/",
+      "title": "Suicaオートチャージ",
+      "publisher": "JR東日本",
+      "official_domain": "www.jreast.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.transit.suica.campaign",
+      "family_id": "transit.suica",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://www.jreast.co.jp/suica/campaign/",
+      "title": "Suica キャンペーン",
+      "publisher": "JR東日本",
+      "official_domain": "www.jreast.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.transit.suica.exchange",
+      "family_id": "transit.suica",
+      "roles": [
+        "service_terms",
+        "merchant_or_rail_acceptance"
+      ],
+      "url": "https://www.jreast.co.jp/card/point/suica_charge.html",
+      "title": "JRE POINTをSuicaにチャージ",
+      "publisher": "JR東日本",
+      "official_domain": "www.jreast.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.transit.suica.mobile",
+      "family_id": "transit.suica",
+      "roles": [
+        "charge_and_autocharge_rules",
+        "eligible_cards"
+      ],
+      "url": "https://www.jreast.co.jp/card/function/ap/autocharge/index.html",
+      "title": "モバイルSuicaオートチャージ",
+      "publisher": "JR東日本",
+      "official_domain": "www.jreast.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "src.transit.suica.service",
+      "family_id": "transit.suica",
+      "roles": [
+        "service_terms",
+        "charge_and_autocharge_rules",
+        "eligible_cards",
+        "earn_rules",
+        "merchant_or_rail_acceptance",
+        "campaign_directory",
+        "change_notices"
+      ],
+      "url": "https://www.jreast.co.jp/suica/",
+      "title": "Suica",
+      "publisher": "JR東日本",
+      "official_domain": "www.jreast.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-22T04:50:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    }
+  ],
+  "role_results": [
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "change_notices",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "charge_and_autocharge_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.charge.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.earn.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "eligible_cards",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.credit",
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.eligible.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.acceptance.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.nanaco",
+      "source_role_id": "service_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.earn",
+        "src.emoney.nanaco.use"
+      ],
+      "claim_ids": [
+        "claim.emoney.nanaco.service.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.campaign"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "change_notices",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.change.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "charge_and_autocharge_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.credit"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.charge.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.earn.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "eligible_cards",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.credit"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.eligible.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.emoney.waon.base"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "emoney.waon",
+      "source_role_id": "service_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.emoney.waon.base",
+        "src.emoney.waon.integration"
+      ],
+      "claim_ids": [
+        "claim.emoney.waon.service.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.7eleven.excluded.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.7eleven.loyalty.ana-ended.001",
+        "claim.merchant.7eleven.loyalty.saison-ended.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.7eleven.campaign.7now.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.7eleven.online.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.7eleven.7now",
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.aeon-group.excluded.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.aeon-group.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_ids": [
+        "claim.merchant.amazon-jp.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_ids": [
+        "claim.merchant.amazon-jp.excluded.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "fetch_failed",
+      "source_ids": [
+        "src.merchant.amazon-jp.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Official points page returned HTTP 503; no loyalty claim inferred."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_ids": [
+        "claim.merchant.amazon-jp.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.biccamera.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.biccamera.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.biccamera",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.familymart.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.familymart.excluded.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.familymart.campaign",
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.familymart.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.familymart.famipay",
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.familymart.online.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.familymart",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.familymart.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [
+        "claim.merchant.itoyokado.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [
+        "claim.merchant.itoyokado.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.lawson.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.lawson.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.lawson.payment",
+        "src.merchant.lawson.ponta"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.lawson.payment",
+        "src.merchant.lawson.ponta"
+      ],
+      "claim_ids": [
+        "claim.merchant.lawson.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.lawson.campaign",
+        "src.merchant.lawson.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.lawson.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.lawson.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.lawson",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.lawson.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.matsukiyo.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.matsukiyo.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.mcdonalds.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment",
+        "src.merchant.mcdonalds.rewards"
+      ],
+      "claim_ids": [
+        "claim.merchant.mcdonalds.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment",
+        "src.merchant.mcdonalds.rewards"
+      ],
+      "claim_ids": [
+        "claim.merchant.mcdonalds.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.ministop",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.ministop.waon"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Dynamic directory heading rendered without child rule text."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.newdays.payment",
+        "src.merchant.newdays.self"
+      ],
+      "claim_ids": [
+        "claim.merchant.newdays.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.newdays.payment",
+        "src.merchant.newdays.self"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.newdays.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.newdays.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.newdays.campaign",
+        "src.merchant.newdays.payment"
+      ],
+      "claim_ids": [
+        "claim.merchant.newdays.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.newdays.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.newdays",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.newdays.payment"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.payment",
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.rakuten-market.accepted.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.rakuten-market.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.campaign",
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.rakuten-market.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [
+        "claim.merchant.starbucks.excluded.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [
+        "claim.merchant.starbucks.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.starbucks",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.welcia.campaign",
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.welcia.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.welcia.campaign",
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [
+        "claim.merchant.welcia.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.welcia",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.welcia.points"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.guide",
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [
+        "claim.merchant.yahoo-shopping.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.guide",
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [
+        "claim.merchant.yahoo-shopping.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "accepted_payment_methods",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "excluded_products_or_services",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "loyalty_program_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq",
+        "src.merchant.yodobashi.plus"
+      ],
+      "claim_ids": [
+        "claim.merchant.yodobashi.loyalty.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "online_mobile_order_differences",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "store_locator_and_branch_overrides",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.merchant.yodobashi.faq"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "change_notices",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.notice",
+        "src.reg.jp.caa.advertising.stealth"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "registered_provider_lists",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.stealth"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "rules_and_guidance",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.stealth"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.caa.advertising.rules.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "statistics_or_methodology",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.notice",
+        "src.reg.jp.caa.advertising.stealth"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.caa.advertising.statistics.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "change_notices",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.rules"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "registered_provider_lists",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.registry",
+        "src.reg.jp.fsa.payments.rules"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.fsa.payments.registry.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "rules_and_guidance",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.rules"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.fsa.payments.rules.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "statistics_or_methodology",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.registry",
+        "src.reg.jp.fsa.payments.rules"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "change_notices",
+      "outcome": "fetch_failed",
+      "source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Official METI URL returned HTTP 403; no statistic inferred."
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "registered_provider_lists",
+      "outcome": "fetch_failed",
+      "source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Official METI URL returned HTTP 403; no statistic inferred."
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "rules_and_guidance",
+      "outcome": "fetch_failed",
+      "source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Official METI URL returned HTTP 403; no statistic inferred."
+    },
+    {
+      "family_id": "reg.jp.meti.cashless",
+      "source_role_id": "statistics_or_methodology",
+      "outcome": "fetch_failed",
+      "source_ids": [
+        "src.reg.jp.meti.cashless.statistics"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Official METI URL returned HTTP 403; no statistic inferred."
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "change_notices",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.ppc.privacy.change.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "registered_provider_lists",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.directory",
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "rules_and_guidance",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_ids": [
+        "claim.reg.jp.ppc.privacy.rules.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "statistics_or_methodology",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.directory",
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.campaign",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.campaign.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "change_notices",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "No explicit economic/acceptance rule was visible for this role in the bounded official pages."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "charge_and_autocharge_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.mobile",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.charge.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.earn.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "eligible_cards",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.mobile",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.eligible.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.exchange",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.acceptance.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    },
+    {
+      "family_id": "transit.suica",
+      "source_role_id": "service_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.transit.suica.exchange",
+        "src.transit.suica.service"
+      ],
+      "claim_ids": [
+        "claim.transit.suica.service.001"
+      ],
+      "checked_at": "2026-08-22T04:50:00+09:00",
+      "notes": "Claims are bounded to fetched official pages and preserve scope, rates, dates, caps and exclusions."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim.emoney.nanaco.acceptance.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "source_ids": [
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "nanaco",
+      "predicate": "merchant_scope",
+      "value": {
+        "named_merchants": [
+          "Seven-Eleven",
+          "Ito-Yokado",
+          "York Mart",
+          "York Foods",
+          "Denny's",
+          "Bic Camera",
+          "McDonald's"
+        ],
+        "some_stores_differ": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Not exhaustive."
+      ],
+      "evidence_locator": "shopping page: merchant list",
+      "short_paraphrase": "The page names the merchants and warns some stores differ."
+    },
+    {
+      "claim_id": "claim.emoney.nanaco.campaign.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.emoney.nanaco.charge"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "nanaco summer festival",
+      "predicate": "lottery",
+      "value": {
+        "winners": 10000,
+        "reward_points": 775
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "dates_not_stated": true
+      },
+      "exclusions": [
+        "No dates rendered."
+      ],
+      "evidence_locator": "charge page: summer headline",
+      "short_paraphrase": "The page displays a 10,000-winner lottery for 775 points without visible dates."
+    },
+    {
+      "claim_id": "claim.emoney.nanaco.charge.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "charge_and_autocharge_rules",
+      "source_ids": [
+        "src.emoney.nanaco.charge",
+        "src.emoney.nanaco.credit"
+      ],
+      "claim_type": "funding_rule",
+      "subject": "nanaco",
+      "predicate": "methods_registration",
+      "value": {
+        "methods": [
+          "cash",
+          "credit_card",
+          "autocharge",
+          "mobile_app"
+        ],
+        "credit_registration_required": true,
+        "wait_hours": 24
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "charge pages: methods/registration",
+      "short_paraphrase": "Nanaco supports cash/card/autocharge/app and prior registration with 24-hour wait."
+    },
+    {
+      "claim_id": "claim.emoney.nanaco.earn.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.emoney.nanaco.earn"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "nanaco",
+      "predicate": "rate_timing",
+      "value": {
+        "yen_excluding_tax": 200,
+        "points": 1,
+        "later_store_grant": "following_month",
+        "receipt_time": "10th_06:00"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some tenants/stores differ."
+      ],
+      "evidence_locator": "shopping page: rate/timing",
+      "short_paraphrase": "Nanaco shows 1 point per ¥200 before tax and later-store monthly posting."
+    },
+    {
+      "claim_id": "claim.emoney.nanaco.eligible.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "src.emoney.nanaco.credit"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Seven Card Plus/Gold",
+      "predicate": "charge_reward",
+      "value": {
+        "yen": 200,
+        "points": 1,
+        "cards": [
+          "Seven Card Plus",
+          "Seven Card Plus Gold"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Plus Gold not generally recruited."
+      ],
+      "evidence_locator": "credit-charge: cards",
+      "short_paraphrase": "Seven Card Plus/Gold earn 1 point per ¥200 on credit charge."
+    },
+    {
+      "claim_id": "claim.emoney.nanaco.service.001",
+      "family_id": "emoney.nanaco",
+      "source_role_id": "service_terms",
+      "source_ids": [
+        "src.emoney.nanaco.use"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "nanaco points",
+      "predicate": "exchange",
+      "value": {
+        "points": 1,
+        "e_money_yen": 1,
+        "fee_yen": 0,
+        "cancel_after_exchange": false
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Charge amount refunds unavailable."
+      ],
+      "evidence_locator": "use page: exchange",
+      "short_paraphrase": "One point exchanges to ¥1 with no fee and cannot be canceled."
+    },
+    {
+      "claim_id": "claim.emoney.waon.campaign.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.emoney.waon.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "WAON August campaign",
+      "predicate": "lottery",
+      "value": {
+        "from": "2026-08-14",
+        "to": "2026-08-31",
+        "reward_points": 10000,
+        "methods": [
+          "AEON_Pay",
+          "WAON"
+        ]
+      },
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON campaign: August",
+      "short_paraphrase": "The directory lists a 10,000-point lottery for charging August 14–31."
+    },
+    {
+      "claim_id": "claim.emoney.waon.change.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.emoney.waon.integration"
+      ],
+      "claim_type": "change_notice",
+      "subject": "WAON POINT integration",
+      "predicate": "transition",
+      "value": {
+        "effective_from": "2026-03-01",
+        "max_expiry_years": 2,
+        "rate": {
+          "yen_including_tax": 200,
+          "points": 1
+        },
+        "posting": "may_take_several_days"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "integration: transition/rate/expiry",
+      "short_paraphrase": "From March 1, stores transition to WAON POINT with two-year maximum expiry."
+    },
+    {
+      "claim_id": "claim.emoney.waon.charge.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "charge_and_autocharge_rules",
+      "source_ids": [
+        "src.emoney.waon.credit"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "WAON autocharge",
+      "predicate": "rate",
+      "value": {
+        "yen_including_tax": 200,
+        "points": 1,
+        "target_group_points": 2
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some mobile/product/store exclusions."
+      ],
+      "evidence_locator": "WAON charge: autocharge",
+      "short_paraphrase": "Autocharge earns 1 per ¥200 or 2 at registered target stores."
+    },
+    {
+      "claim_id": "claim.emoney.waon.earn.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.emoney.waon.base"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "WAON",
+      "predicate": "standard_rate",
+      "value": {
+        "yen_including_tax": 200,
+        "points": 1
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Product/store exclusions apply."
+      ],
+      "evidence_locator": "WAON basic: rate",
+      "short_paraphrase": "WAON earns 1 point per ¥200 including tax."
+    },
+    {
+      "claim_id": "claim.emoney.waon.eligible.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "src.emoney.waon.credit"
+      ],
+      "claim_type": "eligibility",
+      "subject": "WAON credit charge",
+      "predicate": "classes",
+      "value": [
+        "WAON Card Plus",
+        "AEON Card WAON integrated",
+        "Mobile WAON with AEON card",
+        "JMB WAON with JAL card",
+        "Apple Pay WAON"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON charge: eligible",
+      "short_paraphrase": "The official list includes the named WAON/AEON/JAL/Apple Pay classes."
+    },
+    {
+      "claim_id": "claim.emoney.waon.service.001",
+      "family_id": "emoney.waon",
+      "source_role_id": "service_terms",
+      "source_ids": [
+        "src.emoney.waon.base"
+      ],
+      "claim_type": "funding_limit",
+      "subject": "WAON card",
+      "predicate": "fee_caps",
+      "value": {
+        "issue_fee_yen": 350,
+        "annual_fee_yen": 0,
+        "balance_cap_yen": 50000,
+        "one_charge_cap_yen": 49000
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON basic: fee/caps",
+      "short_paraphrase": "WAON card costs ¥350, has no annual fee and has ¥50,000/¥49,000 limits."
+    },
+    {
+      "claim_id": "claim.merchant.7eleven.campaign.7now.001",
+      "family_id": "merchant.7eleven",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.7eleven.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "7NOW Pocka Sapporo",
+      "predicate": "minimum_limit",
+      "value": {
+        "minimum_order_yen_excluding_tax": 1000,
+        "max_uses_per_7id_per_period": 1,
+        "periods": [
+          [
+            "2026-06-30",
+            "2026-07-31"
+          ],
+          [
+            "2026-08-01",
+            "2026-08-31"
+          ]
+        ]
+      },
+      "applicability": {
+        "status": "partly_ended_and_current",
+        "effective_from": "2026-06-30",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Target products/7iD conditions apply."
+      ],
+      "evidence_locator": "campaign release: conditions",
+      "short_paraphrase": "Each period requires at least ¥1,000 before tax and one use per 7iD."
+    },
+    {
+      "claim_id": "claim.merchant.7eleven.excluded.001",
+      "family_id": "merchant.7eleven",
+      "source_role_id": "excluded_products_or_services",
+      "source_ids": [
+        "src.merchant.7eleven.7now"
+      ],
+      "claim_type": "exclusion",
+      "subject": "7NOW",
+      "predicate": "excluded_classes",
+      "value": [
+        "postcards",
+        "stamps",
+        "QUO_cards",
+        "prepaid_cards",
+        "magazines",
+        "newspapers",
+        "flammable_goods"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "7NOW guide: exclusions",
+      "short_paraphrase": "7NOW excludes the listed postal, prepaid, publication and flammable-goods classes."
+    },
+    {
+      "claim_id": "claim.merchant.7eleven.loyalty.ana-ended.001",
+      "family_id": "merchant.7eleven",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Seven-Eleven ANA card",
+      "predicate": "miles_per_spend",
+      "value": {
+        "yen_including_tax": 200,
+        "miles": 1
+      },
+      "applicability": {
+        "status": "ended",
+        "effective_from": null,
+        "effective_to": "2026-05-31",
+        "timezone": "Asia/Tokyo",
+        "end_date_known": true
+      },
+      "exclusions": [],
+      "evidence_locator": "cash page: ANA notice",
+      "short_paraphrase": "The ANA benefit was 1 mile per ¥200 including tax and ended 2026-05-31."
+    },
+    {
+      "claim_id": "claim.merchant.7eleven.loyalty.saison-ended.001",
+      "family_id": "merchant.7eleven",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.7eleven.payment"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Seven-Eleven Saison/UC card",
+      "predicate": "points_per_spend",
+      "value": {
+        "yen_including_tax": 100,
+        "points": 1
+      },
+      "applicability": {
+        "status": "ended",
+        "effective_from": null,
+        "effective_to": "2026-08-10",
+        "timezone": "Asia/Tokyo",
+        "end_date_known": true
+      },
+      "exclusions": [],
+      "evidence_locator": "cash page: Saison/UC notice",
+      "short_paraphrase": "The Saison/UC benefit was 1 point per ¥100 including tax and ended 2026-08-10."
+    },
+    {
+      "claim_id": "claim.merchant.7eleven.online.001",
+      "family_id": "merchant.7eleven",
+      "source_role_id": "online_mobile_order_differences",
+      "source_ids": [
+        "src.merchant.7eleven.7now"
+      ],
+      "claim_type": "fee_rule",
+      "subject": "7NOW",
+      "predicate": "hours_fee_minimum",
+      "value": {
+        "hours": "07:00-03:30",
+        "store_dependent": true,
+        "delivery_fee_yen_including_tax": [
+          110,
+          550
+        ],
+        "minimum_order_yen_excluding_tax": 1000,
+        "accepted_payments": [
+          "credit_card",
+          "PayPay",
+          "au_PAY",
+          "d払い",
+          "nanaco_points"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Cash/nanaco balance excluded."
+      ],
+      "evidence_locator": "7NOW guide: hours/fee/payment",
+      "short_paraphrase": "7NOW shows the stated hours, fee range, minimum and payment methods."
+    },
+    {
+      "claim_id": "claim.merchant.aeon-group.excluded.001",
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "excluded_products_or_services",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_type": "exclusion",
+      "subject": "AEON points",
+      "predicate": "classes",
+      "value": [
+        "some_products",
+        "point_paid_amount",
+        "non_AEON_QR",
+        "non_target_stores"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "anytime page: exclusions",
+      "short_paraphrase": "The page lists product, point-paid, non-AEON QR and non-target-store exclusions."
+    },
+    {
+      "claim_id": "claim.merchant.aeon-group.loyalty.001",
+      "family_id": "merchant.aeon-group",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.aeon-group.points"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "AEON target group stores",
+      "predicate": "points_per_spend",
+      "value": {
+        "target_tenders": [
+          "AEON_card",
+          "AEON_Pay",
+          "WAON"
+        ],
+        "yen_including_tax": 200,
+        "points": 2,
+        "basic_points": 1,
+        "grant_day": 25
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Target/product exclusions apply."
+      ],
+      "evidence_locator": "anytime page: rates/timing",
+      "short_paraphrase": "Target tenders earn 2 per ¥200 including tax; basic is 1 and grant day is 25."
+    },
+    {
+      "claim_id": "claim.merchant.amazon-jp.accepted.001",
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Amazon Pay",
+      "predicate": "methods",
+      "value": [
+        "credit_debit_prepaid_card",
+        "Amazon_gift_card",
+        "Paidy",
+        "JCB_J-POINT",
+        "merpay"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Merchant-specific availability varies."
+      ],
+      "evidence_locator": "Amazon Pay help: methods",
+      "short_paraphrase": "Amazon Pay lists cards, Amazon Gift Card, Paidy, JCB J-POINT and merpay."
+    },
+    {
+      "claim_id": "claim.merchant.amazon-jp.campaign.001",
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Amazon Pay first use",
+      "predicate": "headline_rate",
+      "value": {
+        "maximum_reward_percent": 20,
+        "first_use_required": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "dates_not_stated": true
+      },
+      "exclusions": [
+        "Child details not rendered."
+      ],
+      "evidence_locator": "campaign directory: current card",
+      "short_paraphrase": "The directory displays a first-use offer up to 20%; child dates were not rendered."
+    },
+    {
+      "claim_id": "claim.merchant.amazon-jp.excluded.001",
+      "family_id": "merchant.amazon-jp",
+      "source_role_id": "excluded_products_or_services",
+      "source_ids": [
+        "src.merchant.amazon-jp.pay"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Amazon Pay",
+      "predicate": "classes",
+      "value": [
+        "J-Debit",
+        "merchant_limited_methods"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Amazon Pay help: unavailable",
+      "short_paraphrase": "J-Debit is unavailable and some methods depend on merchants."
+    },
+    {
+      "claim_id": "claim.merchant.biccamera.accepted.001",
+      "family_id": "merchant.biccamera",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Bic Camera.com",
+      "predicate": "methods",
+      "value": [
+        "credit_card",
+        "bank_transfer",
+        "convenience_store",
+        "netbank_ATM",
+        "PayPay",
+        "Rakuten_Pay",
+        "d払い",
+        "au_PAY",
+        "merpay",
+        "Paidy",
+        "gift_card"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Online/store methods differ."
+      ],
+      "evidence_locator": "Bic payment guide: methods",
+      "short_paraphrase": "The official online list includes cards, bank/convenience/netbank/ATM, wallets, Paidy and gift cards."
+    },
+    {
+      "claim_id": "claim.merchant.biccamera.loyalty.001",
+      "family_id": "merchant.biccamera",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.biccamera.points"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Bic Point",
+      "predicate": "rate_value_expiry",
+      "value": {
+        "basic_rate_percent": 10,
+        "rate_can_change": true,
+        "point_value_yen": 1,
+        "expiry_years_after_last_use": 2
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Bic Point page: rate/value/expiry",
+      "short_paraphrase": "Bic displays 10%, 1 point=¥1 and two-year-after-last-use expiry."
+    },
+    {
+      "claim_id": "claim.merchant.familymart.accepted.001",
+      "family_id": "merchant.familymart",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.familymart.payment"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "FamilyMart",
+      "predicate": "methods",
+      "value": [
+        "FamiPay",
+        "d_point",
+        "Rakuten_Point",
+        "V_Point",
+        "credit_card",
+        "barcode_wallets",
+        "transit_e_money",
+        "Rakuten_Edy",
+        "WAON",
+        "iD",
+        "QUICPay"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some stores may differ."
+      ],
+      "evidence_locator": "payment page: matrix",
+      "short_paraphrase": "FamilyMart lists FamiPay, points, cards, wallets and e-money."
+    },
+    {
+      "claim_id": "claim.merchant.familymart.campaign.001",
+      "family_id": "merchant.familymart",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.familymart.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "FamiPay August games",
+      "predicate": "caps_rates",
+      "value": {
+        "daily_max_yen": 100000,
+        "payment_game_win_percent": 90,
+        "payment_game_max_yen": 1500
+      },
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-08-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "campaign page: August games",
+      "short_paraphrase": "August games show a ¥100,000 daily maximum and 90%/¥1,500 payment game."
+    },
+    {
+      "claim_id": "claim.merchant.familymart.excluded.001",
+      "family_id": "merchant.familymart",
+      "source_role_id": "excluded_products_or_services",
+      "source_ids": [
+        "src.merchant.familymart.famipay"
+      ],
+      "claim_type": "exclusion",
+      "subject": "FamiPay",
+      "predicate": "classes",
+      "value": [
+        "some_agency_collections",
+        "some_multicopy_services",
+        "e_money_charge"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "FamiPay page: exclusions",
+      "short_paraphrase": "FamiPay excludes listed agency collections, multicopy services and e-money charging."
+    },
+    {
+      "claim_id": "claim.merchant.familymart.online.001",
+      "family_id": "merchant.familymart",
+      "source_role_id": "online_mobile_order_differences",
+      "source_ids": [
+        "src.merchant.familymart.famipay"
+      ],
+      "claim_type": "program_term",
+      "subject": "FamiPay",
+      "predicate": "app_combination",
+      "value": {
+        "app_required": true,
+        "cannot_combine_with": [
+          "other_e_money",
+          "credit_card"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "FamiPay page: restrictions",
+      "short_paraphrase": "FamiPay requires the app and cannot combine with other e-money or credit card."
+    },
+    {
+      "claim_id": "claim.merchant.itoyokado.campaign.001",
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Ito-Yokado specialty nanaco",
+      "predicate": "rate_dates",
+      "value": {
+        "normal_per_200": 1,
+        "campaign_per_200": 4,
+        "nanaco_only": true,
+        "dates": [
+          "2026-08-08",
+          "2026-08-15",
+          "2026-08-18",
+          "2026-08-25",
+          "2026-08-28"
+        ]
+      },
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-08-08",
+        "effective_to": "2026-08-28",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Sub-¥200/listed stores excluded."
+      ],
+      "evidence_locator": "specialty page: rate/dates",
+      "short_paraphrase": "Eligible nanaco earns 4 per ¥200 including tax on listed dates."
+    },
+    {
+      "claim_id": "claim.merchant.itoyokado.loyalty.001",
+      "family_id": "merchant.itoyokado",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.itoyokado.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Ito-Yokado nanaco charge",
+      "predicate": "threshold_reward",
+      "value": {
+        "stores": [
+          "Ario Nishiarai",
+          "Wako"
+        ],
+        "weekday": "Thursday",
+        "minimum_charge_yen": 10000,
+        "reward_points": 100,
+        "max_per_day": 1
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-01-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "start_date_precision": "year_month_only"
+      },
+      "exclusions": [
+        "Not chain-wide."
+      ],
+      "evidence_locator": "charge campaign: named stores",
+      "short_paraphrase": "At the two named stores, Thursday ¥10,000 charging earns 100 points once daily."
+    },
+    {
+      "claim_id": "claim.merchant.lawson.accepted.001",
+      "family_id": "merchant.lawson",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.lawson.payment"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Lawson",
+      "predicate": "methods_cap",
+      "value": {
+        "barcode": [
+          "au_PAY",
+          "d払い",
+          "PayPay",
+          "Rakuten_Pay",
+          "AEON_Pay",
+          "merpay",
+          "Smart_Code",
+          "J-Coin_Pay"
+        ],
+        "au_PAY_cap_including_tax_yen": 300000,
+        "e_money": [
+          "transit",
+          "iD",
+          "QUICPay",
+          "Rakuten_Edy",
+          "WAON",
+          "PiTaPa"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "PiTaPa region-limited."
+      ],
+      "evidence_locator": "settlement page: barcode/e-money",
+      "short_paraphrase": "Lawson lists the methods and au PAY ¥300,000 cap."
+    },
+    {
+      "claim_id": "claim.merchant.lawson.campaign.001",
+      "family_id": "merchant.lawson",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.lawson.campaign"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "Lawson sale directory",
+      "predicate": "visible_periods",
+      "value": [
+        [
+          "2026-08-18",
+          "2026-09-07"
+        ],
+        [
+          "2026-08-18",
+          "2026-08-31"
+        ]
+      ],
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-08-18",
+        "effective_to": "2026-09-07",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Campaign-specific conditions apply."
+      ],
+      "evidence_locator": "sale directory: periods",
+      "short_paraphrase": "The current directory shows August 18–31 and August 18–September 7 campaigns."
+    },
+    {
+      "claim_id": "claim.merchant.lawson.loyalty.001",
+      "family_id": "merchant.lawson",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.lawson.ponta"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Lawson Ponta/d point",
+      "predicate": "rates_use",
+      "value": {
+        "yen_excluding_tax": 200,
+        "points_before_16": 1,
+        "points_from_16": 2,
+        "Ponta_Plus_max": 4,
+        "Ponta_Plus_day_10_20_max": 12,
+        "point_value_yen": 1,
+        "use_cap": 20000
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Official exclusions apply."
+      ],
+      "evidence_locator": "Ponta page: rates/use",
+      "short_paraphrase": "Lawson shows time-band rates, Ponta Plus maxima and 1 point=¥1 with 20,000 cap."
+    },
+    {
+      "claim_id": "claim.merchant.matsukiyo.campaign.001",
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.matsukiyo.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "d-point transfer",
+      "predicate": "bonus_period",
+      "value": {
+        "bonus_percent": 50,
+        "max_bonus_percent": 15,
+        "from": "2026-08-01",
+        "to": "2026-08-31"
+      },
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-08-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "campaign detail: period/max",
+      "short_paraphrase": "The August campaign advertises +50% with maximum 15% bonus."
+    },
+    {
+      "claim_id": "claim.merchant.matsukiyo.loyalty.001",
+      "family_id": "merchant.matsukiyo",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.matsukiyo.points"
+      ],
+      "claim_type": "annual_spend_bonus",
+      "subject": "Matsukiyo stage",
+      "predicate": "thresholds_cap",
+      "value": {
+        "monthly": [
+          [
+            10000,
+            2
+          ],
+          [
+            20000,
+            3
+          ]
+        ],
+        "annual": [
+          [
+            100000,
+            2
+          ],
+          [
+            200000,
+            3
+          ]
+        ],
+        "monthly_cap_yen": 150000
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Product/regional exclusions apply."
+      ],
+      "evidence_locator": "point page: stage tables",
+      "short_paraphrase": "Matsukiyo shows monthly/annual 2x/3x thresholds and ¥150,000 cap."
+    },
+    {
+      "claim_id": "claim.merchant.mcdonalds.accepted.001",
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.mcdonalds.payment"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "McDonald's Japan",
+      "predicate": "methods",
+      "value": [
+        "d払い",
+        "Rakuten_Pay",
+        "PayPay",
+        "au_PAY",
+        "iD",
+        "Rakuten_Edy",
+        "WAON",
+        "nanaco",
+        "QUICPay",
+        "transit_e_money",
+        "Apple_Pay",
+        "Google_Pay",
+        "cards",
+        "JCB_PreMo",
+        "McCard"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Store/channel availability varies."
+      ],
+      "evidence_locator": "payment page: methods",
+      "short_paraphrase": "McDonald's lists barcode, e-money, mobile wallets, cards, JCB PreMo and McCard."
+    },
+    {
+      "claim_id": "claim.merchant.mcdonalds.campaign.001",
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.mcdonalds.rewards"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "Rewards raffle",
+      "predicate": "ended_period",
+      "value": {
+        "entry_points": 250,
+        "winners": 10000,
+        "periods": [
+          [
+            "2026-02-10",
+            "2026-03-01"
+          ],
+          [
+            "2026-03-02",
+            "2026-03-24"
+          ]
+        ]
+      },
+      "applicability": {
+        "status": "ended",
+        "effective_from": "2026-02-10",
+        "effective_to": "2026-03-24",
+        "timezone": "Asia/Tokyo",
+        "end_date_known": true
+      },
+      "exclusions": [],
+      "evidence_locator": "rewards announcement: dates",
+      "short_paraphrase": "The 250-point raffle ran in two February–March 2026 periods and is ended."
+    },
+    {
+      "claim_id": "claim.merchant.mcdonalds.loyalty.001",
+      "family_id": "merchant.mcdonalds",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.mcdonalds.rewards"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "My McDonald's Rewards",
+      "predicate": "rate_expiry",
+      "value": {
+        "yen_including_tax": 10,
+        "points": 1,
+        "valid_years": 1,
+        "app_registration_required": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "rewards announcement: rate/expiry",
+      "short_paraphrase": "Registered mobile-order/McDelivery spend earns 1 point per ¥10 including tax, valid one year."
+    },
+    {
+      "claim_id": "claim.merchant.newdays.accepted.001",
+      "family_id": "merchant.newdays",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.newdays.self"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "NewDays self-checkout",
+      "predicate": "methods",
+      "value": [
+        "transit_e_money",
+        "Rakuten_Edy",
+        "WAON",
+        "nanaco",
+        "iD",
+        "QUICPay",
+        "credit_card",
+        "d払い",
+        "PayPay",
+        "au_PAY",
+        "Rakuten_Pay",
+        "J-Coin_Pay",
+        "Alipay",
+        "WeChat"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Store-specific."
+      ],
+      "evidence_locator": "self-checkout: methods",
+      "short_paraphrase": "NewDays self-checkout lists transit e-money, cards and named barcodes."
+    },
+    {
+      "claim_id": "claim.merchant.newdays.campaign.001",
+      "family_id": "merchant.newdays",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.newdays.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "JRE POINT scratch",
+      "predicate": "rewards",
+      "value": {
+        "yen_rewards": [
+          150,
+          100,
+          50
+        ],
+        "one_per_person_per_period": true,
+        "coupon_validity_weeks": 2
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "period_dates_not_rendered": true
+      },
+      "exclusions": [
+        "Listed exclusions apply."
+      ],
+      "evidence_locator": "scratch campaign: rewards",
+      "short_paraphrase": "The campaign gives ¥150/¥100/¥50 rewards, one per person/period, valid two weeks."
+    },
+    {
+      "claim_id": "claim.merchant.newdays.loyalty.001",
+      "family_id": "merchant.newdays",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.newdays.payment"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "JRE POINT at NewDays",
+      "predicate": "rate_value",
+      "value": {
+        "registered_suica_required": true,
+        "yen_including_tax": 200,
+        "points": 1,
+        "point_value_yen": 1
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Points-used/store exclusions apply."
+      ],
+      "evidence_locator": "payment page: JRE POINT",
+      "short_paraphrase": "Registered Suica earns 1 point per ¥200 including tax; 1 point is ¥1."
+    },
+    {
+      "claim_id": "claim.merchant.rakuten-market.accepted.001",
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "accepted_payment_methods",
+      "source_ids": [
+        "src.merchant.rakuten-market.payment"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Rakuten Ichiba",
+      "predicate": "methods_cap",
+      "value": {
+        "methods": [
+          "credit_card",
+          "bank_transfer",
+          "deferred",
+          "Apple_Pay",
+          "convenience_store",
+          "PayPal"
+        ],
+        "single_payment_cap_including_tax_yen": 9999999
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Shop/product limits apply."
+      ],
+      "evidence_locator": "Rakuten FAQ: methods/cap",
+      "short_paraphrase": "Rakuten Ichiba lists the methods and ¥9,999,999 including-tax cap."
+    },
+    {
+      "claim_id": "claim.merchant.rakuten-market.campaign.001",
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.rakuten-market.campaign"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Rakuten 18th-day",
+      "predicate": "multipliers_cap_expiry",
+      "value": {
+        "diamond": 4,
+        "platinum": 3,
+        "gold": 2,
+        "limited_point_cap": 1000,
+        "entry_required": true,
+        "expiry": "following_month_end"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Campaign conditions apply."
+      ],
+      "evidence_locator": "18th-day campaign: rank/cap/expiry",
+      "short_paraphrase": "The campaign shows rank multipliers, 1,000 cap, entry and following-month expiry."
+    },
+    {
+      "claim_id": "claim.merchant.rakuten-market.loyalty.001",
+      "family_id": "merchant.rakuten-market",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.rakuten-market.points"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Rakuten Ichiba",
+      "predicate": "rate_timing",
+      "value": {
+        "yen_excluding_tax": 100,
+        "points": 1,
+        "grant": "next_day_to_20_days_after_confirmation"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Shipping/packing/certificates/stamps excluded."
+      ],
+      "evidence_locator": "shopping earn: rate/timing",
+      "short_paraphrase": "Standard earning is 1 point per ¥100 before tax with the stated grant window."
+    },
+    {
+      "claim_id": "claim.merchant.starbucks.excluded.001",
+      "family_id": "merchant.starbucks",
+      "source_role_id": "excluded_products_or_services",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Starbucks Stars",
+      "predicate": "non_earning",
+      "value": [
+        "card_issue",
+        "card_load",
+        "balance_transfer",
+        "return_card_purchase"
+      ],
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Star policy: exclusions",
+      "short_paraphrase": "Card issue/load, balance transfer and return-card purchases do not earn Stars."
+    },
+    {
+      "claim_id": "claim.merchant.starbucks.loyalty.001",
+      "family_id": "merchant.starbucks",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.starbucks.stars"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Starbucks Stars",
+      "predicate": "rates_rounding_expiry",
+      "value": {
+        "store_egift_percent": 1.66667,
+        "online_denominator_yen": 60,
+        "floor_decimal_place": 10,
+        "display_decimal_places": 1,
+        "gold_stars": 250,
+        "reward_validity_days": 30
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Star policy: rates/status",
+      "short_paraphrase": "Starbucks gives store/eGift and online formulas, rounding, Gold threshold and reward validity."
+    },
+    {
+      "claim_id": "claim.merchant.welcia.campaign.001",
+      "family_id": "merchant.welcia",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.welcia.campaign"
+      ],
+      "claim_type": "campaign_cap",
+      "subject": "Welcia summer bonus",
+      "predicate": "period_minimum_caps",
+      "value": {
+        "purchase_from": "2026-06-01",
+        "purchase_to": "2026-08-02",
+        "application_to": "2026-08-03",
+        "minimum_purchase_yen_including_tax": 1500,
+        "per_tx_cap": 1000,
+        "period_cap": 20000
+      },
+      "applicability": {
+        "status": "ended",
+        "effective_from": "2026-06-01",
+        "effective_to": "2026-08-03",
+        "timezone": "Asia/Tokyo",
+        "end_date_known": true
+      },
+      "exclusions": [],
+      "evidence_locator": "summer campaign: dates/caps",
+      "short_paraphrase": "The ended campaign required ¥1,500 and capped bonus at ¥1,000 per transaction/¥20,000 per period."
+    },
+    {
+      "claim_id": "claim.merchant.welcia.loyalty.001",
+      "family_id": "merchant.welcia",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.welcia.points"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Welcia online points",
+      "predicate": "rates_value",
+      "value": {
+        "WAON_POINT": {
+          "yen_excluding_tax": 100,
+          "points": 1,
+          "value_yen": 1
+        },
+        "V_Point": {
+          "yen_excluding_tax": 200,
+          "points": 1,
+          "value_yen": 1
+        },
+        "physical_20th_multiplier": 1.5
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "20th-day physical only."
+      ],
+      "evidence_locator": "Welcia points: rates/20th",
+      "short_paraphrase": "Welcia shows online rates/value and physical-only 20th-day 1.5x use."
+    },
+    {
+      "claim_id": "claim.merchant.yahoo-shopping.campaign.001",
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "merchant_campaigns_and_coupons",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.guide"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Yahoo 爆買ウルトラSALE",
+      "predicate": "future_bonus",
+      "value": {
+        "from": "2026-09-11",
+        "to": "2026-09-13",
+        "bonus_by_spend": [
+          [
+            5000,
+            4
+          ],
+          [
+            20000,
+            7
+          ]
+        ],
+        "maximum_total_percent": 21
+      },
+      "applicability": {
+        "status": "future",
+        "effective_from": "2026-09-11",
+        "effective_to": "2026-09-13",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Target/coupon conditions apply."
+      ],
+      "evidence_locator": "campaign guide: future sale",
+      "short_paraphrase": "The future sale shows +4% from ¥5,000, +7% from ¥20,000 and 21% maximum total."
+    },
+    {
+      "claim_id": "claim.merchant.yahoo-shopping.loyalty.001",
+      "family_id": "merchant.yahoo-shopping",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.yahoo-shopping.step"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Yahoo PayPay Step",
+      "predicate": "rates_qualification",
+      "value": {
+        "PayPay_balance_percent": 0.5,
+        "PayPay_credit_or_card_percent": 1,
+        "payments": 30,
+        "min_each_yen": 200,
+        "monthly_spend_yen": 100000,
+        "next_month_bonus_percent": 0.5,
+        "identity_verification_required": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "PayPay Step: rates/qualification",
+      "short_paraphrase": "The page gives funding rates and 30-payment/¥100,000 qualification for +0.5% next month."
+    },
+    {
+      "claim_id": "claim.merchant.yodobashi.loyalty.001",
+      "family_id": "merchant.yodobashi",
+      "source_role_id": "loyalty_program_rules",
+      "source_ids": [
+        "src.merchant.yodobashi.plus"
+      ],
+      "claim_type": "merchant_bonus",
+      "subject": "Gold Point Card Plus",
+      "predicate": "credit_bonus",
+      "value": {
+        "bonus_percent": 3,
+        "scope": [
+          "Yodobashi stores",
+          "Yodobashi.com",
+          "Ishii Sports",
+          "Art Sports"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2025-10-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "2025 article: +3%",
+      "short_paraphrase": "Gold Point Card Plus adds 3% special points to regular cash rate in named scopes."
+    },
+    {
+      "claim_id": "claim.reg.jp.caa.advertising.rules.001",
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "rules_and_guidance",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.stealth"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Stealth marketing",
+      "predicate": "effective_scope",
+      "value": {
+        "effective_from": "2023-10-01",
+        "covered": [
+          "SNS",
+          "reviews",
+          "TV",
+          "newspapers",
+          "radio",
+          "magazines"
+        ],
+        "regulated_party": "advertiser_supplier",
+        "excluded": [
+          "personal_non_ad_opinion",
+          "obvious_ad"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2023-10-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "CAA stealth page: scope",
+      "short_paraphrase": "CAA states the effective date and covered media/regulated actor."
+    },
+    {
+      "claim_id": "claim.reg.jp.caa.advertising.statistics.001",
+      "family_id": "reg.jp.caa.advertising",
+      "source_role_id": "statistics_or_methodology",
+      "source_ids": [
+        "src.reg.jp.caa.advertising.notice"
+      ],
+      "claim_type": "change_notice",
+      "subject": "CAA legal-measure statistics",
+      "predicate": "publication_scope",
+      "value": {
+        "published_on": "2026-07-31",
+        "coverage_through": "2026-06-30"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-07-31",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Linked PDF not parsed."
+      ],
+      "evidence_locator": "CAA notice: date/cutoff",
+      "short_paraphrase": "CAA published a July 31 notice covering through June 30, 2026."
+    },
+    {
+      "claim_id": "claim.reg.jp.fsa.payments.registry.001",
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "registered_provider_lists",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.registry"
+      ],
+      "claim_type": "eligibility",
+      "subject": "FSA provider directory",
+      "predicate": "search_and_dates",
+      "value": {
+        "formats": [
+          "PDF",
+          "Excel"
+        ],
+        "search_by": [
+          "name",
+          "telephone"
+        ],
+        "as_of_examples": {
+          "banks": "2026-08-03",
+          "trust_banks": "2026-06-17"
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "FSA provider list: search/dates",
+      "short_paraphrase": "FSA provides searchable provider files with displayed as-of dates."
+    },
+    {
+      "claim_id": "claim.reg.jp.fsa.payments.rules.001",
+      "family_id": "reg.jp.fsa.payments",
+      "source_role_id": "rules_and_guidance",
+      "source_ids": [
+        "src.reg.jp.fsa.payments.rules"
+      ],
+      "claim_type": "program_term",
+      "subject": "Electronic payment instrument/intermediary business",
+      "predicate": "registration",
+      "value": {
+        "system_start": "2023-06-01",
+        "acts": [
+          "Payment Services Act",
+          "Banking Act"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2023-06-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "FSA rules: registration",
+      "short_paraphrase": "FSA states domestic operation requires registration under the named Acts."
+    },
+    {
+      "claim_id": "claim.reg.jp.ppc.privacy.change.001",
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_type": "change_notice",
+      "subject": "PPC guidelines",
+      "predicate": "latest_revision",
+      "value": {
+        "revision_month": "2026-06"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-06-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "date_precision": "month"
+      },
+      "exclusions": [],
+      "evidence_locator": "PPC guideline: revision",
+      "short_paraphrase": "June 2026 is the bounded PPC change notice."
+    },
+    {
+      "claim_id": "claim.reg.jp.ppc.privacy.rules.001",
+      "family_id": "reg.jp.ppc.privacy",
+      "source_role_id": "rules_and_guidance",
+      "source_ids": [
+        "src.reg.jp.ppc.privacy.guidelines"
+      ],
+      "claim_type": "program_term",
+      "subject": "PPC General Rules Guidelines",
+      "predicate": "revision_definition",
+      "value": {
+        "partial_revision": "2026-06",
+        "operator_definition": "business_use_of_personal_information_database"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-06-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo",
+        "date_precision": "month"
+      },
+      "exclusions": [],
+      "evidence_locator": "PPC guideline: revision/definition",
+      "short_paraphrase": "The guideline records a June 2026 partial revision and covered operator definition."
+    },
+    {
+      "claim_id": "claim.transit.suica.acceptance.001",
+      "family_id": "transit.suica",
+      "source_role_id": "merchant_or_rail_acceptance",
+      "source_ids": [
+        "src.transit.suica.exchange"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "JRE POINT to Suica",
+      "predicate": "output",
+      "value": {
+        "points": 1,
+        "yen": 1,
+        "min_points": 1,
+        "suica_balance_cap_yen": 20000,
+        "limited_time_points_usable": false,
+        "cancelable": false
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "View Card linkage required."
+      ],
+      "evidence_locator": "JRE POINT-to-Suica: output",
+      "short_paraphrase": "JRE POINT converts 1:1 with minimum 1 and ¥20,000 balance cap."
+    },
+    {
+      "claim_id": "claim.transit.suica.campaign.001",
+      "family_id": "transit.suica",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.transit.suica.campaign"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "Suica campaigns",
+      "predicate": "visible_periods",
+      "value": [
+        [
+          "2026-03-30",
+          "2027-03-31"
+        ],
+        [
+          "2026-04-01",
+          "2026-09-30"
+        ],
+        [
+          "2026-08-03",
+          "2026-09-30"
+        ],
+        [
+          "2026-07-23",
+          "2026-08-31"
+        ],
+        [
+          "2026-07-01",
+          "2026-08-31"
+        ]
+      ],
+      "applicability": {
+        "status": "current",
+        "effective_from": "2026-03-30",
+        "effective_to": "2027-03-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Each campaign conditions differ."
+      ],
+      "evidence_locator": "campaign directory: dates",
+      "short_paraphrase": "The directory lists the stated 2026 campaign ranges."
+    },
+    {
+      "claim_id": "claim.transit.suica.charge.001",
+      "family_id": "transit.suica",
+      "source_role_id": "charge_and_autocharge_rules",
+      "source_ids": [
+        "src.transit.suica.autocharge",
+        "src.transit.suica.mobile"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Suica autocharge",
+      "predicate": "rate_example",
+      "value": {
+        "View_Card_required": true,
+        "rate_percent": 1.5,
+        "regular_points_per_1000": 5,
+        "autocharge_points_per_1000": 15,
+        "corporate_excluded": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "autocharge pages: rates",
+      "short_paraphrase": "View Card is required; official examples give 1.5% and 5/15 points per ¥1,000."
+    },
+    {
+      "claim_id": "claim.transit.suica.earn.001",
+      "family_id": "transit.suica",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.transit.suica.service"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "JRE POINT with Suica",
+      "predicate": "registration",
+      "value": {
+        "registered_jre_point_required": true,
+        "rail_mobile_earning": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Not every use asserted."
+      ],
+      "evidence_locator": "Suica overview: registration",
+      "short_paraphrase": "Registration is required for described rail/Mobile Suica earning."
+    },
+    {
+      "claim_id": "claim.transit.suica.eligible.001",
+      "family_id": "transit.suica",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "src.transit.suica.mobile"
+      ],
+      "claim_type": "eligibility",
+      "subject": "Mobile Suica autocharge",
+      "predicate": "linked_card",
+      "value": {
+        "View_Card_required": true,
+        "Suica_app_link_required": true,
+        "corporate_excluded": true
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "mobile autocharge: linked card",
+      "short_paraphrase": "Mobile Suica autocharge requires linked View Card."
+    },
+    {
+      "claim_id": "claim.transit.suica.service.001",
+      "family_id": "transit.suica",
+      "source_role_id": "service_terms",
+      "source_ids": [
+        "src.transit.suica.service"
+      ],
+      "claim_type": "program_term",
+      "subject": "Suica/JRE POINT",
+      "predicate": "scope",
+      "value": {
+        "earn_on": [
+          "JR_East_rail",
+          "Mobile_Suica",
+          "station_shopping",
+          "JRE_Mall"
+        ],
+        "use_for": [
+          "Suica",
+          "station_shopping",
+          "JRE_Mall"
+        ]
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Suica overview: scope",
+      "short_paraphrase": "JR East describes rail/Mobile Suica earning and listed uses."
+    }
+  ],
+  "summary": {
+    "claim_count": 63,
+    "source_count": 52,
+    "role_result_count": 132,
+    "claim_count_by_family": {
+      "emoney.nanaco": 6,
+      "emoney.waon": 6,
+      "merchant.7eleven": 5,
+      "merchant.aeon-group": 2,
+      "merchant.amazon-jp": 3,
+      "merchant.biccamera": 2,
+      "merchant.familymart": 4,
+      "merchant.itoyokado": 2,
+      "merchant.lawson": 3,
+      "merchant.matsukiyo": 2,
+      "merchant.mcdonalds": 3,
+      "merchant.newdays": 3,
+      "merchant.rakuten-market": 3,
+      "merchant.starbucks": 2,
+      "merchant.welcia": 2,
+      "merchant.yahoo-shopping": 2,
+      "merchant.yodobashi": 1,
+      "reg.jp.caa.advertising": 2,
+      "reg.jp.fsa.payments": 2,
+      "reg.jp.ppc.privacy": 2,
+      "transit.suica": 6
+    },
+    "claim_count_by_role": {
+      "accepted_payment_methods": 7,
+      "campaign_directory": 3,
+      "change_notices": 2,
+      "charge_and_autocharge_rules": 3,
+      "earn_rules": 3,
+      "eligible_cards": 3,
+      "excluded_products_or_services": 5,
+      "loyalty_program_rules": 14,
+      "merchant_campaigns_and_coupons": 11,
+      "merchant_or_rail_acceptance": 2,
+      "online_mobile_order_differences": 2,
+      "registered_provider_lists": 1,
+      "rules_and_guidance": 3,
+      "service_terms": 3,
+      "statistics_or_methodology": 1
+    },
+    "claim_count_by_type": {
+      "annual_spend_bonus": 1,
+      "campaign_cap": 1,
+      "campaign_period": 3,
+      "campaign_rule": 11,
+      "change_notice": 6,
+      "earn_rule": 15,
+      "eligibility": 3,
+      "exclusion": 5,
+      "fee_rule": 1,
+      "funding_limit": 1,
+      "funding_rule": 1,
+      "merchant_acceptance": 8,
+      "merchant_bonus": 1,
+      "program_term": 4,
+      "redemption_value": 2
+    },
+    "role_outcome_count": {
+      "claims_found": 62,
+      "fetch_failed": 5,
+      "no_economic_claim_found": 65
+    },
+    "failures": [
+      {
+        "source_id": "src.merchant.amazon-jp.points",
+        "url": "https://www.amazon.co.jp/b?node=8123221051",
+        "status": "fetch_failed",
+        "http_status": 503,
+        "reason": "official points page returned HTTP 503",
+        "affected_roles": [
+          "loyalty_program_rules"
+        ]
+      },
+      {
+        "source_id": "src.reg.jp.meti.cashless.statistics",
+        "url": "https://www.meti.go.jp/press/2025/03/20260331006/20260331006.html",
+        "status": "fetch_failed",
+        "http_status": 403,
+        "reason": "official METI URL returned HTTP 403",
+        "affected_roles": [
+          "change_notices",
+          "registered_provider_lists",
+          "rules_and_guidance",
+          "statistics_or_methodology"
+        ]
+      }
+    ],
+    "validation_intent": "Parse JSON; require exact 132 unique role rows with Seven-Eleven accepted_payment_methods excluded; require unique IDs and resolved references; verify source.roles parity, official domains/status, recomputed summaries, deterministic order and PII/secret scan."
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "version": "p0-agent-feed-role-coverage.v0.1",
+  "recorded_at": "2026-08-21T18:30:00+09:00",
+  "scope": "p0.1-core-point-ecosystems",
+  "status": "lead_only_operational_coverage",
+  "declared_family_role_targets": 64,
+  "covered_family_role_targets": 64,
+  "coverage_mode": "cumulative_terminal_receipts",
+  "canonical_evidence_created": 0,
+  "economic_findings_accepted": 0,
+  "reward_rule_versions_published": 0,
+  "runs": [
+    {
+      "run_id": "f244a1b1-9b81-4879-90d8-ff7676453b71",
+      "family_id": "point.d",
+      "stream_id": "economy.docomo",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "06858799-29ee-4b4a-b084-ecc0ed938e81",
+      "family_id": "point.jre",
+      "stream_id": "transit.jre-suica-view",
+      "terminal_status": "partial",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ],
+      "partial_reason": "economic submission rejected before acceptance; locator coverage completed"
+    },
+    {
+      "run_id": "239eb96e-96be-4ca7-80c5-509ab886a651",
+      "family_id": "point.nanaco",
+      "stream_id": "economy.seven-nanaco",
+      "terminal_status": "partial",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "program_terms",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "87216210-c2e6-4af3-93b3-ba1fb2964865",
+      "family_id": "point.paypay",
+      "stream_id": "economy.paypay",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "0779aad2-a21c-4af1-b821-98d13c57382e",
+      "family_id": "point.ponta",
+      "stream_id": "economy.au-ponta",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "6d2699ee-ae7c-4d6a-8b1d-33c4b8e23fbf",
+      "family_id": "point.rakuten",
+      "stream_id": "economy.rakuten",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "a26add0e-8a83-4175-854b-978dd64c70ef",
+      "family_id": "point.v",
+      "stream_id": "economy.vpoint-smbc",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "e7f7ca77-299c-4585-813a-c160b97e300c",
+      "family_id": "point.waon",
+      "stream_id": "economy.aeon-waon",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "campaign_directory",
+        "change_notices",
+        "earn_rules",
+        "expiry_and_reward_classes",
+        "partner_merchant_directory",
+        "program_terms",
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ]
+    },
+    {
+      "run_id": "f85e00cf-8b8c-4de5-a617-c673079a7eec",
+      "family_id": "point.nanaco",
+      "stream_id": "economy.seven-nanaco",
+      "terminal_status": "completed",
+      "covered_source_role_ids": [
+        "partner_merchant_directory",
+        "transfer_partner_directory"
+      ],
+      "source_attempts": [
+        {
+          "source_role_id": "partner_merchant_directory",
+          "source_url": "https://www.nanaco-net.jp/alliance/index.html",
+          "role_marker": "nanacoが使えるお店一覧",
+          "outcome": "marker_observed"
+        },
+        {
+          "source_role_id": "transfer_partner_directory",
+          "source_url": "https://www.nanaco-net.jp/how-to/use_point/ana.html",
+          "role_marker": "提携先ごとのポイント交換",
+          "outcome": "marker_observed"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This is cumulative locator and role-marker coverage, not one monolithic 64-role occurrence.",
+    "A terminal partial run may still contribute checked roles when a later economic batch was rejected.",
+    "A checked locator is not canonical evidence and does not authorize a RewardRuleVersion.",
+    "The live submit_batch connector schema blocked economic finding persistence at the tool boundary."
+  ]
+}

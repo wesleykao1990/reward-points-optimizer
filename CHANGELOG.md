@@ -2,6 +2,50 @@
 
 ## Unreleased — 2026-08-19
 
+- Added a PostgreSQL-backed `AtomicPersistencePort` for verified Agent Feed
+  events. Receipt, observation/evidence lead, and lifecycle effects now commit
+  or roll back together through a private security-definer adapter; no
+  canonical evidence, reward rule, or publication is created by intake.
+- Added one deterministic nanaco economic pilot bound to the exact reviewed
+  `rr_jp_cvs_006_nanaco_purchase_reward` definition, registered primary source,
+  and `point.nanaco / earn_rules` role. It remains under review and requires
+  explicit provisional activation.
+- Added a server-owned PostgreSQL nanaco host that keeps the generic store and
+  evidence verifier private, distinguishes Agent Feed lead IDs from canonical
+  evidence keys, and activates only after an exact verified-evidence/source/
+  rule-version lookup.
+- Merged Agent Feed PR #16 to preserve the full nine-root `submit_batch` MCP
+  declaration. The live ChatGPT connector remains unverified until PostgreSQL,
+  the secure tunnel, and connector rediscovery are restored.
+
+- Added a bounded current Agent Feed protocol `0.1` run for the registered
+  Seven-Eleven payment-methods source. Its normalized finding contains exactly
+  11 explicitly observed payment families and retains only lead-only evidence;
+  no raw page body or inferred economic fact is stored.
+- Added deterministic generation, atomic admission, private database
+  persistence, and separately correctable Japanese catalogue entries for those
+  11 provisional payment-acceptance rules. They remain `under_review`, outside
+  recommendation calculation and canonical `RewardRuleVersion` publication.
+- Bound payment-acceptance candidates to the exact singular/plural payment
+  families declared by their `SourceObservation`; invented or mismatched
+  payment families now reject the entire batch before mutation.
+- Added atomic provisional-publication batches for 1–32 fully admitted
+  candidates, including sealed-plan binding, deterministic identities,
+  all-or-nothing in-process and PostgreSQL persistence, idempotent exact replay,
+  and correction-safe removal without resurrection.
+- Added a separate Japanese localhost `先行公開データ` catalogue for the exact
+  machine-checked Seven-Eleven acceptance candidate. The UI can report a
+  bounded correction that disputes and removes that exact version; provisional
+  data remains excluded from synthetic optimizer recommendations.
+- Added the P0 source-operations alpha: an exact, hash-bound inventory of 44
+  source families, 19 Agent Feed streams, and 301 required semantic source
+  roles, plus private PostgreSQL planning/readiness persistence with a one-way
+  exact-count seal and post-seal append/truncate denial.
+- Kept P0 readiness fail-closed across producer authorization, permission,
+  technical acquisition, liveness, canonical evidence or conservative
+  exclusion, and impact mapping. The database starts with zero ready roles and
+  zero supported families; only the existing Seven-Eleven rehearsal role is
+  separately experimental.
 - Added an interim P0 provisional-rule ingestion checkpoint: a fail-closed
   in-process kernel, private PostgreSQL persistence, correction-driven
   exclusion/quarantine, and one durable Seven-Eleven payment-acceptance

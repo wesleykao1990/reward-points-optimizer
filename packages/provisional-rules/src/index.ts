@@ -4,6 +4,11 @@ export {
   createMachineCheckRecord,
 } from "./admission.js";
 export {
+  hasPublicationBatchBrand,
+  preflightProvisionalPublicationBatch,
+  prepareProvisionalPublicationBatch,
+} from "./batch.js";
+export {
   candidateIdentityProjection,
   freezeP0CoverageIndex,
   hashCandidate,
@@ -13,6 +18,64 @@ export {
   normalizeCoverageIndex,
   serializeProvisionalRuleEnvelope,
 } from "./canonical.js";
+export type {
+  ParsedRewardClaim,
+  ParsedRewardClaimDocument,
+  RewardClaimIssue,
+  RewardClaimType,
+} from "./claim.js";
+export {
+  isRewardClaimDocument,
+  parseRewardClaimDocument,
+  REWARD_CLAIM_VERSION,
+} from "./claim.js";
+export type {
+  RewardClaimCompilationMember,
+  RewardClaimCompilationResult,
+  RewardClaimCompilerBinding,
+  RewardClaimCompilerIssue,
+  RewardClaimCompilerIssueCode,
+  RewardClaimCompilerOptions,
+  RewardClaimObservation,
+  RewardClaimSourceTier,
+} from "./compiler.js";
+export {
+  compileFindingToProvisionalRules,
+  compileRewardClaimDocument,
+  compileRewardClaims,
+  compileSourceObservationClaims,
+  createRewardClaimCompiler,
+} from "./compiler.js";
+export {
+  activateNanacoEconomicPilot,
+  admitNanacoEconomicPilot,
+  createNanacoEconomicPilot,
+  NANACO_PILOT_FINDING_ID,
+  NANACO_PILOT_MERCHANT_ID,
+  NANACO_PILOT_PROGRAM_ID,
+} from "./nanaco-pilot.js";
+export type {
+  P0ResearchImplementationDescriptor,
+  ResearchDerivedRule,
+  ResearchFactReason,
+  ResearchImplementationArtifact,
+  ResearchImplementationDisposition,
+  ResearchImplementationEntry,
+  ResearchImplementationIssue,
+  ResearchImplementationOptions,
+  ResearchImplementationResult,
+  ResearchSourceIdentity,
+} from "./research.js";
+export {
+  adaptResearchArtifact,
+  compileP0ResearchImplementation,
+  compileResearchImplementation,
+  P0_RESEARCH_IMPLEMENTATION_DESCRIPTORS,
+  RESEARCH_ARTIFACT_ID,
+  RESEARCH_COVERAGE_VERSION,
+  RESEARCH_FACT_REASONS,
+  RESEARCH_IMPLEMENTATION_VERSION,
+} from "./research.js";
 export { deepFreeze, isDeeplyFrozen, scanPublicValue } from "./security.js";
 export {
   activateExperimental,
@@ -34,12 +97,23 @@ export type {
   CorrectionSignalRecord,
   MachineCheckChecks,
   MachineCheckRecord,
+  NanacoCanonicalEvidenceLookup,
+  NanacoCanonicalEvidenceVerifier,
+  NanacoEconomicPilotRoute,
   P0CoverageEntry,
   P0CoverageIndex,
   ProvisionalAdmissionResult,
   ProvisionalCorrectionCategory,
   ProvisionalExtractor,
   ProvisionalObservationBinding,
+  ProvisionalPublicationBatch,
+  ProvisionalPublicationBatchAccepted,
+  ProvisionalPublicationBatchMember,
+  ProvisionalPublicationBatchMemberInput,
+  ProvisionalPublicationBatchPreflight,
+  ProvisionalPublicationBatchRejected,
+  ProvisionalPublicationBatchRequest,
+  ProvisionalPublicationBatchResult,
   ProvisionalRuleAdmissionOptions,
   ProvisionalRuleAdmissionRequest,
   ProvisionalRuleCandidate,
@@ -55,7 +129,10 @@ export type {
 } from "./types.js";
 export {
   CORRECTION_CATEGORIES,
+  MAX_PROVISIONAL_PUBLICATION_BATCH_MEMBERS,
+  P0_SOURCE_ROLE_PLAN_SHA256,
   PROVISIONAL_CORRECTION_VERSION,
+  PROVISIONAL_PUBLICATION_BATCH_VERSION,
   PROVISIONAL_RULE_CANDIDATE_VERSION,
   PROVISIONAL_RULE_ENVELOPE_VERSION,
   PROVISIONAL_RULE_STATUSES,

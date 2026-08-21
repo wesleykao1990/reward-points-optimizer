@@ -1,0 +1,19 @@
+{
+  "version": "p0-coverage-index.v0.2",
+  "entries": [
+    {
+      "family_id": "merchant.7eleven",
+      "source_role_id": "accepted_payment_methods",
+      "known_source_ids": [
+        "merchant.seveneleven.payment-methods"
+      ]
+    },
+    {
+      "family_id": "point.nanaco",
+      "source_role_id": "earn_rules",
+      "known_source_ids": [
+        "jp.nanaco.shopping-earning"
+      ]
+    }
+  ]
+}

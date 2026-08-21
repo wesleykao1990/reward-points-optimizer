@@ -783,6 +783,206 @@ items:
   - review_date
   - technical_collection_observation
   - fallback_or_partner_path
+- source_id: jp.dpoint.campaigns
+  priority: P3_EXPANSION
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/campaign/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Second-layer transfer, portal, campaign discovery, or product coverage.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.earn-mobile
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/acc/mobile_use/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.info
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/info/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.merchant-list
+  priority: P2_MERCHANT_COVERAGE
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/store/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Needed for merchant/channel/location coverage after core programs.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.terms-20260701
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/instruction/pdf/d_point_club_kiyaku_20260701.pdf
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.transfer
+  priority: P3_EXPANSION
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/store/exchange/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Second-layer transfer, portal, campaign discovery, or product coverage.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.use-limited-faq
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint04.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.use-rate-faq
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/static/guide/faq/Point/Dpoint07/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.earn-timing-faq
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/guide/faq/Point/Dpoint26.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.dpoint.use-guide
+  priority: P1_CORE_RULES
+  publisher: NTT DOCOMO
+  source_url: https://dpoint.docomo.ne.jp/guide/howto_use/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
 - source_id: jp.hapitas.home
   priority: P3_EXPANSION
   publisher: Ozvision
@@ -983,6 +1183,168 @@ items:
   - review_date
   - technical_collection_observation
   - fallback_or_partner_path
+- source_id: jp.jrepoint.expiry-faq
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://faq.jrepoint.jp/faq/show/29?site_domain=default
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.family-transfer-faq
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://faq.jrepoint.jp/faq/show/474?site_domain=default
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.info
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://www.jrepoint.jp/information/list/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.merchant-card
+  priority: P2_MERCHANT_COVERAGE
+  publisher: JR East
+  source_url: https://www.jrepoint.jp/point/append/jrepoint-card/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Direct official locator returned HTTP 403 in Research A; source identity
+    is retained, but an authorized/manual retrieval path must be reviewed before use.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.overview
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://www.jrepoint.jp/point/first/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.suica-info
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://www.jrepoint.jp/information/suica/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.transfer-terms
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://www.jrepoint.jp/agreement/jrepoint/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Direct official locator returned HTTP 403 in Research A; source identity
+    is retained, but an authorized/manual retrieval path must be reviewed before use.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.jrepoint.use-faq
+  priority: P1_CORE_RULES
+  publisher: JR East
+  source_url: https://faq.jrepoint.jp/faq/show/2724?category_id=115&site_domain=default
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
 - source_id: jp.moppy.exchange
   priority: P3_EXPANSION
   publisher: Ceres
@@ -1026,7 +1388,7 @@ items:
 - source_id: jp.nanaco.campaigns
   priority: P3_EXPANSION
   publisher: Seven Card Service
-  source_url: https://www.nanaco-net.jp/cp/
+  source_url: https://www.nanaco-net.jp/cp/index.html
   current_automation_status: requires_terms_review
   current_terms_review_status: not_reviewed
   review_reason: Second-layer transfer, portal, campaign discovery, or product coverage.
@@ -1066,7 +1428,7 @@ items:
 - source_id: jp.nanaco.merchant-list
   priority: P2_MERCHANT_COVERAGE
   publisher: Seven Card Service
-  source_url: https://www.nanaco-net.jp/alliance/
+  source_url: https://www.nanaco-net.jp/alliance/index.html
   current_automation_status: requires_terms_review
   current_terms_review_status: not_reviewed
   review_reason: Needed for merchant/channel/location coverage after core programs.
@@ -1129,6 +1491,206 @@ items:
   - no_page_body_or_screenshot_storage
   - weekly_manual_refresh
   - project_owner_review_2026-08-20
+- source_id: jp.nanaco.expiry-confirm
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/how-to/menu/confirm.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.info-app-end
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/information/info_00099.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.info
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/information/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.info-saison-end
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/information/info_00093.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.info-vworld-end
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/information/info_00084.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.terms
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/terms/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.terms-points
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://entry.nanaco-net.jp/entry_all/kiyaku.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.transfer-ana
+  priority: P3_EXPANSION
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/how-to/use_point/ana.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Second-layer transfer, portal, campaign discovery, or product coverage.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.use
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/how-to/use_point/index.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.nanaco.net-faq
+  priority: P1_CORE_RULES
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/support/faq_net.html
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
 - source_id: jp.sevencard.nanaco-charge
   priority: P0_SEED_SCENARIO
   publisher: Seven Card Service
@@ -1142,6 +1704,86 @@ items:
   - no_page_body_or_screenshot_storage
   - weekly_manual_refresh
   - project_owner_review_2026-08-20
+- source_id: jp.paypay.balance-points
+  priority: P1_CORE_RULES
+  publisher: PayPay
+  source_url: https://paypay.ne.jp/help/c0048/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.paypay.points
+  priority: P1_CORE_RULES
+  publisher: PayPay
+  source_url: https://paypay.ne.jp/point/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.paypay.points-use
+  priority: P1_CORE_RULES
+  publisher: PayPay
+  source_url: https://paypay.ne.jp/guide/point-use/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
+- source_id: jp.paypay.terms
+  priority: P1_CORE_RULES
+  publisher: PayPay
+  source_url: https://about.paypay.ne.jp/terms/consumer/rule/
+  current_automation_status: requires_terms_review
+  current_terms_review_status: not_reviewed
+  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  required_decisions:
+  - permitted_retrieval_method
+  - request_rate_or_manual_only
+  - storage_and_retention
+  - excerpt_or_normalized_fact_reuse
+  - attribution
+  - redistribution
+  - technical_probe_method
+  - manual_capture_workflow
+  - review_owner
+  - review_date
+  - technical_collection_observation
+  - fallback_or_partner_path
 - source_id: jp.paypay.calculation-faq
   priority: P0_SEED_SCENARIO
   publisher: PayPay

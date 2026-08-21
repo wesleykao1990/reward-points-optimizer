@@ -1,0 +1,4500 @@
+{
+  "artifact_type": "p0_point_rules_research",
+  "schema_version": "0.1",
+  "schema": {
+    "id": "p0-point-rules-research-v0.1",
+    "required_root_keys": [
+      "artifact_type",
+      "schema_version",
+      "schema",
+      "metadata",
+      "sources",
+      "role_results",
+      "claims",
+      "summary"
+    ],
+    "source_required_fields": [
+      "source_id",
+      "family_id",
+      "roles",
+      "url",
+      "title",
+      "publisher",
+      "official_domain",
+      "retrieval"
+    ],
+    "claim_required_fields": [
+      "claim_id",
+      "family_id",
+      "source_role_id",
+      "source_ids",
+      "claim_type",
+      "subject",
+      "predicate",
+      "value",
+      "applicability",
+      "exclusions",
+      "evidence_locator",
+      "short_paraphrase"
+    ],
+    "role_result_outcomes": [
+      "claims_found",
+      "no_economic_claim_found",
+      "partially_checked",
+      "fetch_failed"
+    ],
+    "sort_order": "sources by source_id; role_results by family_id then source_role_id; claims by claim_id",
+    "source_policy": "first-party official publisher pages only; planning URLs are not evidence until fetched",
+    "quote_policy": "No verbatim quotation fields are used; evidence_locator points to fetched page sections."
+  },
+  "metadata": {
+    "artifact_id": "p0-point-rules-b.research.v0.1",
+    "protocol_version": "0.1",
+    "task_id": "p0.1-core-point-ecosystems",
+    "producer": "research-data-builder-a",
+    "families": [
+      "point.ponta",
+      "point.rakuten",
+      "point.v",
+      "point.waon"
+    ],
+    "declared_roles": [
+      "campaign_directory",
+      "change_notices",
+      "earn_rules",
+      "expiry_and_reward_classes",
+      "partner_merchant_directory",
+      "program_terms",
+      "transfer_partner_directory",
+      "use_redemption_rules"
+    ],
+    "bounded_run": {
+      "started_at": "2026-08-21T23:35:55+09:00",
+      "ended_at": "2026-08-21T23:50:00+09:00",
+      "timezone": "Asia/Tokyo",
+      "scope": "Live first-party pages reachable from the registry/planning locators and official linked pages.",
+      "truncation": "Dynamic campaign, merchant, and transfer directories were checked as rendered in this bounded run. Claims enumerate the visible/reachable records and core rule pages; child records not rendered or requiring login were not inferred or exhaustively enumerated. Rakuten's campaign directory rendered no child economics."
+    },
+    "publisher_policy": "Official pages from Loyalty Marketing/Recruit, Rakuten Group, V Point Marketing/CCC, AEON/WAON, ANA, and JAL were admitted; search snippets were not used as claim evidence.",
+    "pii_or_secret_check": "No credentials, account data, tokens, or payment data included."
+  },
+  "sources": [
+    {
+      "source_id": "src.point.ponta.campaign-directory",
+      "family_id": "point.ponta",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://point.recruit.co.jp/point/?tab=campaign",
+      "title": "キャンペーン | PontaWeb",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Directory shell distinguishes Ponta points and limited points; child entries were not rendered in the bounded response."
+    },
+    {
+      "source_id": "src.point.ponta.campaign-summer-2026",
+      "family_id": "point.ponta",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://www.ponta.jp/c/campaign/ponta_teikei_summer2026/",
+      "title": "Pontaサマーキャンペーン2026",
+      "publisher": "Loyalty Marketing, Inc.",
+      "official_domain": "www.ponta.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official campaign detail page; claims retain the stated dates, draw counts, caps, and exclusions."
+    },
+    {
+      "source_id": "src.point.ponta.change-notices",
+      "family_id": "point.ponta",
+      "roles": [
+        "change_notices"
+      ],
+      "url": "https://point.recruit.co.jp/point/",
+      "title": "PontaWeb［Pontaカード/Pontaポイント］",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Current top page exposed only an お知らせ link and an archived-notices link; no dated economic change record was visible."
+    },
+    {
+      "source_id": "src.point.ponta.earn-jalan",
+      "family_id": "point.ponta",
+      "roles": [
+        "earn_rules"
+      ],
+      "url": "https://point.recruit.co.jp/pontaweb/about/ponta/net/jalan/",
+      "title": "じゃらんnetでPontaポイントがたまる！つかえる！",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official service-specific earn example."
+    },
+    {
+      "source_id": "src.point.ponta.exchange-directory",
+      "family_id": "point.ponta",
+      "roles": [
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ],
+      "url": "https://point.recruit.co.jp/point/?tab=excPoint",
+      "title": "ポイント交換",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official rendered exchange directory; only directly visible/reachable partner rows used."
+    },
+    {
+      "source_id": "src.point.ponta.jal-transfer",
+      "family_id": "point.ponta",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://point.recruit.co.jp/pontaweb/excpoint/pontajal/",
+      "title": "PontaポイントからJALマイレージバンクへ交換する",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official Ponta-JAL transfer detail."
+    },
+    {
+      "source_id": "src.point.ponta.merchant-directory",
+      "family_id": "point.ponta",
+      "roles": [
+        "partner_merchant_directory"
+      ],
+      "url": "https://point.recruit.co.jp/point/?tab=pointUseService",
+      "title": "提携店・サービス",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Rendered directory contains many categories and child merchants; examples below are a bounded visible subset."
+    },
+    {
+      "source_id": "src.point.ponta.overview",
+      "family_id": "point.ponta",
+      "roles": [
+        "earn_rules",
+        "use_redemption_rules"
+      ],
+      "url": "https://point.recruit.co.jp/pontaweb/sp/about/ponta/",
+      "title": "Pontaとは?",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official overview of earning, spending, and exchange routes."
+    },
+    {
+      "source_id": "src.point.ponta.point-detail",
+      "family_id": "point.ponta",
+      "roles": [
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://www.ponta.jp/c/point-detail/",
+      "title": "Pontaポイントの詳細",
+      "publisher": "Loyalty Marketing, Inc.",
+      "official_domain": "www.ponta.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official ID-linkage matrix for service scope and expiry."
+    },
+    {
+      "source_id": "src.point.ponta.point-types",
+      "family_id": "point.ponta",
+      "roles": [
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://point.recruit.co.jp/pontaweb/about/point/",
+      "title": "ポイントについて",
+      "publisher": "Recruit Co., Ltd.",
+      "official_domain": "point.recruit.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official point-class, expiry, and automatic use-priority page."
+    },
+    {
+      "source_id": "src.point.ponta.program-terms",
+      "family_id": "point.ponta",
+      "roles": [
+        "program_terms",
+        "change_notices",
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://policy.ponta.jp/c/rule/index.htm",
+      "title": "Ponta会員規約",
+      "publisher": "Loyalty Marketing, Inc.",
+      "official_domain": "policy.ponta.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official program terms page; page states current conditions are published on PontaWeb."
+    },
+    {
+      "source_id": "src.point.rakuten.ana-rakuten",
+      "family_id": "point.rakuten",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_rakuten/",
+      "title": "楽天ポイント|ANAマイレージクラブ",
+      "publisher": "ANA",
+      "official_domain": "www.ana.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official ANA-to-Rakuten transfer page with 2026 rule change notice."
+    },
+    {
+      "source_id": "src.point.rakuten.ana-transfer",
+      "family_id": "point.rakuten",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.ana.co.jp/ja/my/amc/exchange-point/rakutenpoint/",
+      "title": "楽天ポイント | ポイント交換 | ANAマイレージクラブ",
+      "publisher": "ANA",
+      "official_domain": "www.ana.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official Rakuten-to-ANA transfer page."
+    },
+    {
+      "source_id": "src.point.rakuten.campaign-directory",
+      "family_id": "point.rakuten",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://point.rakuten.co.jp/campaign/",
+      "title": "楽天PointClub：キャンペーン",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Current directory shell rendered the title and general limited-point note but no child campaign economics."
+    },
+    {
+      "source_id": "src.point.rakuten.change-notice-2022",
+      "family_id": "point.rakuten",
+      "roles": [
+        "change_notices"
+      ],
+      "url": "https://point.rakuten.co.jp/doc/announcement/20211001/",
+      "title": "楽天PointClub：ポイント進呈ルールの変更について",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Historical official notice retained with its stated effective date and affected-service scope."
+    },
+    {
+      "source_id": "src.point.rakuten.earn-ichiba",
+      "family_id": "point.rakuten",
+      "roles": [
+        "earn_rules"
+      ],
+      "url": "https://point.rakuten.co.jp/get/shopping/ichiba/",
+      "title": "楽天市場でポイントが貯まる",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official Rakuten Ichiba earn detail."
+    },
+    {
+      "source_id": "src.point.rakuten.earn-pay",
+      "family_id": "point.rakuten",
+      "roles": [
+        "earn_rules"
+      ],
+      "url": "https://point.rakuten.co.jp/get/shopping/pay/",
+      "title": "楽天ペイアプリでポイントが貯まる",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official Rakuten Pay app earn rules."
+    },
+    {
+      "source_id": "src.point.rakuten.earn-rules",
+      "family_id": "point.rakuten",
+      "roles": [
+        "earn_rules",
+        "expiry_and_reward_classes"
+      ],
+      "url": "https://point.rakuten.co.jp/guidance/rule/",
+      "title": "楽天PointClub：ポイント進呈ルール",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official general and service-specific earn table."
+    },
+    {
+      "source_id": "src.point.rakuten.exchange-directory",
+      "family_id": "point.rakuten",
+      "roles": [
+        "transfer_partner_directory",
+        "use_redemption_rules"
+      ],
+      "url": "https://point.rakuten.co.jp/exchange/",
+      "title": "楽天PointClub：楽天ポイント交換",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official exchange directory rendered no partner rows in the bounded response; restrictions and cancellation rules were visible."
+    },
+    {
+      "source_id": "src.point.rakuten.expiry-limited",
+      "family_id": "point.rakuten",
+      "roles": [
+        "expiry_and_reward_classes"
+      ],
+      "url": "https://point.rakuten.co.jp/guidance/terms/",
+      "title": "楽天PointClub：期間限定ポイントとは",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official limited-point class and expiry page."
+    },
+    {
+      "source_id": "src.point.rakuten.merchant-directory",
+      "family_id": "point.rakuten",
+      "roles": [
+        "partner_merchant_directory"
+      ],
+      "url": "https://point.rakuten.co.jp/use/",
+      "title": "楽天PointClub：ポイントが色々なサービスに使える",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official service directory; list is dynamic and not exhaustively enumerated."
+    },
+    {
+      "source_id": "src.point.rakuten.program-terms",
+      "family_id": "point.rakuten",
+      "roles": [
+        "program_terms",
+        "use_redemption_rules"
+      ],
+      "url": "https://corp.rakuten.co.jp/terms/",
+      "title": "楽天会員規約・楽天ポイント利用規約",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "corp.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official terms page containing the Rakuten Point program terms."
+    },
+    {
+      "source_id": "src.point.rakuten.use-rules",
+      "family_id": "point.rakuten",
+      "roles": [
+        "use_redemption_rules"
+      ],
+      "url": "https://point.rakuten.co.jp/guidance/usemethod/",
+      "title": "楽天PointClub：ポイント利用方法",
+      "publisher": "Rakuten Group, Inc.",
+      "official_domain": "point.rakuten.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official redemption minimums, caps, and calculation rules."
+    },
+    {
+      "source_id": "src.point.v.ana-transfer",
+      "family_id": "point.v",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_tpoint/",
+      "title": "Vポイント [提携ポイントへの交換] | ANAマイレージクラブ",
+      "publisher": "ANA",
+      "official_domain": "www.ana.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official ANA-to-V transfer page with 2026 rule change and annual third-transfer rule."
+    },
+    {
+      "source_id": "src.point.v.campaign-app-2026",
+      "family_id": "point.v",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://web.tsite.jp/cpn/vpoint/dlcp2604/",
+      "title": "Vポイントアプリ新規ダウンロードキャンペーン",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "web.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official 2026 campaign detail retained with explicit ended period and reward expiry."
+    },
+    {
+      "source_id": "src.point.v.campaign-directory",
+      "family_id": "point.v",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://cpn.tsite.jp/list/all",
+      "title": "キャンペーン一覧｜Vポイントサイト",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "cpn.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Current dynamic list showed multiple campaign cards; only a directly fetched detail page is used for numeric claims."
+    },
+    {
+      "source_id": "src.point.v.change-news",
+      "family_id": "point.v",
+      "roles": [
+        "change_notices"
+      ],
+      "url": "https://www.vpoint.co.jp/news/",
+      "title": "ニュース | Vポイントマーケティング株式会社",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "www.vpoint.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official 2026 news listing; visible partner/service start notices are bounded records."
+    },
+    {
+      "source_id": "src.point.v.earn-store",
+      "family_id": "point.v",
+      "roles": [
+        "earn_rules"
+      ],
+      "url": "https://t-point.tsite.jp/get/store/",
+      "title": "Vポイントをお店で貯めるには？",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "t-point.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official earn overview; one rate is explicitly labeled as a partner-rate scenario."
+    },
+    {
+      "source_id": "src.point.v.merchant-earn-directory",
+      "family_id": "point.v",
+      "roles": [
+        "partner_merchant_directory"
+      ],
+      "url": "https://t-point.tsite.jp/store/list/",
+      "title": "Vポイント｜貯まる・使う お店・サービス一覧",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "t-point.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Rendered merchant/service list; examples are a bounded visible subset."
+    },
+    {
+      "source_id": "src.point.v.merchant-use-directory",
+      "family_id": "point.v",
+      "roles": [
+        "partner_merchant_directory"
+      ],
+      "url": "https://t-point.tsite.jp/store/tpointuse/",
+      "title": "Vポイントが使えるお店・サービス",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "t-point.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Rendered use-merchant list; examples are a bounded visible subset."
+    },
+    {
+      "source_id": "src.point.v.overview",
+      "family_id": "point.v",
+      "roles": [
+        "earn_rules",
+        "use_redemption_rules"
+      ],
+      "url": "https://web.tsite.jp/vpoint/",
+      "title": "Vポイント｜TポイントはVポイントへ",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "web.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official overview with 1 point = 1 yen messaging and visible partner examples."
+    },
+    {
+      "source_id": "src.point.v.program-terms",
+      "family_id": "point.v",
+      "roles": [
+        "earn_rules",
+        "program_terms",
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://tsite.jp/tm/pc/register/STKIp0108001.do",
+      "title": "V会員規約及びポイントサービス利用規約",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official 2026-04-01 revised V member and point service terms."
+    },
+    {
+      "source_id": "src.point.v.use-rules",
+      "family_id": "point.v",
+      "roles": [
+        "use_redemption_rules",
+        "transfer_partner_directory"
+      ],
+      "url": "https://t-point.tsite.jp/use/about/",
+      "title": "Vポイントの使い方",
+      "publisher": "V Point Marketing Co., Ltd.",
+      "official_domain": "t-point.tsite.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official redemption and transfer overview."
+    },
+    {
+      "source_id": "src.point.waon.campaign-charge-2026",
+      "family_id": "point.waon",
+      "roles": [
+        "campaign_directory",
+        "expiry_and_reward_classes"
+      ],
+      "url": "https://www.waon.net/campaign/202608_chargecp/",
+      "title": "AEON Pay・WAONチャージキャンペーン",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.waon.net",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official August 2026 campaign detail."
+    },
+    {
+      "source_id": "src.point.waon.campaign-directory",
+      "family_id": "point.waon",
+      "roles": [
+        "campaign_directory"
+      ],
+      "url": "https://www.waon.net/campaign/",
+      "title": "キャンペーン一覧 - 電子マネー WAON",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.waon.net",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Current campaign directory; visible cards include August 2026 campaigns."
+    },
+    {
+      "source_id": "src.point.waon.change-integration",
+      "family_id": "point.waon",
+      "roles": [
+        "change_notices",
+        "expiry_and_reward_classes"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point_integration/",
+      "title": "発行されるポイントが順次WAON POINTに統一されます!",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official 2026 integration notice with effective date, rate, timing, and class distinction."
+    },
+    {
+      "source_id": "src.point.waon.earn-aeon-card",
+      "family_id": "point.waon",
+      "roles": [
+        "earn_rules",
+        "expiry_and_reward_classes"
+      ],
+      "url": "https://www.aeon.co.jp/point/waonpoint/guide/",
+      "title": "WAON POINTの詳細",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official AEON card/debit earning timing and expiry detail."
+    },
+    {
+      "source_id": "src.point.waon.earn-main",
+      "family_id": "point.waon",
+      "roles": [
+        "earn_rules"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point/",
+      "title": "ポイントをためる・使う | 電子マネー WAON",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official WAON earning overview."
+    },
+    {
+      "source_id": "src.point.waon.exchange-directory",
+      "family_id": "point.waon",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point_exchange/",
+      "title": "提携先のポイントを交換 | 電子マネー WAON",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official current partner-exchange migration page."
+    },
+    {
+      "source_id": "src.point.waon.jal-campaign-transfer",
+      "family_id": "point.waon",
+      "roles": [
+        "transfer_partner_directory",
+        "campaign_directory"
+      ],
+      "url": "https://www.jal.co.jp/jp/ja/121campaign/2026/waon-rate-up/",
+      "title": "マイルからWAONへ！まとめて交換キャンペーン",
+      "publisher": "JAL",
+      "official_domain": "www.jal.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official JAL-WAON 2026 transfer campaign detail."
+    },
+    {
+      "source_id": "src.point.waon.merchant-city-directory",
+      "family_id": "point.waon",
+      "roles": [
+        "partner_merchant_directory"
+      ],
+      "url": "https://www.smartwaon.com/ext/001/partner_b/store.html?service_name=get",
+      "title": "WAON POINT 加盟店 | 街のお店",
+      "publisher": "AEON Marketing Co., Ltd.",
+      "official_domain": "www.smartwaon.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Directory categories were visible; individual results are dynamic and not exhaustively enumerated."
+    },
+    {
+      "source_id": "src.point.waon.merchant-network-directory",
+      "family_id": "point.waon",
+      "roles": [
+        "earn_rules",
+        "partner_merchant_directory"
+      ],
+      "url": "https://www.smartwaon.com/ext/001/partner/",
+      "title": "WAON POINT加盟店｜ネットショップ",
+      "publisher": "AEON Marketing Co., Ltd.",
+      "official_domain": "www.smartwaon.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official network merchant directory with visible Green Beans and AEON Shop records."
+    },
+    {
+      "source_id": "src.point.waon.point-charge",
+      "family_id": "point.waon",
+      "roles": [
+        "use_redemption_rules"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point/use/",
+      "title": "ポイントからチャージする",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official WAON point-to-electronic-money conversion page."
+    },
+    {
+      "source_id": "src.point.waon.program-terms",
+      "family_id": "point.waon",
+      "roles": [
+        "program_terms",
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://www.smartwaon.com/ext/001/terms/service.html",
+      "title": "WAON POINTサービス規約",
+      "publisher": "AEON Marketing Co., Ltd.",
+      "official_domain": "www.smartwaon.com",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official service terms; rendered page states 2026-07-15 effective date."
+    },
+    {
+      "source_id": "src.point.waon.receive-periods",
+      "family_id": "point.waon",
+      "roles": [
+        "expiry_and_reward_classes",
+        "use_redemption_rules"
+      ],
+      "url": "https://www.aeon.co.jp/waon/point/management/campaign_point/",
+      "title": "ポイントダウンロード（受取り）",
+      "publisher": "AEON Co., Ltd.",
+      "official_domain": "www.aeon.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-21T23:35:55+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "Official campaign/transfer point download and receipt deadlines."
+    }
+  ],
+  "role_results": [
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.campaign-directory",
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.campaign.summer-eligibility.001",
+        "claim.point.ponta.campaign.summer-period.001",
+        "claim.point.ponta.campaign.summer-tier-100x.001",
+        "claim.point.ponta.campaign.summer-tier-10x.001",
+        "claim.point.ponta.campaign.summer-tier-1pt.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Generic directory shell plus reachable official summer detail; detail claims are bounded to that page."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "change_notices",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.point.ponta.change-notices"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Current top page exposed an notices link but no dated economic change record in the bounded response."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.earn-jalan",
+        "src.point.ponta.overview"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.earn.jalan-components.001",
+        "claim.point.ponta.earn.jalan-total.001",
+        "claim.point.ponta.earn.routes.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Overview relationships and Jalan's explicit service-specific rate were captured."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.point-detail",
+        "src.point.ponta.point-types",
+        "src.point.ponta.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.expiry.inactivity-terms.001",
+        "claim.point.ponta.expiry.kddi-exception.001",
+        "claim.point.ponta.expiry.limited-class.001",
+        "claim.point.ponta.expiry.recruit.001",
+        "claim.point.ponta.expiry.standard.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "ID-linkage matrix, point classes, and terms were checked."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "partner_merchant_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.merchant-directory"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.merchant.jal.001",
+        "claim.point.ponta.merchant.jalan.001",
+        "claim.point.ponta.merchant.lawson.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Visible directory examples only; child directory is dynamic."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "program_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.terms.accrual-use-balance.001",
+        "claim.point.ponta.terms.change-publication.001",
+        "claim.point.ponta.terms.restrictions-cancel.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Official Ponta member terms."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.exchange-directory",
+        "src.point.ponta.jal-transfer"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.transfer.jal-rate.001",
+        "claim.point.ponta.transfer.jal-unit-timing.001",
+        "claim.point.ponta.transfer.recruit.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Visible exchange rows and full JAL detail were checked."
+    },
+    {
+      "family_id": "point.ponta",
+      "source_role_id": "use_redemption_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.ponta.exchange-directory",
+        "src.point.ponta.overview",
+        "src.point.ponta.point-detail",
+        "src.point.ponta.point-types",
+        "src.point.ponta.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.ponta.expiry.priority.001",
+        "claim.point.ponta.use.example-value.001",
+        "claim.point.ponta.use.id-linkage-scope.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Use scope, priority, example value, terms, and one visible exchange row were captured."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "campaign_directory",
+      "outcome": "no_economic_claim_found",
+      "source_ids": [
+        "src.point.rakuten.campaign-directory"
+      ],
+      "claim_ids": [],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Current campaign directory rendered only the directory heading and generic limited-point note; no child campaign economics were visible."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "change_notices",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.change-notice-2022"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.change.coupon-exclusion.001",
+        "claim.point.rakuten.change.prior-points.001",
+        "claim.point.rakuten.change.tax-basis.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Historical official notice retained with exact 2022 effective date."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.earn-ichiba",
+        "src.point.rakuten.earn-pay",
+        "src.point.rakuten.earn-rules"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.earn.expiry-extension.001",
+        "claim.point.rakuten.earn.general.001",
+        "claim.point.rakuten.earn.ichiba-rate.001",
+        "claim.point.rakuten.earn.ichiba-timing.001",
+        "claim.point.rakuten.earn.pay-rate.001",
+        "claim.point.rakuten.earn.suica-rate.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "General, Ichiba, Rakuten Pay, and Suica rules were captured."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.earn-rules",
+        "src.point.rakuten.expiry-limited"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.expiry.limited-no-exchange.001",
+        "claim.point.rakuten.expiry.limited-priority.001",
+        "claim.point.rakuten.expiry.limited-reservation.001",
+        "claim.point.rakuten.expiry.limited-schedule.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Normal and limited-point classes were separated."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "partner_merchant_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.merchant-directory"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.merchant.services.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Visible service directory list is dynamic and bounded."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "program_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.program.terms.change.001",
+        "claim.point.rakuten.program.terms.conditions-cancel.001",
+        "claim.point.rakuten.program.terms.no-transfer-cash.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Rakuten Point program terms were rendered from the official terms page."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.ana-rakuten",
+        "src.point.rakuten.ana-transfer",
+        "src.point.rakuten.exchange-directory"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.transfer.ana-to-rakuten-rate.001",
+        "claim.point.rakuten.transfer.ana-to-rakuten-third.001",
+        "claim.point.rakuten.transfer.ana-to-rakuten-timing-cap.001",
+        "claim.point.rakuten.transfer.rakuten-to-ana-rate.001",
+        "claim.point.rakuten.transfer.rakuten-to-ana-timing.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "ANA transfer partner pages and the Rakuten exchange directory were checked."
+    },
+    {
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.rakuten.exchange-directory",
+        "src.point.rakuten.program-terms",
+        "src.point.rakuten.use-rules"
+      ],
+      "claim_ids": [
+        "claim.point.rakuten.exchange.normal-points.001",
+        "claim.point.rakuten.exchange.restrictions.001",
+        "claim.point.rakuten.use.caps.001",
+        "claim.point.rakuten.use.minimums.001",
+        "claim.point.rakuten.use.value.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Official redemption limits and exchange restrictions."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.campaign-app-2026",
+        "src.point.v.campaign-directory"
+      ],
+      "claim_ids": [
+        "claim.point.v.campaign.app-entry.001",
+        "claim.point.v.campaign.app-expiry.001",
+        "claim.point.v.campaign.app-period.001",
+        "claim.point.v.campaign.app-prizes.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Dynamic directory plus official app campaign detail; numeric claims use explicit 2026 dates from the detail page."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "change_notices",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.change-news"
+      ],
+      "claim_ids": [
+        "claim.point.v.change.imamura.001",
+        "claim.point.v.change.kajugator.001",
+        "claim.point.v.change.zensho.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Visible 2026 partner/service start notices are bounded listing records."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.earn-store",
+        "src.point.v.overview",
+        "src.point.v.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.v.earn.participant-campaign.001",
+        "claim.point.v.earn.store-scenario.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Terms mechanism and explicitly labeled partner-rate scenario."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.v.expiry.fixed.001",
+        "claim.point.v.expiry.normal.001",
+        "claim.point.v.expiry.priority.001",
+        "claim.point.v.expiry.store-limited.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Current 2026-04-01 point service terms define normal, fixed, and store-limited classes."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.merchant-earn-directory",
+        "src.point.v.merchant-use-directory"
+      ],
+      "claim_ids": [
+        "claim.point.v.merchant.eneos-earn.001",
+        "claim.point.v.merchant.familymart-earn.001",
+        "claim.point.v.merchant.familymart-use.001",
+        "claim.point.v.merchant.yoshinoya-use.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Bounded visible partner examples from both rendered directories."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "program_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.v.terms.auth.001",
+        "claim.point.v.terms.participant-use.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Official V member and point service terms."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.ana-transfer",
+        "src.point.v.use-rules"
+      ],
+      "claim_ids": [
+        "claim.point.v.transfer.ana-to-v-change.001",
+        "claim.point.v.transfer.ana-to-v-rate.001",
+        "claim.point.v.transfer.ana-to-v-third.001",
+        "claim.point.v.transfer.v-to-ana.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Both V-site and ANA official transfer pages were checked."
+    },
+    {
+      "family_id": "point.v",
+      "source_role_id": "use_redemption_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.v.overview",
+        "src.point.v.program-terms",
+        "src.point.v.use-rules"
+      ],
+      "claim_ids": [
+        "claim.point.v.use.donation.001",
+        "claim.point.v.use.value.001",
+        "claim.point.v.use.visa.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Point value, Visa route, donation route, and automatic class priority."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026",
+        "src.point.waon.campaign-directory",
+        "src.point.waon.jal-campaign-transfer"
+      ],
+      "claim_ids": [
+        "claim.point.waon.campaign.charge-exclusions.001",
+        "claim.point.waon.campaign.charge-expiry.001",
+        "claim.point.waon.campaign.charge-period.001",
+        "claim.point.waon.campaign.charge-prizes.001",
+        "claim.point.waon.campaign.charge-threshold.001",
+        "claim.point.waon.campaign.charge.eligible-services.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Current WAON directory/detail plus the linked JAL campaign; dates and prize classes are bounded to fetched pages."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.change-integration"
+      ],
+      "claim_ids": [
+        "claim.point.waon.change.base-rate.001",
+        "claim.point.waon.change.class-distinction.001",
+        "claim.point.waon.change.integration-date.001",
+        "claim.point.waon.change.timing.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "2026-03-01 integration notice and its explicit rate/timing changes."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.earn-aeon-card",
+        "src.point.waon.earn-main",
+        "src.point.waon.merchant-network-directory"
+      ],
+      "claim_ids": [
+        "claim.point.waon.earn.aeon-card-rate.001",
+        "claim.point.waon.earn.aeon-timing.001",
+        "claim.point.waon.earn.greenbeans.001",
+        "claim.point.waon.earn.waon-rate.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Core WAON, AEON card, and Green Beans rules."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.change-integration",
+        "src.point.waon.earn-aeon-card",
+        "src.point.waon.program-terms",
+        "src.point.waon.receive-periods"
+      ],
+      "claim_ids": [
+        "claim.point.waon.expiry.aeon-card.001",
+        "claim.point.waon.expiry.campaign.001",
+        "claim.point.waon.expiry.receive.001",
+        "claim.point.waon.expiry.terms-next-year.001",
+        "claim.point.waon.expiry.terms-window.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Service terms, card guide, and campaign/transfer receipt windows were separated."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "partner_merchant_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.merchant-city-directory",
+        "src.point.waon.merchant-network-directory"
+      ],
+      "claim_ids": [
+        "claim.point.waon.merchant.aeonshop.001",
+        "claim.point.waon.merchant.directory-categories.001",
+        "claim.point.waon.merchant.greenbeans.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "City directory categories and visible network child records; not exhaustive."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "program_terms",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_ids": [
+        "claim.point.waon.terms.earn-and-exchange.001",
+        "claim.point.waon.terms.no-cash.001",
+        "claim.point.waon.terms.value.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Current WAON POINT service terms."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.exchange-directory",
+        "src.point.waon.jal-campaign-transfer"
+      ],
+      "claim_ids": [
+        "claim.point.waon.transfer.jal-campaign.001",
+        "claim.point.waon.transfer.jal-cap.001",
+        "claim.point.waon.transfer.jal-normal.001",
+        "claim.point.waon.transfer.migration.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Official migration page and JAL transfer campaign detail."
+    },
+    {
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "outcome": "claims_found",
+      "source_ids": [
+        "src.point.waon.point-charge",
+        "src.point.waon.program-terms",
+        "src.point.waon.receive-periods"
+      ],
+      "claim_ids": [
+        "claim.point.waon.use.methods.001",
+        "claim.point.waon.use.new-card-minimum.001",
+        "claim.point.waon.use.point-value.001",
+        "claim.point.waon.use.receive-period.001"
+      ],
+      "checked_at": "2026-08-21T23:35:55+09:00",
+      "notes": "Point value, WAON conversion, new-card prerequisite, and receipt deadlines."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim.point.ponta.campaign.summer-eligibility.001",
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Pontaサマーキャンペーン2026",
+      "predicate": "requires_earning_at_multiple_partners",
+      "value": {
+        "minimum_partner_services": 2,
+        "minimum_points_earned_per_partner": 1,
+        "reward": "抽選でPontaポイント"
+      },
+      "applicability": {
+        "scope": "Campaign-targeted Ponta partner companies/services",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some target stores, products, or services are excluded; conditions vary by partner."
+      ],
+      "evidence_locator": "Campaign detail: overview and eligibility sections",
+      "short_paraphrase": "Earn at least 1 point from at least two eligible partner services during the campaign to enter the draw."
+    },
+    {
+      "claim_id": "claim.point.ponta.campaign.summer-period.001",
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "Pontaサマーキャンペーン2026",
+      "predicate": "runs_during",
+      "value": {
+        "start": "2026-07-01T00:00:00+09:00",
+        "end": "2026-08-31T23:59:00+09:00"
+      },
+      "applicability": {
+        "scope": "Campaign-targeted Ponta partner companies/services",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: キャンペーン期間",
+      "short_paraphrase": "The campaign runs from July 1 through August 31, 2026."
+    },
+    {
+      "claim_id": "claim.point.ponta.campaign.summer-tier-100x.001",
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Pontaサマーキャンペーン2026",
+      "predicate": "draws_multiplier_reward",
+      "value": {
+        "tier": "3 or more eligible partners",
+        "multiplier": 100,
+        "winners": 200,
+        "cap_points_per_person": 2000
+      },
+      "applicability": {
+        "scope": "Base campaign-eligible earned points excluding bonus and credit points",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Bonus points and credit points are excluded from the eligible total."
+      ],
+      "evidence_locator": "Campaign detail: reward tier and per-person cap",
+      "short_paraphrase": "Three or more eligible partners gives a draw for 100x, with 200 winners and a 2,000-point per-person cap."
+    },
+    {
+      "claim_id": "claim.point.ponta.campaign.summer-tier-10x.001",
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Pontaサマーキャンペーン2026",
+      "predicate": "draws_multiplier_reward",
+      "value": {
+        "tier": "2 eligible partners",
+        "multiplier": 10,
+        "winners": 1000,
+        "cap_points_per_person": 500
+      },
+      "applicability": {
+        "scope": "Base campaign-eligible earned points excluding bonus and credit points",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Bonus points and credit points are excluded from the eligible total."
+      ],
+      "evidence_locator": "Campaign detail: reward tier and per-person cap",
+      "short_paraphrase": "Two eligible partners gives a draw for 10x, with 1,000 winners and a 500-point per-person cap."
+    },
+    {
+      "claim_id": "claim.point.ponta.campaign.summer-tier-1pt.001",
+      "family_id": "point.ponta",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.ponta.campaign-summer-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Pontaサマーキャンペーン2026",
+      "predicate": "draws_fixed_reward",
+      "value": {
+        "tier": "eligible entrants not receiving the 100x or 10x tier",
+        "reward_points": 1,
+        "winners": 998800
+      },
+      "applicability": {
+        "scope": "Campaign entrants meeting the partner-earning condition",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: third reward tier",
+      "short_paraphrase": "The third tier awards 1 Ponta point to 998,800 entrants outside the higher tiers."
+    },
+    {
+      "claim_id": "claim.point.ponta.earn.jalan-components.001",
+      "family_id": "point.ponta",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.ponta.earn-jalan"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "じゃらんnet宿泊予約",
+      "predicate": "splits_rate_into_point_classes",
+      "value": {
+        "total_rate_percent": 2,
+        "ponta_rate_percent": 1,
+        "site_limited_rate_percent": 1
+      },
+      "applicability": {
+        "scope": "Eligible lodging reservations on Jalan net",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Jalan page: たまる section and rate example",
+      "short_paraphrase": "The displayed lodging example splits 2% into 1% Ponta and 1% Jalan-limited points."
+    },
+    {
+      "claim_id": "claim.point.ponta.earn.jalan-total.001",
+      "family_id": "point.ponta",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.ponta.earn-jalan"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "じゃらんnet宿泊予約",
+      "predicate": "awards_points_as_percentage_of_amount",
+      "value": {
+        "rate_percent": 2,
+        "amount_basis": "reservation_amount"
+      },
+      "applicability": {
+        "scope": "Eligible lodging reservations on Jalan net",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The page presents this as a general example and points are subject to service conditions."
+      ],
+      "evidence_locator": "Jalan page: 2% reservation example",
+      "short_paraphrase": "The official example says eligible lodging reservations earn points equal to 2% of the reservation amount."
+    },
+    {
+      "claim_id": "claim.point.ponta.earn.routes.001",
+      "family_id": "point.ponta",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.ponta.overview"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Pontaポイント",
+      "predicate": "can_be_earned_from",
+      "value": [
+        "Ponta partner stores",
+        "Ponta partner online services",
+        "campaigns",
+        "games",
+        "surveys",
+        "exchange from other points"
+      ],
+      "applicability": {
+        "scope": "Ponta member service",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Ponta overview: ポイントをためる sections",
+      "short_paraphrase": "The overview identifies partner stores, online services, campaigns, games, surveys, and exchanges as earn routes."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.inactivity-terms.001",
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.ponta.program-terms"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Pontaポイント",
+      "predicate": "expires_after_no_balance_change",
+      "value": {
+        "inactivity_period_days": 365,
+        "anchor": "later of last earn or last use/exchange"
+      },
+      "applicability": {
+        "scope": "Ponta member account",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The Ponta point-class page separately describes ID-linkage-specific expiry behavior."
+      ],
+      "evidence_locator": "Ponta member terms: 第4条（ポイントの取消・失効・修正）",
+      "short_paraphrase": "The terms state all points expire when the balance has not changed for one year after the later of earning or use/exchange."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.kddi-exception.001",
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.ponta.point-types"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Pontaポイント with KDDI定期付与",
+      "predicate": "does_not_extend_expiry_on_periodic_kddi_credit",
+      "value": {
+        "expiry_anchor": "last non-KDDI-periodic earn or use",
+        "periodic_credit_effect": "does not extend expiry"
+      },
+      "applicability": {
+        "scope": "Ponta points whose history labels the credit as KDDI定期付与",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントについて: Pontaポイント expiry notes",
+      "short_paraphrase": "A KDDI periodic credit does not extend the holding expiry; the prior non-periodic earn/use remains the anchor."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.limited-class.001",
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.ponta.point-types"
+      ],
+      "claim_type": "expiry_and_reward_classes",
+      "subject": "Recruit limited/site-limited points",
+      "predicate": "have_campaign_defined_expiry_and_restricted_use",
+      "value": {
+        "classes": [
+          "Recruit limited points",
+          "site-limited points"
+        ],
+        "expiry": "campaign conditions",
+        "ponta_exchange_allowed": false,
+        "use_scope": "Recruit participating sites or named site"
+      },
+      "applicability": {
+        "scope": "Campaign or site-limited rewards issued through Recruit services",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Exact expiry and eligible service depend on the campaign."
+      ],
+      "evidence_locator": "ポイントについて: 期間限定ポイント sections",
+      "short_paraphrase": "Recruit and site-limited points have campaign-defined expiry/use scopes and cannot be exchanged into Ponta points."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.priority.001",
+      "family_id": "point.ponta",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.ponta.point-types"
+      ],
+      "claim_type": "redemption_priority",
+      "subject": "Recruit-site point spending",
+      "predicate": "deducts_in_priority_order",
+      "value": {
+        "priority": [
+          "limited points",
+          "Ponta points"
+        ],
+        "limited_tie_break": "earliest expiry first; site-limited before Recruit-limited when expiry ties"
+      },
+      "applicability": {
+        "scope": "Use of points on Recruit services",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントについて: ポイントご利用時の優先順位",
+      "short_paraphrase": "Limited points are consumed before Ponta points, with earlier expiry first and a stated same-date tie-break."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.recruit.001",
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.ponta.point-types"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Recruit points",
+      "predicate": "expires_at_month_end_after_last_earn",
+      "value": {
+        "period_months": 12,
+        "expiry_anchor": "last point earn",
+        "expiry_boundary": "month end"
+      },
+      "applicability": {
+        "scope": "Recruit points shown in PontaWeb",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントについて: リクルートポイント 有効期限",
+      "short_paraphrase": "Recruit points expire at the end of the month 12 months after the last earn."
+    },
+    {
+      "claim_id": "claim.point.ponta.expiry.standard.001",
+      "family_id": "point.ponta",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.ponta.point-detail",
+        "src.point.ponta.point-types"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Standard Ponta points",
+      "predicate": "expires_one_year_after_last_use",
+      "value": {
+        "period_years": 1,
+        "anchor": "last point earn or point use"
+      },
+      "applicability": {
+        "scope": "Ponta points in the standard account cases described by PontaWeb",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "ID-linkage status and KDDI periodic credits alter the anchor as stated on the official pages."
+      ],
+      "evidence_locator": "ポイントについて and Pontaポイントの詳細: 有効期限 sections",
+      "short_paraphrase": "Standard Ponta points expire one year after the last qualifying earn or use."
+    },
+    {
+      "claim_id": "claim.point.ponta.merchant.jal.001",
+      "family_id": "point.ponta",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.ponta.merchant-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "日本航空(JALマイレージバンク)",
+      "predicate": "is_listed_as_earn_and_use_partner",
+      "value": {
+        "earn": true,
+        "use": true
+      },
+      "applicability": {
+        "scope": "Rendered Ponta partner directory entry",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "提携店・サービス: レジャー・旅行 listing",
+      "short_paraphrase": "The rendered partner directory lists JAL Mileage Bank as an earn/use partner."
+    },
+    {
+      "claim_id": "claim.point.ponta.merchant.jalan.001",
+      "family_id": "point.ponta",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.ponta.merchant-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "じゃらんnet",
+      "predicate": "is_listed_as_earn_and_use_partner",
+      "value": {
+        "earn": true,
+        "use": true,
+        "requires_recruit_id": true
+      },
+      "applicability": {
+        "scope": "Rendered Ponta partner directory entry",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "提携店・サービス: レジャー・旅行 listing",
+      "short_paraphrase": "The rendered directory lists Jalan net as both earn and use, with Recruit ID indicated."
+    },
+    {
+      "claim_id": "claim.point.ponta.merchant.lawson.001",
+      "family_id": "point.ponta",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.ponta.merchant-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "ローソン",
+      "predicate": "is_listed_as_earn_and_use_partner",
+      "value": {
+        "earn": true,
+        "use": true,
+        "app": true
+      },
+      "applicability": {
+        "scope": "Rendered Ponta partner directory entry",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "提携店・サービス: 百貨店・コンビニ・スーパー・ドラッグストア listing",
+      "short_paraphrase": "The rendered directory lists Lawson as earn/use and app-supported."
+    },
+    {
+      "claim_id": "claim.point.ponta.terms.accrual-use-balance.001",
+      "family_id": "point.ponta",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.ponta.program-terms"
+      ],
+      "claim_type": "program_term",
+      "subject": "Ponta point account",
+      "predicate": "permits_use_within_current_balance_after_registration",
+      "value": {
+        "use_routes": [
+          "goods or services",
+          "partial or full payment",
+          "other partner points"
+        ],
+        "use_limit": "current balance",
+        "registration_required": true
+      },
+      "applicability": {
+        "scope": "Ponta common point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some goods/services and age bands may be excluded."
+      ],
+      "evidence_locator": "Ponta会員規約: 第二章ではなく第一章 第3条（共通ポイントプログラム）",
+      "short_paraphrase": "The terms allow exchange or payment use within the current balance after required member registration."
+    },
+    {
+      "claim_id": "claim.point.ponta.terms.change-publication.001",
+      "family_id": "point.ponta",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.ponta.program-terms"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Ponta program conditions",
+      "predicate": "may_change_and_are_published_on_pontaweb",
+      "value": {
+        "advance_notice_required": false,
+        "publication_channel": "PontaWeb",
+        "member_assent": "continued use after change"
+      },
+      "applicability": {
+        "scope": "Ponta common point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Ponta会員規約: 第9条（サービスの変更等）",
+      "short_paraphrase": "The terms permit changes without prior notice and direct members to PontaWeb for changed conditions."
+    },
+    {
+      "claim_id": "claim.point.ponta.terms.restrictions-cancel.001",
+      "family_id": "point.ponta",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.ponta.program-terms"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Ponta point use/exchange",
+      "predicate": "is_irreversible_and_may_be_restricted",
+      "value": {
+        "cancel_after_use_or_exchange": false,
+        "some_products_or_services_unavailable": true
+      },
+      "applicability": {
+        "scope": "Ponta common point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Partner-specific conditions also apply."
+      ],
+      "evidence_locator": "Ponta会員規約: 第3条（共通ポイントプログラム）",
+      "short_paraphrase": "After use or exchange, cancellation/refund is not accepted, and some products or services cannot use points."
+    },
+    {
+      "claim_id": "claim.point.ponta.transfer.jal-rate.001",
+      "family_id": "point.ponta",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.ponta.exchange-directory",
+        "src.point.ponta.jal-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "Pontaポイント to JAL Mileage Bank",
+      "predicate": "converts_points_to_miles",
+      "value": {
+        "source_points": 1,
+        "destination_miles": 0.5
+      },
+      "applicability": {
+        "scope": "Ponta member with JMB registration",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "JMB×Ponta registration and PontaWeb/JMB member requirements apply."
+      ],
+      "evidence_locator": "Ponta-JAL detail: ポイント交換レート",
+      "short_paraphrase": "One Ponta point converts to 0.5 JAL miles."
+    },
+    {
+      "claim_id": "claim.point.ponta.transfer.jal-unit-timing.001",
+      "family_id": "point.ponta",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.ponta.jal-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "Pontaポイント to JAL Mileage Bank",
+      "predicate": "has_minimum_unit_and_processing_time",
+      "value": {
+        "minimum_points": 2,
+        "unit_points": 2,
+        "processing_time": "about one week"
+      },
+      "applicability": {
+        "scope": "Ponta member with JMB registration",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Post-completion cancellation or point-count change is not allowed."
+      ],
+      "evidence_locator": "Ponta-JAL detail: 交換単位 and 交換までの期間",
+      "short_paraphrase": "The transfer starts at 2 points in 2-point units and is stated to take one week."
+    },
+    {
+      "claim_id": "claim.point.ponta.transfer.recruit.001",
+      "family_id": "point.ponta",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.ponta.exchange-directory"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "Recruit points to Ponta points",
+      "predicate": "converts_one_to_one",
+      "value": {
+        "source_points": 1,
+        "destination_points": 1
+      },
+      "applicability": {
+        "scope": "Recruit point exchange row visible in Ponta exchange directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイント交換: 他のポイント→Pontaポイント table",
+      "short_paraphrase": "The visible Recruit-point row shows a 1-to-1 conversion into Ponta points."
+    },
+    {
+      "claim_id": "claim.point.ponta.use.example-value.001",
+      "family_id": "point.ponta",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.ponta.overview"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "Ponta store-use example",
+      "predicate": "reduces_payment_by_points",
+      "value": {
+        "points_used": 500,
+        "discount_jpy": 500
+      },
+      "applicability": {
+        "scope": "Illustrative participating-store example on Ponta overview",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "This is an example, not a universal merchant-rate assertion."
+      ],
+      "evidence_locator": "Ponta overview: 500ポイント and 500円分値引き example",
+      "short_paraphrase": "The overview's worked example applies 500 Ponta points as a 500-yen discount."
+    },
+    {
+      "claim_id": "claim.point.ponta.use.id-linkage-scope.001",
+      "family_id": "point.ponta",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.ponta.point-detail"
+      ],
+      "claim_type": "eligibility",
+      "subject": "Ponta point service scope",
+      "predicate": "depends_on_recruit_and_au_id_linkage",
+      "value": {
+        "both_linked": "all Ponta partner, Recruit, and au linked services",
+        "recruit_only": "non-au partners and Recruit services",
+        "au_only": "au linked services"
+      },
+      "applicability": {
+        "scope": "Ponta account linkage matrix",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Unlinked card-only cases have narrower service scope as shown on the page."
+      ],
+      "evidence_locator": "Pontaポイントの詳細: ポイントがたまる・つかえるサービス matrix",
+      "short_paraphrase": "Where points can be earned or spent depends on whether Recruit ID and au ID are linked."
+    },
+    {
+      "claim_id": "claim.point.rakuten.change.coupon-exclusion.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.rakuten.change-notice-2022"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Rakuten point earning basis",
+      "predicate": "generally_excludes_coupon_amount",
+      "value": {
+        "coupon_amount_in_eligible_basis": false,
+        "calculation": "generally deducted from item/service price"
+      },
+      "applicability": {
+        "scope": "Services covered by the 2022 rule-change notice",
+        "effective_from": "2022-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Service-specific rules can differ."
+      ],
+      "evidence_locator": "ポイント進呈ルールの変更について: FAQ coupon section",
+      "short_paraphrase": "The notice says coupon-used amounts are generally excluded from the earning basis."
+    },
+    {
+      "claim_id": "claim.point.rakuten.change.prior-points.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.rakuten.change-notice-2022"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Previously earned Rakuten points",
+      "predicate": "remain_unreduced_by_rule_change",
+      "value": {
+        "prior_points_reduced": false
+      },
+      "applicability": {
+        "scope": "Points earned before the 2022 rule change",
+        "effective_from": "2022-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイント進呈ルールの変更について: previously earned points FAQ",
+      "short_paraphrase": "The notice says previously earned points are not reduced by the rule change."
+    },
+    {
+      "claim_id": "claim.point.rakuten.change.tax-basis.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.rakuten.change-notice-2022"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Rakuten point earning basis",
+      "predicate": "changed_from_tax_included_to_tax_excluded",
+      "value": {
+        "before": "consumption tax included",
+        "after": "consumption tax excluded",
+        "affected_services_count": 20
+      },
+      "applicability": {
+        "scope": "Listed services in the official notice",
+        "effective_from": "2022-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Fixed-value rewards were stated not to change."
+      ],
+      "evidence_locator": "ポイント進呈ルールの変更について: change summary and affected-service table",
+      "short_paraphrase": "From April 1, 2022, the listed services changed their earning basis from tax-included to tax-excluded amounts."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.expiry-extension.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-rules"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Normal Rakuten points",
+      "predicate": "extends_expiry_when_earned_within_year",
+      "value": {
+        "base_period": "one year including the month of last earn",
+        "extension_trigger": "any normal-point earn within the period",
+        "limited_point_earn_extends": false
+      },
+      "applicability": {
+        "scope": "Normal Rakuten points",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Limited-period-point earning does not extend the expiry."
+      ],
+      "evidence_locator": "ポイント進呈ルール: general rule paragraph",
+      "short_paraphrase": "Normal points expire after a one-year window including the last-earn month, and another normal earn extends the window."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.general.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-rules"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Rakuten services",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 100,
+        "currency": "JPY",
+        "amount_basis": "tax_excluded",
+        "basis": "in principle"
+      },
+      "applicability": {
+        "scope": "Rakuten members using eligible Rakuten services",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Service-specific tables, campaigns, and conditions can differ."
+      ],
+      "evidence_locator": "ポイント進呈ルール: general rule paragraph",
+      "short_paraphrase": "The general rule is one point per 100 yen before tax, subject to service-specific rules."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.ichiba-rate.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-ichiba",
+        "src.point.rakuten.earn-rules"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Rakuten Ichiba regular purchase",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 100,
+        "currency": "JPY",
+        "amount_basis": "per-product purchase amount tax excluded",
+        "rate_percent": 1
+      },
+      "applicability": {
+        "scope": "Regular Rakuten Ichiba purchase",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Shipping and gift wrapping are excluded; cash-like goods may be excluded."
+      ],
+      "evidence_locator": "楽天市場でポイントが貯まる and ポイント進呈ルール: regular purchase",
+      "short_paraphrase": "Regular Ichiba purchases earn 1%: one point per 100 yen before tax per product."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.ichiba-timing.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-ichiba"
+      ],
+      "claim_type": "timing",
+      "subject": "Rakuten Ichiba regular purchase",
+      "predicate": "posts_planned_and_confirmed_points",
+      "value": {
+        "planned_posting": "day after purchase",
+        "confirmed_posting": "20 days after order"
+      },
+      "applicability": {
+        "scope": "Regular, reservation, recurring, and subscription purchase examples on Ichiba",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The page states timing can depend on the transaction/service."
+      ],
+      "evidence_locator": "楽天市場でポイントが貯まる: 進呈タイミング",
+      "short_paraphrase": "Ichiba displays planned points the next day and confirms them 20 days after the order in the displayed example."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.pay-rate.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-pay"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Rakuten Pay app in-store payment",
+      "predicate": "awards_points_at_rate_range",
+      "value": {
+        "rate_percent_min": 1,
+        "rate_percent_max": 1.5,
+        "payment_requirement": "registered Rakuten Card or eligible Rakuten Cash/point route"
+      },
+      "applicability": {
+        "scope": "Rakuten Pay app in-store payments",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Non-Rakuten-card credit-card payment is excluded from the stated return."
+      ],
+      "evidence_locator": "楽天ペイアプリ: overview and eligible payment methods",
+      "short_paraphrase": "The app page states 1%–1.5% returns for eligible in-store payments."
+    },
+    {
+      "claim_id": "claim.point.rakuten.earn.suica-rate.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.rakuten.earn-pay"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Rakuten Pay mobile Suica charge",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 200,
+        "currency": "JPY",
+        "rate_percent": 0.5
+      },
+      "applicability": {
+        "scope": "Mobile Suica charges made through Rakuten Pay app",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "楽天ペイアプリ: Suica charge earn section",
+      "short_paraphrase": "Suica charging through the app earns one point per 200 yen."
+    },
+    {
+      "claim_id": "claim.point.rakuten.exchange.normal-points.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.rakuten.exchange-directory"
+      ],
+      "claim_type": "expiry_and_reward_classes",
+      "subject": "Points received from partner exchange",
+      "predicate": "are_normal_points",
+      "value": {
+        "point_class": "normal Rakuten points"
+      },
+      "applicability": {
+        "scope": "Points exchanged from partner services into Rakuten points",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Partner-service rates and units may be stale on the directory page."
+      ],
+      "evidence_locator": "楽天ポイント交換: exchange notice",
+      "short_paraphrase": "The exchange page states points received from partner services are normal points."
+    },
+    {
+      "claim_id": "claim.point.rakuten.exchange.restrictions.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.rakuten.exchange-directory"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Rakuten point exchange",
+      "predicate": "disallows_limited_and_partner_received_points_in_most_exchange_routes",
+      "value": {
+        "limited_points_exchangeable": false,
+        "partner_received_points_exchangeable_to_other_partner": false,
+        "rakuten_keiba_vote_money_exception": true
+      },
+      "applicability": {
+        "scope": "Rakuten point exchange page",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The page states a Rakuten Keiba vote-money-charge exception."
+      ],
+      "evidence_locator": "楽天ポイント交換: 注意事項 and FAQ",
+      "short_paraphrase": "Limited points and partner-received points generally cannot be exchanged onward, except for the stated Keiba charge route."
+    },
+    {
+      "claim_id": "claim.point.rakuten.expiry.limited-no-exchange.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.rakuten.expiry-limited"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Limited-period Rakuten points",
+      "predicate": "cannot_be_used_for_partner_exchange",
+      "value": {
+        "partner_exchange_allowed": false,
+        "rakuten_group_service_exchange_allowed": false,
+        "edy_exchange_allowed": false,
+        "keiba_vote_money_exception": true
+      },
+      "applicability": {
+        "scope": "Limited-period points",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Rakuten Keiba vote-money charging is the stated exception."
+      ],
+      "evidence_locator": "期間限定ポイントとは: restrictions",
+      "short_paraphrase": "Limited-period points cannot be exchanged to partners, most Rakuten service points, or Edy."
+    },
+    {
+      "claim_id": "claim.point.rakuten.expiry.limited-priority.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.rakuten.expiry-limited"
+      ],
+      "claim_type": "redemption_priority",
+      "subject": "Multiple limited-period Rakuten points",
+      "predicate": "uses_earliest_expiry_first",
+      "value": {
+        "priority": "nearest expiry first"
+      },
+      "applicability": {
+        "scope": "Account holding multiple limited-period point lots",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "期間限定ポイントとは: limited-point priority",
+      "short_paraphrase": "When several limited-point lots are held, the lot expiring soonest is used first."
+    },
+    {
+      "claim_id": "claim.point.rakuten.expiry.limited-reservation.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.rakuten.expiry-limited"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Limited-period Rakuten points",
+      "predicate": "can_be_applied_before_expiry_to_later_service_use",
+      "value": {
+        "booking_or_order_before_expiry": true,
+        "later_service_date_allowed": true
+      },
+      "applicability": {
+        "scope": "Reservations/orders such as travel, books, or preorder examples",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "期間限定ポイントとは: usage-date explanation and example",
+      "short_paraphrase": "A booking/order made before the point expiry can cover a later service or delivery date."
+    },
+    {
+      "claim_id": "claim.point.rakuten.expiry.limited-schedule.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.rakuten.expiry-limited"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Limited-period Rakuten points",
+      "predicate": "have_individual_expiry_dates",
+      "value": {
+        "examples": [
+          "15 days",
+          "month end"
+        ],
+        "expiry_after_deadline": "unusable"
+      },
+      "applicability": {
+        "scope": "Points issued by campaigns or other limited-period grants",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "期間限定ポイントとは: 特徴",
+      "short_paraphrase": "Limited-period points receive individual deadlines such as 15 days or month-end and become unusable after expiry."
+    },
+    {
+      "claim_id": "claim.point.rakuten.merchant.services.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.rakuten.merchant-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Rakuten service directory",
+      "predicate": "lists_points_use_services",
+      "value": {
+        "visible_services": [
+          "Rakuten Mobile",
+          "Rakuten Market",
+          "Rakuten Travel",
+          "Rakuten Pay app",
+          "Rakuten Point Card",
+          "Rakuten Edy",
+          "Rakuten Bank",
+          "Rakuten Securities"
+        ]
+      },
+      "applicability": {
+        "scope": "Visible service categories on Rakuten PointClub use page",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The directory is dynamic and service-specific conditions apply."
+      ],
+      "evidence_locator": "楽天ポイントを使う: service directory sections",
+      "short_paraphrase": "The visible directory lists Rakuten shopping, travel, payment, banking, and investment services as use destinations."
+    },
+    {
+      "claim_id": "claim.point.rakuten.program.terms.change.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.rakuten.program-terms"
+      ],
+      "claim_type": "program_term",
+      "subject": "Rakuten Point program",
+      "predicate": "may_change_or_end_program_conditions",
+      "value": {
+        "changeable_items": [
+          "eligible services",
+          "eligible transactions",
+          "earn rate",
+          "use rate",
+          "program status"
+        ],
+        "information_method": "appropriate timing and method"
+      },
+      "applicability": {
+        "scope": "Rakuten Point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "楽天ポイント利用規約: 第15条",
+      "short_paraphrase": "Rakuten may change eligible services, transactions, rates, or end the program while providing information appropriately."
+    },
+    {
+      "claim_id": "claim.point.rakuten.program.terms.conditions-cancel.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.rakuten.program-terms"
+      ],
+      "claim_type": "program_term",
+      "subject": "Rakuten Point program",
+      "predicate": "allows_service_and_campaign_specific_conditions_and_reversal",
+      "value": {
+        "conditions": "service/campaign-specific",
+        "post-award_cancellation_or_return": "points may be revoked or adjusted"
+      },
+      "applicability": {
+        "scope": "Rakuten Point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "楽天ポイント利用規約: 第1条・第2条・第5条",
+      "short_paraphrase": "The terms make service/campaign conditions applicable and permit reversal after returns, cancellations, or other stated causes."
+    },
+    {
+      "claim_id": "claim.point.rakuten.program.terms.no-transfer-cash.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.rakuten.program-terms"
+      ],
+      "claim_type": "exclusion",
+      "subject": "Rakuten points",
+      "predicate": "cannot_be_transferred_between_members_or_converted_to_cash",
+      "value": {
+        "member_transfer_allowed": false,
+        "cash_conversion_allowed": false
+      },
+      "applicability": {
+        "scope": "Rakuten Point program",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "楽天ポイント利用規約: 第4条 and 第10条",
+      "short_paraphrase": "The terms prohibit member-to-member transfer and cash conversion."
+    },
+    {
+      "claim_id": "claim.point.rakuten.transfer.ana-to-rakuten-rate.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.rakuten.ana-rakuten"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANA miles to Rakuten points",
+      "predicate": "converts_miles_to_points",
+      "value": {
+        "source_miles": 10000,
+        "destination_points": 8000
+      },
+      "applicability": {
+        "scope": "ANA members who are Rakuten members",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Same-year third partner-point exchange has a separate reduced rate."
+      ],
+      "evidence_locator": "ANA楽天ポイント page: exchange rate",
+      "short_paraphrase": "ANA's page states 10,000 miles exchange to 8,000 Rakuten points."
+    },
+    {
+      "claim_id": "claim.point.rakuten.transfer.ana-to-rakuten-third.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.rakuten.ana-rakuten"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANA miles to Rakuten points",
+      "predicate": "reduces_third_same_year_exchange_rate",
+      "value": {
+        "same_fiscal_year_exchange_number": 3,
+        "source_miles": 10000,
+        "destination_points": 4000,
+        "fiscal_year": "April 1 to March 31"
+      },
+      "applicability": {
+        "scope": "ANA partner-point exchanges including Rakuten",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA楽天ポイント page: same-year third exchange note",
+      "short_paraphrase": "The third partner-point exchange in one ANA fiscal year yields 4,000 points per 10,000 miles."
+    },
+    {
+      "claim_id": "claim.point.rakuten.transfer.ana-to-rakuten-timing-cap.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.rakuten.ana-rakuten"
+      ],
+      "claim_type": "timing_and_cap",
+      "subject": "ANA miles to Rakuten points",
+      "predicate": "has_processing_time_and_daily_cap",
+      "value": {
+        "processing_time": "about 2 to 3 weeks",
+        "daily_max_exchange_units": 2,
+        "daily_max_miles": 20000
+      },
+      "applicability": {
+        "scope": "ANA-to-Rakuten exchange applications",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA楽天ポイント page: 2026 rule-change notice",
+      "short_paraphrase": "From April 22, 2026, processing is about 2–3 weeks and the daily cap is two units or 20,000 miles."
+    },
+    {
+      "claim_id": "claim.point.rakuten.transfer.rakuten-to-ana-rate.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.rakuten.ana-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "Rakuten points to ANA miles",
+      "predicate": "converts_points_to_miles",
+      "value": {
+        "source_points": 2,
+        "destination_miles": 1,
+        "minimum_points": 50,
+        "fee": "free"
+      },
+      "applicability": {
+        "scope": "Rakuten members who are ANA Mileage Club members",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "A valid ANA 10-digit membership number is required."
+      ],
+      "evidence_locator": "ANA楽天ポイント: マイル換算",
+      "short_paraphrase": "Two Rakuten points convert to one ANA mile; transfers start at 50 points and have no fee."
+    },
+    {
+      "claim_id": "claim.point.rakuten.transfer.rakuten-to-ana-timing.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.rakuten.ana-transfer"
+      ],
+      "claim_type": "timing",
+      "subject": "Rakuten points to ANA miles",
+      "predicate": "posts_after_processing_period_without_reverse",
+      "value": {
+        "processing_time": "3 to 4 weeks",
+        "reverse_to_rakuten_allowed": false,
+        "automatic_transfer": false
+      },
+      "applicability": {
+        "scope": "Rakuten-to-ANA transfer",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA楽天ポイント: 積算日 and 注意事項",
+      "short_paraphrase": "ANA says the transfer takes 3–4 weeks, is manual per request, and cannot be reversed to Rakuten points."
+    },
+    {
+      "claim_id": "claim.point.rakuten.use.caps.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.rakuten.use-rules"
+      ],
+      "claim_type": "redemption_rule",
+      "subject": "Rakuten point use caps",
+      "predicate": "limits_per_transaction_and_month",
+      "value": {
+        "diamond": {
+          "per_transaction": 500000,
+          "per_month": 500000
+        },
+        "other_ranks": {
+          "per_transaction": 30000,
+          "per_month": 100000
+        },
+        "unit": "points"
+      },
+      "applicability": {
+        "scope": "Most Rakuten services; some card/online merchants may differ",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some Rakuten Point Card and online merchants can differ."
+      ],
+      "evidence_locator": "ポイント利用方法: rank cap table",
+      "short_paraphrase": "Diamond members can use up to 500,000 points per transaction/month; other ranks 30,000/100,000."
+    },
+    {
+      "claim_id": "claim.point.rakuten.use.minimums.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.rakuten.use-rules"
+      ],
+      "claim_type": "redemption_rule",
+      "subject": "Rakuten point use minimums",
+      "predicate": "requires_service_specific_minimum",
+      "value": {
+        "one_point_services": [
+          "Rakuten Market",
+          "Rakuten Books",
+          "Rakuten Mart",
+          "Rakuten Point Card",
+          "Rakuten Point online"
+        ],
+        "minimum_100_services": [
+          "Rakuten Travel",
+          "Rakuten GORA"
+        ],
+        "minimum_50_services": "other usable services",
+        "online_pay_exception": "some partner sites allow 1 point"
+      },
+      "applicability": {
+        "scope": "Rakuten point redemption",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイント利用方法: 利用できるポイント数",
+      "short_paraphrase": "Minimum use is 1 point for several shopping services, 100 for Travel/GORA, and generally 50 elsewhere."
+    },
+    {
+      "claim_id": "claim.point.rakuten.use.value.001",
+      "family_id": "point.rakuten",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.rakuten.use-rules"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "Rakuten points",
+      "predicate": "subtract_one_point_from_one_yen_of_bill",
+      "value": {
+        "points": 1,
+        "discount_jpy": 1,
+        "calculation": "bill total minus points used"
+      },
+      "applicability": {
+        "scope": "Rakuten service checkout examples",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイント利用方法: 請求額計算方法 and examples",
+      "short_paraphrase": "The official checkout formula subtracts the number of points used from the yen bill amount."
+    },
+    {
+      "claim_id": "claim.point.v.campaign.app-entry.001",
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.v.campaign-app-2026"
+      ],
+      "claim_type": "eligibility_and_exclusion",
+      "subject": "Vポイントアプリ新規ダウンロードキャンペーン",
+      "predicate": "requires_first_app_login_without_entry",
+      "value": {
+        "first_app_login_required": true,
+        "entry_required": false,
+        "one_entry_per_person": true
+      },
+      "applicability": {
+        "scope": "V member number first logging into V Point app",
+        "effective_from": "2026-04-22",
+        "effective_to": "2026-06-30",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Prior V Point app download/login makes the V member number ineligible."
+      ],
+      "evidence_locator": "Campaign detail: overview, conditions, and entry method",
+      "short_paraphrase": "The campaign required a first app login, needed no entry, and limited participation to one account/person."
+    },
+    {
+      "claim_id": "claim.point.v.campaign.app-expiry.001",
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.v.campaign-app-2026"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Vポイントアプリ新規ダウンロードキャンペーン rewards",
+      "predicate": "expire_on_fixed_date",
+      "value": {
+        "reward_expiry": "2026-10-31"
+      },
+      "applicability": {
+        "scope": "Special V points awarded by the campaign",
+        "effective_from": "2026-04-22",
+        "effective_to": "2026-06-30",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: 特典の有効期限",
+      "short_paraphrase": "Campaign rewards had a fixed expiry of October 31, 2026."
+    },
+    {
+      "claim_id": "claim.point.v.campaign.app-period.001",
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.v.campaign-app-2026"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "Vポイントアプリ新規ダウンロードキャンペーン",
+      "predicate": "runs_during",
+      "value": {
+        "start": "2026-04-22T00:00:00+09:00",
+        "end": "2026-06-30T23:59:59+09:00"
+      },
+      "applicability": {
+        "scope": "First-time V Point app logins",
+        "effective_from": "2026-04-22",
+        "effective_to": "2026-06-30",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: キャンペーン期間",
+      "short_paraphrase": "The app campaign ran from April 22 through June 30, 2026."
+    },
+    {
+      "claim_id": "claim.point.v.campaign.app-prizes.001",
+      "family_id": "point.v",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.v.campaign-app-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "Vポイントアプリ新規ダウンロードキャンペーン",
+      "predicate": "awards_draw_tiered_points",
+      "value": {
+        "tier_1": {
+          "points": 10000,
+          "winners": 10
+        },
+        "tier_2": {
+          "points": 100,
+          "winners": 10000
+        },
+        "tier_3": {
+          "points": 1,
+          "winners": "all others"
+        },
+        "entry_limit": 1
+      },
+      "applicability": {
+        "scope": "Eligible first-time app logins",
+        "effective_from": "2026-04-22",
+        "effective_to": "2026-06-30",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Rewards are fixed-expiry V points."
+      ],
+      "evidence_locator": "Campaign detail: 特典内容",
+      "short_paraphrase": "The draw awards 10,000 points to 10 people, 100 to 10,000 people, and 1 to everyone else."
+    },
+    {
+      "claim_id": "claim.point.v.change.imamura.001",
+      "family_id": "point.v",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.v.change-news"
+      ],
+      "claim_type": "change_notice",
+      "subject": "今村証券",
+      "predicate": "started_vpoint_investment_service",
+      "value": {
+        "announcement_date": "2026-08-04",
+        "service_start_date": null
+      },
+      "applicability": {
+        "scope": "V Point partner/service news listing",
+        "effective_from": "2026-08-04",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ニュース listing: 2026.08.04 今村証券",
+      "short_paraphrase": "The August 4, 2026 news listing announced V points for an Imamura Securities investment service."
+    },
+    {
+      "claim_id": "claim.point.v.change.kajugator.001",
+      "family_id": "point.v",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.v.change-news"
+      ],
+      "claim_type": "change_notice",
+      "subject": "カジュゲータウン for Yahoo! JAPAN",
+      "predicate": "started_vpoint_exchange",
+      "value": {
+        "announcement_date": "2026-08-03",
+        "service_start_date": "2026-08-03"
+      },
+      "applicability": {
+        "scope": "V Point partner/service news listing",
+        "effective_from": "2026-08-03",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ニュース listing: 2026.08.03 カジュゲータウン",
+      "short_paraphrase": "The August 3, 2026 listing announced the start of exchange into V points."
+    },
+    {
+      "claim_id": "claim.point.v.change.zensho.001",
+      "family_id": "point.v",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.v.change-news"
+      ],
+      "claim_type": "change_notice",
+      "subject": "伝丸・威風・壱鵠堂・天下一",
+      "predicate": "started_vpoint_service",
+      "value": {
+        "announcement_date": "2026-07-28",
+        "service_start_date": "2026-08-04"
+      },
+      "applicability": {
+        "scope": "Zensho restaurant brands named in V Point news",
+        "effective_from": "2026-08-04",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ニュース listing: 2026.07.28 Zensho brands",
+      "short_paraphrase": "The July 28 notice announced V Point service at the named Zensho restaurants from August 4, 2026."
+    },
+    {
+      "claim_id": "claim.point.v.earn.participant-campaign.001",
+      "family_id": "point.v",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "V Point program",
+      "predicate": "awards_points_for_participant_use_or_campaign",
+      "value": {
+        "triggers": [
+          "participant service use",
+          "specific campaign participation"
+        ],
+        "rate": "participant-specific"
+      },
+      "applicability": {
+        "scope": "V Point participant companies",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Rates, limits, excluded goods/services, and exchange rates can differ by participant."
+      ],
+      "evidence_locator": "ポイントサービス利用規約: 第2条（ポイントサービスの概要）",
+      "short_paraphrase": "V points can be earned from participant use or specific campaigns, with participant-specific conditions."
+    },
+    {
+      "claim_id": "claim.point.v.earn.store-scenario.001",
+      "family_id": "point.v",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.v.earn-store"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "V Point partner-rate scenario",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 200,
+        "currency": "JPY",
+        "tax_included": true,
+        "context": "partner rate scenario"
+      },
+      "applicability": {
+        "scope": "The page's explicitly labeled 200-yen-per-point partner-use scenario",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "This is a scenario for V Point partners, not a universal rate for every partner."
+      ],
+      "evidence_locator": "Vポイントをお店で貯める: footnote describing 200円(税込) partner scenario",
+      "short_paraphrase": "The earn page uses a 200-yen-including-tax per point partner rate as an explicit scenario."
+    },
+    {
+      "claim_id": "claim.point.v.expiry.fixed.001",
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Fixed-expiry V points",
+      "predicate": "expire_at_individual_fixed_deadline_without_extension",
+      "value": {
+        "extension_by_balance_change": false,
+        "expiry": "individual fixed date"
+      },
+      "applicability": {
+        "scope": "V points with a fixed expiry",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントサービス利用規約: 第3条第2項",
+      "short_paraphrase": "Fixed-expiry V points do not extend through point movement and expire on their individual deadline."
+    },
+    {
+      "claim_id": "claim.point.v.expiry.normal.001",
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Normal V points",
+      "predicate": "expire_one_year_after_last_qualifying_movement",
+      "value": {
+        "period_years": 1,
+        "qualifying_movements": [
+          "earn normal points",
+          "use normal points",
+          "exchange normal points",
+          "use other fixed-expiry points except store-limited"
+        ]
+      },
+      "applicability": {
+        "scope": "Normal V point balance",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Store-limited V point movement does not count."
+      ],
+      "evidence_locator": "ポイントサービス利用規約: 第3条第1項",
+      "short_paraphrase": "Normal V points expire one year after the last qualifying movement."
+    },
+    {
+      "claim_id": "claim.point.v.expiry.priority.001",
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "redemption_priority",
+      "subject": "V point lots",
+      "predicate": "uses_lots_in_fixed_priority",
+      "value": {
+        "priority": [
+          "store-limited V points",
+          "other fixed-expiry points",
+          "normal points"
+        ],
+        "within_class": "nearest expiry first"
+      },
+      "applicability": {
+        "scope": "V point checkout where multiple classes/lots are held",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントサービス利用規約: 第4条",
+      "short_paraphrase": "Store-limited points are consumed first, then other fixed-expiry points, then normal points; earlier expiry wins within a class."
+    },
+    {
+      "claim_id": "claim.point.v.expiry.store-limited.001",
+      "family_id": "point.v",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "expiry_and_reward_classes",
+      "subject": "Store-limited V points",
+      "predicate": "restricts_use_to_named_participants_and_fixed_expiry",
+      "value": {
+        "use_scope": "specified participant companies only",
+        "expiry": "point-specific fixed date",
+        "legacy_names": [
+          "期間固定ポイント"
+        ]
+      },
+      "applicability": {
+        "scope": "Store-limited V point class",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントサービス利用規約: 第2条第2項",
+      "short_paraphrase": "Store-limited V points can only be used at designated participants and expire on their own fixed date."
+    },
+    {
+      "claim_id": "claim.point.v.merchant.eneos-earn.001",
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.v.merchant-earn-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "ENEOS",
+      "predicate": "is_listed_as_vpoint_earn_partner",
+      "value": {
+        "earn": true
+      },
+      "applicability": {
+        "scope": "Rendered V Point earn/service directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントお店・サービス一覧: ENEOS listing",
+      "short_paraphrase": "The rendered earn directory lists ENEOS as a V Point partner."
+    },
+    {
+      "claim_id": "claim.point.v.merchant.familymart-earn.001",
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.v.merchant-earn-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "ファミリーマート",
+      "predicate": "is_listed_as_vpoint_earn_partner",
+      "value": {
+        "earn": true
+      },
+      "applicability": {
+        "scope": "Rendered V Point earn/service directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントお店・サービス一覧: ファミリーマート listing",
+      "short_paraphrase": "The rendered earn directory lists FamilyMart as a V Point partner."
+    },
+    {
+      "claim_id": "claim.point.v.merchant.familymart-use.001",
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.v.merchant-use-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "ファミリーマート",
+      "predicate": "is_listed_as_vpoint_use_partner",
+      "value": {
+        "use": true
+      },
+      "applicability": {
+        "scope": "Rendered V Point use directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントが使えるお店: ファミリーマート listing",
+      "short_paraphrase": "The rendered use directory lists FamilyMart as accepting V points."
+    },
+    {
+      "claim_id": "claim.point.v.merchant.yoshinoya-use.001",
+      "family_id": "point.v",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.v.merchant-use-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "吉野家",
+      "predicate": "is_listed_as_vpoint_use_partner",
+      "value": {
+        "use": true
+      },
+      "applicability": {
+        "scope": "Rendered V Point use directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントが使えるお店: 吉野家 listing",
+      "short_paraphrase": "The rendered use directory lists Yoshinoya as accepting V points."
+    },
+    {
+      "claim_id": "claim.point.v.terms.auth.001",
+      "family_id": "point.v",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "eligibility",
+      "subject": "V Point use",
+      "predicate": "requires_valid_authentication_by_channel",
+      "value": {
+        "internet": "valid designated-ID authentication",
+        "store": "valid physical card"
+      },
+      "applicability": {
+        "scope": "V Point program use",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "V会員規約: 第2条第4項",
+      "short_paraphrase": "Internet use requires the designated ID authentication and store use requires a valid card."
+    },
+    {
+      "claim_id": "claim.point.v.terms.participant-use.001",
+      "family_id": "point.v",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.v.program-terms"
+      ],
+      "claim_type": "program_term",
+      "subject": "V Point participant program",
+      "predicate": "permits_use_and_exchange_with_participant_limits",
+      "value": {
+        "use_scope": "participant companies",
+        "exchange_routes": "participant points or coupons",
+        "participant_can_limit": {
+          "rates": true,
+          "per_transaction_count": true,
+          "goods_services": true
+        }
+      },
+      "applicability": {
+        "scope": "V Point service participants",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイントサービス利用規約: 第2条第2項",
+      "short_paraphrase": "Participants can set different rates, transaction limits, and excluded goods/services; some points are participant-limited."
+    },
+    {
+      "claim_id": "claim.point.v.transfer.ana-to-v-change.001",
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.v.ana-transfer"
+      ],
+      "claim_type": "change_notice",
+      "subject": "ANA miles to V points",
+      "predicate": "changed_processing_time_and_daily_cap",
+      "value": {
+        "effective_date": "2026-04-22",
+        "processing_time": "about 2 to 3 weeks",
+        "daily_max_exchange_units": 2,
+        "daily_max_miles": 20000
+      },
+      "applicability": {
+        "scope": "ANA-to-V point exchange",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA Vポイント page: 2026 rule-change notice",
+      "short_paraphrase": "From April 22, 2026, ANA-to-V processing became 2–3 weeks with a two-unit/20,000-mile daily cap."
+    },
+    {
+      "claim_id": "claim.point.v.transfer.ana-to-v-rate.001",
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.v.ana-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANA miles to V points",
+      "predicate": "converts_miles_to_points",
+      "value": {
+        "source_miles": 10000,
+        "destination_points": 10000
+      },
+      "applicability": {
+        "scope": "ANA members registered with V Point",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Same-year third partner-point exchange has a reduced rate."
+      ],
+      "evidence_locator": "ANA Vポイント page: exchange rate",
+      "short_paraphrase": "The ANA page states 10,000 miles exchange to 10,000 V points."
+    },
+    {
+      "claim_id": "claim.point.v.transfer.ana-to-v-third.001",
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.v.ana-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANA miles to V points",
+      "predicate": "reduces_third_same_year_exchange_rate",
+      "value": {
+        "same_fiscal_year_exchange_number": 3,
+        "source_miles": 10000,
+        "destination_points": 5000,
+        "fiscal_year": "April 1 to March 31"
+      },
+      "applicability": {
+        "scope": "ANA partner-point exchanges including V points",
+        "effective_from": "2026-04-22",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA Vポイント page: third exchange note",
+      "short_paraphrase": "The third partner-point exchange in one ANA fiscal year yields 5,000 V points per 10,000 miles."
+    },
+    {
+      "claim_id": "claim.point.v.transfer.v-to-ana.001",
+      "family_id": "point.v",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.v.use-rules"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "V points to ANA miles",
+      "predicate": "converts_points_to_miles_with_annual_cap",
+      "value": {
+        "minimum_points": 500,
+        "source_points": 500,
+        "destination_miles": 250,
+        "annual_destination_miles_cap": 20000
+      },
+      "applicability": {
+        "scope": "V Point transfer page's ANA route",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントの使い方: exchange card and annual cap note",
+      "short_paraphrase": "The V Point page shows 500 points to 250 ANA miles, with 20,000 annual miles stated as the cap."
+    },
+    {
+      "claim_id": "claim.point.v.use.donation.001",
+      "family_id": "point.v",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.v.use-rules"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "V Point donations",
+      "predicate": "converts_points_to_donation_value",
+      "value": {
+        "points": 1,
+        "donation_jpy": 1
+      },
+      "applicability": {
+        "scope": "V Point donation themes",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントの使い方: 募金 section",
+      "short_paraphrase": "The donation route uses 1 V point as 1 yen of donation value."
+    },
+    {
+      "claim_id": "claim.point.v.use.value.001",
+      "family_id": "point.v",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.v.overview",
+        "src.point.v.use-rules"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "V points",
+      "predicate": "redeem_at_one_yen_value",
+      "value": {
+        "points": 1,
+        "value_jpy": 1
+      },
+      "applicability": {
+        "scope": "V Point partners, Visa merchants via V Point Pay, and internet use",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Participant-specific restrictions and store-limited classes still apply."
+      ],
+      "evidence_locator": "Vポイントの使い方 and Vポイント overview: 1ポイント=1円 sections",
+      "short_paraphrase": "V points are presented as one yen per point at partner, Visa, and internet use routes."
+    },
+    {
+      "claim_id": "claim.point.v.use.visa.001",
+      "family_id": "point.v",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.v.use-rules"
+      ],
+      "claim_type": "redemption_rule",
+      "subject": "V Point Pay",
+      "predicate": "charges_v_points_to_visa_wallet_route",
+      "value": {
+        "route": "charge V Point Pay app then use at Visa merchants",
+        "merchant_scope": "Visa stores and online shopping"
+      },
+      "applicability": {
+        "scope": "V Point Pay-supported users and merchants",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Vポイントの使い方: 世界のVisa加盟店",
+      "short_paraphrase": "The official use page allows V points to be charged to V Point Pay for Visa-store and online use."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge-exclusions.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "eligibility_and_exclusion",
+      "subject": "AEON Pay・WAONチャージキャンペーン",
+      "predicate": "limits_eligible_charge_accounts_and_excludes_mixed_balances",
+      "value": {
+        "eligible": "same WAON number or same AEON Pay account",
+        "cross_account_aggregation": false,
+        "waon_aeonpay_cross_aggregation": false,
+        "pre_period_charge_eligible": false
+      },
+      "applicability": {
+        "scope": "August 2026 charge campaign",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "AEON Pay AEON-card payment is excluded; payment use itself is excluded."
+      ],
+      "evidence_locator": "Campaign detail: 対象チャージ and FAQ aggregation sections",
+      "short_paraphrase": "Only same-account campaign-period charges count; WAON and AEON Pay balances cannot be combined."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge-expiry.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "WAON POINT campaign reward",
+      "predicate": "uses_standard_waon_point_expiry",
+      "value": {
+        "expiry": "one-year point-earning period included, maximum two years"
+      },
+      "applicability": {
+        "scope": "Points awarded by the August 2026 charge campaign",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: campaign precautions",
+      "short_paraphrase": "The campaign says awarded WAON POINT has the standard maximum-two-year expiry structure."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge-period.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "campaign_period",
+      "subject": "AEON Pay・WAONチャージキャンペーン",
+      "predicate": "runs_during",
+      "value": {
+        "start": "2026-08-14T00:00:00+09:00",
+        "end": "2026-08-31T23:59:00+09:00",
+        "early_period": {
+          "start": "2026-08-14",
+          "end": "2026-08-16"
+        }
+      },
+      "applicability": {
+        "scope": "AEON Pay or WAON charge campaign",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Campaign detail: キャンペーン期間 and 早トクッ！期間",
+      "short_paraphrase": "The campaign runs August 14–31, 2026, with an early period August 14–16."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge-prizes.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "AEON Pay・WAONチャージキャンペーン",
+      "predicate": "draws_points_by_charge_unit",
+      "value": {
+        "standard": {
+          "charge_unit_jpy": 10000,
+          "winners": 1500,
+          "points": 10000
+        },
+        "early": {
+          "winners": 100,
+          "points": 50000
+        },
+        "entry_limit": "no cap on units"
+      },
+      "applicability": {
+        "scope": "Eligible charges in the campaign period",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "JMB WAON uses mile rewards rather than point rewards."
+      ],
+      "evidence_locator": "Campaign detail: campaign heading, prize and entry-count sections",
+      "short_paraphrase": "Each 10,000 yen in eligible charges is one draw; standard prizes are 10,000 points for 1,500 winners, with an early 50,000-point draw."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge-threshold.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "campaign_rule",
+      "subject": "AEON Pay・WAONチャージキャンペーン",
+      "predicate": "aggregates_same_account_charges_into_entries",
+      "value": {
+        "entry_unit_jpy": 10000,
+        "same_account_aggregation": true,
+        "one_time_charge_required": false
+      },
+      "applicability": {
+        "scope": "Campaign-period charges on same WAON number or AEON Pay account",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Different WAON numbers cannot be aggregated."
+      ],
+      "evidence_locator": "Campaign detail: 参加口数 and FAQ",
+      "short_paraphrase": "Charges can be split across transactions; each 10,000 yen accumulated on one account makes one entry."
+    },
+    {
+      "claim_id": "claim.point.waon.campaign.charge.eligible-services.001",
+      "family_id": "point.waon",
+      "source_role_id": "campaign_directory",
+      "source_ids": [
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "eligibility",
+      "subject": "AEON Pay・WAONチャージキャンペーン",
+      "predicate": "covers_waon_cards_and_aeonpay_charge_routes",
+      "value": {
+        "waon": "all cards carrying electronic-money WAON including mobile and Apple Pay",
+        "aeonpay": "cash, credit, or bank charge",
+        "waon_charge_methods": [
+          "cash",
+          "credit",
+          "bank",
+          "auto",
+          "point",
+          "receipt"
+        ]
+      },
+      "applicability": {
+        "scope": "August 2026 charge campaign",
+        "effective_from": "2026-08-14",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "AEON Pay AEON-card payment is excluded."
+      ],
+      "evidence_locator": "Campaign detail: 対象サービス and 対象チャージ",
+      "short_paraphrase": "The campaign covers all electronic-money WAON cards and listed WAON/AEON Pay charge methods."
+    },
+    {
+      "claim_id": "claim.point.waon.change.base-rate.001",
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.waon.change-integration"
+      ],
+      "claim_type": "change_notice",
+      "subject": "WAON POINT integration",
+      "predicate": "keeps_basic_earning_unit",
+      "value": {
+        "amount": 200,
+        "currency": "JPY",
+        "points": 1,
+        "tax_included": true
+      },
+      "applicability": {
+        "scope": "Basic WAON POINT issuance unit in the integration notice",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "AEON-group eligible stores can issue the explicitly stated 2-point rate."
+      ],
+      "evidence_locator": "Integration notice: rate-change FAQ",
+      "short_paraphrase": "The integration notice states the basic unit remains one point per 200 yen including tax."
+    },
+    {
+      "claim_id": "claim.point.waon.change.class-distinction.001",
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.waon.change-integration"
+      ],
+      "claim_type": "change_notice",
+      "subject": "WAON POINT versus electronic-money WAON points",
+      "predicate": "changes_redemption_scope_by_class",
+      "value": {
+        "electronic_money_waon_points": "charge-only",
+        "waon_point": "direct store payment plus charge"
+      },
+      "applicability": {
+        "scope": "Integrated point classes",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Integration notice: WAON POINTとWAONポイントについて",
+      "short_paraphrase": "The integration distinguishes charge-only electronic-money points from WAON POINT, which can also pay directly at stores."
+    },
+    {
+      "claim_id": "claim.point.waon.change.integration-date.001",
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.waon.change-integration"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Electronic-money WAON point integration",
+      "predicate": "switches_issuance_to_waon_point_sequentially",
+      "value": {
+        "start_date": "2026-03-01",
+        "mode": "by WAON merchant sequentially",
+        "post_switch": "all issuance at switched merchant is WAON POINT"
+      },
+      "applicability": {
+        "scope": "WAON merchants subject to integration",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some exceptions/merchants may not yet be switched."
+      ],
+      "evidence_locator": "Integration notice: 進呈ポイントがWAON POINTになるのはいつですか",
+      "short_paraphrase": "From March 1, 2026, issuance switches to WAON POINT sequentially by merchant."
+    },
+    {
+      "claim_id": "claim.point.waon.change.timing.001",
+      "family_id": "point.waon",
+      "source_role_id": "change_notices",
+      "source_ids": [
+        "src.point.waon.change-integration"
+      ],
+      "claim_type": "change_notice",
+      "subject": "WAON POINT posting timing",
+      "predicate": "may_delay_posting_after_integration",
+      "value": {
+        "before": "immediate",
+        "after": "may take several days"
+      },
+      "applicability": {
+        "scope": "WAON POINT issuance after integration",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Integration notice: 進呈方法や還元率に変更はありますか",
+      "short_paraphrase": "The notice says posting may take several days rather than being immediate."
+    },
+    {
+      "claim_id": "claim.point.waon.earn.aeon-card-rate.001",
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.waon.earn-aeon-card"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "AEON-mark card payment",
+      "predicate": "awards_waon_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 200,
+        "currency": "JPY",
+        "tax_included": true
+      },
+      "applicability": {
+        "scope": "AEON-mark credit/debit card payment",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINTの詳細: rate",
+      "short_paraphrase": "An AEON-mark card payment earns one WAON POINT per 200 yen including tax."
+    },
+    {
+      "claim_id": "claim.point.waon.earn.aeon-timing.001",
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.waon.earn-aeon-card"
+      ],
+      "claim_type": "timing",
+      "subject": "WAON POINT posting",
+      "predicate": "posts_by_payment_channel_schedule",
+      "value": {
+        "credit_or_debit": "monthly 25th",
+        "electronic_money_or_cash_with_card": "at payment"
+      },
+      "applicability": {
+        "scope": "AEON card guide payment channels",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINTの詳細: 進呈タイミング",
+      "short_paraphrase": "Credit/debit points are posted on the 25th; electronic-money or cash-with-card points post at payment."
+    },
+    {
+      "claim_id": "claim.point.waon.earn.greenbeans.001",
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.waon.merchant-network-directory"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Green Beans online supermarket",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 200,
+        "currency": "JPY",
+        "tax_included": false,
+        "basis": "after discounts"
+      },
+      "applicability": {
+        "scope": "Green Beans order amount",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Discount-excluded goods, delivery fees, and WAON POINT-used amounts are excluded."
+      ],
+      "evidence_locator": "WAON POINT加盟店｜ネットショップ: Green Beans listing",
+      "short_paraphrase": "Green Beans earns one point per 200 yen before tax after discounts, excluding fees and point-used amounts."
+    },
+    {
+      "claim_id": "claim.point.waon.earn.waon-rate.001",
+      "family_id": "point.waon",
+      "source_role_id": "earn_rules",
+      "source_ids": [
+        "src.point.waon.earn-main"
+      ],
+      "claim_type": "earn_rule",
+      "subject": "Electronic-money WAON shopping",
+      "predicate": "awards_points_per_amount",
+      "value": {
+        "points": 1,
+        "amount": 200,
+        "currency": "JPY",
+        "tax_included": true
+      },
+      "applicability": {
+        "scope": "WAON purchases in the main WAON point guide",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some products and stores are excluded; registered AEON stores can have a 2x basic rate."
+      ],
+      "evidence_locator": "ポイントをためる・使う: お買物でためる",
+      "short_paraphrase": "The main guide shows one point per 200 yen including tax for WAON shopping."
+    },
+    {
+      "claim_id": "claim.point.waon.expiry.aeon-card.001",
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.waon.earn-aeon-card"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "WAON POINT earned by AEON card/debit",
+      "predicate": "expires_at_end_of_second_year_after_first_posting_month",
+      "value": {
+        "anchor": "first posting month",
+        "expiry": "end of month two calendar years later",
+        "maximum_years": 2
+      },
+      "applicability": {
+        "scope": "WAON POINT earned by AEON-mark credit/debit payment",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Multiple cards can have different expiry dates."
+      ],
+      "evidence_locator": "WAON POINTの詳細: ポイントの有効期限",
+      "short_paraphrase": "The card guide anchors expiry to the first posting month and ends it at the end of the month two years later."
+    },
+    {
+      "claim_id": "claim.point.waon.expiry.campaign.001",
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.waon.change-integration",
+        "src.point.waon.campaign-charge-2026"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "WAON POINT rewards",
+      "predicate": "expire_after_maximum_two_year_structure",
+      "value": {
+        "earning_period_years": 1,
+        "maximum_validity_years": 2,
+        "post_expiry": "失効"
+      },
+      "applicability": {
+        "scope": "WAON POINT including campaign rewards",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Integration notice and campaign precautions: WAON POINT expiry",
+      "short_paraphrase": "WAON POINT has a one-year earning period plus validity ending within a maximum two-year structure."
+    },
+    {
+      "claim_id": "claim.point.waon.expiry.receive.001",
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.waon.receive-periods"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "Campaign or exchanged points awaiting download",
+      "predicate": "has_seasonal_receipt_deadline",
+      "value": {
+        "completion_apr_to_sep": "following_year_march_31",
+        "completion_oct_to_mar": "following_year_september_30"
+      },
+      "applicability": {
+        "scope": "WAON point download receipt",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some campaigns set different receipt deadlines."
+      ],
+      "evidence_locator": "ポイントダウンロード（受取り）: campaign/benefit receipt periods",
+      "short_paraphrase": "Points completed April–September can be received through the following March 31; October–March through the following September 30."
+    },
+    {
+      "claim_id": "claim.point.waon.expiry.terms-next-year.001",
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "WAON POINT annual lots",
+      "predicate": "expire_at_next_fiscal_year_end",
+      "value": {
+        "first_year": "first award date through one-year-later month end",
+        "later_years": "one-year annual periods",
+        "lot_expiry": "end of following year"
+      },
+      "applicability": {
+        "scope": "WAON POINT member lots under service terms",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINTサービス規約: 第13条",
+      "short_paraphrase": "Each annual lot expires at the end of the year following the year in which it was added."
+    },
+    {
+      "claim_id": "claim.point.waon.expiry.terms-window.001",
+      "family_id": "point.waon",
+      "source_role_id": "expiry_and_reward_classes",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "expiry_rule",
+      "subject": "WAON POINT",
+      "predicate": "defines_first_annual_expiry_window",
+      "value": {
+        "first_window": "from first point award through month-end after one year"
+      },
+      "applicability": {
+        "scope": "WAON POINT member",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINTサービス規約: 第13条第1項",
+      "short_paraphrase": "The first annual period starts at the first award and ends at the month end after one year."
+    },
+    {
+      "claim_id": "claim.point.waon.merchant.aeonshop.001",
+      "family_id": "point.waon",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.waon.merchant-network-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "イオンショップ",
+      "predicate": "is_listed_as_use_only_network_partner",
+      "value": {
+        "earn": false,
+        "use": true,
+        "bonus_points_possible": true
+      },
+      "applicability": {
+        "scope": "Rendered WAON network-shop listing",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "The listing states ordinary 200-yen earn is not offered; bonus points may still be offered."
+      ],
+      "evidence_locator": "WAON POINT加盟店｜ネットショップ: イオンショップ listing",
+      "short_paraphrase": "The visible AEON Shop record allows use but says ordinary 200-yen earn is not offered; bonus points may apply."
+    },
+    {
+      "claim_id": "claim.point.waon.merchant.directory-categories.001",
+      "family_id": "point.waon",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.waon.merchant-city-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "WAON POINT city merchant directory",
+      "predicate": "organizes_partners_by_categories_and_services",
+      "value": {
+        "categories": [
+          "supermarkets",
+          "malls",
+          "convenience stores",
+          "drugstores",
+          "home centers",
+          "food",
+          "fashion",
+          "entertainment",
+          "sports",
+          "life/pets",
+          "car life"
+        ],
+        "service_filters": [
+          "earn",
+          "use",
+          "member barcode",
+          "AEON Pay"
+        ]
+      },
+      "applicability": {
+        "scope": "Rendered WAON city merchant directory",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Mall tenant participation must be checked on the mall's own site."
+      ],
+      "evidence_locator": "WAON POINT 加盟店: 街のお店 categories and filters",
+      "short_paraphrase": "The directory organizes partners by merchant category and earn/use/service filters."
+    },
+    {
+      "claim_id": "claim.point.waon.merchant.greenbeans.001",
+      "family_id": "point.waon",
+      "source_role_id": "partner_merchant_directory",
+      "source_ids": [
+        "src.point.waon.merchant-network-directory"
+      ],
+      "claim_type": "merchant_acceptance",
+      "subject": "Green Beans",
+      "predicate": "is_listed_as_earn_and_use_network_partner",
+      "value": {
+        "earn": true,
+        "use": true
+      },
+      "applicability": {
+        "scope": "Rendered WAON network-shop listing",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINT加盟店｜ネットショップ: Green Beans listing",
+      "short_paraphrase": "The visible Green Beans record is marked as both earn and use."
+    },
+    {
+      "claim_id": "claim.point.waon.terms.earn-and-exchange.001",
+      "family_id": "point.waon",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "program_term",
+      "subject": "WAON POINT service",
+      "predicate": "allows_merchant_earn_and_partner_exchange",
+      "value": {
+        "earn_triggers": "specified transactions at WAON POINT merchants",
+        "partner_exchange": "specified partner points to WAON POINT",
+        "post_payment_card_presentation": false
+      },
+      "applicability": {
+        "scope": "WAON POINT member service",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Issuer-designated goods/transactions may earn no points."
+      ],
+      "evidence_locator": "WAON POINTサービス規約: 第4条",
+      "short_paraphrase": "The terms allow issuer-specified merchant earning and partner-point exchange; presenting a card after settlement earns no points."
+    },
+    {
+      "claim_id": "claim.point.waon.terms.no-cash.001",
+      "family_id": "point.waon",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "exclusion",
+      "subject": "WAON POINT",
+      "predicate": "cannot_be_exchanged_for_cash",
+      "value": {
+        "cash_conversion_allowed": false
+      },
+      "applicability": {
+        "scope": "WAON POINT service",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "WAON POINTサービス規約: 第17条",
+      "short_paraphrase": "The service terms prohibit exchanging WAON POINT for cash."
+    },
+    {
+      "claim_id": "claim.point.waon.terms.value.001",
+      "family_id": "point.waon",
+      "source_role_id": "program_terms",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "WAON POINT standard use",
+      "predicate": "redeems_at_one_yen_value",
+      "value": {
+        "points": 1,
+        "value_jpy": 1
+      },
+      "applicability": {
+        "scope": "Issuer-specified merchant payment, WAON conversion, goods/services, or donation routes",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Coupon, discount-ticket, and partner-point exchange rates can differ."
+      ],
+      "evidence_locator": "WAON POINTサービス規約: 第7条",
+      "short_paraphrase": "The terms set one yen per WAON POINT for standard use, while partner exchanges can have other rates."
+    },
+    {
+      "claim_id": "claim.point.waon.transfer.jal-campaign.001",
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.waon.jal-campaign-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JAL miles to WAON campaign",
+      "predicate": "converts_bulk_miles_at_promotional_rate",
+      "value": {
+        "source_miles": 40000,
+        "destination_waon": 50000,
+        "destination_value_jpy": 50000
+      },
+      "applicability": {
+        "scope": "JAL campaign applicants",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Applications must be completed by 23:59 on August 31, 2026."
+      ],
+      "evidence_locator": "JAL WAON campaign: campaign-period exchange table",
+      "short_paraphrase": "During the campaign, 40,000 JAL miles exchange to 50,000 WAON, stated as 50,000 yen equivalent."
+    },
+    {
+      "claim_id": "claim.point.waon.transfer.jal-cap.001",
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.waon.jal-campaign-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JAL miles to WAON",
+      "predicate": "has_no_exchange_count_cap_and_card_balance_cap",
+      "value": {
+        "exchange_count_cap": "none",
+        "card_balance_cap_jpy": 50000
+      },
+      "applicability": {
+        "scope": "JAL-to-WAON transfer campaign and normal route",
+        "effective_from": "2026-07-01",
+        "effective_to": "2026-08-31",
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL WAON campaign: exchange limit and card balance notes",
+      "short_paraphrase": "The JAL page says exchange count is unlimited, while a WAON card can hold up to 50,000 yen."
+    },
+    {
+      "claim_id": "claim.point.waon.transfer.jal-normal.001",
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.waon.jal-campaign-transfer"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JAL miles to WAON normal route",
+      "predicate": "converts_miles_at_normal_rates",
+      "value": {
+        "rate_rows": [
+          {
+            "source_miles": 3000,
+            "destination_waon": 1500,
+            "destination_value_jpy": 1500
+          },
+          {
+            "source_miles": 10000,
+            "destination_waon": 11000,
+            "destination_value_jpy": 11000
+          }
+        ]
+      },
+      "applicability": {
+        "scope": "JMB WAON normal exchange route shown on JAL page",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL WAON campaign: normal exchange table",
+      "short_paraphrase": "The normal route shown is 3,000 miles to 1,500 WAON or 10,000 miles to 11,000 WAON."
+    },
+    {
+      "claim_id": "claim.point.waon.transfer.migration.001",
+      "family_id": "point.waon",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "src.point.waon.exchange-directory"
+      ],
+      "claim_type": "change_notice",
+      "subject": "Partner points to WAON POINT",
+      "predicate": "replaces_old_waon_point_destination_after_integration",
+      "value": {
+        "new_destination": "WAON POINT",
+        "effective_date": "2026-03-01",
+        "old_exchange_end": "2026-02-28",
+        "service_continues": "as WAON POINT exchange"
+      },
+      "applicability": {
+        "scope": "Partner-point exchange routes listed by AEON",
+        "effective_from": "2026-03-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "JAL miles to electronic-money WAON remains available per the page."
+      ],
+      "evidence_locator": "提携先のポイントを交換: migration notice",
+      "short_paraphrase": "From March 1, 2026 partner exchanges changed from electronic-money WAON points to WAON POINT; the prior destination ended February 28."
+    },
+    {
+      "claim_id": "claim.point.waon.use.methods.001",
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "redemption_rule",
+      "subject": "WAON POINT",
+      "predicate": "supports_multiple_use_routes",
+      "value": {
+        "routes": [
+          "merchant payment",
+          "conversion to WAON",
+          "goods/services",
+          "coupons/discounts/partner points",
+          "donation",
+          "gift to another member"
+        ]
+      },
+      "applicability": {
+        "scope": "WAON POINT service",
+        "effective_from": "2026-07-15",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Some merchants only award points and do not accept them for payment; WAON POINT cards cannot convert to WAON."
+      ],
+      "evidence_locator": "WAON POINTサービス規約: 第7条",
+      "short_paraphrase": "The terms list merchant payment, WAON conversion, goods, partner services, donations, and member gifts as use routes."
+    },
+    {
+      "claim_id": "claim.point.waon.use.new-card-minimum.001",
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.waon.point-charge"
+      ],
+      "claim_type": "eligibility",
+      "subject": "WAON point receipt/charge on a first-used WAON card",
+      "predicate": "requires_initial_cash_or_other_charge",
+      "value": {
+        "minimum_initial_charge_jpy": 1000,
+        "required_before_receipt": true
+      },
+      "applicability": {
+        "scope": "First use of a WAON card for point receipt/charge",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ポイント交換 and point-charge pages: first-use warning",
+      "short_paraphrase": "The official exchange/charge guidance requires a first-time WAON card to receive a 1,000-yen-or-more charge before point receipt."
+    },
+    {
+      "claim_id": "claim.point.waon.use.point-value.001",
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.waon.point-charge",
+        "src.point.waon.program-terms"
+      ],
+      "claim_type": "redemption_value",
+      "subject": "WAON POINT to WAON",
+      "predicate": "converts_one_point_to_one_yen_waon",
+      "value": {
+        "source_points": 1,
+        "destination_waon_value_jpy": 1
+      },
+      "applicability": {
+        "scope": "WAON electronic-money conversion route",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "A never-charged WAON cannot receive the conversion; WAON POINT cards cannot convert to WAON under terms."
+      ],
+      "evidence_locator": "ポイントからチャージする and WAON POINTサービス規約: use conversion",
+      "short_paraphrase": "One WAON point converts to one yen of WAON for shopping."
+    },
+    {
+      "claim_id": "claim.point.waon.use.receive-period.001",
+      "family_id": "point.waon",
+      "source_role_id": "use_redemption_rules",
+      "source_ids": [
+        "src.point.waon.receive-periods"
+      ],
+      "claim_type": "timing",
+      "subject": "Campaign/exchanged WAON points",
+      "predicate": "must_be_downloaded_before_receipt_deadline",
+      "value": {
+        "apr_to_sep_completion_deadline": "following_year_march_31",
+        "oct_to_mar_completion_deadline": "following_year_september_30"
+      },
+      "applicability": {
+        "scope": "Points held for WAON download/receipt",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [
+        "Individual campaigns may set different deadlines."
+      ],
+      "evidence_locator": "ポイントダウンロード（受取り）: receipt deadline table",
+      "short_paraphrase": "Awarded/exchanged points must be downloaded by the applicable seasonal deadline or cannot be received."
+    }
+  ],
+  "summary": {
+    "claim_count": 111,
+    "source_count": 45,
+    "role_result_count": 32,
+    "claim_count_by_family": {
+      "point.ponta": 25,
+      "point.rakuten": 27,
+      "point.v": 26,
+      "point.waon": 33
+    },
+    "claim_count_by_role": {
+      "campaign_directory": 15,
+      "change_notices": 10,
+      "earn_rules": 15,
+      "expiry_and_reward_classes": 18,
+      "partner_merchant_directory": 11,
+      "program_terms": 11,
+      "transfer_partner_directory": 16,
+      "use_redemption_rules": 15
+    },
+    "claim_count_by_type": {
+      "campaign_period": 3,
+      "campaign_rule": 7,
+      "change_notice": 13,
+      "earn_rule": 12,
+      "eligibility": 4,
+      "eligibility_and_exclusion": 2,
+      "exclusion": 5,
+      "expiry_and_reward_classes": 3,
+      "expiry_rule": 16,
+      "merchant_acceptance": 11,
+      "program_term": 5,
+      "redemption_priority": 3,
+      "redemption_rule": 4,
+      "redemption_value": 6,
+      "timing": 4,
+      "timing_and_cap": 1,
+      "transfer_rule": 12
+    },
+    "failures": [],
+    "validation_intent": "Parse JSON, require unique IDs and resolved source references, verify all 32 family-role results are present, verify official domains, recompute summary counts from arrays, and sort sources/roles/claims by declared order before admission."
+  }
+}

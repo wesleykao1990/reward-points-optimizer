@@ -164,7 +164,7 @@ function request(overrides: Record<string, unknown> = {}) {
     observation_id: "so_test",
     observation_fingerprint: `sha256:${"a".repeat(64)}`,
     p0_family_id: "P0_TEST",
-    source_role_id: "accepted_payment_methods",
+    source_role_id: "reward_program_terms",
     source_authority_role: "primary",
     source_ids: ["source_test"],
     rule: rule(),
@@ -180,7 +180,7 @@ function request(overrides: Record<string, unknown> = {}) {
       entries: [
         {
           family_id: "P0_TEST",
-          source_role_id: "accepted_payment_methods",
+          source_role_id: "reward_program_terms",
           known_source_ids: ["source_test"],
         },
       ],
@@ -381,7 +381,7 @@ describe("provisional rule kernel", () => {
         },
         {
           family_id: "merchant.7eleven",
-          source_role_id: "accepted_payment_methods",
+          source_role_id: "reward_program_terms",
           known_source_ids: ["source_test"],
         },
       ],

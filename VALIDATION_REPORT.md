@@ -5,9 +5,11 @@ Validated: **2026-08-21 (Asia/Tokyo)**
 ## Result
 
 **GO through the Milestone 7 challenge-infrastructure checkpoint and the
-interim P0 provisional Agent Feed rehearsal for private experimental use. Broad
-P0 coverage, canonical rule publication, the Milestone 4 operational
-rehearsal, the evidence-backed 100-scenario workstream, and any real-data or
+bounded P0 experimental stack: source operations, atomic provisional batches,
+the current Seven-Eleven payment-family run, the verified Agent Feed
+PostgreSQL atomic adapter, and one exact evidence-gated nanaco economic pilot.
+Broad P0 economic ingestion, canonical rule publication, the Milestone 4
+operational rehearsal, the evidence-backed 100-scenario workstream, and any
 production consumer alpha remain pending.**
 
 - JSON Schemas: 11;
@@ -26,10 +28,14 @@ production consumer alpha remain pending.**
 - browser/API smoke flow passed.
 - Agent Feed `@agent-feed/schema@0.1.1` release pin matches the independently verified artifact URL, source commit, SHA-256, byte length, and SHA-512 integrity.
 - consumer-alpha package tests: 28/28 passed;
-- localhost consumer-alpha app tests: 23/23 passed.
+- localhost consumer-alpha app tests: 31/31 passed.
+- provisional-rule package tests: 26/26 passed;
+- Agent Feed PostgreSQL adapter/host tests: 10/10 passed;
+- fresh PostgreSQL 16 gate: 10 migrations, 4 seeds, 15 SQL tests passed;
+- current Agent Feed local-file validation: 1 run, 1 batch, 1 finding, and 1
+  lead-only evidence record accepted.
 - challenge-track tests: 41/41 passed.
-- provisional-rule tests: 9/9 passed;
-- database gate: 6 migrations, 2 seeds, and 10 SQL tests passed on PostgreSQL 16.
+- P0 source-operations tests: 8/8 passed;
 
 The prototype proves exact residual conservation, reward-class separation, valuation isolation, break-even sensitivity, reusable definition hashes, separate publication idempotency, bitemporal-overlap rejection, required review modes, and hostile Agent Feed intake rejection.
 
@@ -283,3 +289,134 @@ This proves the lifecycle for one `merchant.7eleven` /
 Scaling requires truthful authorized producer runs, semantic
 evidence-to-economic-rule support, extractor authenticity, and operational
 correction adjudication; missing economic facts must not be invented.
+
+## P0 source-operations alpha — 2026-08-21
+
+The P0 planning universe is now a normalized, exact-content hash-bound artifact
+and private runtime contract: 44 source families, 19 monitoring streams, and
+301 unique semantic role requirements. Hostile, reordered, missing, duplicate,
+extra-key, and product/SKU-substitution probes fail closed or normalize to the
+same admitted hash. A baseline planning status such as `covered` cannot create
+readiness.
+
+Migration `0007_p0_source_operations.sql` and seed
+`003_p0_source_operations.sql` persist and one-way seal the same immutable plan,
+register the 19 stream expectations, and record a separate operational state
+for every role. Sealing verifies the exact 44/19/301 expansion and 34/8/2
+planning-status counts; post-seal inserts and all updates, deletes, and
+truncates fail closed.
+Readiness requires authorized producer provenance, reviewed permission, known
+technical acquisition, healthy liveness, current canonical evidence or an
+explicit conservative exclusion, and mapped rule impact. The fresh PostgreSQL
+16 gate reports zero ready roles and zero ready families. Exactly one role—the
+existing `merchant.7eleven/accepted_payment_methods` local rehearsal—is marked
+experimental, while retaining six explicit blockers.
+
+The control plane contains no representative planning URLs, selectable card or
+product SKUs, economic rules, canonical evidence promotion, publication path,
+public API, or frontend route. Its next use is to admit one authorized producer
+run and evidence-acquisition pack for a named P0 family-role, not to infer or
+bulk-publish missing reward facts.
+
+## P0 atomic provisional catalogue alpha — 2026-08-21
+
+The experimental lane is now bulk-capable without weakening canonical rule
+publication. `@jro/provisional-rules` snapshots a complete 1–32 member request,
+binds the sealed P0 plan hash, fully admits and primary-authority activates
+every member before mutation, rejects duplicate identities, sorts by candidate
+hash, and emits a deterministic batch hash. Exact replay is idempotent while
+the original versions remain active. Changed replay and replay after a
+correction fail closed, so disputed data cannot be resurrected.
+
+Migration `0008_p0_bulk_provisional_publication.sql` adds an immutable private
+batch/member ledger and a correction-sensitive active view. The owner-only
+fixed-search-path adapter prevalidates every JSON member, requires the exact
+sealed plan and explicit role-level `experimental_eligible` flag, locks
+candidate hashes deterministically, and uses the existing candidate admission
+and lifecycle functions inside one statement transaction. PostgreSQL validates
+the trusted projection but deliberately does not reimplement the TypeScript
+canonical hash algorithm. No canonical reward rule, evidence promotion, or
+publication request is created.
+
+The localhost Japanese UI now shows the one checked-in Seven-Eleven acceptance
+candidate under `先行公開データ`, labeled machine-checked and provisional. The
+browser receives a bounded claim and exact version identifiers, but no raw
+rule, evidence body, or source URL. A correction request contains only the
+host-issued publication ID and a bounded category; the host creates the exact
+credible signal and immediately disputes/removes that version. The provisional
+record is explicitly not used by the synthetic optimizer because no exact
+Seven-Eleven-to-synthetic-branch relationship is asserted.
+
+Focused suites pass 14 provisional-rule and 31 app tests, plus package/app
+typecheck, build, and scoped Biome. A fresh PostgreSQL 16 run passed all eight
+migrations, three seeds, and twelve SQL tests. This proves scalable publication
+mechanics, not comprehensive P0 data: only one role currently has a truthful,
+source-bound candidate.
+
+Independent bulk review found and the implementation closed exact-request,
+duplicate-candidate-identity, and SQL ordering gaps. Independent frontend
+review found and the implementation closed hostile GET authority admission and
+misleading health wording. Both final re-reviews issued **GO**.
+
+## P0 bounded payment-family source run — 2026-08-21
+
+The Agent Feed repository was initially checked at commit
+`520ecd9b772216c62c0a8d274142f4840e803d89`. A later focused schema repair was
+rebased onto current main, passed all ten hosted checks, and merged as PR #16 at
+`d232aac75c3a5e5a2d36c2af71464f4f13ac4713`. Its service contract remains
+deliberately generic: it validates, stores, and routes producer findings but
+does not decide Rewards coverage or crawl external sources by itself.
+
+One operator-authorized manual check of the registered Seven-Eleven
+payment-methods source was encoded as a protocol `0.1` local-file run bundle.
+The current Agent Feed validator accepted its exact 1-run/1-batch/1-finding/
+1-evidence structure. The normalized source snapshot contains precisely the 11
+observed payment families and no raw page body.
+
+The deterministic Rewards adapter turns that plural observation into 11
+separate `under_review` payment-acceptance candidates. Admission verifies that
+each candidate's reason and sole allowed instrument name one of the observed
+families; a mismatched or invented family rejects the whole batch before any
+mutation. The Japanese prototype exposes all 11 as separately correctable
+provisional entries, while keeping them outside recommendation evaluation.
+
+The fresh PostgreSQL 16 integration gate passed all eight migrations, four
+seeds, and thirteen SQL tests. Seed `004_p0_payment_acceptance_batch.sql`
+persists the unsigned receipt, lead-only finding/evidence, exact observation,
+and immutable 11-member batch. It creates no canonical evidence, approved rule
+version, publication request, reward rate, campaign, product SKU, or production
+recommendation. The sealed 44-family/301-role readiness snapshot remains at
+zero ready roles; this checkpoint expands one payment-acceptance slice rather
+than completing P0.
+
+## P0 atomic Agent Feed adapter and nanaco pilot — 2026-08-21
+
+`@jro/agent-feed-postgres` now implements the consumer's single atomic
+persistence port without introducing a PostgreSQL driver dependency. Exact
+handler-shaped input is validated before one transaction persists the receipt,
+observation or evidence leads, and run lifecycle. JSON nulls, mismatched event
+and terminal states, duplicate or mismatched evidence identities, unknown
+fields, and downstream failures reject without a partial receipt. Valid
+`run.failed`/`cancelled` pairing is retained from the pinned consumer contract.
+
+The nanaco pilot no longer accepts caller-provided economics or coverage. A
+generated artifact seals the existing reviewed rule at definition hash
+`sha256:9f8cb5de0af689ee8ca751a3ae6a34c2d974eb1c79c29c60bd555da4db116746`.
+Its PostgreSQL host privately owns the store and async verifier, follows a
+distinct Agent Feed lead through promoted evidence work, and binds the verified
+canonical EvidenceRecord and trusted source to that exact under-review rule
+version before activation. Lead-only input stays `needs_evidence`.
+
+Independent reviews first found and then confirmed closure of SQL
+three-valued-logic, terminal mapping, evidence set, pool release, mutable
+economic template, caller-replaced coverage, and forged-verifier gaps. Focused
+checks pass 26 provisional-rule tests and 10 PostgreSQL adapter/host tests,
+plus typecheck, build, and scoped Biome. Two independent PostgreSQL 16 runs
+passed the complete 10-migration, 4-seed, 15-test gate; a later primary rerun
+could not initialize a new cluster because the host had exhausted System V
+shared-memory IDs, not because of a repository failure.
+
+This is not a live ingestion claim. The merged Agent Feed schema has not yet
+been proven in the active ChatGPT connector, and the local tunnel remains
+stopped while PostgreSQL/Docker Compose startup is repaired. No new canonical
+economic rule or production recommendation was created by this checkpoint.

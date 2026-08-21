@@ -1,0 +1,30 @@
+{
+  "capture_method": "manual_capture",
+  "captured_at": "2026-08-21T13:49:24+09:00",
+  "facts": [
+    {
+      "accepted_payment_families": [
+        "barcode_payment",
+        "brand_debit_card",
+        "brand_prepaid_card",
+        "credit_card",
+        "gift_certificate",
+        "id",
+        "nanaco",
+        "quo_card",
+        "quicpay",
+        "rakuten_edy",
+        "transport_e_money"
+      ],
+      "fact_id": "p0_seveneleven_payment_acceptance_20260821",
+      "merchant": "Seven-Eleven Japan",
+      "status": "machine_extracted_provisional"
+    }
+  ],
+  "raw_page_body_stored": false,
+  "record_type": "normalized_manual_source_snapshot",
+  "representation_policy": "Paraphrased structured facts only; no copied page body, screenshot, or excerpt retained.",
+  "source_id": "merchant.seveneleven.payment-methods",
+  "source_snapshot_id": "snap_p0_seveneleven_payment_methods_20260821",
+  "source_url": "https://www.sej.co.jp/services/cash.html"
+}
