@@ -59,6 +59,27 @@ export function ruleIsApproved(rule: RewardRule): boolean {
   }
 }
 
+/**
+ * Experimental execution is an explicit host policy, not an alternate
+ * publication status.  Under-review candidates may be evaluated only when a
+ * caller has already entered the dedicated experimental recommendation lane;
+ * approved review events and human verification are rejected here so this
+ * path cannot mint trust by changing a status field.
+ */
+export function ruleIsExperimentalCandidate(rule: RewardRule): boolean {
+  return (
+    rule.status === "under_review" &&
+    rule.provenance.human_verified === false &&
+    rule.audit.review_mode === null &&
+    rule.audit.reviewed_at === null &&
+    rule.audit.reviewed_by === null &&
+    Array.isArray(rule.audit.review_events) &&
+    rule.audit.review_events.length === 0
+  );
+}
+
+export type RuleEvaluationPolicy = "approved" | "experimental_unverified";
+
 export function selectApprovedRule(
   rules: readonly RewardRule[],
   ruleId: string,
@@ -89,9 +110,28 @@ export function selectApprovedRules(
   transactionTime: string,
   replayKnowledgeTime: string,
 ): RewardRule[] {
+  return selectRulesForEvaluation(
+    rules,
+    transactionTime,
+    replayKnowledgeTime,
+    "approved",
+  );
+}
+
+export function selectRulesForEvaluation(
+  rules: readonly RewardRule[],
+  transactionTime: string,
+  replayKnowledgeTime: string,
+  policy: RuleEvaluationPolicy = "approved",
+): RewardRule[] {
   const byId = new Map<string, RewardRule[]>();
   for (const rule of rules) {
-    if (!ruleIsApproved(rule)) continue;
+    if (
+      policy === "approved"
+        ? !ruleIsApproved(rule)
+        : !ruleIsExperimentalCandidate(rule)
+    )
+      continue;
     if (
       !halfOpenContains(
         rule.validity.valid_from,
@@ -116,7 +156,10 @@ export function selectApprovedRules(
   for (const [ruleId, matches] of byId) {
     if (matches.length > 1)
       throw new Error(`ambiguous_bitemporal_replay:${ruleId}`);
-    selected.push(structuredClone(matches[0]!));
+    const match = matches[0];
+    if (match === undefined)
+      throw new Error(`missing_bitemporal_replay:${ruleId}`);
+    selected.push(structuredClone(match));
   }
   return selected.sort(
     (left, right) =>

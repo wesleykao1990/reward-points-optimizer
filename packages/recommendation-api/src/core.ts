@@ -7,6 +7,7 @@ import {
   type NativePlanResult,
   type PurchasePlan,
   type RewardRule,
+  ruleIsExperimentalCandidate,
   type ValuedPlanResult,
 } from "@jro/rule-engine";
 import {
@@ -364,6 +365,37 @@ function validateRuleTrust(
     throw new RecommendationRequestError("rule_trust_blocked", bad.join(","));
   assessments.push(assessment);
   return assessments;
+}
+
+/**
+ * Experimental recommendations deliberately carry no trust assurance.  The
+ * host proves the route and explicitly opts into this lane; this function
+ * only checks that the supplied rule is still an unmodified under-review
+ * candidate.  In particular, it rejects a caller that changes the candidate
+ * to a published or human-reviewed rule and then labels it experimental.
+ */
+function validateExperimentalRuleAdmission(
+  request: RecommendationRequest,
+): readonly TrustAssessment[] {
+  if (request.experimental_rule_admission !== "unverified_host")
+    throw new RecommendationRequestError("experimental_admission_required");
+  if (request.experimental_value_policy !== "unvalued")
+    throw new RecommendationRequestError("experimental_value_policy_required");
+  if (
+    (request.rule_assurances ?? []).length > 0 ||
+    (request.assurances ?? []).length > 0
+  )
+    throw new RecommendationRequestError("experimental_assurances_forbidden");
+  if (!Array.isArray(request.rules) || request.rules.length === 0)
+    throw new RecommendationRequestError("experimental_rules_required");
+  for (const rule of request.rules) {
+    if (!ruleIsExperimentalCandidate(rule))
+      throw new RecommendationRequestError(
+        "experimental_rule_not_unverified",
+        rule.rule_id,
+      );
+  }
+  return [];
 }
 
 interface LineItemLike {
@@ -785,6 +817,12 @@ function engineContext(request: RecommendationRequest): EvaluatePlanOptions {
     feasibleStates: clone(
       request.feasible_states ?? request.feasibleStates ?? [],
     ),
+    rule_evaluation_policy:
+      request.mode === "experimental_real_data"
+        ? "experimental_unverified"
+        : "approved",
+    valuation_policy:
+      request.mode === "experimental_real_data" ? "unvalued" : "explicit",
   };
 }
 
@@ -848,10 +886,22 @@ function validateRequestShape(request: RecommendationRequest): void {
   requiredString(request.request_id, "request_id_required");
   if (
     !(
-      ["production", "synthetic_internal"] as readonly RecommendationMode[]
+      [
+        "production",
+        "synthetic_internal",
+        "experimental_real_data",
+      ] as readonly RecommendationMode[]
     ).includes(request.mode)
   )
     throw new RecommendationRequestError("mode_required");
+  if (request.mode === "experimental_real_data") {
+    if (request.experimental_rule_admission !== "unverified_host")
+      throw new RecommendationRequestError("experimental_admission_required");
+    if (request.experimental_value_policy !== "unvalued")
+      throw new RecommendationRequestError(
+        "experimental_value_policy_required",
+      );
+  }
   if (request.timezone !== "Asia/Tokyo")
     throw new RecommendationRequestError("timezone_must_be_asia_tokyo");
   validateTimes(request);
@@ -918,7 +968,10 @@ export function recommend(
       "comparison_merchant_resolution_mismatch",
     );
   const inputHash = hash(normalizedRequestForHash(request, comparison));
-  const trustAssessments = validateRuleTrust(request);
+  const trustAssessments =
+    request.mode === "experimental_real_data"
+      ? validateExperimentalRuleAdmission(request)
+      : validateRuleTrust(request);
   const gateBlockers = ensureProductionGate(request);
   if (gateBlockers.length > 0)
     return assuranceBlockResponse(
@@ -1062,7 +1115,10 @@ export function recommend(
   const runnerId = eligibleIds.has(requestedRunnerId ?? "")
     ? requestedRunnerId
     : null;
-  const verificationStatus: VerificationStatus = "synthetic_only";
+  const verificationStatus: VerificationStatus =
+    request.mode === "experimental_real_data"
+      ? "experimental_unverified"
+      : "synthetic_only";
   const conditionalWinners = records(engineRecommendation.conditional_winners)
     .filter(
       (candidate) =>

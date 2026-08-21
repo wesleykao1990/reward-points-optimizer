@@ -771,6 +771,152 @@ as $$
      )
 $$;
 
+-- Evaluate only the top-level applicability rectangle for the current
+-- information catalogue.  Campaign periods are intentionally stricter than
+-- other facts: P0 stores date-only Japan windows, so a malformed, incomplete,
+-- or non-Japan campaign window is not displayable.  A stale compiler reason
+-- is not itself a window; for the legacy ended/future classification we still
+-- require a valid top-level rectangle before admitting a row.
+create or replace function app_private.p0_implementation_window_active(
+    p_claim_type text,
+    p_reason text,
+    p_applicability jsonb,
+    p_effective_at timestamptz
+)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = pg_catalog
+as $$
+declare
+    v_from_text text;
+    v_to_text text;
+    v_from date;
+    v_to date;
+    v_local_date date;
+begin
+    -- An explicit top-level applicability bound makes any fact time-bounded.
+    -- This covers a campaign's period, rule, eligibility, expiry, and cap
+    -- siblings without guessing relationships from subjects or claim IDs.
+    -- Facts with no top-level bound retain their previous catalogue behaviour,
+    -- including any nested dates in their value payload.
+    if coalesce(p_claim_type, '') <> 'campaign_period'
+       and coalesce(p_reason, '') <> 'ended_or_future_inactive'
+       and not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_from')
+       and not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_to')
+    then
+        return true;
+    end if;
+
+    if p_effective_at is null
+       or jsonb_typeof(p_applicability) is distinct from 'object'
+       or p_applicability->>'timezone' is distinct from 'Asia/Tokyo'
+    then
+        return false;
+    end if;
+
+    v_from_text := p_applicability->>'effective_from';
+    v_to_text := p_applicability->>'effective_to';
+
+    -- A displayed bounded fact needs the complete closed pair. A missing
+    -- side is not silently converted into an unbounded campaign.
+    if v_from_text is null or v_to_text is null then
+        return false;
+    end if;
+
+    if v_from_text is not null then
+        if v_from_text !~ '^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
+        then
+            return false;
+        end if;
+        begin
+            v_from := v_from_text::date;
+        exception when others then
+            return false;
+        end;
+    end if;
+
+    if v_to_text is not null then
+        if v_to_text !~ '^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
+        then
+            return false;
+        end if;
+        begin
+            v_to := v_to_text::date;
+        exception when others then
+            return false;
+        end;
+    end if;
+
+    if v_from is not null and v_to is not null and v_from > v_to then
+        return false;
+    end if;
+
+    v_local_date := (p_effective_at at time zone 'Asia/Tokyo')::date;
+    return (v_from is null or v_local_date >= v_from)
+       and (v_to is null or v_local_date <= v_to);
+end;
+$$;
+
+-- Effective-at current projection used by the trusted adapter.  The
+-- correction-sensitive no-argument projection above remains available for
+-- immutable-history inspection; this function is the only projection used by
+-- the browse-only current UI.
+create or replace function app_private.p0_active_implementation_fact_rows_at(
+    p_effective_at timestamptz
+)
+returns table (
+    fact_id uuid,
+    implementation_version text,
+    fact_version integer,
+    family_id text,
+    source_role_id text,
+    source_ids jsonb,
+    claim_type text,
+    subject text,
+    predicate text,
+    short_paraphrase text,
+    disposition text,
+    reason text,
+    reason_detail text
+)
+language sql
+stable
+security definer
+set search_path = pg_catalog
+as $$
+    select
+        fact.fact_id,
+        fact.implementation_version,
+        fact.fact_version,
+        fact.family_id,
+        fact.source_role_id,
+        fact.source_ids,
+        fact.claim_type,
+        fact.subject,
+        fact.predicate,
+        fact.short_paraphrase,
+        fact.disposition,
+        fact.reason,
+        fact.reason_detail
+      from app_private.p0_implementation_facts as fact
+     where not exists (
+         select 1
+           from app_private.p0_implementation_fact_corrections as correction
+          where correction.fact_id = fact.fact_id
+            and correction.implementation_hash = fact.implementation_hash
+            and correction.parent_claim_id = fact.parent_claim_id
+            and correction.fact_version = fact.fact_version
+     )
+       and app_private.p0_implementation_window_active(
+           fact.claim_type,
+           fact.reason,
+           fact.applicability,
+           p_effective_at
+       )
+$$;
+
 create view app_api.p0_active_implementation_facts
 with (security_invoker = true, security_barrier = true) as
 select * from app_private.p0_active_implementation_fact_rows();
@@ -787,6 +933,8 @@ comment on view app_api.p0_active_implementation_facts is
     'Correction-sensitive invoker/barrier projection of generic implementation facts; never canonical reward truth.';
 comment on function app_private.persist_p0_implementation_snapshot(jsonb) is
     'Atomically validates and persists one exact P0 implementation snapshot; PostgreSQL does not recompute TS canonical hashes.';
+comment on function app_private.p0_active_implementation_fact_rows_at(timestamptz) is
+    'Correction-sensitive effective-at projection for the browse-only current implementation catalogue; campaign windows are top-level Asia/Tokyo calendar dates.';
 
 revoke all on app_private.p0_implementation_coverage_refs from public;
 revoke all on app_private.p0_implementation_snapshots from public;
@@ -798,6 +946,8 @@ revoke execute on function app_private.persist_p0_implementation_snapshot(jsonb)
 revoke execute on function app_private.record_p0_implementation_fact_correction(text,text,text,integer,text,text) from public;
 revoke execute on function app_private.record_p0_implementation_fact_correction_by_id(uuid,text,text) from public;
 revoke execute on function app_private.p0_active_implementation_fact_rows() from public;
+revoke execute on function app_private.p0_active_implementation_fact_rows_at(timestamptz) from public;
+revoke execute on function app_private.p0_implementation_window_active(text,text,jsonb,timestamptz) from public;
 revoke execute on function app_private.protect_p0_implementation_append_only() from public;
 revoke execute on function app_private.p0_implementation_hash_shape(text) from public;
 revoke execute on function app_private.p0_implementation_safe_text(text,integer) from public;

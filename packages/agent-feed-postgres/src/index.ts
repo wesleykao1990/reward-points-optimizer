@@ -45,6 +45,7 @@ export {
   SEVEN_ELEVEN_PAYMENT_FAMILY_LABELS,
 } from "./catalogue.js";
 export type {
+  P0ImplementationCatalogueOptions,
   P0ImplementationCatalogueStore,
   P0ImplementationFact,
   P0ImplementationFactCorrectionInput,
@@ -60,10 +61,21 @@ export {
   IMPLEMENTATION_FACTS_QUERY,
   MAX_P0_IMPLEMENTATION_FACTS,
   P0_IMPLEMENTATION_FACT_CORRECTION_QUERY,
+  P0_IMPLEMENTATION_FACT_ROWS_AT_FUNCTION,
   P0_IMPLEMENTATION_FACTS_QUERY,
   P0_IMPLEMENTATION_FACTS_VIEW,
 } from "./implementation.js";
 export { createPostgresNanacoEconomicPilotHost } from "./nanaco-host.js";
+export type {
+  P0OperationsReconciliationResult,
+  P0OperationsStore,
+} from "./p0-operations.js";
+export {
+  createPostgresP0OperationsHost,
+  createPostgresP0OperationsStore,
+  P0_OPERATIONS_RECONCILIATION_QUERY,
+  P0_RECONCILIATION_QUERY,
+} from "./p0-operations.js";
 export type {
   P0EconomicBatchMemberResult,
   P0EconomicBatchResult,

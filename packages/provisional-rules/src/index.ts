@@ -50,6 +50,8 @@ export {
   activateNanacoEconomicPilot,
   admitNanacoEconomicPilot,
   createNanacoEconomicPilot,
+  getNanacoEconomicPilotCandidate,
+  getNanacoEconomicPilotRule,
   NANACO_PILOT_FINDING_ID,
   NANACO_PILOT_MERCHANT_ID,
   NANACO_PILOT_PROGRAM_ID,
@@ -138,3 +140,19 @@ export {
   PROVISIONAL_RULE_STATUSES,
   SEVERE_CORRECTION_CATEGORIES,
 } from "./types.js";
+export type {
+  ProvisionalValidityClassification,
+  ProvisionalValidityStatus,
+  ProvisionalValidityUnknownReason,
+} from "./validity.js";
+export {
+  classifyProvisionalRuleValidity,
+  classifyProvisionalValidity,
+  classifyRuleValidity,
+  classifyValidity,
+  isActiveProvisionalRule,
+  isActiveProvisionalValidity,
+  isActiveValidity,
+  isCanonicalProvisionalDateTime,
+  PROVISIONAL_VALIDITY_STATUSES,
+} from "./validity.js";

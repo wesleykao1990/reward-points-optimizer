@@ -595,6 +595,45 @@ restore the Agent Feed connector, verify its deployed schema, submit one bounded
 nanaco finding, and reconcile its receipt and observation before considering a
 larger P0 economic batch.
 
+### Interim Milestone 7P.8 — P0 recommendation, validity, and resumable operations
+
+Implementation checkpoint (2026-08-22): the localhost consumer can now start
+with an explicit server-only `JRO_DATABASE_URL` and evaluate one bounded real-
+data route: Nanaco payment at Seven-Eleven. The host requires both the active
+Nanaco payment-acceptance candidate and the exact active Nanaco earning
+candidate, accepts the gross and tax-exclusive eligible amounts separately,
+and returns native Nanaco points without inventing a JPY valuation. The result
+is labeled `experimental_real_data` / `experimental_unverified`; no browser
+request can supply rules, evidence, source identities, or publication status.
+The 364 generic P0 implementation facts remain browse-only and never enter the
+comparison engine.
+
+Provisional economic rules are selected at an explicit canonical date-time
+using half-open `[valid_from, valid_to)` semantics in TypeScript and
+PostgreSQL. Scheduled, expired, missing, or malformed windows remain in
+immutable history but are absent from current catalogue and recommendation
+reads. The browser-safe rule card includes the declared end instant while
+internal lifecycle, hash, and evidence material remains server-only.
+
+P0 source operations now have a deterministic manifest over the sealed
+44-family / 19-stream / 301-target plan. Work is partitioned into stable units
+of at most eight targets. PostgreSQL records append-only target attempts,
+requires a signed and redaction-complete terminal receipt, reconciles every
+completed work unit before the first insert, binds the full checkpoint to its
+idempotency key, and exposes separate latest and last-resolved projections so
+a failed retry cannot erase a prior locator. Retries are deterministic:
+transient failures remain retryable, while validation rejection is held until
+the target input hash changes.
+
+This checkpoint is not broad recommendation coverage. Only the Nanaco route
+has sufficient explicit operation, asset, tax basis, and rounding fields for
+calculation. Named card and wallet facts remain useful catalogue identities,
+but they cannot be ranked until equally explicit source-bound economic rules
+and plan mappings exist. The next data milestone is to execute the resumable
+P0 manifest and compile each sufficiently structured result through the same
+experimental rule path; incomplete claims remain visible reference facts and
+must not be converted into invented economics.
+
 ## Later milestones
 
 - full data-operations console;

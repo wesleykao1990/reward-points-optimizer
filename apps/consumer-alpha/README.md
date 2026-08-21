@@ -1,10 +1,11 @@
 # M6 local consumer alpha
 
-This is a localhost-only, synthetic UI shell for the narrow M6 consumer
-workflow. It binds to `127.0.0.1`, accepts only bounded manual onboarding state,
-and keeps rules, assurances, evidence, candidate plans, source URLs, and
-authorization material on the trusted host. The host constructs a fixture M5
-request and projects the result to a small browser-safe presentation model.
+This is a localhost-only consumer prototype. It retains the narrow synthetic
+M6 workflow and, when explicitly connected to the P0 PostgreSQL database,
+adds one bounded experimental real-data route for Nanaco at Seven-Eleven. It
+binds to `127.0.0.1`, accepts only bounded consumer inputs, and keeps rules,
+assurances, evidence, candidate plans, source URLs, database credentials, and
+authorization material on the trusted host.
 
 Run the checks with:
 
@@ -13,6 +14,27 @@ pnpm --filter @jro/consumer-alpha-app test
 pnpm --filter @jro/consumer-alpha-app typecheck
 pnpm --filter @jro/consumer-alpha-app build
 ```
+
+Run the populated P0 database-backed UI with:
+
+```sh
+JRO_DATABASE_URL=postgresql://.../jro_local \
+  pnpm --filter @jro/consumer-alpha-app start
+```
+
+`JRO_DATABASE_URL` is explicit and server-only. When set, one bounded pool
+backs the experimental catalogue, its correction route, all 364 P0
+implementation facts, and the exact Nanaco/Seven-Eleven experimental
+recommendation. Without it the localhost shell retains its checked-in demo
+catalogues and the real-data recommendation endpoint fails closed.
+
+The real-data route accepts gross amount, tax-exclusive eligible amount,
+Nanaco balance, and an explicit effective time. It requires the exact active
+payment-acceptance and earning candidates, applies the source-stated floor of
+one Nanaco point per tax-exclusive ¥200, and leaves JPY valuation empty. Its
+response is always labeled `experimental_real_data` and
+`experimental_unverified`; it is neither a canonical publication nor current
+production advice.
 
 The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
@@ -62,7 +84,8 @@ process exits.
 
 Pass a trusted implementation of `ExperimentalCataloguePort` to
 `handleRequest`, `createAppServer`, or `startServer` to connect a persistence
-adapter. The app imports no database driver.
+adapter. The normal CLI composition performs this injection only when
+`JRO_DATABASE_URL` is present; browser code never imports the database driver.
 
 Only displayed definite/conditional primary results enter the volatile,
 128-entry issued-ID registry and can receive a correction draft. No-valid and

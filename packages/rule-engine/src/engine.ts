@@ -1,6 +1,9 @@
 import { validateDocument as validateContractDocument } from "@jro/contracts";
 import type { Decimal } from "decimal.js";
-import { selectApprovedRules } from "./bitemporal.js";
+import {
+  type RuleEvaluationPolicy,
+  selectRulesForEvaluation,
+} from "./bitemporal.js";
 import {
   evaluateFixedReward,
   evaluateMultiplierReward,
@@ -91,6 +94,8 @@ interface InternalContext {
   objective: Required<EngineObjective>;
   facts: Record<string, StateValue>;
   capProgress: Record<string, CapProgressState>;
+  ruleEvaluationPolicy: RuleEvaluationPolicy;
+  valuationPolicy: "explicit" | "unvalued";
 }
 
 interface NativeLedger {
@@ -115,6 +120,8 @@ export interface EvaluatePlanOptions extends EngineContext {
   replayKnowledgeTime?: string;
   /** Explicit, mutually compatible state assignments for conditional ranking. */
   feasibleStates?: readonly FeasibleState[];
+  ruleEvaluationPolicy?: RuleEvaluationPolicy;
+  valuationPolicy?: "explicit" | "unvalued";
 }
 
 function defaultSettlement(): Settlement {
@@ -253,6 +260,12 @@ function makeInternalContext(
     objective,
     facts: clone(context.user_state?.facts ?? {}),
     capProgress: clone(context.user_state?.cap_progress ?? {}),
+    ruleEvaluationPolicy:
+      context.rule_evaluation_policy ??
+      context.ruleEvaluationPolicy ??
+      "approved",
+    valuationPolicy:
+      context.valuation_policy ?? context.valuationPolicy ?? "explicit",
   };
 }
 
@@ -710,6 +723,7 @@ function valuePerUnit(
   asset: AssetRef,
   ending = false,
 ): string {
+  if (context.valuationPolicy === "unvalued") return "0";
   const exact = context.valuation.get(key(asset.asset_id, asset.reward_class));
   const fallback = context.valuation.get(key(asset.asset_id, null));
   if (exact !== undefined) return exact;
@@ -1150,10 +1164,11 @@ function processTransferOperation(
   movementIndex: { value: number },
   visitedAssetIds: Set<string>,
 ): boolean {
-  const selected = selectApprovedRules(
+  const selected = selectRulesForEvaluation(
     context.rules,
     operation.occurred_at,
     context.replayKnowledgeAt,
+    context.ruleEvaluationPolicy,
   ).filter(
     (rule) =>
       rule.calculation?.model === "transfer_ratio" &&
@@ -1893,10 +1908,11 @@ export function evaluateNativePlan(
 
     const rules =
       context.rules.length > 0
-        ? selectApprovedRules(
+        ? selectRulesForEvaluation(
             context.rules,
             operation.occurred_at,
             context.replayKnowledgeAt,
+            context.ruleEvaluationPolicy,
           )
         : [];
     const operationRuleIds: string[] = [];

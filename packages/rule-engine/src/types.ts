@@ -779,6 +779,14 @@ export interface EngineContext {
   transaction_time?: string;
   replay_knowledge_at?: string;
   objective?: EngineObjective;
+  /**
+   * The default execution lane only admits approved rules.  The host-owned
+   * experimental lane is explicit and keeps the rule's under-review status;
+   * it is never inferred from a rule payload.
+   */
+  rule_evaluation_policy?: "approved" | "experimental_unverified";
+  /** Do not assign an implicit JPY value to native assets. */
+  valuation_policy?: "explicit" | "unvalued";
 }
 
 export interface ValuationSensitivity {

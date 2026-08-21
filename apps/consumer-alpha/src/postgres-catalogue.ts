@@ -5,6 +5,7 @@ import {
   type P0ExperimentalRewardRateRecord,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
+import { getNanacoEconomicPilotRule } from "@jro/provisional-rules";
 import type {
   ExperimentalCatalogueCard,
   ExperimentalCataloguePort,
@@ -12,6 +13,13 @@ import type {
   ExperimentalCorrectionInput,
 } from "./contracts.js";
 import { normalizeExperimentalCatalogueSnapshot } from "./provisional-catalog.js";
+import {
+  createNanacoExperimentalRecommendationPort,
+  NANACO_EXPERIMENTAL_ACCEPTANCE_PUBLICATION_ID,
+  NANACO_EXPERIMENTAL_ACCEPTANCE_RULE_ID,
+  NANACO_EXPERIMENTAL_PUBLICATION_ID,
+  type NanacoExperimentalRuleSource,
+} from "./real-experimental-recommendation.js";
 
 const NANACO_TITLE = "nanacoの買い物ポイント";
 const NANACO_CONFIDENCE = "high" as const;
@@ -43,6 +51,7 @@ export function mapPostgresNanacoRecordToCard(
     source_label: record.source_label,
     checked_at: record.checked_at,
     valid_from: record.valid_from,
+    valid_to: record.valid_to,
   });
 }
 
@@ -59,6 +68,7 @@ export function mapPostgresPaymentAcceptanceRecordToCard(
     source_label: record.source_label,
     checked_at: record.checked_at,
     valid_from: record.valid_from,
+    valid_to: record.valid_to,
   });
 }
 
@@ -89,8 +99,8 @@ export function createPostgresExperimentalCataloguePort(
 ): ExperimentalCataloguePort {
   const store = createPostgresExperimentalCatalogueStore(target);
   return Object.freeze({
-    async list(): Promise<ExperimentalCatalogueSnapshot> {
-      const records = await store.list();
+    async list(effectiveAt?: string): Promise<ExperimentalCatalogueSnapshot> {
+      const records = await store.list(effectiveAt);
       return normalizeExperimentalCatalogueSnapshot({
         status: "ready",
         updated_at: latestDate(records),
@@ -108,3 +118,45 @@ export function createPostgresExperimentalCataloguePort(
 
 export const createPostgresCataloguePort =
   createPostgresExperimentalCataloguePort;
+
+/**
+ * Bind the recommendation lane to the same current-view catalogue proof used
+ * by the browser cards. A static rule accessor supplies only the exact sealed
+ * body; it cannot make the route current, so both catalogue identities must be
+ * present at the requested effective time before evaluation is admitted.
+ */
+export function createPostgresNanacoExperimentalRecommendationPort(
+  target: QueryTarget,
+) {
+  const store = createPostgresExperimentalCatalogueStore(target);
+  const source: NanacoExperimentalRuleSource = Object.freeze({
+    async current(effectiveAt: string) {
+      const records = await store.list(effectiveAt);
+      const reward = records.find(
+        (record): record is P0ExperimentalRewardRateRecord =>
+          record.kind === "reward_rate" &&
+          record.publication_id === NANACO_EXPERIMENTAL_PUBLICATION_ID &&
+          record.rule_id === "rr_jp_cvs_006_nanaco_purchase_reward",
+      );
+      const acceptance = records.find(
+        (record): record is P0ExperimentalPaymentAcceptanceRecord =>
+          record.kind === "payment_acceptance" &&
+          record.publication_id ===
+            NANACO_EXPERIMENTAL_ACCEPTANCE_PUBLICATION_ID &&
+          record.payment_family === "nanaco",
+      );
+      if (!reward || !acceptance)
+        throw new Error("nanaco_experimental_route_not_current");
+      return {
+        reward_candidate_id: reward.publication_id,
+        reward_rule: getNanacoEconomicPilotRule(),
+        acceptance_candidate_id: acceptance.publication_id,
+        acceptance_rule_id: NANACO_EXPERIMENTAL_ACCEPTANCE_RULE_ID,
+      };
+    },
+  });
+  return createNanacoExperimentalRecommendationPort(source);
+}
+
+export const createPostgresExperimentalRecommendationPort =
+  createPostgresNanacoExperimentalRecommendationPort;

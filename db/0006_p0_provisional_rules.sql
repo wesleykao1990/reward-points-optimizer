@@ -46,6 +46,67 @@ $$;
 
 revoke execute on function app_private.provisional_unique_string_array(jsonb) from public;
 
+-- Canonical economic-validity gate shared by every current provisional view.
+-- Date-only/raw claim dates are deliberately rejected.  The comparison is
+-- half-open: valid_from <= effective_at < valid_to (or an open end).
+create or replace function app_private.provisional_rule_valid_at(
+    p_candidate_payload jsonb,
+    p_effective_at timestamptz
+)
+returns boolean
+language plpgsql
+stable
+set search_path = pg_catalog
+as $$
+declare
+    v_validity jsonb;
+    v_from_text text;
+    v_to_text text;
+    v_from timestamptz;
+    v_to timestamptz;
+begin
+    if p_candidate_payload is null or p_effective_at is null then
+        return false;
+    end if;
+    v_validity := p_candidate_payload #> '{rule,validity}';
+    if jsonb_typeof(v_validity) is distinct from 'object'
+       or not (v_validity ?& array['valid_from','valid_to'])
+    then
+        return false;
+    end if;
+    v_from_text := v_validity->>'valid_from';
+    if v_from_text is null
+       or v_from_text !~ '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,9})?(Z|[+-](0[0-9]|1[0-9]|2[0-3]):[0-5][0-9])$'
+    then
+        return false;
+    end if;
+    v_from := v_from_text::timestamptz;
+    if v_validity->'valid_to' is null
+       or v_validity->'valid_to' = 'null'::jsonb
+    then
+        v_to := null;
+    else
+        v_to_text := v_validity->>'valid_to';
+        if v_to_text is null
+           or v_to_text !~ '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,9})?(Z|[+-](0[0-9]|1[0-9]|2[0-3]):[0-5][0-9])$'
+        then
+            return false;
+        end if;
+        v_to := v_to_text::timestamptz;
+    end if;
+    if v_to is not null and v_from >= v_to then
+        return false;
+    end if;
+    return v_from <= p_effective_at
+       and (v_to is null or p_effective_at < v_to);
+exception when others then
+    return false;
+end;
+$$;
+
+revoke execute on function app_private.provisional_rule_valid_at(jsonb,timestamptz)
+    from public;
+
 -- Validate the package candidate representation without attempting to
 -- canonicalize or hash it in PostgreSQL.  The adapter owns those hashes; the
 -- database owns the fail-closed shape and review/publication boundary.
@@ -1107,5 +1168,29 @@ revoke all on app_private.provisional_correction_signals from public;
 revoke all on app_api.active_experimental_provisional_rules from public;
 revoke execute on all functions in schema app_private from public;
 revoke execute on all functions in schema app_api from public;
+
+-- Explicit current-view function. The unparameterized view above remains a
+-- lifecycle/historical projection for deterministic replay and maintenance;
+-- callers that need a current recommendation must provide the effective
+-- instant and cannot accidentally depend on wall-clock time.
+create or replace function app_api.active_experimental_provisional_rules_at(
+    p_effective_at timestamptz
+)
+returns setof app_api.active_experimental_provisional_rules
+language sql
+stable
+security invoker
+set search_path = pg_catalog
+as $$
+    select candidate.*
+      from app_api.active_experimental_provisional_rules as candidate
+     where app_private.provisional_rule_valid_at(
+               candidate.candidate_payload,
+               p_effective_at
+           )
+$$;
+
+revoke all on function app_api.active_experimental_provisional_rules_at(timestamptz)
+    from public;
 
 commit;

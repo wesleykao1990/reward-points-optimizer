@@ -297,8 +297,11 @@ describe("P0 implementation-fact information catalogue", () => {
       }),
     );
     let page = 0;
+    const effectiveTimes: string[] = [];
     const store = {
-      async search(_input: P0ImplementationFactSearchInput = {}) {
+      async search(input: P0ImplementationFactSearchInput = {}) {
+        if (typeof input.effective_at === "string")
+          effectiveTimes.push(input.effective_at);
         const start = page === 0 ? 0 : 128;
         page += 1;
         return {
@@ -319,9 +322,22 @@ describe("P0 implementation-fact information catalogue", () => {
         };
       },
     };
-    const snapshot =
-      await createPostgresImplementationFactCataloguePort(store).list();
+    let clockCalls = 0;
+    const snapshot = await createPostgresImplementationFactCataloguePort(
+      store,
+      {
+        clock() {
+          clockCalls += 1;
+          return new Date("2026-08-31T14:59:59.000Z");
+        },
+      },
+    ).list();
     expect(page).toBe(2);
+    expect(clockCalls).toBe(1);
+    expect(effectiveTimes).toEqual([
+      "2026-08-31T14:59:59.000Z",
+      "2026-08-31T14:59:59.000Z",
+    ]);
     expect(snapshot.status).toBe("ready");
     expect(snapshot.facts).toHaveLength(130);
   });

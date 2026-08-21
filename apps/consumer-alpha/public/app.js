@@ -438,6 +438,88 @@
     list.appendChild(text("p", message, className));
   };
 
+  const renderNanacoExperimentalInteraction = (card, publicationId) => {
+    if (publicationId !== "candidate_p0_nanaco_shopping_earning_20260821_v0_1")
+      return;
+    const section = node("section", "nanaco-experimental");
+    section.appendChild(text("h4", "nanaco先行実験を試す"));
+    section.appendChild(
+      text(
+        "p",
+        "総額・税抜対象額・残高を明示して、セブン‐イレブンのnanaco利用で付くポイントだけを確認します。",
+        "nanaco-experimental-copy",
+      ),
+    );
+    const form = node("form", "nanaco-experimental-form");
+    const field = (labelText, value, max) => {
+      const label = node("label");
+      label.appendChild(text("span", labelText));
+      const input = node("input");
+      input.type = "number";
+      input.min = "0";
+      input.max = String(max);
+      input.step = "1";
+      input.value = String(value);
+      input.required = true;
+      label.appendChild(input);
+      form.appendChild(label);
+      return input;
+    };
+    const gross = field(
+      "総額（円）",
+      Number(document.getElementById("amount-jpy")?.value) || 640,
+      1_000_000,
+    );
+    const taxExclusive = field(
+      "税抜対象額（円・明示入力）",
+      gross.value,
+      1_000_000,
+    );
+    const balance = field("nanaco残高（円）", 10_000, 10_000_000);
+    const submit = node("button", "secondary");
+    submit.type = "submit";
+    submit.textContent = "先行実験を計算する";
+    form.appendChild(submit);
+    const output = text("p", "", "nanaco-experimental-output");
+    form.appendChild(output);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      output.classList.remove("is-error");
+      output.textContent = "先行実験を計算しています…";
+      try {
+        const body = await postJson("/api/experimental/recommendation", {
+          selection_id: publicationId,
+          amount_jpy: Number(gross.value),
+          tax_exclusive_amount_jpy: Number(taxExclusive.value),
+          nanaco_balance_jpy: Number(balance.value),
+          effective_at: new Date().toISOString(),
+        });
+        const recommendation = body?.recommendation;
+        if (
+          !recommendation ||
+          recommendation.verification_status !== "experimental_unverified"
+        )
+          throw new Error("response_invalid");
+        if (recommendation.outcome === "no_valid_plan") {
+          output.textContent =
+            "先行実験：現在の条件では有効な計画がありません。";
+        } else {
+          const winner = recommendation.winner;
+          output.textContent = `先行実験（未検証）：nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
+        }
+      } catch {
+        output.classList.add("is-error");
+        output.textContent =
+          "先行実験を実行できませんでした。現在の情報が有効か確認してください。";
+      } finally {
+        submit.disabled = false;
+      }
+    });
+    section.appendChild(form);
+    card.appendChild(section);
+  };
+
   const renderExperimentalSnapshot = (snapshot) => {
     const list = document.getElementById("experimental-rules");
     clear(list);
@@ -503,7 +585,16 @@
       meta.appendChild(
         text("span", `有効開始：${formatExperimentalDate(rule.valid_from)}`),
       );
+      meta.appendChild(
+        text(
+          "span",
+          rule.valid_to
+            ? `有効終了：${formatExperimentalDate(rule.valid_to)}`
+            : "有効終了：継続中",
+        ),
+      );
       card.appendChild(meta);
+      renderNanacoExperimentalInteraction(card, publicationId);
 
       const actions = node("div", "experimental-card-actions");
       const label = node("label");

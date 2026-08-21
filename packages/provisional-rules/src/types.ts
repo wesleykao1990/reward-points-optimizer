@@ -277,6 +277,8 @@ export type CorrectionResult = CorrectionSuccess | TransitionFailure;
 export interface SelectionOptions {
   readonly p0_family_id?: string;
   readonly include_machine_checked?: boolean;
+  /** Explicit economic effective instant used by the half-open validity gate. */
+  readonly effective_at?: string;
 }
 
 export interface ProvisionalRuleStore {

@@ -80,6 +80,7 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
       checked_at: "2026-08-21T00:05:00Z",
       admitted_at: "2026-08-21T00:05:00Z",
       valid_from: "2026-08-20T05:39:00+09:00",
+      valid_to: null,
       source_id: "jp.nanaco.shopping-earning",
       source_label: "nanaco公式情報",
       rule_id: "rr_jp_cvs_006_nanaco_purchase_reward",
@@ -99,6 +100,7 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
       source_label: "nanaco公式情報",
       checked_at: "2026-08-21T00:05:00Z",
       valid_from: "2026-08-20T05:39:00+09:00",
+      valid_to: null,
     });
     expect(JSON.stringify(card)).not.toMatch(
       /candidate_hash|definition_hash|candidate_payload|https?:\/\//iu,

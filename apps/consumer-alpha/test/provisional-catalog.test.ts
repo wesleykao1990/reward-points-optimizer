@@ -31,6 +31,7 @@ describe("host-owned experimental catalogue port", () => {
       source_label: "セブン‐イレブン公式情報",
       checked_at: "2026-08-21T04:52:00Z",
       valid_from: "2026-08-21T13:49:24+09:00",
+      valid_to: null,
     });
     expect(new Set(rules.map((item) => item.publication_id)).size).toBe(11);
     for (const rule of rules) {
@@ -44,6 +45,7 @@ describe("host-owned experimental catalogue port", () => {
         "summary",
         "title",
         "valid_from",
+        "valid_to",
       ]);
       const serialized = JSON.stringify(rule);
       expect(serialized).not.toMatch(
@@ -96,6 +98,7 @@ describe("host-owned experimental catalogue port", () => {
       source_label: "公式情報",
       checked_at: "2026-08-21T00:00:00Z",
       valid_from: "2026-08-21T00:00:00Z",
+      valid_to: null,
     } as const;
     const malicious = {
       status: "ready",
