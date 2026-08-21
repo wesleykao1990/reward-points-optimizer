@@ -1,0 +1,23 @@
+{
+  "capture_method": "manual_capture",
+  "captured_at": "2026-08-20T03:13:10+09:00",
+  "facts": [
+    {
+      "cancellation_available": false,
+      "conversion_fee_jpy": 0,
+      "destination_asset": "nanaco_electronic_money_jpy",
+      "destination_quantity": 1,
+      "exchange_locations_include": "Seven-Eleven Japan",
+      "fact_id": "draft_nanaco_point_redemption_value",
+      "source_asset": "nanaco_point",
+      "source_quantity": 1,
+      "status": "extracted_pending_review"
+    }
+  ],
+  "raw_page_body_stored": false,
+  "record_type": "normalized_manual_source_snapshot",
+  "representation_policy": "project-owner-approved paraphrased structured facts only; no copied page body, screenshot, or excerpt",
+  "source_id": "jp.nanaco.redemption-value",
+  "source_snapshot_id": "snap_m3_nanaco_redemption_value_20260820",
+  "source_url": "https://www.nanaco-net.jp/how-to/use_point/money.html"
+}

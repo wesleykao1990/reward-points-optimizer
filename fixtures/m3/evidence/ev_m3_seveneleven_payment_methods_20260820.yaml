@@ -1,0 +1,45 @@
+evidence_id: ev_m3_seveneleven_payment_methods_20260820
+source_id: merchant.seveneleven.payment-methods
+source_snapshot_id: snap_m3_seveneleven_payment_methods_20260820
+source_url: https://www.sej.co.jp/services/cash.html
+captured_at: '2026-08-20T03:13:10+09:00'
+content_hash: sha256:637988f93599ec46f8249b954e0e01130311e0491dd1f25a5b126a7264d6985c
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized accepted-payment-family facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_seveneleven_payment_acceptance
+  json_pointer: /claim/accepted_payment_families
+  claim: Seven-Eleven Japan lists nanaco and the recorded barcode, electronic-money, card, debit/prepaid, gift-certificate, and QUO payment families as accepted methods.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: The normalized family set was completed after challenge, then primary reread and independent review confirmed it against the exact first-party payment-method page.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the complete paraphrased payment-family set without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge found omitted debit/prepaid and gift/QUO categories; the record was corrected and approved.

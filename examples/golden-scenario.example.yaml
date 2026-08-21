@@ -50,6 +50,68 @@ user_state:
         question_id: residual_use.wallet.synthetic.balance
         notes: Synthetic onboarding answer used only to prove valuation isolation.
   cap_progress: {}
+asset_definitions:
+- asset_id: credit.synthetic.card
+  asset_kind: credit_limit
+  display_name: Synthetic card funding
+  program_id: card.synthetic
+  scale: 0
+  default_reward_class: null
+  default_expiry:
+    policy: unknown
+    expires_at: null
+    duration_days: null
+    timezone: Asia/Tokyo
+  default_usage_restrictions:
+    transferable: null
+    redeemable_for_cash: null
+    usable_for_payment: false
+    investable: null
+    permitted_destination_ids: []
+    notes: Synthetic external funding source.
+  status: synthetic
+  notes: Synthetic funding asset used only by this example.
+- asset_id: wallet.synthetic.balance
+  asset_kind: stored_value
+  display_name: Synthetic stored-value balance
+  program_id: wallet.synthetic
+  scale: 0
+  default_reward_class: null
+  default_expiry:
+    policy: unknown
+    expires_at: null
+    duration_days: null
+    timezone: Asia/Tokyo
+  default_usage_restrictions:
+    transferable: null
+    redeemable_for_cash: null
+    usable_for_payment: true
+    investable: null
+    permitted_destination_ids: []
+    notes: Synthetic residual balance is conserved after purchase.
+  status: synthetic
+  notes: Synthetic stored-value asset used only by this example.
+- asset_id: point.synthetic.normal
+  asset_kind: reward_point
+  display_name: Synthetic reward point
+  program_id: point.synthetic
+  scale: 0
+  default_reward_class: normal
+  default_expiry:
+    policy: unknown
+    expires_at: null
+    duration_days: null
+    timezone: Asia/Tokyo
+  default_usage_restrictions:
+    transferable: null
+    redeemable_for_cash: null
+    usable_for_payment: null
+    investable: null
+    permitted_destination_ids:
+    - wallet.synthetic.balance
+    notes: Synthetic points are valued independently from stored-value principal.
+  status: synthetic
+  notes: Synthetic reward asset used only by this example.
 objective:
   primary: maximize_guaranteed_net_value
   probabilistic_reward_policy: guaranteed_only
@@ -352,6 +414,9 @@ expected:
     - rr_synthetic_topup_base
     rejected_rule_ids: []
     rejection_reasons: []
+    result_origin: engine
+    result_artifact_hash: sha256:1111111111111111111111111111111111111111111111111111111111111111
+    preflight_rejection: null
   - plan_id: plan_synthetic_direct_card
     eligible: true
     asset_movements:
@@ -417,6 +482,9 @@ expected:
     applied_rule_ids: []
     rejected_rule_ids: []
     rejection_reasons: []
+    result_origin: engine
+    result_artifact_hash: sha256:2222222222222222222222222222222222222222222222222222222222222222
+    preflight_rejection: null
   assertions:
   - assertion_type: winner_is
     target_id: plan_synthetic_direct_card
@@ -449,6 +517,33 @@ expected:
     explanation_token: RESIDUAL_VALUE_BREAK_EVEN
 evidence_ids:
 - ev_synthetic_topup_rate
+rule_version_bindings:
+- rule_id: rr_synthetic_topup_base
+  version: 1
+  roles:
+  - applied
+  source_candidate_status: published
+  definition_hash: sha256:36f47533f9347b117fd5a8d53a981273044a7280a18dc2bf1353b42f9dee3907
+  validity:
+    announced_at: null
+    valid_from: '2026-08-01T00:00:00+09:00'
+    valid_to: null
+    timezone: Asia/Tokyo
+    recorded_at: '2026-08-17T11:00:00+09:00'
+    superseded_at: null
+  evidence_ids:
+  - ev_synthetic_topup_rate
+replay_provenance:
+  replay_id: replay_synthetic_golden
+  rule_admission: canonical_published_rule
+  publication_authorized: true
+  engine_version: synthetic-engine.v0.1
+  contracts_version: 0.4.1
+  valuation_profile_version: valuation.synthetic.v1
+  input_hash: sha256:3333333333333333333333333333333333333333333333333333333333333333
+  output_hash: sha256:4444444444444444444444444444444444444444444444444444444444444444
+  completed_at: '2026-08-17T12:31:00+09:00'
+  replay_knowledge_at: '2026-08-17T12:30:00+09:00'
 review:
   review_mode: solo_dual_pass
   calculated_by: fixture-builder

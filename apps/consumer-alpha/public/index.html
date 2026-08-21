@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0d100d">
+    <title>ポイミチ — 支払いルート比較デモ</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section id="tab-home" class="tab-panel is-active" data-tab-panel="home">
+        <header class="app-header">
+          <div class="app-title">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <div><small>POINT ROUTE</small><h1>ホーム</h1></div>
+          </div>
+          <span class="demo-chip"><i></i> デモ版</span>
+        </header>
+
+        <button type="button" class="search-control" data-scroll-to="purchase-form">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+          <span>お店と支払い条件を確認</span>
+          <span class="search-arrow" aria-hidden="true">→</span>
+        </button>
+
+        <aside class="demo-notice" aria-label="デモ版について">
+          <span class="notice-icon" aria-hidden="true">i</span>
+          <div><strong>架空データで動く操作デモです</strong><p>現在のポイント情報や実際のおすすめではありません。</p></div>
+        </aside>
+
+        <section class="overview-panel" aria-labelledby="overview-title">
+          <div class="overview-topline"><span id="overview-title">現在の比較条件</span><span>保存されません</span></div>
+          <div class="overview-value"><strong id="summary-amount">¥640</strong><span>のお買い物</span></div>
+          <div class="overview-meter"><span><i id="summary-meter"></i></span><small id="summary-instruments">支払い方法 1つ</small></div>
+        </section>
+
+        <section id="purchase-form" class="content-section" aria-labelledby="onboarding-title">
+          <div class="section-title-row">
+            <div><p class="section-kicker">PAYMENT CHECK</p><h2 id="onboarding-title">支払い方を比較</h2></div>
+            <span class="step-label">STEP 1</span>
+          </div>
+
+          <form id="recommendation-form">
+            <div class="merchant-row">
+              <span class="merchant-icon" aria-hidden="true">店</span>
+              <div class="merchant-copy"><small>お店</small><output id="merchant-name">サンプルストア</output><span><output id="branch-name">東京サンプル店</output></span></div>
+              <span class="state-label">選択済み</span>
+            </div>
+
+            <label class="amount-field" for="amount-jpy">
+              <span>お支払い金額</span>
+              <span class="amount-control"><span aria-hidden="true">¥</span><input id="amount-jpy" name="amount_jpy" type="number" min="1" max="1000000" step="1" value="640" required><small>円</small></span>
+            </label>
+
+            <fieldset class="instrument-fieldset">
+              <legend><span>持っている支払い方法</span><small>複数選べます</small></legend>
+              <div class="choice-list">
+                <label class="choice-row">
+                  <input type="checkbox" name="instrument" value="synthetic_card" checked>
+                  <span class="choice-icon card-icon" aria-hidden="true">▰</span>
+                  <span class="choice-copy"><strong>クレジットカード</strong><small>サンプルカード</small></span>
+                  <span class="choice-toggle" aria-hidden="true"></span>
+                </label>
+                <label class="choice-row">
+                  <input type="checkbox" name="instrument" value="synthetic_qr_wallet">
+                  <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
+                  <span class="choice-copy"><strong>QR決済</strong><small>記録のみ・ルート比較は未対応</small></span>
+                  <span class="choice-toggle" aria-hidden="true"></span>
+                </label>
+                <label class="choice-row">
+                  <input type="checkbox" name="instrument" value="synthetic_stored_value">
+                  <span class="choice-icon value-icon" aria-hidden="true">P</span>
+                  <span class="choice-copy"><strong>電子マネー</strong><small>サンプル残高</small></span>
+                  <span class="choice-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="preference-panel">
+              <div class="preference-heading"><span aria-hidden="true">P</span><div><strong>電子マネーの使い方</strong><small>残高価値の見積もりに使います</small></div></div>
+              <label>今回使いたいですか？
+                <select id="stored-value-use" name="stored_value_use">
+                  <option value="unknown">まだ決めていない</option>
+                  <option value="yes">使いたい</option>
+                  <option value="no">使わない</option>
+                </select>
+              </label>
+              <label>いつ頃使う予定ですか？
+                <select id="stored-value-usage" name="stored_value_usage" disabled>
+                  <option value="" disabled selected>「使いたい」を選んでください</option>
+                  <option value="within_30_days">30日以内</option>
+                  <option value="within_90_days">90日以内</option>
+                  <option value="eventually">いずれ使う</option>
+                  <option value="rarely">ほとんど使わない</option>
+                  <option value="custom">価値を自分で設定</option>
+                </select>
+              </label>
+              <label id="stored-value-custom-label">1単位あたりの価値（円）
+                <input id="stored-value-value" name="stored_value_value_jpy_per_unit" inputmode="decimal" placeholder="例：0.8" maxlength="24" autocomplete="off" disabled>
+              </label>
+              <p class="helper">「使わない」を選ぶと、電子マネー候補は比較から外れます。</p>
+            </div>
+
+            <details class="advanced-panel">
+              <summary><span><strong>詳細な条件を追加</strong><small>キャンペーン参加状況・上限利用額など</small></span><span aria-hidden="true">⌄</span></summary>
+              <div class="advanced-content">
+                <fieldset><legend>わかっている条件（任意）</legend><div id="facts-list" class="entry-list"></div><button id="add-fact" type="button" class="secondary">＋ 条件を追加</button></fieldset>
+                <fieldset><legend>特典上限の利用状況（任意）</legend><div id="caps-list" class="entry-list"></div><button id="add-cap" type="button" class="secondary">＋ 上限情報を追加</button></fieldset>
+              </div>
+            </details>
+
+            <button type="submit" class="primary"><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>
+            <p class="privacy-note">入力内容はブラウザに保存されません</p>
+          </form>
+        </section>
+
+        <section id="result" class="content-section result-section-shell" aria-live="polite" aria-labelledby="result-title">
+          <div class="section-title-row"><div><p class="section-kicker">RESULT</p><h2 id="result-title">比較結果</h2></div><span class="step-label">STEP 2</span></div>
+          <div class="empty-result"><span aria-hidden="true">↗</span><strong>条件を入力して比較してみましょう</strong><p>安全な候補と確認すべき質問を表示します。</p></div>
+        </section>
+
+        <details class="correction-panel">
+          <summary><span>表示内容についてフィードバックする</span><span aria-hidden="true">⌄</span></summary>
+          <div class="correction-content">
+            <p>最後のデモ結果に紐づく一時メモです。送信・保存はされません。</p>
+            <form id="correction-form">
+              <label>内容<select id="correction-category" name="category"><option value="wrong_merchant">お店が違う</option><option value="wrong_branch">店舗が違う</option><option value="wrong_plan">支払い方法が違う</option><option value="missing_reward">特典が足りない</option><option value="unexpected_reward">想定外の特典がある</option><option value="wrong_reward_amount">特典の金額が違う</option></select></label>
+              <label>確認したこと<select id="correction-note-code" name="note_code"><option value="merchant_not_recognized">お店を確認できなかった</option><option value="branch_not_recognized">店舗を確認できなかった</option><option value="plan_not_available">この支払い方を使えなかった</option><option value="reward_not_posted">特典が付かなかった</option><option value="reward_reversed">特典が取り消された</option><option value="amount_disagrees">金額が一致しなかった</option></select></label>
+              <button type="submit" class="secondary wide">一時メモを作成</button>
+            </form>
+            <p id="correction-status" class="helper"></p>
+          </div>
+        </details>
+      </section>
+
+      <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" hidden>
+        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> デモ版</span></header>
+        <aside class="inline-disclosure"><strong>このウォレットは端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
+
+        <section class="wallet-overview"><small>比較対象の支払い方法</small><strong id="wallet-count">1</strong><span>個を選択中</span></section>
+
+        <section class="wallet-group" aria-labelledby="wallet-payment-title">
+          <div class="group-heading"><h2 id="wallet-payment-title">支払い方法</h2><button type="button" data-tab-target="home">ホームで編集</button></div>
+          <button type="button" class="wallet-item is-active" data-wallet-instrument="synthetic_card" aria-pressed="true"><span class="wallet-logo card-icon">▰</span><span><strong>サンプルカード</strong><small>クレジットカード</small></span><em>比較対象</em></button>
+          <button type="button" class="wallet-item" data-wallet-instrument="synthetic_qr_wallet" aria-pressed="false"><span class="wallet-logo qr-icon">▦</span><span><strong>サンプルQR</strong><small>ルート比較は未対応</small></span><em>未選択</em></button>
+          <button type="button" class="wallet-item" data-wallet-instrument="synthetic_stored_value" aria-pressed="false"><span class="wallet-logo value-icon">P</span><span><strong>サンプル電子マネー</strong><small>残高価値を設定できます</small></span><em>未選択</em></button>
+        </section>
+
+        <section class="wallet-group" aria-labelledby="wallet-program-title">
+          <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイル</h2><span>準備中</span></div>
+          <div class="empty-state"><span aria-hidden="true">＋</span><strong>ポイントプログラムは未登録です</strong><p>実データとアカウント連携は今後のマイルストーンで追加します。</p></div>
+        </section>
+      </section>
+
+      <section id="tab-history" class="tab-panel" data-tab-panel="history" hidden>
+        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>SESSION ACTIVITY</small><h1>履歴</h1></div></div><span class="demo-chip"><i></i> セッションのみ</span></header>
+        <section class="history-summary"><div><small>このセッションの比較</small><strong id="history-count">0</strong></div><span>ページを閉じると消えます</span></section>
+        <section class="wallet-group"><div class="group-heading"><h2>比較履歴</h2><span>新しい順</span></div><div id="session-history" class="history-list"><div class="empty-state"><span aria-hidden="true">↗</span><strong>まだ比較履歴はありません</strong><p>ホームで支払い方を比較すると、ここに一時表示されます。</p><button type="button" class="secondary" data-tab-target="home">比較をはじめる</button></div></div></section>
+      </section>
+
+      <section id="tab-settings" class="tab-panel" data-tab-panel="settings" hidden>
+        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 保存なし</span></header>
+        <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>ポイントの使い方に合わせて、残高価値の前提を調整します。</p></section>
+
+        <section class="settings-group" aria-labelledby="valuation-title">
+          <h2 id="valuation-title">運用シミュレーション設定</h2>
+          <div class="settings-card"><strong>電子マネーを使い切る目安</strong><p>比較時に残る電子マネーの価値を見積もるための期間です。</p><div class="segmented-control"><button type="button" data-usage-preset="within_30_days">30日以内</button><button type="button" data-usage-preset="within_90_days">90日以内</button><button type="button" data-usage-preset="eventually">いずれ</button></div><small id="settings-status">ホームの比較条件に反映されます</small></div>
+        </section>
+
+        <section class="settings-group" aria-labelledby="notifications-title">
+          <h2 id="notifications-title">通知設定</h2>
+          <div class="settings-card disabled-settings"><div class="settings-row"><span><strong>キャンペーン速報</strong><small>還元率アップなどのお得な情報</small></span><em>未提供</em></div><div class="settings-row"><span><strong>有効期限アラート</strong><small>失効が近づいたポイントの通知</small></span><em>未提供</em></div></div>
+        </section>
+
+        <section class="settings-group" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">プライバシーとセキュリティ</h2>
+          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>データモード</strong><small>現在の比較に使用する情報</small></span><em class="safe-state">合成データのみ</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
+        </section>
+      </section>
+
+      <nav class="bottom-nav" aria-label="メインナビゲーション">
+        <button type="button" class="is-active" data-tab-target="home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
+        <button type="button" data-tab-target="wallet" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
+        <button type="button" data-tab-target="history" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
+        <button type="button" data-tab-target="settings" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
+      </nav>
+    </main>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

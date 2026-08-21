@@ -15,7 +15,18 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parents[1]
 OUT = BASE / "SHA256SUMS.txt"
 EXCLUDED_NAMES = {OUT.name}
-EXCLUDED_PARTS = {"__pycache__", ".git", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+EXCLUDED_PARTS = {
+    "__pycache__",
+    ".git",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".turbo",
+    ".venv",
+    "coverage",
+    "dist",
+    "node_modules",
+}
 
 
 def package_files() -> list[Path]:
@@ -24,6 +35,7 @@ def package_files() -> list[Path]:
         for path in BASE.rglob("*")
         if path.is_file()
         and path.name not in EXCLUDED_NAMES
+        and path.suffix != ".tsbuildinfo"
         and not any(part in EXCLUDED_PARTS for part in path.parts)
     )
 

@@ -1,0 +1,1188 @@
+{
+  "record_type": "m3_non_human_experiment_manifest",
+  "manifest_version": "0.1.0",
+  "experiment_id": "m3-non-human-seed-readiness-2026-08-18",
+  "run_id": "m3-non-human-seed-readiness-20260818",
+  "recorded_at": "2026-08-18T10:23:31+09:00",
+  "research_cutoff": "2026-08-18",
+  "timezone": "Asia/Tokyo",
+  "input_snapshot_cutoffs": {
+    "trusted_source_registry": "2026-08-17",
+    "source_review_queue": "2026-08-17",
+    "source_access_observations": "2026-08-17"
+  },
+  "purpose": "Record a fail-closed readiness experiment for the nine non-transfer M3 seed scenarios without storing page bodies, running the engine, or promoting a golden fixture.",
+  "run_policy": {
+    "mode": "readiness_audit_only",
+    "source_collection_attempted": true,
+    "manual_browser_research_attempted": true,
+    "collection_method": "manual_browser_only",
+    "automated_collection_attempted": false,
+    "raw_page_bodies_stored": false,
+    "copyrighted_captures_created": false,
+    "candidate_artifacts_created": false,
+    "engine_replays_executed": false,
+    "golden_promotion_attempted": false,
+    "fail_closed_on_unknown_or_unapproved_evidence": true,
+    "terms_approval_granted_by_this_run": false,
+    "required_review_modes_for_evaluated_scenarios": [
+      "solo_dual_pass",
+      "agent_challenged"
+    ],
+    "excluded_transfer_review_mode": "human_second_review"
+  },
+  "authoritative_inputs": [
+    {
+      "kind": "seed_blueprint",
+      "path": "examples/ten-seed-scenario-blueprints.yaml",
+      "version": "0.3.0"
+    },
+    {
+      "kind": "trusted_source_registry",
+      "path": "registry/trusted-sources.v0.3.json",
+      "version": "0.3.0"
+    },
+    {
+      "kind": "source_review_queue",
+      "path": "registry/source-review-queue.v0.3.yaml",
+      "version": "0.3.0"
+    },
+    {
+      "kind": "source_access_observations",
+      "path": "registry/source-access-observations.v0.3.yaml",
+      "version": "0.3.0",
+      "interpretation": "Technical reachability observations only; they do not grant permission or establish content authority."
+    },
+    {
+      "kind": "source_gate_contract",
+      "path": "packages/contracts/src/m3-source-gate.ts",
+      "purpose": "Pure source-readiness audit; no fetching or promotion."
+    },
+    {
+      "kind": "seed_gate_contract",
+      "path": "packages/test-fixtures/src/m3-gate.ts",
+      "purpose": "Exact ten-seed mapping and promotion policy."
+    }
+  ],
+  "terms_assessment": {
+    "assessment_date": "2026-08-18",
+    "assessment_type": "reviewer_observed_research_assessment",
+    "registry_or_queue_mutated": false,
+    "legal_permission_determined": false,
+    "interpretation": "This assessment preserves the distinction between observed terms/storage/capture handling and the registry/queue statuses consumed by the source gate.",
+    "groups": [
+      {
+        "assessment": "restricted_observed",
+        "source_ids": [
+          "merchant.seveneleven.payment-faq",
+          "merchant.seveneleven.nanaco",
+          "jp.nanaco.earning",
+          "jp.dpoint.campaign-example-funding-exclusion",
+          "jp.dcard.exclusions"
+        ],
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "note": "The manual-browser research pass observed restricted terms/storage/capture handling for these sources; this is not a legal determination and does not grant or revoke permission."
+      },
+      {
+        "assessment": "unresolved_not_reviewed",
+        "source_ids": [
+          "jp.ana.rakuten-transfer",
+          "jp.aupay.campaigns",
+          "jp.dbarai.campaigns",
+          "jp.paypay.calculation-faq",
+          "jp.paypay.campaigns",
+          "jp.paypay.eligibility-faq",
+          "jp.paypay.third-party-card-voucher",
+          "jp.rakutenpay.change-notice-2026",
+          "jp.rebates.guide",
+          "jp.smbc.eligible-merchant-rewards",
+          "jp.smbc.vpoint-up-program",
+          "merchant.amazonjp.points-terms",
+          "merchant.yahoo-shopping.paypay-points"
+        ],
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "note": "No explicit restricted assessment was recorded for these sources in this review; their registry and queue statuses remain unresolved/not_reviewed."
+      }
+    ]
+  },
+  "coverage": {
+    "seed_scenario_ids": [
+      "JP-CVS-002",
+      "JP-CVS-006",
+      "JP-CVS-014",
+      "JP-QR-007",
+      "JP-QR-008",
+      "JP-CMP-003",
+      "JP-CMP-007",
+      "JP-CMP-009",
+      "JP-XFR-002",
+      "JP-ECOM-012"
+    ],
+    "evaluated_scenario_ids": [
+      "JP-CVS-002",
+      "JP-CVS-006",
+      "JP-CVS-014",
+      "JP-QR-007",
+      "JP-QR-008",
+      "JP-CMP-003",
+      "JP-CMP-007",
+      "JP-CMP-009",
+      "JP-ECOM-012"
+    ],
+    "excluded_scenario_ids": [
+      "JP-XFR-002"
+    ],
+    "counts": {
+      "seed_total": 10,
+      "evaluated": 9,
+      "excluded": 1,
+      "evaluated_blocked": 9,
+      "evaluated_golden_promoted": 0
+    },
+    "exact_seed_set_check": "PASS"
+  },
+  "source_gate": {
+    "status": "BLOCKED",
+    "automation_ready": false,
+    "promotion_ready": false,
+    "audited_seed_scenario_count": 10,
+    "unique_declared_source_count": 18,
+    "counts": {
+      "scenario_count": 10,
+      "unique_source_count": 18,
+      "automation_ready_scenario_count": 0,
+      "automation_blocked_scenario_count": 10,
+      "promotion_ready_scenario_count": 0,
+      "promotion_blocked_scenario_count": 10,
+      "automation_ready_source_count": 0,
+      "automation_blocked_source_count": 18,
+      "promotion_ready_source_count": 0,
+      "promotion_blocked_source_count": 18,
+      "blocker_count": 107,
+      "promotion_blocker_count": 107
+    },
+    "blocker_counts": {
+      "registry_terms_not_reviewed": 18,
+      "review_queue_terms_not_reviewed": 18,
+      "registry_automation_not_permitted": 18,
+      "review_queue_automation_not_permitted": 18,
+      "registry_collection_path_not_permitted": 0,
+      "review_queue_collection_path_not_permitted": 0,
+      "technical_feasibility_unknown": 17,
+      "technical_observation_missing": 17,
+      "manual_reachability_only": 1,
+      "missing_registry_source": 0,
+      "duplicate_registry_source_id": 0,
+      "missing_review_queue_item": 0,
+      "duplicate_review_queue_source_id": 0,
+      "registry_terms_not_approved": 0,
+      "review_queue_terms_not_approved": 0,
+      "technical_observation_unknown": 0,
+      "technical_observation_source_mismatch": 0,
+      "technical_observation_aggregate_only": 0,
+      "technical_observation_not_reachable": 0,
+      "technical_feasibility_not_automatable": 0,
+      "duplicate_observation_id": 0,
+      "empty_primary_source_ids": 0,
+      "duplicate_scenario_id": 0,
+      "duplicate_scenario_source_id": 0
+    },
+    "promotion_blocker_counts": {
+      "registry_terms_not_reviewed": 18,
+      "review_queue_terms_not_reviewed": 18,
+      "registry_automation_not_permitted": 0,
+      "review_queue_automation_not_permitted": 0,
+      "registry_collection_path_not_permitted": 18,
+      "review_queue_collection_path_not_permitted": 18,
+      "technical_feasibility_unknown": 17,
+      "technical_observation_missing": 17,
+      "manual_reachability_only": 1,
+      "missing_registry_source": 0,
+      "duplicate_registry_source_id": 0,
+      "missing_review_queue_item": 0,
+      "duplicate_review_queue_source_id": 0,
+      "registry_terms_not_approved": 0,
+      "review_queue_terms_not_approved": 0,
+      "technical_observation_unknown": 0,
+      "technical_observation_source_mismatch": 0,
+      "technical_observation_aggregate_only": 0,
+      "technical_observation_not_reachable": 0,
+      "technical_feasibility_not_automatable": 0,
+      "duplicate_observation_id": 0,
+      "empty_primary_source_ids": 0,
+      "duplicate_scenario_id": 0,
+      "duplicate_scenario_source_id": 0
+    },
+    "source_readiness": [
+      {
+        "source_id": "jp.ana.rakuten-transfer",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.aupay.campaigns",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.dbarai.campaigns",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.dcard.exclusions",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.dpoint.campaign-example-funding-exclusion",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.nanaco.earning",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.paypay.calculation-faq",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.paypay.campaigns",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.paypay.eligibility-faq",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.paypay.third-party-card-voucher",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "plain_http_observed_reachable",
+        "declared_observation_ids": [
+          "sao_official_web_checks_20260817"
+        ],
+        "permission_status": "not_approved",
+        "observed_reachability": "manual_only",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "manual_reachability_only"
+        ]
+      },
+      {
+        "source_id": "jp.rakutenpay.change-notice-2026",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.rebates.guide",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.smbc.eligible-merchant-rewards",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "jp.smbc.vpoint-up-program",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "merchant.amazonjp.points-terms",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "merchant.seveneleven.nanaco",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "merchant.seveneleven.payment-faq",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "source_id": "merchant.yahoo-shopping.paypay-points",
+        "registry_terms_review_status": "not_reviewed",
+        "review_queue_terms_review_status": "not_reviewed",
+        "registry_automation_status": "requires_terms_review",
+        "review_queue_automation_status": "requires_terms_review",
+        "technical_classification": "unknown",
+        "declared_observation_ids": [],
+        "permission_status": "not_approved",
+        "status": "BLOCKED",
+        "promotion_blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      }
+    ],
+    "scenario_readiness": [
+      {
+        "scenario_id": "JP-CVS-002",
+        "source_ids": [
+          "merchant.seveneleven.payment-faq"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-CVS-006",
+        "source_ids": [
+          "merchant.seveneleven.nanaco",
+          "jp.nanaco.earning"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-CVS-014",
+        "source_ids": [
+          "jp.smbc.eligible-merchant-rewards",
+          "jp.smbc.vpoint-up-program"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-QR-007",
+        "source_ids": [
+          "jp.dpoint.campaign-example-funding-exclusion",
+          "jp.dcard.exclusions"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-QR-008",
+        "source_ids": [
+          "jp.paypay.third-party-card-voucher",
+          "jp.paypay.eligibility-faq",
+          "jp.paypay.calculation-faq"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing",
+          "manual_reachability_only"
+        ]
+      },
+      {
+        "scenario_id": "JP-CMP-003",
+        "source_ids": [
+          "jp.paypay.campaigns",
+          "jp.dbarai.campaigns"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-CMP-007",
+        "source_ids": [
+          "jp.paypay.campaigns",
+          "jp.aupay.campaigns"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-CMP-009",
+        "source_ids": [
+          "jp.rakutenpay.change-notice-2026"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      },
+      {
+        "scenario_id": "JP-XFR-002",
+        "source_ids": [
+          "jp.ana.rakuten-transfer"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ],
+        "experiment_evaluation": "excluded_requires_separate_human_review"
+      },
+      {
+        "scenario_id": "JP-ECOM-012",
+        "source_ids": [
+          "merchant.amazonjp.points-terms",
+          "jp.rebates.guide",
+          "merchant.yahoo-shopping.paypay-points"
+        ],
+        "status": "BLOCKED",
+        "promotion_ready": false,
+        "blocker_codes": [
+          "registry_collection_path_not_permitted",
+          "registry_terms_not_reviewed",
+          "review_queue_collection_path_not_permitted",
+          "review_queue_terms_not_reviewed",
+          "technical_feasibility_unknown",
+          "technical_observation_missing"
+        ]
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "scenario_id": "JP-CVS-002",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CVS-002",
+          "detail": "Declared source terms and collection permissions are unresolved; no evidence capture or replay may run."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "GO",
+      "manual_probe_scope": "Official Seven-Eleven payment FAQ was manually reached; this records reachability only.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "merchant.seveneleven.payment-faq"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "Ordinary-goods, accepted-without-points, and rejected classes can be scoped for follow-up. Terms remain restricted and storage/capture was not approved.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CVS-002-UNSUPPORTED-TENDER",
+          "statement": "An unsupported tender is rejected before reward calculation and does not create a zero-point placeholder rule.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-CVS-006",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CVS-006",
+          "detail": "Declared source terms and collection permissions are unresolved; no evidence capture or replay may run."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "GO",
+      "manual_probe_scope": "Official nanaco pages were manually reached; this records reachability only.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "merchant.seveneleven.nanaco",
+        "jp.nanaco.earning"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "Cash-load limits must not be applied to a credit load. Exact credit reward, expiry, and limit semantics remain unresolved; Seven-Eleven and nanaco terms remain restricted.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CVS-006-NO-TOPUP-REWARD-DOUBLECOUNT",
+          "statement": "A top-up reward is not earned again when the top-up balance is spent.",
+          "status": "BLOCKED",
+          "checked": false
+        },
+        {
+          "assertion_id": "NEG-JP-CVS-006-RESIDUAL-ASSET-CONSERVED",
+          "statement": "The full top-up cost is not assigned to a smaller purchase and the residual asset does not disappear.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-CVS-014",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CVS-014",
+          "detail": "Declared source terms and collection permissions are unresolved; no evidence capture or replay may run."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "GO",
+      "manual_probe_scope": "Official SMBC pages were manually reached; this records reachability only.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.smbc.eligible-merchant-rewards",
+        "jp.smbc.vpoint-up-program"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "Phone contactless eligibility versus physical, iD, and insertion exclusions can be scoped; the standard Visa NL layer is inferable, but the V Point Up extra remains unknown and capture terms are unresolved.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CVS-014-INELIGIBLE-INTERFACE-NO-BONUS",
+          "statement": "A physical-card or otherwise ineligible interface cannot receive a smartphone-contactless-only bonus.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-QR-007",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-QR-007",
+          "detail": "Declared Docomo source terms and collection permissions are unresolved; exact content was not freshly captured."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "Exact terms/content were not freshly captured; no source capture was authorized.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.dpoint.campaign-example-funding-exclusion",
+        "jp.dcard.exclusions"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "Funding-source matching is retained only as a negative-assertion lead. Docomo terms remain restricted.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-QR-007-REWARD-TIER-EXCLUSIONS-SEPARATE",
+          "statement": "A reward exclusion and a tier-progress exclusion are not silently treated as the same fact.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-QR-008",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-QR-008",
+          "detail": "PayPay source terms are unreviewed and the manually reachable source does not establish current voucher availability or permission."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "Feature availability and current details remain unknown despite a recorded manual reachability observation for one PayPay source.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.paypay.third-party-card-voucher",
+        "jp.paypay.eligibility-faq",
+        "jp.paypay.calculation-faq"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "Voucher feature availability and current details are unknown. PayPay terms remain unreviewed; the manual reachability observation does not establish availability or permission.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-QR-008-AVAILABILITY-NOT-ASSUMED",
+          "statement": "Feature availability is not assumed from a public page.",
+          "status": "BLOCKED",
+          "checked": false
+        },
+        {
+          "assertion_id": "NEG-JP-QR-008-RESIDUAL-VOUCHER-VALUE",
+          "statement": "The full voucher acquisition is not counted as purchase cost without separately valuing the ending balance.",
+          "status": "BLOCKED",
+          "checked": false
+        },
+        {
+          "assertion_id": "NEG-JP-QR-008-EXCLUDED-REWARDS",
+          "statement": "Excluded rewards remain excluded.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-CMP-003",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CMP-003",
+          "detail": "The two campaign routes have unresolved terms and different reward/date semantics; no coherent approved comparison exists."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "No approved fresh capture was available for a coherent same-window comparison.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.paypay.campaigns",
+        "jp.dbarai.campaigns"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "The d払い route has distinct limited-reward semantics while the PayPay route has ordinary lottery semantics and different dates, so the combined comparison is incoherent. Terms remain unreviewed.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CMP-003-LIMITED-POINTS-NOT-NORMAL",
+          "statement": "A limited-period campaign point is not valued or transferred as an unrestricted normal point.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-CMP-007",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CMP-007",
+          "detail": "Exact current terms and lottery probability are unresolved; no guarantee may be inferred."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "Exact current terms and probability were not freshly captured or approved.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.paypay.campaigns",
+        "jp.aupay.campaigns"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "A PayPay lottery maximum is not guaranteed, and the au PAY directory lacks exact terms and probability. Terms remain unreviewed.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CMP-007-UNDISCLOSED-LOTTERY-NOT-GUARANTEED",
+          "statement": "An undisclosed-probability headline cannot enter guaranteed cashback or guaranteed rank.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-CMP-009",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-CMP-009",
+          "detail": "Fresh valid-time capture of the announced/postponed change is absent and source terms are unresolved."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "A fresh valid-time capture was absent; prior review knowledge is retained as a lead only.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "jp.rakutenpay.change-notice-2026"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "An announced Rakuten change and its postponement are known only from prior review; fresh valid-time capture is absent and terms remain unreviewed.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-CMP-009-POSTPONED-RULE-NOT-APPLIED",
+          "statement": "An announced but postponed rule does not apply merely because a later secondary source says it did.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    },
+    {
+      "scenario_id": "JP-ECOM-012",
+      "status": "blocked",
+      "blockers": [
+        {
+          "code": "source_not_ready",
+          "scenario_id": "JP-ECOM-012",
+          "detail": "Amazon is unavailable and cancellation/refund/progress behavior is only partial; source terms are unresolved."
+        }
+      ],
+      "readiness_decision": "BLOCKED",
+      "manual_probe_outcome": "BLOCKED",
+      "manual_probe_scope": "Amazon was unavailable; only partial cancellation observations were available for Rebates/Yahoo and no approved capture was made.",
+      "manual_probe_promotable": false,
+      "primary_source_ids": [
+        "merchant.amazonjp.points-terms",
+        "jp.rebates.guide",
+        "merchant.yahoo-shopping.paypay-points"
+      ],
+      "required_review_modes": [
+        "solo_dual_pass",
+        "agent_challenged"
+      ],
+      "completed_review_modes": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "BLOCKED",
+      "research_note": {
+        "classification": "research_note_only",
+        "summary": "The Amazon page was unavailable. Rebates/Yahoo cancellation behavior is partial; principal refund and campaign-progress restoration are not established. Terms remain unreviewed.",
+        "usable_as_approved_evidence": false
+      },
+      "negative_assertions": [
+        {
+          "assertion_id": "NEG-JP-ECOM-012-CANCELLED-SPEND-REVERSED",
+          "statement": "Canceled spend and rewards do not remain in earned or progress totals unless the official rule expressly retains them.",
+          "status": "BLOCKED",
+          "checked": false
+        }
+      ],
+      "candidate_artifact": null,
+      "golden_artifact": null
+    }
+  ],
+  "excluded_scenarios": [
+    {
+      "scenario_id": "JP-XFR-002",
+      "status": "excluded_requires_separate_human_review",
+      "evaluated": false,
+      "primary_source_ids": [
+        "jp.ana.rakuten-transfer"
+      ],
+      "required_review_modes": [
+        "human_second_review"
+      ],
+      "reason": "Transfer scenarios require a separate human second review and were explicitly outside this non-human experiment lane.",
+      "negative_assertions_checked": [],
+      "engine_replay": "NOT_RUN",
+      "golden_promotion": "NOT_EVALUATED"
+    }
+  ],
+  "invariants": [
+    {
+      "invariant_id": "INV-M3-EXACT-TEN-SEED-COVERAGE",
+      "status": "PASS",
+      "statement": "The manifest names exactly the ten blueprint seed IDs, with nine evaluated and JP-XFR-002 excluded."
+    },
+    {
+      "invariant_id": "INV-M3-AUTHORITATIVE-SOURCE-MAPPING",
+      "status": "PASS",
+      "statement": "Every scenario primary_source_ids array matches the authoritative mapping in the seed gate contract."
+    },
+    {
+      "invariant_id": "INV-M3-NO-LABEL-OUTRUNS-EVIDENCE",
+      "status": "PASS",
+      "statement": "Manual reachability and high-level research notes are not represented as approved evidence, source permission, or golden status."
+    },
+    {
+      "invariant_id": "INV-M3-EXCLUDED-TRANSFER-NOT-EVALUATED",
+      "status": "PASS",
+      "statement": "JP-XFR-002 is represented only as excluded_requires_separate_human_review and has no non-human evaluation result."
+    },
+    {
+      "invariant_id": "INV-M3-NO-GOLDEN-PROMOTION",
+      "status": "PASS",
+      "statement": "No candidate, engine replay, review approval, or golden artifact was created by this run."
+    },
+    {
+      "invariant_id": "INV-M3-NEGATIVE-ASSERTIONS-NOT-PASSED",
+      "status": "PASS",
+      "statement": "All declared negative assertions remain blocked and unchecked until permitted captures and accountable review exist."
+    }
+  ],
+  "summary": {
+    "readiness_decision": "BLOCKED",
+    "evaluated_scenarios": 9,
+    "blocked_scenarios": 9,
+    "manual_probe_go_count": 3,
+    "manual_probe_blocked_count": 6,
+    "engine_replay_count": 0,
+    "golden_promotion_count": 0,
+    "negative_assertion_count": 12,
+    "negative_assertions_checked": 0,
+    "why_zero_promotions_is_success": "The experiment preserved the distinction between reachability, permission, evidence, review, and promotion. With terms unreviewed and collection paths unapproved, zero golden promotions is the expected fail-closed result."
+  }
+}

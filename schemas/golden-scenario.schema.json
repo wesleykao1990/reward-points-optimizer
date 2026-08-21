@@ -14,10 +14,13 @@
     "replay_knowledge_at",
     "timezone",
     "user_state",
+    "asset_definitions",
     "objective",
     "candidate_plans",
     "expected",
     "evidence_ids",
+    "rule_version_bindings",
+    "replay_provenance",
     "review"
   ],
   "properties": {
@@ -69,6 +72,12 @@
     "user_state": {
       "$ref": "user-state.schema.json"
     },
+    "asset_definitions": {
+      "type": "array",
+      "items": {
+        "$ref": "asset.schema.json"
+      }
+    },
     "objective": {
       "$ref": "#/$defs/objective"
     },
@@ -91,6 +100,16 @@
         "pattern": "^ev_[a-z0-9_-]+$"
       }
     },
+    "rule_version_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/ruleVersionBinding"
+      }
+    },
+    "replay_provenance": {
+      "$ref": "#/$defs/replayProvenance"
+    },
     "review": {
       "$ref": "#/$defs/review"
     }
@@ -110,7 +129,10 @@
         "nominal_return_basis_points",
         "applied_rule_ids",
         "rejected_rule_ids",
-        "rejection_reasons"
+        "rejection_reasons",
+        "result_origin",
+        "result_artifact_hash",
+        "preflight_rejection"
       ],
       "properties": {
         "plan_id": {
@@ -194,8 +216,230 @@
           "items": {
             "type": "string"
           }
+        },
+        "result_origin": {
+          "type": "string",
+          "enum": [
+            "engine",
+            "preflight"
+          ]
+        },
+        "result_artifact_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "preflight_rejection": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rejection_code",
+                "reward_calculation_performed"
+              ],
+              "properties": {
+                "rejection_code": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reward_calculation_performed": {
+                  "const": false
+                }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "result_origin": {
+                "const": "engine"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "preflight_rejection": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "result_origin": {
+                "const": "preflight"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "eligible": {
+                "const": false
+              },
+              "asset_movements": {
+                "maxItems": 0
+              },
+              "reward_components": {
+                "maxItems": 0
+              },
+              "ending_asset_lots": {
+                "maxItems": 0
+              },
+              "preflight_rejection": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ruleVersionBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "version",
+        "roles",
+        "source_candidate_status",
+        "definition_hash",
+        "validity",
+        "evidence_ids"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "pattern": "^rr_[a-z0-9_-]+$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "rejected",
+              "boundary_source"
+            ]
+          }
+        },
+        "source_candidate_status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "under_review",
+            "published",
+            "superseded",
+            "retired",
+            "rejected"
+          ]
+        },
+        "definition_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "validity": {
+          "$ref": "reward-rule.schema.json#/$defs/validity"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^ev_[a-z0-9_-]+$"
+          }
         }
       }
+    },
+    "replayProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_id",
+        "rule_admission",
+        "publication_authorized",
+        "engine_version",
+        "contracts_version",
+        "valuation_profile_version",
+        "input_hash",
+        "output_hash",
+        "completed_at",
+        "replay_knowledge_at"
+      ],
+      "properties": {
+        "replay_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_admission": {
+          "type": "string",
+          "enum": [
+            "ephemeral_published_clone",
+            "canonical_published_rule"
+          ]
+        },
+        "publication_authorized": {
+          "type": "boolean"
+        },
+        "engine_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contracts_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valuation_profile_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "output_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "replay_knowledge_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "rule_admission": {
+                "const": "ephemeral_published_clone"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "publication_authorized": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
     },
     "expected": {
       "type": "object",

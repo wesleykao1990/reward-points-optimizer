@@ -1,0 +1,192 @@
+{
+  "record_type": "m3_real_data_alpha_candidate",
+  "record_version": "0.1.0",
+  "recorded_at": "2026-08-20T06:01:00+09:00",
+  "updated_at": "2026-08-20T11:43:00+09:00",
+  "research_cutoff": "2026-08-20",
+  "timezone": "Asia/Tokyo",
+  "status": "ISOLATED_GOLDEN_FIXTURES_MATERIALIZED_NOT_PUBLISHED",
+  "scope": {
+    "scenario_ids": [
+      "JP-CVS-002",
+      "JP-CVS-006"
+    ],
+    "excluded_scenario_ids": [
+      "JP-XFR-002"
+    ],
+    "source_ids": [
+      "jp.nanaco.sevencard-earning",
+      "jp.nanaco.shopping-earning",
+      "jp.nanaco.redemption-value",
+      "jp.sevencard.nanaco-charge",
+      "merchant.seveneleven.nanaco",
+      "merchant.seveneleven.payment-methods"
+    ]
+  },
+  "acquisition": {
+    "method": "manual_browser",
+    "access_observation_id": "sao_m3_seveneleven_nanaco_manual_20260820",
+    "raw_page_bodies_stored": false,
+    "screenshots_stored": false,
+    "excerpts_stored": false,
+    "content_hashes_stored": true,
+    "automatic_collection_attempted": false
+  },
+  "source_permission": {
+    "decision": "approved_manual",
+    "decision_basis": "project_owner_direction_2026-08-20",
+    "reviewer_id": "project_owner_user",
+    "reviewed_at": "2026-08-20T03:13:10+09:00",
+    "terms_review_status": "approved",
+    "collection_permission": "manual_browser_only",
+    "capture_storage": "paraphrased_structured_facts_only",
+    "normalized_fact_reuse": "approved_for_project",
+    "attribution_and_linking": "approved_for_project",
+    "automated_collection": "not_approved",
+    "interpretation": "This is the project owner's internal source-policy decision. It is not represented as publisher-issued licensing or legal advice."
+  },
+  "mapping_assessment": [
+    {
+      "scenario_id": "JP-CVS-002",
+      "status": "GOLDEN_MATERIALIZED_NOT_PUBLISHED",
+      "finding": "The prior FAQ was specific to nanaco payment eligibility. The authoritative mapping now uses the exact Seven-Eleven accepted-payment-method page.",
+      "required_action": "Keep the immutable golden fixture offline until canonical rule/database publication controls pass."
+    },
+    {
+      "scenario_id": "JP-CVS-006",
+      "status": "GOLDEN_MATERIALIZED_NOT_PUBLISHED",
+      "finding": "The exact first-party nanaco purchase-earning, Seven Card Plus charge amount/earning, and point-redemption pages are now registered and mapped with the Seven-Eleven nanaco rules page.",
+      "required_action": "Keep the immutable golden fixture offline until canonical rule/database publication controls pass."
+    }
+  ],
+  "contract_blockers": [
+    {
+      "blocker_id": "m3_jp_cvs_006_tax_exclusive_basis_unmodeled",
+      "scenario_id": "JP-CVS-006",
+      "severity": "resolved_contract_blocker",
+      "resolution_status": "resolved_in_current_checkpoint",
+      "finding": "The official purchase-earning fact is denominated per JPY 200 before tax, but the rule engine currently ignores scope.tax_basis and derives eligible spend from the merchant tender or line-item amount that must reconcile to tender.",
+      "resolution": "purchase-plan line items now admit a contract-validated tax_exclusive_amount_jpy, tax-exclusive rules require eligible_line_items, and the engine fails closed when the explicit amount is missing or invalid."
+    },
+    {
+      "blocker_id": "m3_jp_cvs_006_credit_topup_boundaries_missing",
+      "scenario_id": "JP-CVS-006",
+      "severity": "resolved_evidence_blocker",
+      "resolution_status": "resolved_in_current_checkpoint",
+      "finding": "The captured JPY 1,000 increment and JPY 49,000/50,000 limits apply to cash charging at a Seven-Eleven register and must not be reused as Seven Card Plus credit-charge limits.",
+      "resolution": "The first-party Seven Card source now separately records a JPY 5,000 minimum, JPY 1,000 increment, JPY 30,000 per-charge maximum, JPY 50,000 balance limit, preregistration requirement, earning rate, and posting cycle for the standard credit-charge route."
+    }
+  ],
+  "draft_normalized_facts": [
+    {
+      "fact_id": "draft_sevencard_plus_nanaco_credit_charge_boundaries",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "jp.sevencard.nanaco-charge"
+      ],
+      "claim": {
+        "funding_instrument": "Seven Card Plus",
+        "target_instrument": "nanaco",
+        "minimum_charge_jpy": 5000,
+        "charge_increment_jpy": 1000,
+        "maximum_charge_jpy": 30000,
+        "post_charge_balance_limit_jpy": 50000,
+        "preregistration_required": true
+      }
+    },
+    {
+      "fact_id": "draft_nanaco_point_redemption_value",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "jp.nanaco.redemption-value"
+      ],
+      "claim": {
+        "source_asset": "nanaco_point",
+        "source_quantity": 1,
+        "destination_asset": "nanaco_electronic_money_jpy",
+        "destination_quantity": 1,
+        "conversion_fee_jpy": 0,
+        "cancellation_available": false,
+        "exchange_locations_include": "Seven-Eleven Japan"
+      }
+    },
+    {
+      "fact_id": "draft_seveneleven_nanaco_cash_charge_limits",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "merchant.seveneleven.nanaco"
+      ],
+      "claim": {
+        "merchant": "Seven-Eleven Japan",
+        "instrument": "nanaco",
+        "charge_funding": "cash_at_register",
+        "charge_increment_jpy": 1000,
+        "single_charge_limit_jpy": 49000,
+        "post_charge_balance_limit_jpy": 50000
+      }
+    },
+    {
+      "fact_id": "draft_seveneleven_nanaco_tender_exclusions",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "merchant.seveneleven.nanaco"
+      ],
+      "claim": {
+        "instrument": "nanaco",
+        "cannot_combine_with": [
+          "transport_e_money",
+          "rakuten_edy",
+          "quicpay",
+          "id",
+          "credit_card",
+          "barcode_payment"
+        ]
+      }
+    },
+    {
+      "fact_id": "draft_seveneleven_nanaco_ordinary_purchase_earning",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "jp.nanaco.shopping-earning"
+      ],
+      "claim": {
+        "merchant": "Seven-Eleven Japan",
+        "instrument": "nanaco",
+        "eligible_spend_jpy_before_tax": 200,
+        "reward_asset": "nanaco_point",
+        "reward_quantity": 1,
+        "posting_timing": "immediate_for_listed_merchants",
+        "product_exclusions_apply": true
+      }
+    },
+    {
+      "fact_id": "draft_sevencard_plus_nanaco_charge_earning",
+      "status": "verified_evidence_candidate_only_not_published",
+      "source_ids": [
+        "jp.nanaco.sevencard-earning"
+      ],
+      "claim": {
+        "funding_instrument": "Seven Card Plus",
+        "target_instrument": "nanaco",
+        "eligible_charge_jpy": 200,
+        "reward_asset": "nanaco_point",
+        "reward_quantity": 1
+      }
+    }
+  ],
+  "publication_controls": {
+    "database_seed_allowed": false,
+    "reward_rule_publication_allowed": false,
+    "golden_promotion_allowed": true,
+    "golden_promotion_scope": [
+      "JP-CVS-002",
+      "JP-CVS-006"
+    ],
+    "frontend_activation_allowed": false,
+    "gate_override": false
+  },
+  "remaining_work": [
+    "Seed canonical database rows only after golden artifacts and database publication controls pass.",
+    "Expose the route to the frontend only from approved current database views."
+  ]
+}

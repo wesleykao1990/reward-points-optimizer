@@ -1,5 +1,5 @@
 version: 0.3.0
-research_cutoff: '2026-08-17'
+research_cutoff: '2026-08-20'
 notice: Evidence-directed candidate scenarios only. Promote under a recorded review mode after immutable capture and an independent
   calculation method; never infer expected values from the engine.
 scenarios:
@@ -13,7 +13,7 @@ scenarios:
   behaviors_under_test:
   - Payment acceptance independent of reward calculation
   primary_source_ids:
-  - merchant.seveneleven.payment-faq
+  - merchant.seveneleven.payment-methods
   research_questions:
   - Which payment instruments and interfaces are accepted for an ordinary in-store purchase?
   - Which channels or product classes have different acceptance?
@@ -35,7 +35,10 @@ scenarios:
   - net economic value
   primary_source_ids:
   - merchant.seveneleven.nanaco
-  - jp.nanaco.earning
+  - jp.nanaco.redemption-value
+  - jp.nanaco.sevencard-earning
+  - jp.nanaco.shopping-earning
+  - jp.sevencard.nanaco-charge
   research_questions:
   - Which card/top-up combinations are permitted and which reward or tier metrics exclude the top-up?
   - What principal asset is created, in what increment, and with what expiry or usage restrictions?

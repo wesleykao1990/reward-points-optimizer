@@ -1,0 +1,47 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "files": {
+    "includes": [
+      "*.json",
+      "packages/*/*.json",
+      "packages/*/*.ts",
+      "packages/contracts/scripts/*.ts",
+      "packages/contracts/src/*.ts",
+      "packages/contracts/test/*.ts",
+      "packages/agent-feed-consumer/src/*.ts",
+      "packages/agent-feed-consumer/test/*.ts",
+      "packages/rule-engine/src/*.ts",
+      "packages/rule-engine/test/*.ts",
+      "packages/recommendation-api/src/*.ts",
+      "packages/recommendation-api/test/*.ts",
+      "packages/consumer-alpha/src/*.ts",
+      "packages/consumer-alpha/test/*.ts",
+      "packages/provisional-rules/src/*.ts",
+      "packages/provisional-rules/test/*.ts",
+      "packages/challenge-track/src/*.ts",
+      "packages/challenge-track/test/*.ts",
+      "apps/consumer-alpha/src/*.ts",
+      "apps/consumer-alpha/test/*.ts",
+      "apps/consumer-alpha/public/*.js",
+      "packages/source-maintenance/src/*.ts",
+      "packages/source-maintenance/test/*.ts",
+      "packages/test-fixtures/src/*.ts",
+      "packages/test-fixtures/test/*.ts",
+      "fixtures/m4/*.ts",
+      "prototype/*.json",
+      "prototype/src/**/*.ts",
+      "prototype/test/**/*.ts"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  }
+}

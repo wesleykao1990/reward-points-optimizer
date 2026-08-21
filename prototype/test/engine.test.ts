@@ -1,12 +1,12 @@
-import test from "node:test";
 import assert from "node:assert/strict";
-import { buildNativePlans, evaluatePurchase } from "../src/engine.ts";
+import test from "node:test";
+import { mapFindingToObservation } from "../src/agent-feed-consumer.ts";
 import {
   assertReviewPolicy,
   definitionHash,
   validateConservation,
 } from "../src/contracts.ts";
-import { mapFindingToObservation } from "../src/agent-feed-consumer.ts";
+import { buildNativePlans, evaluatePurchase } from "../src/engine.ts";
 import { RuleVersionStore } from "../src/rule-store.ts";
 
 const syntheticDefinition = {
@@ -42,7 +42,9 @@ test("residual valuation flips winner without changing native accounting", () =>
         planId: plan.planId,
         movements: plan.movements,
         endingLots: plan.endingLots,
-        rewards: plan.rewards.map(({ valueMicros: _ignored, ...reward }) => reward),
+        rewards: plan.rewards.map(
+          ({ valueMicros: _ignored, ...reward }) => reward,
+        ),
       }))
       .sort((a, b) => a.planId.localeCompare(b.planId));
   const nativeProjection = nativeBeforeValuation
@@ -58,7 +60,10 @@ test("residual valuation flips winner without changing native accounting", () =>
   assert.deepEqual(valuedNativeProjection(high), nativeProjection);
   const nativeRewards = nativeBeforeValuation.flatMap((plan) => plan.rewards);
   assert.ok(nativeRewards.length > 0);
-  assert.equal(nativeRewards.some((reward) => "valueMicros" in reward), false);
+  assert.equal(
+    nativeRewards.some((reward) => "valueMicros" in reward),
+    false,
+  );
 });
 
 test("top-up conserves exact residual and rewards acquisition once", () => {
@@ -71,8 +76,7 @@ test("top-up conserves exact residual and rewards acquisition once", () => {
   assert.ok(wallet);
   assert.equal(wallet.residualUnits, 360n);
   assert.equal(
-    wallet.rewards.filter((reward) => reward.ruleId === "rr_demo_topup")
-      .length,
+    wallet.rewards.filter((reward) => reward.ruleId === "rr_demo_topup").length,
     1,
   );
   validateConservation([], wallet.movements, wallet.endingLots);

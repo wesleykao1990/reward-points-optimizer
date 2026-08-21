@@ -1,0 +1,35 @@
+{
+  "capture_method": "manual_capture",
+  "captured_at": "2026-08-20T03:13:10+09:00",
+  "facts": [
+    {
+      "charge_funding": "cash_at_register",
+      "charge_increment_jpy": 1000,
+      "fact_id": "draft_seveneleven_nanaco_cash_charge_limits",
+      "instrument": "nanaco",
+      "merchant": "Seven-Eleven Japan",
+      "post_charge_balance_limit_jpy": 50000,
+      "single_charge_limit_jpy": 49000,
+      "status": "extracted_pending_review"
+    },
+    {
+      "cannot_combine_with": [
+        "barcode_payment",
+        "credit_card",
+        "id",
+        "quicpay",
+        "rakuten_edy",
+        "transport_e_money"
+      ],
+      "fact_id": "draft_seveneleven_nanaco_tender_exclusions",
+      "instrument": "nanaco",
+      "status": "extracted_pending_review"
+    }
+  ],
+  "raw_page_body_stored": false,
+  "record_type": "normalized_manual_source_snapshot",
+  "representation_policy": "project-owner-approved paraphrased structured facts only; no copied page body, screenshot, or excerpt",
+  "source_id": "merchant.seveneleven.nanaco",
+  "source_snapshot_id": "snap_m3_seveneleven_nanaco_20260820",
+  "source_url": "https://www.sej.co.jp/services/cash/nanaco.html"
+}

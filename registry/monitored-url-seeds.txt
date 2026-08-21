@@ -53,6 +53,9 @@ https://www.nanaco-net.jp/cp/
 https://www.nanaco-net.jp/how-to/save_point/
 https://www.nanaco-net.jp/alliance/
 https://www.nanaco-net.jp/how-to/use_point/money.html
+https://www.nanaco-net.jp/how-to/save_point/creditcard.html
+https://www.nanaco-net.jp/how-to/save_point/shopping.html
+https://www.7card.co.jp/point/save.html
 https://paypay.ne.jp/help/c0373/
 https://paypay.ne.jp/event/
 https://paypay.ne.jp/help/c0111/
@@ -117,6 +120,7 @@ https://www.mcdonalds.co.jp/shop/rewards/faq/
 https://www.sej.co.jp/services/payment/
 https://www.sej.co.jp/services/cash/nanaco.html
 https://faq.sej.co.jp/article/?knowledge_id=cidqbq4vr0h8m5o3skpg
+https://www.sej.co.jp/services/cash.html
 https://www.starbucks.co.jp/rewards/
 https://www.welcia-yakkyoku.co.jp/inquire
 https://www.welcia-yakkyoku.co.jp/

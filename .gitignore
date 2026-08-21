@@ -4,6 +4,7 @@ __pycache__/
 node_modules/
 .turbo/
 dist/
+*.tsbuildinfo
 coverage/
 .env
 .DS_Store

@@ -69,7 +69,12 @@ function bitemporalRectanglesOverlap(
   right: RuleValidity,
 ): boolean {
   return (
-    rangesOverlap(left.validFrom, left.validTo, right.validFrom, right.validTo) &&
+    rangesOverlap(
+      left.validFrom,
+      left.validTo,
+      right.validFrom,
+      right.validTo,
+    ) &&
     rangesOverlap(
       left.recordedAt,
       left.supersededAt,
@@ -87,11 +92,15 @@ export class RuleVersionStore {
   >();
 
   publish(command: PublishRuleCommand): RuleVersion {
-    if (!command.idempotencyKey) throw new Error("publication_idempotency_required");
+    if (!command.idempotencyKey)
+      throw new Error("publication_idempotency_required");
     if (!Number.isInteger(command.version) || command.version < 1) {
       throw new Error("invalid_rule_version");
     }
-    if (instant(command.validity.validFrom) >= endInstant(command.validity.validTo)) {
+    if (
+      instant(command.validity.validFrom) >=
+      endInstant(command.validity.validTo)
+    ) {
       throw new Error("invalid_economic_interval");
     }
     if (
@@ -102,7 +111,9 @@ export class RuleVersionStore {
     }
 
     const commandCanonical = canonical(command);
-    const previousRequest = this.#publicationRequests.get(command.idempotencyKey);
+    const previousRequest = this.#publicationRequests.get(
+      command.idempotencyKey,
+    );
     if (previousRequest) {
       if (previousRequest.commandCanonical !== commandCanonical) {
         throw new Error("publication_idempotency_mismatch");

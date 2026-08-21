@@ -57,7 +57,9 @@ insert into app_private.source_observations (
 )
 select 'so_transition_test', id, 'sha256:' || repeat('3',64), '[]'::jsonb,
        '[{"type":"program","id":"demo","name":"Demo"}]'::jsonb,
-       'unknown','Synthetic transition test','{}'::jsonb,'rejected'
+       'unknown','Synthetic transition test',
+       '{"source_authority_claim":"unknown","evidence_completeness":"lead_only","agent_confidence":null}'::jsonb,
+       'rejected'
 from app_private.agent_feed_receipts where event_id='event-transition-test';
 
 do $$
@@ -65,8 +67,8 @@ begin
   begin
     update app_private.source_observations set status='new' where observation_key='so_transition_test';
     raise exception 'expected terminal observation transition violation';
-  exception when raise_exception then
-    if sqlerrm = 'expected terminal observation transition violation' then raise; end if;
+  exception when sqlstate '55000' then
+    null;
   end;
 end $$;
 

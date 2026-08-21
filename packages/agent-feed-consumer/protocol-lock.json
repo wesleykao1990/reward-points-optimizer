@@ -1,6 +1,7 @@
 {
   "agent_feed_protocol_version": "0.1",
   "agent_feed_project_version": "0.1.1",
+  "agent_feed_release_commit": "ad7e1a7270d0ebc09ffdc844d38cfa71a87bf95e",
   "rewards_optimizer_project_version": "0.4.1",
   "schema_package": "@agent-feed/schema",
   "schema_artifact": {

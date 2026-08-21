@@ -1,0 +1,108 @@
+{
+  "scenario_id": "JP-CVS-002",
+  "status": "reviewed",
+  "primary_source_ids": [
+    "merchant.seveneleven.payment-methods"
+  ],
+  "evidence_ids": [
+    "ev_m3_seveneleven_payment_methods_20260820"
+  ],
+  "evidence": [
+    {
+      "evidence_id": "ev_m3_seveneleven_payment_methods_20260820",
+      "first_party": true,
+      "status": "verified",
+      "review_decision": "approved",
+      "source_id": "merchant.seveneleven.payment-methods"
+    }
+  ],
+  "candidate_plans": [
+    {
+      "plan_id": "plan_jp_cvs_002_accepted_credit_card"
+    },
+    {
+      "plan_id": "plan_jp_cvs_002_unsupported_tender"
+    }
+  ],
+  "plan_results": [
+    {
+      "plan_id": "plan_jp_cvs_002_accepted_credit_card",
+      "result_artifact_id": "result_plan_jp_cvs_002_accepted_credit_card",
+      "replay_id": "replay_jp_cvs_002_candidate",
+      "produced_by": "engine"
+    },
+    {
+      "plan_id": "plan_jp_cvs_002_unsupported_tender",
+      "result_artifact_id": "result_plan_jp_cvs_002_unsupported_tender",
+      "replay_id": "replay_jp_cvs_002_candidate",
+      "produced_by": "engine"
+    }
+  ],
+  "independent_calculation": {
+    "artifact_id": "calc_jp_cvs_002_independent_manual",
+    "status": "completed",
+    "completed_at": "2026-08-20T05:50:00+09:00",
+    "method": "manual",
+    "plan_ids": [
+      "plan_jp_cvs_002_accepted_credit_card",
+      "plan_jp_cvs_002_unsupported_tender"
+    ]
+  },
+  "engine_replay": {
+    "replay_id": "replay_jp_cvs_002_candidate",
+    "status": "passed",
+    "completed_at": "2026-08-20T05:52:00+09:00",
+    "result_plan_ids": [
+      "plan_jp_cvs_002_accepted_credit_card",
+      "plan_jp_cvs_002_unsupported_tender"
+    ]
+  },
+  "required_negative_assertions": [
+    "unsupported_tender_denied_before_reward_calculation"
+  ],
+  "negative_assertions": [
+    {
+      "assertion_id": "unsupported_tender_denied_before_reward_calculation",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:52:00+09:00",
+      "artifact_id": "assertion_jp_cvs_002_no_zero_point_placeholder"
+    }
+  ],
+  "conservation": {
+    "artifact_id": "conservation_jp_cvs_002_candidate",
+    "status": "passed",
+    "checked_at": "2026-08-20T05:52:00+09:00"
+  },
+  "replay": {
+    "artifact_id": "replay_jp_cvs_002_candidate_ci",
+    "status": "passed",
+    "checked_at": "2026-08-20T05:52:00+09:00"
+  },
+  "builder_id": "m3-jp-cvs-002-builder",
+  "primary_reviewer_id": "m3-jp-cvs-002-primary-solo-reviewer",
+  "review": {
+    "required_review_modes": [
+      "solo_dual_pass",
+      "agent_challenged"
+    ],
+    "review_mode": "agent_challenged",
+    "calculated_by": "m3-jp-cvs-002-builder",
+    "decision": "approved",
+    "review_events": [
+      {
+        "mode": "solo_dual_pass",
+        "reviewer_id": "m3-jp-cvs-002-primary-solo-reviewer",
+        "completed_at": "2026-08-20T06:24:00+09:00",
+        "decision": "approved",
+        "notes": "Cooling-off reread reproduced the approved source mapping, the manual expectation, the accepted credit-card result, and the unsupported-tender rejection without reward output."
+      },
+      {
+        "mode": "agent_challenged",
+        "reviewer_id": "m3-scenario-challenge-verifier",
+        "completed_at": "2026-08-20T06:38:55+09:00",
+        "decision": "approved",
+        "notes": "Independent challenge recomputed both plan outcomes, verified the evidence hash and authoritative manual source readiness, and found no promotion-gate discrepancy."
+      }
+    ]
+  }
+}

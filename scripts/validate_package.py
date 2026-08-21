@@ -10,6 +10,7 @@ replace execution against PostgreSQL 15+.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 import sys
@@ -39,7 +40,7 @@ EXPECTED_SCHEMA_FILES = {
     "trusted-source.schema.json",
     "user-state.schema.json",
 }
-EXPECTED_SOURCE_COUNT = 140
+EXPECTED_SOURCE_COUNT = 144
 EXPECTED_SCENARIO_COUNT = 100
 EXPECTED_LEVELS = Counter(
     {"L1_SINGLE_RULE": 40, "L2_STACKING": 40, "L3_ADVERSARIAL": 20}
@@ -70,6 +71,16 @@ def load_json(path: Path) -> Any:
 
 def load_yaml(path: Path) -> Any:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def canonical_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
 def parse_dt(value: str | None, label: str) -> datetime | None:
@@ -195,6 +206,7 @@ def purchase_signature(plan: dict[str, Any]) -> list[tuple[Any, ...]]:
                 (
                     item["product_class"],
                     item["amount_jpy"],
+                    item.get("tax_exclusive_amount_jpy"),
                     item["quantity"],
                 )
                 for item in operation["line_items"]
@@ -560,6 +572,21 @@ def validate_movement_conservation(
 
 def validate_golden_scenario(scenario: dict[str, Any], label: str) -> None:
     validate_user_state(scenario["user_state"], f"{label}/user_state")
+    asset_definitions = scenario.get("asset_definitions")
+    if not isinstance(asset_definitions, list):
+        fail(f"{label}/asset_definitions: expected a list")
+    asset_ids = [
+        asset.get("asset_id") if isinstance(asset, dict) else None
+        for asset in asset_definitions
+    ]
+    if any(not isinstance(asset_id, str) for asset_id in asset_ids):
+        fail(f"{label}/asset_definitions: every asset requires an asset_id")
+    duplicate_asset_ids = duplicate_values(asset_ids)
+    if duplicate_asset_ids:
+        fail(
+            f"{label}/asset_definitions: duplicate asset definition IDs "
+            f"{duplicate_asset_ids}"
+        )
     validate_review_contract(
         scenario["review"],
         scenario["review"].get("decision") == "approved",
@@ -567,6 +594,24 @@ def validate_golden_scenario(scenario: dict[str, Any], label: str) -> None:
     )
     opening_lots = scenario["user_state"]["asset_lots"]
     opening_lot_ids = {lot["lot_id"] for lot in opening_lots}
+
+    top_evidence_ids = set(scenario["evidence_ids"])
+    bindings_by_rule: dict[str, dict[str, Any]] = {}
+    for binding_index, binding in enumerate(scenario["rule_version_bindings"]):
+        binding_label = f"{label}/rule_version_bindings/{binding_index}"
+        rule_id = binding["rule_id"]
+        if rule_id in bindings_by_rule:
+            fail(f"{binding_label}: each result-visible rule ID must bind exactly one version")
+        bindings_by_rule[rule_id] = binding
+        if not set(binding["evidence_ids"]) <= top_evidence_ids:
+            fail(f"{binding_label}: binding evidence is absent from scenario evidence_ids")
+
+    replay_provenance = scenario["replay_provenance"]
+    if (
+        replay_provenance["rule_admission"] == "ephemeral_published_clone"
+        and replay_provenance["publication_authorized"] is not False
+    ):
+        fail(f"{label}: ephemeral replay admission cannot authorize publication")
 
     plans = scenario["candidate_plans"]
     plan_ids = [plan["plan_id"] for plan in plans]
@@ -613,6 +658,30 @@ def validate_golden_scenario(scenario: dict[str, Any], label: str) -> None:
         result_label = f"{label}/expected/plan_results/{result_index}"
         plan = plan_by_id[result["plan_id"]]
         operation_ids = {operation["operation_id"] for operation in plan["operations"]}
+
+        origin = result["result_origin"]
+        preflight = result["preflight_rejection"]
+        if origin == "engine" and preflight is not None:
+            fail(f"{result_label}: engine result cannot carry preflight rejection metadata")
+        if origin == "preflight":
+            if (
+                result["eligible"] is not False
+                or result["asset_movements"]
+                or result["reward_components"]
+                or result["ending_asset_lots"]
+                or not isinstance(preflight, dict)
+                or preflight.get("reward_calculation_performed") is not False
+            ):
+                fail(f"{result_label}: preflight result must be ineligible with empty ledgers")
+
+        for field, role in (
+            ("applied_rule_ids", "applied"),
+            ("rejected_rule_ids", "rejected"),
+        ):
+            for rule_id in result[field]:
+                binding = bindings_by_rule.get(rule_id)
+                if binding is None or role not in binding["roles"]:
+                    fail(f"{result_label}: {field} lacks an exact {role} rule binding")
 
         movement_ids = [movement["movement_id"] for movement in result["asset_movements"]]
         if duplicate_values(movement_ids):
@@ -708,6 +777,542 @@ def validate_golden_scenario(scenario: dict[str, Any], label: str) -> None:
                 fail(f"{label}: approved solo dual-pass review requires cooling-off and calculation artifact")
         if review["verified_at"] is None:
             fail(f"{label}: approved fixture requires verified_at")
+
+
+def validate_golden_manifest(
+    fixture: dict[str, Any],
+    manifest: dict[str, Any],
+    label: str,
+) -> None:
+    if manifest["scenario_id"] != fixture["scenario_id"]:
+        fail(f"{label}: manifest scenario ID does not match fixture")
+    if manifest["canonical_fixture_hash"] != canonical_sha256(fixture):
+        fail(f"{label}: canonical fixture hash mismatch")
+    result_hash_rows = manifest.get("result_artifact_hashes")
+    if not isinstance(result_hash_rows, list):
+        fail(f"{label}: result hash manifest must be a list")
+    result_hash_plan_ids = [row.get("plan_id") for row in result_hash_rows]
+    if any(not isinstance(plan_id, str) for plan_id in result_hash_plan_ids):
+        fail(f"{label}: result hash manifest contains a missing/invalid plan ID")
+    if duplicate_values(result_hash_plan_ids):
+        fail(f"{label}: result hash manifest contains duplicate plan IDs")
+    result_hashes = {
+        row["plan_id"]: row.get("result_artifact_hash")
+        for row in result_hash_rows
+    }
+    results = fixture["expected"]["plan_results"]
+    if set(result_hashes) != {result["plan_id"] for result in results}:
+        fail(f"{label}: result hash manifest does not cover every plan exactly once")
+    for result in results:
+        projection = copy.deepcopy(result)
+        embedded_hash = projection.pop("result_artifact_hash", None)
+        computed_hash = canonical_sha256(projection)
+        if embedded_hash != computed_hash or result_hashes[result["plan_id"]] != computed_hash:
+            fail(f"{label}: result artifact hash mismatch for {result['plan_id']}")
+
+    replay_hashes = manifest.get("replay_hashes")
+    if not isinstance(replay_hashes, dict):
+        fail(f"{label}: replay_hashes are required for independent provenance validation")
+    if set(replay_hashes) != {"input_hash", "output_hash"}:
+        fail(f"{label}: replay_hashes contain missing or unsupported fields")
+
+    replay_input = build_golden_replay_input_projection(fixture, manifest, label)
+    computed_input_hash = canonical_sha256(replay_input)
+    if computed_input_hash != replay_hashes["input_hash"]:
+        fail(f"{label}: independently reconstructed replay input hash disagrees with manifest")
+    if computed_input_hash != fixture["replay_provenance"]["input_hash"]:
+        fail(f"{label}: independently reconstructed replay input hash disagrees with fixture provenance")
+
+    replay_output = build_golden_replay_output_projection(fixture, manifest, label)
+    computed_output_hash = canonical_sha256(replay_output)
+    if computed_output_hash != replay_hashes["output_hash"]:
+        fail(f"{label}: independently reconstructed replay output hash disagrees with manifest")
+    if computed_output_hash != fixture["replay_provenance"]["output_hash"]:
+        fail(f"{label}: independently reconstructed replay output hash disagrees with fixture provenance")
+
+
+def _require_exact_keys(value: Any, expected: set[str], label: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        fail(f"{label}: expected an object")
+    actual = set(value)
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    if missing or extra:
+        fail(f"{label}: unsupported projection fields (missing={missing}, extra={extra})")
+    return value
+
+
+def _fixture_projection_value(
+    fixture: dict[str, Any], path: str, label: str
+) -> Any:
+    current: Any = fixture
+    for part in path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            fail(f"{label}: fixture projection path is unavailable: {path}")
+        current = current[part]
+    return copy.deepcopy(current)
+
+
+def _validate_replay_rule_projection(
+    fixture: dict[str, Any], rules: Any, label: str
+) -> None:
+    if not isinstance(rules, list) or not rules:
+        fail(f"{label}: replay input must declare a non-empty rules projection")
+    bindings = fixture.get("rule_version_bindings")
+    if not isinstance(bindings, list):
+        fail(f"{label}: fixture rule_version_bindings are required")
+    binding_by_id: dict[str, dict[str, Any]] = {}
+    for binding in bindings:
+        if not isinstance(binding, dict) or not isinstance(binding.get("rule_id"), str):
+            fail(f"{label}: fixture rule binding is malformed")
+        rule_id = binding["rule_id"]
+        if rule_id in binding_by_id:
+            fail(f"{label}: fixture rule bindings contain duplicate rule IDs")
+        binding_by_id[rule_id] = binding
+
+    seen_rule_ids: list[str] = []
+    for index, rule in enumerate(rules):
+        rule_label = f"{label}/context/rules/{index}"
+        if not isinstance(rule, dict) or not isinstance(rule.get("rule_id"), str):
+            fail(f"{rule_label}: replay rule is malformed")
+        rule_id = rule["rule_id"]
+        seen_rule_ids.append(rule_id)
+        binding = binding_by_id.get(rule_id)
+        if binding is None:
+            fail(f"{rule_label}: replay rule has no fixture binding")
+        if rule.get("status") != "published":
+            fail(f"{rule_label}: replay admission must use a published ephemeral clone")
+        if rule.get("version") != binding.get("version"):
+            fail(f"{rule_label}: replay rule version disagrees with fixture binding")
+        if rule.get("validity") != binding.get("validity"):
+            fail(f"{rule_label}: replay rule validity disagrees with fixture binding")
+        provenance = rule.get("provenance")
+        if not isinstance(provenance, dict):
+            fail(f"{rule_label}: replay rule provenance is missing")
+        if provenance.get("evidence_ids") != binding.get("evidence_ids"):
+            fail(f"{rule_label}: replay rule evidence disagrees with fixture binding")
+        definition = copy.deepcopy(rule)
+        for field in (
+            "version",
+            "status",
+            "validity",
+            "provenance",
+            "audit",
+            "definition_hash",
+        ):
+            definition.pop(field, None)
+        if canonical_sha256(definition) != binding.get("definition_hash"):
+            fail(f"{rule_label}: replay rule definition hash disagrees with fixture binding")
+
+    if duplicate_values(seen_rule_ids) or set(seen_rule_ids) != set(binding_by_id):
+        fail(f"{label}: replay rule projection must cover every fixture binding exactly once")
+
+
+def build_golden_replay_input_projection(
+    fixture: dict[str, Any], manifest: dict[str, Any], label: str
+) -> dict[str, Any]:
+    projection = manifest.get("replay_input_projection")
+    projection = _require_exact_keys(
+        projection,
+        {"projection_version", "base_context", "fixture_bindings"},
+        f"{label}/replay_input_projection",
+    )
+    if projection["projection_version"] != "engine_candidates_input.v1":
+        fail(f"{label}: unsupported replay input projection version")
+    bindings = _require_exact_keys(
+        projection["fixture_bindings"],
+        {
+            "plans",
+            "context.asset_definitions",
+            "context.user_state",
+            "context.user_state.asset_lots",
+            "context.user_state.valuation_profile.entries",
+            "context.objective",
+            "context.replay_knowledge_at",
+            "context.transaction_time",
+        },
+        f"{label}/replay_input_projection/fixture_bindings",
+    )
+    expected_bindings = {
+        "plans": (
+            "candidate_plans"
+            if fixture["scenario_id"] == "JP-CVS-002"
+            else "candidate_plans[engine_origin]"
+        ),
+        "context.asset_definitions": "asset_definitions",
+        "context.user_state": "user_state",
+        "context.user_state.asset_lots": "user_state.asset_lots",
+        "context.user_state.valuation_profile.entries":
+            "user_state.valuation_profile.entries",
+        "context.objective": "objective",
+        "context.replay_knowledge_at": "replay_knowledge_at",
+        "context.transaction_time": "as_of",
+    }
+    if bindings != expected_bindings:
+        fail(f"{label}: replay input fixture bindings are unsupported")
+
+    base_context = _require_exact_keys(
+        projection["base_context"],
+        {"rules"},
+        f"{label}/replay_input_projection/base_context",
+    )
+    _validate_replay_rule_projection(fixture, base_context["rules"], label)
+
+    context: dict[str, Any] = {"rules": copy.deepcopy(base_context["rules"])}
+    replay_input: dict[str, Any] = {"plans": [], "context": context}
+    for target, source in expected_bindings.items():
+        if source == "candidate_plans[engine_origin]":
+            engine_plan_ids = [
+                result["plan_id"]
+                for result in fixture["expected"]["plan_results"]
+                if result.get("result_origin") == "engine"
+            ]
+            candidate_plans = fixture.get("candidate_plans")
+            if not isinstance(candidate_plans, list):
+                fail(f"{label}: candidate plan projection is not a list")
+            plans_by_id = {plan.get("plan_id"): plan for plan in candidate_plans}
+            if len(plans_by_id) != len(candidate_plans) or any(
+                plan_id not in plans_by_id for plan_id in engine_plan_ids
+            ):
+                fail(f"{label}: engine-origin plan projection is incomplete or ambiguous")
+            value = [copy.deepcopy(plans_by_id[plan_id]) for plan_id in engine_plan_ids]
+        else:
+            value = _fixture_projection_value(fixture, source, f"{label}/replay_input_projection")
+        if target == "plans":
+            replay_input["plans"] = value
+        elif target == "context.asset_definitions":
+            context["assets"] = value
+        elif target == "context.user_state":
+            context["user_state"] = value
+        elif target == "context.user_state.asset_lots":
+            if context.get("user_state", {}).get("asset_lots") != value:
+                fail(f"{label}: user-state asset-lot binding disagrees with user_state")
+            if fixture["scenario_id"] == "JP-CVS-006":
+                context["opening_asset_lots"] = copy.deepcopy(value)
+        elif target == "context.user_state.valuation_profile.entries":
+            user_state = context.get("user_state")
+            if not isinstance(user_state, dict):
+                fail(f"{label}: valuation binding requires user_state")
+            profile = user_state.get("valuation_profile")
+            if not isinstance(profile, dict) or profile.get("entries") != value:
+                fail(f"{label}: valuation binding disagrees with user_state")
+        else:
+            context[target.removeprefix("context.")] = value
+    return replay_input
+
+
+def _native_integer(value: Any, label: str) -> int:
+    if isinstance(value, bool):
+        fail(f"{label}: boolean is not an integer")
+    if isinstance(value, int):
+        integer = value
+    elif isinstance(value, float):
+        if not value.is_integer():
+            fail(f"{label}: fractional numeric value is not supported")
+        integer = int(value)
+    elif isinstance(value, str) and re.fullmatch(r"-?[0-9]+(?:\.0+)?", value):
+        integer = int(value.split(".", 1)[0])
+    else:
+        fail(f"{label}: unsupported integer representation")
+    if not -(2**53 - 1) <= integer <= 2**53 - 1:
+        fail(f"{label}: integer exceeds the safe JSON range")
+    return integer
+
+
+def _native_range(value: Any, label: str) -> dict[str, int | None]:
+    value = _require_exact_keys(
+        value,
+        {"minimum_jpy", "maximum_jpy", "expected_jpy"},
+        label,
+    )
+    minimum = _native_integer(value["minimum_jpy"], f"{label}/minimum_jpy")
+    maximum = _native_integer(value["maximum_jpy"], f"{label}/maximum_jpy")
+    expected = (
+        None
+        if value["expected_jpy"] is None
+        else _native_integer(value["expected_jpy"], f"{label}/expected_jpy")
+    )
+    if minimum > maximum or (expected is not None and not minimum <= expected <= maximum):
+        fail(f"{label}: invalid numeric range")
+    return {
+        "minimum_jpy": minimum,
+        "maximum_jpy": maximum,
+        "expected_jpy": expected,
+    }
+
+
+def _project_native_reward_component(
+    reward: Any, label: str
+) -> dict[str, Any]:
+    reward = _require_exact_keys(
+        reward,
+        {
+            "component_id",
+            "operation_id",
+            "rule_id",
+            "sign",
+            "quantity",
+            "value_jpy",
+            "value_jpy_decimal",
+            "certainty",
+            "settlement",
+            "expiry",
+            "restrictions",
+            "clawback",
+            "calculation_trace",
+        },
+        label,
+    )
+    value_jpy = _native_range(reward["value_jpy"], f"{label}/value_jpy")
+    helper_value = _native_integer(
+        reward["value_jpy_decimal"], f"{label}/value_jpy_decimal"
+    )
+    if value_jpy["expected_jpy"] != helper_value:
+        fail(f"{label}: native decimal helper disagrees with value_jpy")
+    return {
+        "component_id": reward["component_id"],
+        "operation_id": reward["operation_id"],
+        "rule_id": reward["rule_id"],
+        "sign": reward["sign"],
+        "quantity": copy.deepcopy(reward["quantity"]),
+        "value_jpy": value_jpy,
+        "certainty": copy.deepcopy(reward["certainty"]),
+        "settlement": copy.deepcopy(reward["settlement"]),
+        "expiry": copy.deepcopy(reward["expiry"]),
+        "restrictions": copy.deepcopy(reward["restrictions"]),
+        "clawback": copy.deepcopy(reward["clawback"]),
+        "calculation_trace": copy.deepcopy(reward["calculation_trace"]),
+    }
+
+
+def _project_native_plan_result(native: Any, label: str) -> dict[str, Any]:
+    native = _require_exact_keys(
+        native,
+        {
+            "plan_id",
+            "eligible",
+            "asset_movements",
+            "reward_components",
+            "ending_asset_lots",
+            "economics",
+            "objective_score_jpy",
+            "applied_rule_ids",
+            "rejected_rule_ids",
+            "rejection_reasons",
+            "external_funding_jpy",
+            "merchant_value_jpy",
+            "native_snapshot",
+            "opening_asset_units_consumed",
+            "operations",
+        },
+        label,
+    )
+    economics = _require_exact_keys(
+        native["economics"],
+        {
+            "merchant_value_received_jpy",
+            "external_funding_jpy",
+            "opening_asset_value_consumed_jpy",
+            "ending_asset_value_jpy",
+            "guaranteed_reward_value_jpy",
+            "probabilistic_expected_reward_value_jpy",
+            "fee_value_jpy",
+            "guaranteed_net_value_change_jpy",
+            "expected_net_value_change_jpy",
+        },
+        f"{label}/economics",
+    )
+    projected_rejections: list[str] = []
+    if not isinstance(native["rejection_reasons"], list):
+        fail(f"{label}/rejection_reasons: expected a list")
+    for index, reason in enumerate(native["rejection_reasons"]):
+        reason = _require_exact_keys(
+            reason,
+            {"code", "message", "operation_id", "rule_id"},
+            f"{label}/rejection_reasons/{index}",
+        )
+        if not isinstance(reason["message"], str):
+            fail(f"{label}/rejection_reasons/{index}: message must be a string")
+        projected_rejections.append(reason["message"])
+    return {
+        "plan_id": native["plan_id"],
+        "eligible": native["eligible"],
+        "asset_movements": copy.deepcopy(native["asset_movements"]),
+        "reward_components": [
+            _project_native_reward_component(reward, f"{label}/reward_components/{index}")
+            for index, reward in enumerate(native["reward_components"])
+        ],
+        "ending_asset_lots": copy.deepcopy(native["ending_asset_lots"]),
+        "economics": {
+            field: _native_range(value, f"{label}/economics/{field}")
+            for field, value in economics.items()
+        },
+        "objective_score_jpy": {
+            "minimum_jpy": _native_integer(
+                native["objective_score_jpy"], f"{label}/objective_score_jpy"
+            ),
+            "maximum_jpy": _native_integer(
+                native["objective_score_jpy"], f"{label}/objective_score_jpy"
+            ),
+            "expected_jpy": _native_integer(
+                native["objective_score_jpy"], f"{label}/objective_score_jpy"
+            ),
+        },
+        "nominal_return_basis_points": None,
+        "applied_rule_ids": copy.deepcopy(native["applied_rule_ids"]),
+        "rejected_rule_ids": copy.deepcopy(native["rejected_rule_ids"]),
+        "rejection_reasons": projected_rejections,
+    }
+
+
+def build_golden_replay_output_projection(
+    fixture: dict[str, Any], manifest: dict[str, Any], label: str
+) -> dict[str, Any]:
+    projection = manifest.get("replay_output_projection")
+    projection = _require_exact_keys(
+        projection,
+        {"projection_version", "mode", "fixture_bindings"}
+        if fixture["scenario_id"] == "JP-CVS-002"
+        else {"projection_version", "mode", "fixture_binding", "canonical_output"},
+        f"{label}/replay_output_projection",
+    )
+    if projection["projection_version"] != "golden_replay_output.v1":
+        fail(f"{label}: unsupported replay output projection version")
+
+    results = fixture["expected"]["plan_results"]
+    engine_ids = [result["plan_id"] for result in results if result.get("result_origin") == "engine"]
+    preflight_ids = [result["plan_id"] for result in results if result.get("result_origin") == "preflight"]
+    if not engine_ids:
+        fail(f"{label}: replay output projection has no engine-origin result")
+
+    if projection["mode"] == "fixture_expected":
+        if fixture["scenario_id"] != "JP-CVS-002":
+            fail(f"{label}: fixture_expected replay output mode is unsupported for this fixture")
+        bindings = _require_exact_keys(
+            projection["fixture_bindings"],
+            {
+                "outcome_mode",
+                "definite_winner_plan_id",
+                "safe_plan_id",
+                "runner_up_plan_id",
+                "plan_results",
+            },
+            f"{label}/replay_output_projection/fixture_bindings",
+        )
+        expected_bindings = {
+            "outcome_mode": "expected.outcome_mode",
+            "definite_winner_plan_id": "expected.definite_winner_plan_id",
+            "safe_plan_id": "expected.safe_plan_id",
+            "runner_up_plan_id": "expected.runner_up_plan_id",
+            "plan_results": "expected.plan_results",
+        }
+        if bindings != expected_bindings:
+            fail(f"{label}: replay output fixture bindings are unsupported")
+        if preflight_ids or len(engine_ids) != len(results):
+            fail(f"{label}: fixture_expected output must contain engine-origin results only")
+        return {
+            key: _fixture_projection_value(fixture, source, f"{label}/replay_output_projection")
+            for key, source in expected_bindings.items()
+        }
+
+    if projection["mode"] != "manifest_engine_canonical":
+        fail(f"{label}: unsupported replay output projection mode")
+    if projection["fixture_binding"] != "expected.plan_results":
+        fail(f"{label}: engine replay output must bind to expected.plan_results")
+    canonical_output = projection["canonical_output"]
+    if not isinstance(canonical_output, dict):
+        fail(f"{label}: canonical engine output projection must be an object")
+    expected_output_keys = {
+        "conditional_winners",
+        "definite_winner_plan_id",
+        "explanation_tokens",
+        "outcome_mode",
+        "plans",
+        "questions_to_resolve",
+        "runner_up",
+        "safe_plan_id",
+        "valuation_sensitivities",
+        "winner",
+    }
+    _require_exact_keys(canonical_output, expected_output_keys, f"{label}/replay_output_projection/canonical_output")
+    native_plans = canonical_output["plans"]
+    if not isinstance(native_plans, list):
+        fail(f"{label}: canonical engine output plans must be a list")
+    native_plan_ids = [plan.get("plan_id") for plan in native_plans if isinstance(plan, dict)]
+    if any(not isinstance(plan_id, str) for plan_id in native_plan_ids):
+        fail(f"{label}: canonical engine output contains a malformed plan")
+    if duplicate_values(native_plan_ids) or native_plan_ids != engine_ids:
+        fail(f"{label}: canonical engine output must contain exactly the engine-origin plan results")
+    if set(native_plan_ids) & set(preflight_ids):
+        fail(f"{label}: preflight-only plan was represented as engine output")
+    if canonical_output["definite_winner_plan_id"] not in engine_ids:
+        fail(f"{label}: canonical engine output winner is not engine-origin")
+    if canonical_output["safe_plan_id"] not in engine_ids:
+        fail(f"{label}: canonical engine output safe plan is not engine-origin")
+    for field in ("winner", "runner_up"):
+        candidate = canonical_output[field]
+        if candidate is not None and (
+            not isinstance(candidate, dict)
+            or candidate.get("plan_id") not in engine_ids
+        ):
+            fail(f"{label}: canonical engine output {field} is not engine-origin")
+
+    expected = fixture["expected"]
+    for field in (
+        "outcome_mode",
+        "definite_winner_plan_id",
+        "safe_plan_id",
+        "conditional_winners",
+    ):
+        if canonical_output[field] != expected[field]:
+            fail(f"{label}: canonical engine output {field} disagrees with fixture expectation")
+    if canonical_output["runner_up"] is not None and (
+        canonical_output["runner_up"].get("plan_id")
+        != expected["runner_up_plan_id"]
+    ):
+        fail(f"{label}: canonical engine output runner_up disagrees with fixture expectation")
+    if canonical_output["runner_up"] is None and expected["runner_up_plan_id"] is not None:
+        fail(f"{label}: canonical engine output runner_up is missing")
+
+    golden_by_id = {
+        result["plan_id"]: result
+        for result in results
+        if result.get("result_origin") == "engine"
+    }
+    candidate_by_id = {
+        plan["plan_id"]: plan
+        for plan in fixture["candidate_plans"]
+        if plan.get("plan_id") in engine_ids
+    }
+    for index, native_plan in enumerate(native_plans):
+        plan_id = native_plan["plan_id"]
+        golden = golden_by_id.get(plan_id)
+        if golden is None:
+            fail(f"{label}: canonical engine output plan has no engine-origin golden result")
+        candidate = candidate_by_id.get(plan_id)
+        if candidate is None:
+            fail(f"{label}: canonical engine output plan has no fixture candidate")
+        if native_plan.get("operations") != candidate.get("operations"):
+            fail(f"{label}: native plan operations disagree with fixture candidate")
+        projected_native = _project_native_plan_result(
+            native_plan, f"{label}/replay_output_projection/plans/{index}"
+        )
+        golden_without_metadata = copy.deepcopy(golden)
+        for field in ("result_artifact_hash", "result_origin", "preflight_rejection"):
+            golden_without_metadata.pop(field, None)
+        if projected_native != golden_without_metadata:
+            fail(f"{label}: native engine plan does not exactly project to golden result {plan_id}")
+
+    native_by_id = {plan["plan_id"]: plan for plan in native_plans}
+    for field, plan_id_field in (("winner", "definite_winner_plan_id"), ("runner_up", "runner_up_plan_id")):
+        expected_plan_id = expected[plan_id_field]
+        native_reference = canonical_output[field]
+        if expected_plan_id is None:
+            if native_reference is not None:
+                fail(f"{label}: canonical engine output {field} should be null")
+        elif native_reference != native_by_id.get(expected_plan_id):
+            fail(f"{label}: canonical engine output {field} disagrees with its native plan")
+    return copy.deepcopy(canonical_output)
 
 
 
@@ -930,7 +1535,9 @@ def validate_sql_structure() -> None:
     replay_test = (BASE / "db/tests/001_bitemporal_replay.sql").read_text(encoding="utf-8").lower()
     for marker in (
         "expected bitemporal exclusion violation",
-        "ambiguous replay for tx",
+        "ambiguous generated replay pair",
+        "generate_series(0, 28)",
+        "expected exactly one adjacent replay result at boundary",
         "2026-04-01t00:00:00z",
         "rollback;",
     ):
@@ -939,7 +1546,9 @@ def validate_sql_structure() -> None:
 
     view_test = (BASE / "db/tests/002_view_security.sql").read_text(encoding="utf-8").lower()
     for marker in (
-        "security-invoker view unexpectedly lent underlying privileges",
+        "verified_sources unexpectedly succeeded without underlying grants",
+        "approved_reward_rule_versions unexpectedly succeeded without underlying grants",
+        "security_invoker=true and security_barrier=true",
         "grant usage on schema app_private",
         "grant select on app_private.trusted_sources",
         "drop role jro_view_test",
@@ -1032,6 +1641,97 @@ def validate_docs_and_scripts() -> None:
             fail(f"Source-maintenance prompt is missing required marker: {marker}")
 
 
+def validate_m3_manual_evidence(
+    manifest: dict[str, Any],
+    schemas: dict[str, dict[str, Any]],
+    schema_registry: Registry,
+    sources: list[dict[str, Any]],
+) -> None:
+    index = load_json(BASE / "fixtures/m3/real-data-alpha-evidence-index.v0.1.json")
+    records = index["records"]
+    expected_count = manifest["counts"]["m3_verified_evidence_records"]
+    if len(records) != expected_count:
+        fail("M3 evidence index count does not match the package manifest")
+    source_by_id = {source["id"]: source for source in sources}
+    evidence_ids: list[str] = []
+    snapshot_ids: list[str] = []
+    indexed_evidence_paths: set[str] = set()
+    indexed_snapshot_paths: set[str] = set()
+    for index_number, item in enumerate(records):
+        label = f"m3-evidence-index/records/{index_number}"
+        evidence_path = BASE / item["evidence_path"]
+        snapshot_path = BASE / item["snapshot_path"]
+        if not evidence_path.is_file() or not snapshot_path.is_file():
+            fail(f"{label}: indexed evidence or snapshot file does not exist")
+        indexed_evidence_paths.add(evidence_path.relative_to(BASE).as_posix())
+        indexed_snapshot_paths.add(snapshot_path.relative_to(BASE).as_posix())
+        evidence = load_yaml(evidence_path)
+        snapshot_bytes = snapshot_path.read_bytes()
+        snapshot = json.loads(snapshot_bytes)
+        validate_schema(
+            evidence,
+            schemas["evidence-record.schema.json"],
+            schema_registry,
+            evidence_path.relative_to(BASE).as_posix(),
+        )
+        validate_review_contract(
+            evidence["review"],
+            evidence["status"] == "verified",
+            f"{evidence_path.relative_to(BASE).as_posix()}/review",
+        )
+        if evidence["status"] != "verified":
+            fail(f"{label}: reviewed real-data alpha evidence must be verified")
+        if evidence["review"].get("decision") != "approved":
+            fail(f"{label}: reviewed real-data alpha evidence must be approved")
+        source = source_by_id.get(evidence["source_id"])
+        if source is None:
+            fail(f"{label}: evidence references an unknown source")
+        if evidence["source_url"] != source["source_url"]:
+            fail(f"{label}: evidence URL does not match the trusted source")
+        if snapshot.get("record_type") != "normalized_manual_source_snapshot":
+            fail(f"{label}: snapshot is not a normalized manual source snapshot")
+        if snapshot.get("raw_page_body_stored") is not False:
+            fail(f"{label}: raw page content must not be stored")
+        if snapshot.get("source_id") != evidence["source_id"]:
+            fail(f"{label}: snapshot and evidence source IDs differ")
+        if snapshot.get("source_url") != evidence["source_url"]:
+            fail(f"{label}: snapshot and evidence URLs differ")
+        if snapshot.get("source_snapshot_id") != evidence["source_snapshot_id"]:
+            fail(f"{label}: snapshot and evidence snapshot IDs differ")
+        if snapshot.get("captured_at") != evidence["captured_at"]:
+            fail(f"{label}: snapshot and evidence capture times differ")
+        if snapshot.get("capture_method") != evidence["capture_method"]:
+            fail(f"{label}: snapshot and evidence capture methods differ")
+        facts = snapshot.get("facts")
+        if not isinstance(facts, list) or not facts:
+            fail(f"{label}: normalized snapshot must contain facts")
+        if any(fact.get("status") != "extracted_pending_review" for fact in facts):
+            fail(f"{label}: immutable capture-time fact status changed unexpectedly")
+        expected_hash = "sha256:" + hashlib.sha256(snapshot_bytes).hexdigest()
+        if evidence["content_hash"] != expected_hash:
+            fail(f"{label}: evidence hash does not bind the stored normalized snapshot")
+        if item["evidence_id"] != evidence["evidence_id"]:
+            fail(f"{label}: indexed evidence ID differs from the evidence record")
+        if item["source_snapshot_id"] != evidence["source_snapshot_id"]:
+            fail(f"{label}: indexed snapshot ID differs from the evidence record")
+        evidence_ids.append(evidence["evidence_id"])
+        snapshot_ids.append(evidence["source_snapshot_id"])
+    if duplicate_values(evidence_ids) or duplicate_values(snapshot_ids):
+        fail("M3 evidence index contains duplicate evidence or snapshot IDs")
+    actual_evidence_paths = {
+        path.relative_to(BASE).as_posix()
+        for path in (BASE / "fixtures/m3/evidence").glob("*.yaml")
+    }
+    actual_snapshot_paths = {
+        path.relative_to(BASE).as_posix()
+        for path in (BASE / "fixtures/m3/source-snapshots").glob("*.json")
+    }
+    if actual_evidence_paths != indexed_evidence_paths:
+        fail("M3 evidence index does not exactly cover the evidence directory")
+    if actual_snapshot_paths != indexed_snapshot_paths:
+        fail("M3 evidence index does not exactly cover the snapshot directory")
+
+
 def main() -> int:
     validate_all_serialized_files()
 
@@ -1083,6 +1783,13 @@ def main() -> int:
         if parsed.scheme not in {"https", "http"} or not parsed.netloc:
             fail(f"Invalid source URL: {url}")
     source_set = set(source_ids)
+
+    validate_m3_manual_evidence(
+        manifest,
+        schemas,
+        schema_registry,
+        sources,
+    )
 
     observation_wrapper = load_yaml(BASE / "registry/source-access-observations.v0.3.yaml")
     observations = observation_wrapper["observations"]
@@ -1204,6 +1911,21 @@ def main() -> int:
     validate_valuation_sensitivities(golden_flip, "golden-scenario.valuation-flip.example.yaml")
     validate_semantic_self_tests(golden["user_state"])
     validate_conservation_self_test()
+
+    for scenario_id in ("jp-cvs-002", "jp-cvs-006"):
+        fixture_path = BASE / "fixtures/m3/real-data" / scenario_id / "golden-scenario.v1.json"
+        manifest_path = fixture_path.with_name("golden-scenario.v1.manifest.json")
+        real_golden = load_json(fixture_path)
+        real_manifest = load_json(manifest_path)
+        label = str(fixture_path.relative_to(BASE))
+        validate_schema(
+            real_golden,
+            schemas["golden-scenario.schema.json"],
+            schema_registry,
+            label,
+        )
+        validate_golden_scenario(real_golden, label)
+        validate_golden_manifest(real_golden, real_manifest, label)
 
     source_observation = loaded_examples["source-observation.from-agent-feed.example.yaml"]
     if source_observation["agent_feed"]["protocol_version"] != "0.1":
@@ -1341,6 +2063,7 @@ def main() -> int:
     print(f"  Planned scenarios: {len(scenarios)}")
     print(f"  Level split: {dict(level_counts)}")
     print("  Synthetic valuation fixtures: reconciled with identical native ledgers, reversed winner, and verified break-even")
+    print("  Real golden fixtures: JP-CVS-002 and JP-CVS-006 schema/semantics/canonical manifests verified")
     print("  Semantic invalid-range self-tests: rejected as required")
     print("  Prompt-injection fixture: quarantined/no candidate rule")
     print("  SQL: structural checks passed (not executed against PostgreSQL)")

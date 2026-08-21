@@ -1,0 +1,48 @@
+evidence_id: ev_m3_sevencard_nanaco_charge_20260820
+source_id: jp.sevencard.nanaco-charge
+source_snapshot_id: snap_m3_sevencard_nanaco_charge_20260820
+source_url: https://www.7card.co.jp/point/save.html
+captured_at: '2026-08-20T05:30:00+09:00'
+content_hash: sha256:f82c76e4c8a1ce8e0953a92c14000c6f26ff3d776209924f1017b6c7c7eeb9f5
+capture_method: manual_capture
+source_published_at: null
+valid_time:
+  valid_from: null
+  valid_to: null
+  timezone: Asia/Tokyo
+locator:
+  type: manual_note
+  value: Normalized Seven Card Plus nanaco credit-charge amount, earning, and posting facts from a manual review; no source excerpt retained.
+supports:
+- artifact_id: draft_sevencard_plus_nanaco_credit_charge_boundaries
+  json_pointer: /claim
+  claim: A standard Seven Card Plus nanaco credit charge requires preregistration, starts at JPY 5,000, uses JPY 1,000 increments, is capped at JPY 30,000 per charge, and cannot take the balance above JPY 50,000.
+- artifact_id: draft_sevencard_plus_nanaco_charge_earning_detail
+  json_pointer: /claim
+  claim: An eligible charge earns one nanaco point per JPY 200, with the recorded monthly posting cycle.
+status: verified
+extraction:
+  method: human
+  model: null
+  prompt_version: null
+  confidence: 0.95
+review:
+  review_mode: agent_challenged
+  reviewer_id: codex-terra-evidence-challenger
+  reviewed_at: '2026-08-20T05:39:00+09:00'
+  decision: approved
+  notes: Primary reread and independent challenge confirmed credit-charge prerequisites, limits, earning rate, and posting cycle against the exact first-party charge section.
+  required_review_modes:
+  - solo_dual_pass
+  - agent_challenged
+  review_events:
+  - mode: solo_dual_pass
+    reviewer_id: codex-primary-evidence-reviewer
+    completed_at: '2026-08-20T05:37:00+09:00'
+    decision: approved
+    notes: Second bounded primary-source pass confirmed the paraphrased credit-charge facts without retaining page content.
+  - mode: agent_challenged
+    reviewer_id: codex-terra-evidence-challenger
+    completed_at: '2026-08-20T05:39:00+09:00'
+    decision: approved
+    notes: Independent challenge approved the credit-charge scope and kept it distinct from cash charging.

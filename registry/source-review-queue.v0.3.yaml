@@ -1,5 +1,5 @@
 version: 0.3.0
-research_cutoff: '2026-08-17'
+research_cutoff: '2026-08-20'
 notice: No scheduled retrieval may run until legal/terms permission and a technically feasible method are both recorded. Manual
   capture remains supported and is the default for the rehearsal.
 items:
@@ -1087,9 +1087,9 @@ items:
   priority: P1_CORE_RULES
   publisher: Seven Card Service
   source_url: https://www.nanaco-net.jp/how-to/use_point/money.html
-  current_automation_status: requires_terms_review
-  current_terms_review_status: not_reviewed
-  review_reason: Core reward or campaign authority likely to affect many recommendations.
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Project-owner-approved manual use of paraphrased structured facts; automation remains prohibited.
   required_decisions:
   - permitted_retrieval_method
   - request_rate_or_manual_only
@@ -1103,6 +1103,45 @@ items:
   - review_date
   - technical_collection_observation
   - fallback_or_partner_path
+- source_id: jp.nanaco.sevencard-earning
+  priority: P0_SEED_SCENARIO
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/how-to/save_point/creditcard.html
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Exact first-party earning authority added for JP-CVS-006 by project-owner decision.
+  required_decisions:
+  - manual_browser_only
+  - paraphrased_structured_facts_only
+  - no_page_body_or_screenshot_storage
+  - weekly_manual_refresh
+  - project_owner_review_2026-08-20
+- source_id: jp.nanaco.shopping-earning
+  priority: P0_SEED_SCENARIO
+  publisher: Seven Card Service
+  source_url: https://www.nanaco-net.jp/how-to/save_point/shopping.html
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Exact first-party merchant earning authority added for JP-CVS-006 by project-owner decision.
+  required_decisions:
+  - manual_browser_only
+  - paraphrased_structured_facts_only
+  - no_page_body_or_screenshot_storage
+  - weekly_manual_refresh
+  - project_owner_review_2026-08-20
+- source_id: jp.sevencard.nanaco-charge
+  priority: P0_SEED_SCENARIO
+  publisher: Seven Card Service
+  source_url: https://www.7card.co.jp/point/save.html
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Exact first-party credit-charge amount and earning authority added for JP-CVS-006 by project-owner decision.
+  required_decisions:
+  - manual_browser_only
+  - paraphrased_structured_facts_only
+  - no_page_body_or_screenshot_storage
+  - weekly_manual_refresh
+  - project_owner_review_2026-08-20
 - source_id: jp.paypay.calculation-faq
   priority: P0_SEED_SCENARIO
   publisher: PayPay
@@ -2347,9 +2386,9 @@ items:
   priority: P2_MERCHANT_COVERAGE
   publisher: Seven-Eleven Japan
   source_url: https://www.sej.co.jp/services/cash/nanaco.html
-  current_automation_status: requires_terms_review
-  current_terms_review_status: not_reviewed
-  review_reason: Needed for merchant/channel/location coverage after core programs.
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Approved by the project owner for manual use of paraphrased structured facts only.
   required_decisions:
   - permitted_retrieval_method
   - request_rate_or_manual_only
@@ -2383,6 +2422,19 @@ items:
   - review_date
   - technical_collection_observation
   - fallback_or_partner_path
+- source_id: merchant.seveneleven.payment-methods
+  priority: P0_SEED_SCENARIO
+  publisher: Seven-Eleven Japan
+  source_url: https://www.sej.co.jp/services/cash.html
+  current_automation_status: manual_only
+  current_terms_review_status: approved
+  review_reason: Exact first-party payment acceptance authority added for JP-CVS-002 by project-owner decision.
+  required_decisions:
+  - manual_browser_only
+  - paraphrased_structured_facts_only
+  - no_page_body_or_screenshot_storage
+  - weekly_manual_refresh
+  - project_owner_review_2026-08-20
 - source_id: merchant.starbucks.rewards
   priority: P0_SEED_SCENARIO
   publisher: Starbucks Coffee Japan

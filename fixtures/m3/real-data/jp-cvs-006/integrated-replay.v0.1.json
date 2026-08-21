@@ -1,0 +1,157 @@
+{
+  "record_type": "m3_jp_cvs_006_integrated_replay",
+  "record_version": "0.1.0",
+  "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1",
+  "scenario_id": "JP-CVS-006",
+  "independent_calculation": {
+    "artifact_id": "calc_jp_cvs_006_manual_v0_1",
+    "completed_at": "2026-08-20T05:47:00+09:00",
+    "method": "manual"
+  },
+  "replay": {
+    "replay_id": "replay_jp_cvs_006_candidate",
+    "status": "passed",
+    "completed_at": "2026-08-20T05:57:00+09:00",
+    "replay_knowledge_at": "2026-08-20T05:56:00+09:00",
+    "result_plan_ids": [
+      "plan_jp_cvs_006_valid_5000_topup",
+      "plan_jp_cvs_006_invalid_4000_topup"
+    ]
+  },
+  "candidate_plan_ids": [
+    "plan_jp_cvs_006_valid_5000_topup",
+    "plan_jp_cvs_006_invalid_4000_topup"
+  ],
+  "admitted_plan_ids": [
+    "plan_jp_cvs_006_valid_5000_topup"
+  ],
+  "rejected_plan_ids": [
+    "plan_jp_cvs_006_invalid_4000_topup"
+  ],
+  "plan_results": [
+    {
+      "plan_id": "plan_jp_cvs_006_valid_5000_topup",
+      "result_artifact_id": "result_jp_cvs_006_valid_5000_topup",
+      "produced_by": "engine",
+      "eligible": true,
+      "reward_calculation_performed": true,
+      "external_funding_jpy": "5000",
+      "merchant_value_jpy": "660",
+      "tax_exclusive_purchase_amount_jpy": "600",
+      "reward_components": [
+        {
+          "operation_id": "op_jp_cvs_006_topup_5000",
+          "reward_asset_id": "asset.jp.nanaco-point",
+          "reward_class": "normal",
+          "quantity": "25",
+          "value_jpy": "25",
+          "calculation_trace": {
+            "eligible_basis": "operation_amount",
+            "spend_jpy": "5000",
+            "denominator_jpy": 200,
+            "rounding_stage": "per_operation"
+          }
+        },
+        {
+          "operation_id": "op_jp_cvs_006_purchase_5000",
+          "reward_asset_id": "asset.jp.nanaco-point",
+          "reward_class": "normal",
+          "quantity": "3",
+          "value_jpy": "3",
+          "calculation_trace": {
+            "eligible_basis": "eligible_line_items",
+            "spend_jpy": "600",
+            "denominator_jpy": 200,
+            "rounding_stage": "per_operation"
+          }
+        }
+      ],
+      "residual_nanaco_principal_jpy": "4340"
+    },
+    {
+      "plan_id": "plan_jp_cvs_006_invalid_4000_topup",
+      "result_artifact_id": "preflight_jp_cvs_006_invalid_4000_topup",
+      "produced_by": "preflight",
+      "eligible": false,
+      "reward_calculation_performed": false,
+      "external_funding_jpy": null,
+      "merchant_value_jpy": null,
+      "tax_exclusive_purchase_amount_jpy": null,
+      "reward_components": [],
+      "residual_nanaco_principal_jpy": null,
+      "rejection_code": "credit_charge_below_minimum",
+      "preflight_rejection": {
+        "eligible": false,
+        "rejection_code": "credit_charge_below_minimum",
+        "reward_calculation_performed": false
+      },
+      "preflight": {
+        "top_up_amount_jpy": 4000,
+        "rejection_code": "credit_charge_below_minimum",
+        "minimum_amount_jpy": 5000,
+        "reward_calculation_performed": false
+      }
+    }
+  ],
+  "recommendation": {
+    "winner_plan_id": "plan_jp_cvs_006_valid_5000_topup",
+    "ranked_plan_ids": [
+      "plan_jp_cvs_006_valid_5000_topup"
+    ],
+    "outcome_mode": "definite"
+  },
+  "negative_assertions": [
+    {
+      "assertion_id": "jp_cvs_006_topup_reward_not_reapplied_at_purchase",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "observations": {
+        "top_up_reward_quantity": "25",
+        "purchase_reward_quantity": "3",
+        "top_up_reward_reapplied_at_purchase": false
+      }
+    },
+    {
+      "assertion_id": "jp_cvs_006_residual_nanaco_principal_not_disappeared",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "observations": {
+        "created_nanaco_principal_jpy": "5000",
+        "consumed_nanaco_principal_jpy": "660",
+        "residual_nanaco_principal_jpy": "4340"
+      }
+    },
+    {
+      "assertion_id": "jp_cvs_006_cash_register_49000_boundary_not_used_for_credit_charge",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "observations": {
+        "credit_charge_maximum_jpy": 30000,
+        "cash_register_single_charge_limit_jpy": 49000,
+        "boundaries_distinct": true
+      }
+    },
+    {
+      "assertion_id": "jp_cvs_006_below_minimum_topup_has_no_reward_calculation",
+      "status": "passed",
+      "checked_at": "2026-08-20T05:57:00+09:00",
+      "observations": {
+        "rejection_code": "credit_charge_below_minimum",
+        "reward_calculation_performed": false,
+        "reward_component_count": 0
+      }
+    }
+  ],
+  "conservation": {
+    "status": "passed",
+    "created_nanaco_principal_jpy": "5000",
+    "consumed_nanaco_principal_jpy": "660",
+    "residual_nanaco_principal_jpy": "4340",
+    "identity": "5000 - 660 = 4340"
+  },
+  "ci_replay": {
+    "artifact_id": "integrated_replay_jp_cvs_006_candidate_v0_1",
+    "status": "passed",
+    "checked_at": "2026-08-20T05:57:00+09:00"
+  }
+}
