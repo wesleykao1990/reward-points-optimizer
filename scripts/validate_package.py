@@ -44,6 +44,16 @@ EXPECTED_SCENARIO_COUNT = 100
 EXPECTED_LEVELS = Counter(
     {"L1_SINGLE_RULE": 40, "L2_STACKING": 40, "L3_ADVERSARIAL": 20}
 )
+EXPECTED_AGENT_FEED_SCHEMA_ARTIFACT = {
+    "version": "0.1.1",
+    "tag": "schema-v0.1.1",
+    "source_commit": "ad7e1a7270d0ebc09ffdc844d38cfa71a87bf95e",
+    "url": "https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/agent-feed-schema-0.1.1.tgz",
+    "manifest_url": "https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/schema-artifact-manifest.json",
+    "integrity": "sha512-KHALcE3zQ/dey5GTXepDeXaz77Qf1DP3ySA+rcbG6eiFvUTws21cry8rfM191wyLeQthJ9ENd0neu23ETwX5/g==",
+    "sha256": "9e020aba4e291f2e5328897dfb07195aaf392f6ecdd742b5c13b890cffdd9d6e",
+    "bytes": 13078,
+}
 
 
 class ValidationFailure(AssertionError):
@@ -122,6 +132,31 @@ def validate_all_serialized_files() -> None:
             load_json(path)
         elif path.suffix in {".yaml", ".yml"}:
             load_yaml(path)
+
+
+def validate_agent_feed_protocol_lock(manifest: dict[str, Any]) -> None:
+    lock_path = manifest["canonical_files"]["agent_feed_protocol_lock"]
+    lock = load_json(BASE / lock_path)
+    if lock.get("agent_feed_protocol_version") != "0.1":
+        fail("Agent Feed protocol lock must pin protocol 0.1")
+    if lock.get("agent_feed_project_version") != "0.1.1":
+        fail("Agent Feed protocol lock must pin project version 0.1.1")
+    if lock.get("schema_package") != "@agent-feed/schema":
+        fail("Agent Feed protocol lock must pin @agent-feed/schema")
+    if lock.get("schema_artifact") != EXPECTED_AGENT_FEED_SCHEMA_ARTIFACT:
+        fail("Agent Feed schema artifact URL/integrity does not match the published 0.1.1 release")
+    if lock.get("direct_database_access") is not False:
+        fail("Agent Feed protocol lock must prohibit direct database access")
+    if lock.get("realtime_required") is not False:
+        fail("Agent Feed protocol lock must not require Realtime delivery")
+
+    external = manifest.get("external_protocols", {}).get("agent_feed", {})
+    if external.get("protocol_version") != lock["agent_feed_protocol_version"]:
+        fail("Package manifest and Agent Feed protocol lock versions differ")
+    if external.get("schema_artifact_lock") != lock_path:
+        fail("Package manifest must point to the canonical Agent Feed protocol lock")
+    if external.get("schema_artifact") != lock["schema_artifact"]:
+        fail("Package manifest and Agent Feed schema artifact pin differ")
 
 
 def validate_value_range(value: dict[str, Any], label: str) -> None:
@@ -1020,6 +1055,7 @@ def main() -> int:
     for path in manifest["canonical_files"].values():
         if not (BASE / path).is_file():
             fail(f"Manifest canonical file does not exist: {path}")
+    validate_agent_feed_protocol_lock(manifest)
 
     registry_yaml = load_yaml(BASE / "registry/trusted-sources.v0.3.yaml")
     registry_json = load_json(BASE / "registry/trusted-sources.v0.3.json")

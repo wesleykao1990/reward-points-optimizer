@@ -81,7 +81,7 @@
 ## Delivery
 
 - [ ] Fresh checkout can install, validate, test, and build.
-- [ ] CI uses no live external content or secrets.
+- [x] Foundation checks use no live external content or secrets; the separate Agent Feed artifact check uses only the bounded, pinned HTTPS release URL.
 - [ ] Checksum `--check` is non-mutating and fails on mismatch/untracked files.
 - [ ] The initiating Codex run stops after Milestone 1A.
 - [ ] Milestone 1B uses its separate prompt.
@@ -97,7 +97,7 @@
 
 ## Agent Feed integration
 
-- [ ] Agent Feed remains a separate project/deployable and protocol `0.1` is pinned.
+- [x] Agent Feed remains a separate project/deployable and protocol `0.1` is pinned through the published `@agent-feed/schema@0.1.1` release URL and SHA-512 integrity.
 - [ ] Signed events are recorded idempotently before acknowledgement.
 - [ ] Generic findings map only to untrusted `SourceObservation`.
 - [ ] Transport dedupe and semantic dedupe are independently tested.

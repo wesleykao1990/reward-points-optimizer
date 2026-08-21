@@ -73,7 +73,18 @@
     "agent_feed": {
       "protocol_version": "0.1",
       "sibling_path": "../agent-feed",
-      "integration_mode": "signed_events_no_direct_database"
+      "integration_mode": "signed_events_no_direct_database",
+      "schema_artifact_lock": "packages/agent-feed-consumer/protocol-lock.json",
+      "schema_artifact": {
+        "version": "0.1.1",
+        "tag": "schema-v0.1.1",
+        "source_commit": "ad7e1a7270d0ebc09ffdc844d38cfa71a87bf95e",
+        "url": "https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/agent-feed-schema-0.1.1.tgz",
+        "manifest_url": "https://github.com/wesleykao1990/agent-feed/releases/download/schema-v0.1.1/schema-artifact-manifest.json",
+        "integrity": "sha512-KHALcE3zQ/dey5GTXepDeXaz77Qf1DP3ySA+rcbG6eiFvUTws21cry8rfM191wyLeQthJ9ENd0neu23ETwX5/g==",
+        "sha256": "9e020aba4e291f2e5328897dfb07195aaf392f6ecdd742b5c13b890cffdd9d6e",
+        "bytes": 13078
+      }
     }
   }
 }
