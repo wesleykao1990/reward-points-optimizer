@@ -174,6 +174,24 @@ It binds to `127.0.0.1`, uses synthetic `.test` link fixtures, and keeps all
 state in process memory. A direct synthetic card route and optional
 stored-value top-up route are exercised; no QR purchase candidate is exposed.
 
+## Vercel + Supabase deployment
+
+The repository includes a deployment-ready hosted-alpha boundary:
+
+- Vercel serves `apps/consumer-alpha/public` and the bounded Node adapter in
+  `api/[...path].mjs`;
+- Supabase hosts the ordered PostgreSQL schema and released application data;
+- the Vercel runtime connects through the Supabase transaction pooler and
+  immediately selects the restricted NOLOGIN `jro_runtime` role;
+- Vercel's Git integration deploys `main` after merges, while the
+  `Deploy Supabase` workflow applies pending migrations only after the `CI`
+  workflow succeeds on `main`.
+
+Account authentication, project IDs, database passwords, access tokens, and
+the production URL are intentionally not committed. The complete account
+handoff, secrets, initial deployment, and verification commands are documented
+in `docs/28_deployment_vercel_supabase.md`.
+
 The Milestone 2, 2.5, and M3 canonical-persistence gates require a new disposable PostgreSQL 15+ database. No extra Python packages are needed:
 
 ```bash

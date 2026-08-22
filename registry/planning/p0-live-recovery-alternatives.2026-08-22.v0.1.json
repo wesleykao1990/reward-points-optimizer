@@ -4,11 +4,7 @@
   "recorded_at": "2026-08-22T00:00:00+09:00",
   "purpose": "Lead-only locator alternatives for the five current partial P0 families and their eleven unresolved family-role targets.",
   "method": {
-    "preferred_retrieval_methods": [
-      "browser_rendered",
-      "static_http",
-      "pdf"
-    ],
+    "preferred_retrieval_methods": ["browser_rendered", "static_http", "pdf"],
     "fallback_policy": "Use the supplied browser-rendered official locator when designated; fall back only to the supplied official static HTML or PDF alternative. Verify the role marker during the live attempt.",
     "browser_rendered": "Use a normal browser-rendered official page when the application or hub requires rendering; do not bypass a WAF or authentication boundary.",
     "static_http": "Use a public official HTML endpoint when it is listed as the static alternative; retain no response body by default.",
@@ -66,9 +62,7 @@
           "retrieval_method": "static_http",
           "priority": 2,
           "exact_registered_source_id": null,
-          "related_registered_source_ids": [
-            "jp.dpoint.transfer"
-          ],
+          "related_registered_source_ids": ["jp.dpoint.transfer"],
           "locator_status": "verified_official_lead"
         }
       ]
@@ -85,9 +79,7 @@
           "retrieval_method": "browser_rendered",
           "priority": 1,
           "exact_registered_source_id": null,
-          "related_registered_source_ids": [
-            "jp.jrepoint.home"
-          ],
+          "related_registered_source_ids": ["jp.jrepoint.home"],
           "locator_status": "verified_official_lead"
         }
       ]
@@ -104,9 +96,7 @@
           "retrieval_method": "browser_rendered",
           "priority": 1,
           "exact_registered_source_id": null,
-          "related_registered_source_ids": [
-            "jp.jrepoint.home"
-          ],
+          "related_registered_source_ids": ["jp.jrepoint.home"],
           "locator_status": "verified_official_lead"
         }
       ]
@@ -123,9 +113,7 @@
           "retrieval_method": "browser_rendered",
           "priority": 1,
           "exact_registered_source_id": null,
-          "related_registered_source_ids": [
-            "jp.jrepoint.home"
-          ],
+          "related_registered_source_ids": ["jp.jrepoint.home"],
           "locator_status": "verified_official_lead"
         }
       ]
@@ -142,9 +130,7 @@
           "retrieval_method": "browser_rendered",
           "priority": 1,
           "exact_registered_source_id": null,
-          "related_registered_source_ids": [
-            "jp.jrepoint.home"
-          ],
+          "related_registered_source_ids": ["jp.jrepoint.home"],
           "locator_status": "verified_official_lead"
         }
       ]

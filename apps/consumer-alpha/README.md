@@ -163,6 +163,21 @@ Only displayed definite/conditional primary results enter the volatile,
 blocked results cannot authorize one. The registry and drafts disappear when
 the process exits.
 
+## Hosted alpha adapter
+
+The loopback server remains the local development host. The repository also
+contains a bounded Vercel Node adapter at `src/vercel-adapter.ts`; it rechecks
+the forwarded HTTPS host and same-origin browser authority before passing the
+request to the existing application contract. The adapter requires a
+server-only `JRO_DATABASE_URL`, selects the NOLOGIN `jro_runtime` database role
+at connection startup, and keeps the client pool at one connection per warm
+serverless instance.
+
+The hosted route is still an experimental alpha, not current reward advice.
+It does not enable Supabase Auth, public Data API access, Agent Feed ingress,
+or durable user/session state. See `docs/28_deployment_vercel_supabase.md` for
+the exact deployment and release automation boundary.
+
 The PostgreSQL migration chain separately provides
 `app_api.experimental_economic_claims`, an internal invoker/barrier view over
 verified evidence linked to under-review economic rule versions. The default

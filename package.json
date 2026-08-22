@@ -4,11 +4,12 @@
   "private": true,
   "packageManager": "pnpm@8.15.4",
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "scripts": {
     "build": "turbo run build",
     "challenge:validate": "pnpm --filter @jro/challenge-track challenge:validate",
+    "deploy:supabase:check": "node scripts/stage_supabase_migrations.mjs --check",
     "lint": "biome check .",
     "publication:m3:authorize-check": "node scripts/m3_publication.mjs --authorize-check",
     "publication:m3:check": "node scripts/m3_publication.mjs --check",

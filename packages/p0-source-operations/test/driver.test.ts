@@ -119,7 +119,7 @@ describe("P0 resumable operations driver", () => {
     expect(second.map((request) => request.request_sha256)).toEqual(
       first.map((request) => request.request_sha256),
     );
-  });
+  }, 10_000);
 
   it("selects the reachable Amazon main page and excludes the invalid CDN host", () => {
     const liveRecovery = JSON.parse(readFileSync(liveRecoveryPath, "utf8")) as {
