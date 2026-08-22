@@ -9,7 +9,7 @@
   </head>
   <body>
     <main class="shell">
-      <section id="tab-home" class="tab-panel is-active" data-tab-panel="home">
+      <section id="tab-home" class="tab-panel is-active" data-tab-panel="home" role="tabpanel" aria-labelledby="tab-button-home" tabindex="-1">
         <header class="app-header">
           <div class="app-title">
             <span class="brand-mark" aria-hidden="true">P</span>
@@ -26,7 +26,7 @@
 
         <aside class="demo-notice" aria-label="デモ版について">
           <span class="notice-icon" aria-hidden="true">i</span>
-          <div><strong>架空データで動く操作デモです</strong><p>現在のポイント情報や実際のおすすめではありません。</p></div>
+          <div><strong>合成計算と先行情報の確認デモです</strong><p>計算結果と実験的な情報表示を分けて確認できます。本番のおすすめではありません。</p></div>
         </aside>
 
         <section class="overview-panel" aria-labelledby="overview-title">
@@ -52,6 +52,19 @@
               <span>お支払い金額</span>
               <span class="amount-control"><span aria-hidden="true">¥</span><input id="amount-jpy" name="amount_jpy" type="number" min="1" max="1000000" step="1" value="640" required><small>円</small></span>
             </label>
+
+            <fieldset class="route-fieldset" aria-labelledby="route-input-title">
+              <legend id="route-input-title"><span>先行ルートの確認条件</span><small>入力できる範囲だけを使います</small></legend>
+              <div class="route-input-grid">
+                <label for="nanaco-tax-exclusive">nanaco購入・税抜対象額（円）<input id="nanaco-tax-exclusive" type="number" min="0" max="1000000" step="1" value="640"></label>
+                <label for="nanaco-balance">nanaco残高（円）<input id="nanaco-balance" type="number" min="0" max="10000000" step="1" value="10000"></label>
+                <label for="credit-charge-amount">チャージ額（円）<input id="credit-charge-amount" type="number" min="0" max="30000" step="1000" value="5000"></label>
+                <label for="credit-balance">チャージ前nanaco残高（円）<input id="credit-balance" type="number" min="0" max="50000" step="1" value="0"></label>
+              </div>
+              <label class="check-row" for="seven-card-owned"><input id="seven-card-owned" type="checkbox"><span>セブンカード・プラスを所有している</span></label>
+              <label class="check-row" for="credit-preregistered"><input id="credit-preregistered" type="checkbox"><span>nanacoクレジットチャージを事前登録している</span></label>
+              <p class="helper">所有と事前登録は未確認のため未選択です。明示的に選んだ場合だけ先行ルートを確認します。</p>
+            </fieldset>
 
             <fieldset class="instrument-fieldset">
               <legend><span>持っている支払い方法</span><small>複数選べます</small></legend>
@@ -148,11 +161,11 @@
         </details>
       </section>
 
-      <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" hidden>
+      <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" role="tabpanel" aria-labelledby="tab-button-wallet" tabindex="-1" hidden>
         <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> デモ版</span></header>
         <aside class="inline-disclosure"><strong>このウォレットは端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
 
-        <section class="wallet-overview"><small>比較対象の支払い方法</small><strong id="wallet-count">1</strong><span>個を選択中</span></section>
+        <section class="wallet-overview"><small>比較対象の支払い方法</small><strong id="wallet-count">1</strong><span>個を選択中</span><p id="wallet-route-summary" class="helper">統合ルートは未比較です</p></section>
 
         <section class="wallet-group" aria-labelledby="wallet-payment-title">
           <div class="group-heading"><h2 id="wallet-payment-title">支払い方法</h2><button type="button" data-tab-target="home">ホームで編集</button></div>
@@ -167,13 +180,13 @@
         </section>
       </section>
 
-      <section id="tab-history" class="tab-panel" data-tab-panel="history" hidden>
+      <section id="tab-history" class="tab-panel" data-tab-panel="history" role="tabpanel" aria-labelledby="tab-button-history" tabindex="-1" hidden>
         <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>SESSION ACTIVITY</small><h1>履歴</h1></div></div><span class="demo-chip"><i></i> セッションのみ</span></header>
         <section class="history-summary"><div><small>このセッションの比較</small><strong id="history-count">0</strong></div><span>ページを閉じると消えます</span></section>
         <section class="wallet-group"><div class="group-heading"><h2>比較履歴</h2><span>新しい順</span></div><div id="session-history" class="history-list"><div class="empty-state"><span aria-hidden="true">↗</span><strong>まだ比較履歴はありません</strong><p>ホームで支払い方を比較すると、ここに一時表示されます。</p><button type="button" class="secondary" data-tab-target="home">比較をはじめる</button></div></div></section>
       </section>
 
-      <section id="tab-settings" class="tab-panel" data-tab-panel="settings" hidden>
+      <section id="tab-settings" class="tab-panel" data-tab-panel="settings" role="tabpanel" aria-labelledby="tab-button-settings" tabindex="-1" hidden>
         <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 保存なし</span></header>
         <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>ポイントの使い方に合わせて、残高価値の前提を調整します。</p></section>
 
@@ -189,11 +202,11 @@
 
         <section class="settings-group" aria-labelledby="privacy-title">
           <h2 id="privacy-title">プライバシーとセキュリティ</h2>
-          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>データモード</strong><small>現在の比較に使用する情報</small></span><em class="safe-state">合成データのみ</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
+          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>データモード</strong><small>現在の比較に使用する情報</small></span><em class="safe-state">合成＋先行情報</em></div><div class="settings-row"><span><strong>先行情報の扱い</strong><small>nanacoルートの表示</small></span><em>先行情報・情報表示</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
         </section>
       </section>
 
-      <section id="tab-information" class="tab-panel" data-tab-panel="information" hidden>
+      <section id="tab-information" class="tab-panel" data-tab-panel="information" role="tabpanel" aria-labelledby="tab-button-information" tabindex="-1" hidden>
         <header class="app-header">
           <div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>POINT INFORMATION</small><h1>ポイント情報</h1></div></div>
           <button type="button" class="home-link" data-tab-target="home">ホーム</button>
@@ -204,7 +217,7 @@
             <div><p class="section-kicker">INFORMATION CATALOGUE</p><h2 id="information-title">ポイント情報</h2></div>
             <span class="step-label">収録分</span>
           </div>
-          <p>保存されたポイントに関する情報を、検索・絞り込みできます。ここに表示する情報は比較への使用状況を明示します。</p>
+          <p>364件のポイント情報を検索・絞り込みできます。カードごとに計算・参考・適用期間外の状態と、比較への使用状況を明示します。</p>
         </section>
 
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
@@ -225,12 +238,12 @@
         </section>
       </section>
 
-      <nav class="bottom-nav" aria-label="メインナビゲーション">
-        <button type="button" class="is-active" data-tab-target="home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
-        <button type="button" data-tab-target="wallet" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
-        <button type="button" data-tab-target="history" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
-        <button type="button" data-tab-target="settings" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
-        <button type="button" data-tab-target="information" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>情報</span></button>
+      <nav class="bottom-nav" aria-label="メインナビゲーション" role="tablist">
+        <button id="tab-button-home" type="button" role="tab" class="is-active" data-tab-target="home" aria-controls="tab-home" aria-selected="true" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
+        <button id="tab-button-wallet" type="button" role="tab" data-tab-target="wallet" aria-controls="tab-wallet" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
+        <button id="tab-button-history" type="button" role="tab" data-tab-target="history" aria-controls="tab-history" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
+        <button id="tab-button-information" type="button" role="tab" data-tab-target="information" aria-controls="tab-information" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>情報</span></button>
+        <button id="tab-button-settings" type="button" role="tab" data-tab-target="settings" aria-controls="tab-settings" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7-1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
       </nav>
     </main>
     <script src="/app.js" defer></script>

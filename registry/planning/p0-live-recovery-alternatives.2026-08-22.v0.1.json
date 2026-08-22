@@ -11,7 +11,7 @@
     ],
     "fallback_policy": "Use the supplied browser-rendered official locator when designated; fall back only to the supplied official static HTML or PDF alternative. Verify the role marker during the live attempt.",
     "browser_rendered": "Use a normal browser-rendered official page when the application or hub requires rendering; do not bypass a WAF or authentication boundary.",
-    "static_http": "Use a public official HTML endpoint or CDN alias when it is listed as the static alternative; retain no response body by default.",
+    "static_http": "Use a public official HTML endpoint when it is listed as the static alternative; retain no response body by default.",
     "pdf": "Use the listed official PDF only as a locator lead and verify its role during the live attempt.",
     "credentials_used": false,
     "personal_data_used": false,
@@ -33,7 +33,7 @@
       "stream_id": "merchant.jp-ecommerce",
       "alternatives": [
         {
-          "source_url": "https://www.cdn.amazon.co.jp/b?node=8123221051",
+          "source_url": "https://www.amazon.co.jp/b?node=8123221051",
           "publisher": "Amazon Japan",
           "role_marker": "Amazon Points page (verify role marker at fetch)",
           "retrieval_method": "static_http",

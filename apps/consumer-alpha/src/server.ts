@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import {
   createServer,
@@ -8,7 +9,13 @@ import {
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { types as nodeTypes } from "node:util";
+import { classifyProvisionalValidity } from "@jro/provisional-rules";
 import { SYNTHETIC_REPLAY_KNOWLEDGE_TIME } from "@jro/test-fixtures";
+import {
+  AGENT_FEED_INTERNAL_EVENT_PATH,
+  AGENT_FEED_INTERNAL_MAX_BODY_BYTES,
+  type AgentFeedIngressPort,
+} from "./agent-feed-ingress.js";
 import type {
   ExperimentalCataloguePort,
   ExperimentalCorrectionInput,
@@ -27,12 +34,16 @@ import {
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
   MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES,
+  MAX_UNIFIED_RECOMMENDATION_BODY_BYTES,
   parseCorrectionDraft,
   parseExperimentalCorrection,
   parseExperimentalRecommendation,
   parseImplementationFactCorrection,
   parseManualAlphaState,
   parseNanacoCreditChargeRecommendation,
+  parseUnifiedRecommendation,
+  SYNTHETIC_MERCHANT_ID,
+  type UnifiedRecommendationInput,
 } from "./contracts.js";
 import {
   FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS,
@@ -77,6 +88,7 @@ export {
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
   MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES,
+  MAX_UNIFIED_RECOMMENDATION_BODY_BYTES,
 } from "./contracts.js";
 
 export const LOCALHOST_BIND_HOST = "127.0.0.1" as const;
@@ -207,6 +219,8 @@ export interface AppDependencies {
   /** Descriptive aliases accepted for host composition. */
   readonly implementationFactInfluenceGraph?: FactInfluenceGraphPort;
   readonly factInfluence?: FactInfluenceGraphPort;
+  /** Server-only signed Agent Feed delivery ingress. */
+  readonly agentFeedIngress?: AgentFeedIngressPort;
 }
 
 export type AppCatalogueDependency =
@@ -215,7 +229,31 @@ export type AppCatalogueDependency =
   | NanacoCreditChargeRecommendationPort
   | ImplementationFactBackend
   | FactInfluenceGraphPort
+  | AgentFeedIngressPort
   | AppDependencies;
+
+function resolveAgentFeedIngress(
+  dependency: AppCatalogueDependency | undefined,
+): AgentFeedIngressPort | undefined {
+  if (
+    dependency !== null &&
+    typeof dependency === "object" &&
+    "handle" in dependency &&
+    typeof dependency.handle === "function"
+  )
+    return dependency as AgentFeedIngressPort;
+  if (
+    dependency !== null &&
+    typeof dependency === "object" &&
+    "agentFeedIngress" in dependency
+  ) {
+    const ingress = dependency.agentFeedIngress;
+    if (ingress === undefined) return undefined;
+    if (typeof ingress.handle === "function") return ingress;
+    throw requestError(500, "agent_feed_ingress_dependency_invalid");
+  }
+  return undefined;
+}
 
 function resolveExperimentalRecommendation(
   dependency: AppCatalogueDependency | undefined,
@@ -553,7 +591,7 @@ function safeExperimentalRecommendation(
   value: unknown,
   input: ExperimentalRecommendationInput,
 ): ExperimentalRecommendationResult {
-  if (value === null || typeof value !== "object" || Array.isArray(value))
+  if (!isPlainDataOutput(value))
     throw requestError(503, "experimental_recommendation_unavailable");
   const result = value as Record<string, unknown>;
   const expected = [
@@ -592,7 +630,7 @@ function safeExperimentalRecommendation(
     result.amount_jpy !== input.amount_jpy ||
     result.tax_exclusive_amount_jpy !== input.tax_exclusive_amount_jpy ||
     result.effective_at !== input.effective_at ||
-    result.outcome !== "definite"
+    (result.outcome !== "definite" && result.outcome !== "no_valid_plan")
   )
     throw requestError(503, "experimental_recommendation_unavailable");
   if (
@@ -610,21 +648,19 @@ function safeExperimentalRecommendation(
     (result.tax_exclusive_amount_jpy as number) > (result.amount_jpy as number)
   )
     throw requestError(503, "experimental_recommendation_unavailable");
-  const safeStrings = (value: unknown): readonly string[] => {
+  // Validate dependency array shape without copying dependency text into the
+  // browser DTO. Hostile strings may contain rule/evidence IDs or predicates.
+  const safeStringArrayLength = (value: unknown): number => {
     if (
       !Array.isArray(value) ||
       value.length > 16 ||
       value.some(
         (item) =>
-          typeof item !== "string" ||
-          item.length === 0 ||
-          item.length > 240 ||
-          /https?:\/\//iu.test(item) ||
-          /sha256:[0-9a-f]{16,}/iu.test(item),
+          typeof item !== "string" || item.length === 0 || item.length > 240,
       )
     )
       throw requestError(503, "experimental_recommendation_unavailable");
-    return Object.freeze([...value]);
+    return value.length;
   };
   const safePlan = (
     value: unknown,
@@ -650,23 +686,27 @@ function safeExperimentalRecommendation(
       throw requestError(503, "experimental_recommendation_unavailable");
     if (
       typeof plan.plan_id !== "string" ||
-      !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(plan.plan_id) ||
+      !EXPERIMENTAL_PUBLIC_PLAN_ID_PATTERN.test(plan.plan_id) ||
       typeof plan.eligible !== "boolean" ||
       typeof plan.reward_points !== "string" ||
       !/^\d{1,32}$/u.test(plan.reward_points) ||
       (plan.objective_score_jpy !== null &&
-        typeof plan.objective_score_jpy !== "string") ||
+        (typeof plan.objective_score_jpy !== "string" ||
+          !/^-?\d{1,32}(?:\.\d{1,4})?$/u.test(plan.objective_score_jpy))) ||
       !Number.isSafeInteger(plan.operation_count) ||
       (plan.operation_count as number) < 0
     )
       throw requestError(503, "experimental_recommendation_unavailable");
+    const conditionCount = safeStringArrayLength(plan.conditions);
     return Object.freeze({
       plan_id: plan.plan_id,
       eligible: plan.eligible,
       reward_points: plan.reward_points,
       objective_score_jpy: plan.objective_score_jpy,
       operation_count: plan.operation_count as number,
-      conditions: safeStrings(plan.conditions),
+      conditions: Object.freeze(
+        conditionCount === 0 ? [] : ["利用条件を確認してください。"],
+      ),
     });
   };
   if (!Array.isArray(result.plans) || result.plans.length > 16)
@@ -682,12 +722,33 @@ function safeExperimentalRecommendation(
   const winner = safePlan(result.winner);
   if (
     result.winner_plan_id !== (winner?.plan_id ?? null) ||
-    (result.outcome === "definite" && winner === null)
+    (result.outcome === "definite" &&
+      (winner === null ||
+        !winner.eligible ||
+        plans.length === 0 ||
+        plans.some((plan) => !plan.eligible))) ||
+    (result.outcome === "no_valid_plan" &&
+      (winner !== null || plans.some((plan) => plan.eligible))) ||
+    new Set(plans.map((plan) => plan.plan_id)).size !== plans.length
   )
     throw requestError(503, "experimental_recommendation_unavailable");
+  if (result.outcome === "definite" && winner !== null) {
+    const winnerMatches = plans.filter(
+      (plan) => plan.plan_id === winner.plan_id,
+    );
+    if (
+      winnerMatches.length !== 1 ||
+      JSON.stringify(winnerMatches[0]) !== JSON.stringify(winner)
+    )
+      throw requestError(503, "experimental_recommendation_unavailable");
+  }
+  const assumptionCount = safeStringArrayLength(result.assumptions);
+  const blockerCount = safeStringArrayLength(result.blockers);
   return Object.freeze({
     version: "real-experimental-recommendation.v1",
-    request_id: result.request_id,
+    // Host-owned opaque route identifier; never expose a dependency request
+    // key that could carry internal rule or evidence identity.
+    request_id: "experimental_nanaco_seveneleven",
     mode: "experimental_real_data",
     verification_status: "experimental_unverified",
     outcome: result.outcome,
@@ -701,8 +762,12 @@ function safeExperimentalRecommendation(
     winner_plan_id: result.winner_plan_id as string | null,
     winner,
     plans,
-    assumptions: safeStrings(result.assumptions),
-    blockers: safeStrings(result.blockers),
+    assumptions: Object.freeze(
+      assumptionCount === 0 ? [] : [...EXPERIMENTAL_PUBLIC_ASSUMPTIONS],
+    ),
+    blockers: Object.freeze(
+      blockerCount === 0 ? [] : [EXPERIMENTAL_PUBLIC_BLOCKER],
+    ),
   });
 }
 
@@ -921,6 +986,507 @@ function safeImplementationFactCorrection(
   });
 }
 
+type UnifiedValidityState = "active" | "scheduled" | "expired" | "unknown";
+type UnifiedRouteStatus =
+  | "eligible"
+  | "conditional"
+  | "no_valid_plan"
+  | "blocked"
+  | "unavailable";
+type UnifiedRouteIssue =
+  | "facts_unavailable"
+  | "fact_binding_required"
+  | "catalogue_unavailable"
+  | "route_unavailable"
+  | "route_input_invalid"
+  | "rule_not_current"
+  | "no_valid_plan"
+  | "recommendation_malformed";
+
+interface UnifiedFactResult {
+  readonly view?: FactInfluenceBrowserView;
+  readonly issue?: "facts_unavailable" | "fact_binding_required";
+}
+
+interface UnifiedRouteRecord {
+  readonly route_id: string;
+  readonly label: string;
+  readonly kind: "calculation" | "information_only";
+  readonly status: UnifiedRouteStatus;
+  readonly validity_state: UnifiedValidityState;
+  readonly issues: readonly UnifiedRouteIssue[];
+  readonly recommendation_id?: `sha256:${string}`;
+  readonly recommendation?: Readonly<Record<string, unknown>>;
+  readonly fact_influence?: FactInfluenceBrowserView;
+}
+
+function unifiedRecommendationId(
+  routeId: string,
+  input: UnifiedRecommendationInput,
+): `sha256:${string}` {
+  const payload = JSON.stringify({
+    route_id: routeId,
+    merchant_id: input.merchant_id,
+    branch_id: input.branch_id,
+    amount_jpy: input.amount_jpy,
+    tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
+    nanaco_balance_jpy: input.nanaco_balance_jpy,
+    nanaco_credit_charge_balance_jpy: input.nanaco_credit_charge_balance_jpy,
+    charge_amount_jpy: input.charge_amount_jpy,
+    seven_card_plus_owned: input.seven_card_plus_owned,
+    nanaco_credit_charge_preregistered:
+      input.nanaco_credit_charge_preregistered,
+    effective_at: input.effective_at,
+    owned_instruments: input.owned_instruments,
+    stored_value_use: input.stored_value_use,
+    stored_value_usage: input.stored_value_usage ?? null,
+    stored_value_value_jpy_per_unit:
+      input.stored_value_value_jpy_per_unit ?? null,
+    facts: input.facts,
+    caps: input.caps,
+  });
+  return `sha256:${createHash("sha256").update(payload, "utf8").digest("hex")}`;
+}
+
+function issueFromUnknown(error: unknown): UnifiedRouteIssue {
+  if (error instanceof InputContractError) {
+    if (
+      error.code === "experimental_amount_invalid" ||
+      error.code === "experimental_tax_exclusive_amount_invalid" ||
+      error.code === "experimental_balance_invalid" ||
+      error.code === "nanaco_credit_charge_amount_invalid" ||
+      error.code === "nanaco_credit_charge_balance_invalid" ||
+      error.code === "nanaco_credit_charge_ownership_invalid" ||
+      error.code === "nanaco_credit_charge_preregistration_invalid" ||
+      error.code === "nanaco_credit_charge_effective_at_invalid"
+    )
+      return "route_input_invalid";
+  }
+  if (error instanceof ExperimentalRecommendationError) {
+    if (
+      error.code === "selection_not_supported" ||
+      error.code === "amount_invalid" ||
+      error.code === "tax_exclusive_amount_invalid" ||
+      error.code === "balance_invalid" ||
+      error.code === "effective_at_invalid"
+    )
+      return "route_input_invalid";
+    if (error.code === "rule_not_current") return "rule_not_current";
+    if (error.code === "source_unavailable") return "route_unavailable";
+    return "recommendation_malformed";
+  }
+  if (error instanceof NanacoCreditChargeRecommendationError) {
+    if (
+      error.code === "selection_not_supported" ||
+      error.code === "charge_below_minimum" ||
+      error.code === "charge_not_increment" ||
+      error.code === "charge_above_maximum" ||
+      error.code === "balance_limit_exceeded" ||
+      error.code === "balance_invalid" ||
+      error.code === "ownership_required" ||
+      error.code === "preregistration_required" ||
+      error.code === "effective_at_invalid"
+    )
+      return "route_input_invalid";
+    if (error.code === "rule_not_current") return "rule_not_current";
+    if (error.code === "source_unavailable") return "route_unavailable";
+    return "recommendation_malformed";
+  }
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+  ) {
+    const code = (error as { code: string }).code;
+    if (code === "experimental_recommendation_unavailable")
+      return "recommendation_malformed";
+    if (code === "nanaco_credit_charge_recommendation_unavailable")
+      return "recommendation_malformed";
+  }
+  return "route_unavailable";
+}
+
+function statusFromExperimentalOutcome(
+  outcome: ExperimentalRecommendationResult["outcome"],
+): UnifiedRouteStatus {
+  return outcome === "definite" ? "eligible" : "no_valid_plan";
+}
+
+function statusFromCreditOutcome(
+  outcome: NanacoCreditChargeRecommendationResult["outcome"],
+): UnifiedRouteStatus {
+  return outcome === "definite" ? "eligible" : "no_valid_plan";
+}
+
+const EXPERIMENTAL_PUBLIC_ASSUMPTIONS = Object.freeze([
+  "セブン‐イレブンでのnanaco利用に限定した先行実験です。",
+  "入力された総額と税抜対象額をそのまま扱います。税額変換は推測しません。",
+  "本結果は本番のおすすめではなく、nanaco実験ルートの確認用です。",
+]);
+const EXPERIMENTAL_PUBLIC_BLOCKER =
+  "本番公開の認可情報がないため、情報表示として扱います。";
+const EXPERIMENTAL_PUBLIC_PLAN_ID_PATTERN = /^plan_direct_[0-9a-f]{16}$/u;
+
+function validityState(
+  validFrom: string | null,
+  validTo: string | null,
+  effectiveAt: string,
+): UnifiedValidityState {
+  return classifyProvisionalValidity(
+    { valid_from: validFrom, valid_to: validTo },
+    effectiveAt,
+  ).status;
+}
+
+async function catalogueValidity(
+  dependency: AppCatalogueDependency | undefined,
+  publicationId: string,
+  effectiveAt: string,
+): Promise<{
+  readonly state: UnifiedValidityState;
+  readonly issue?: "catalogue_unavailable";
+}> {
+  try {
+    const snapshot = await listExperimentalCatalogue(
+      resolveExperimentalCatalogue(dependency),
+      effectiveAt,
+    );
+    const card = snapshot.rules.find(
+      (candidate) => candidate.publication_id === publicationId,
+    );
+    if (!card)
+      return Object.freeze({
+        state: "unknown" as const,
+        issue: "catalogue_unavailable" as const,
+      });
+    return Object.freeze({
+      state: validityState(card.valid_from, card.valid_to, effectiveAt),
+    });
+  } catch {
+    return Object.freeze({
+      state: "unknown" as const,
+      issue: "catalogue_unavailable" as const,
+    });
+  }
+}
+
+/**
+ * Fact explanations are advisory for a unified result. A graph outage must
+ * not hide an otherwise valid numeric result. The exact applied parent
+ * claim is different: if it cannot be bound to one active graph node, only
+ * that real route is blocked.
+ */
+async function unifiedFactInfluence(
+  dependency: AppCatalogueDependency | undefined,
+  effectiveAt: string,
+  context: FactInfluenceGraphContext,
+  appliedParentClaimIds: readonly string[],
+): Promise<UnifiedFactResult> {
+  try {
+    const graph = await resolveFactInfluenceGraph(dependency).load(effectiveAt);
+    if (
+      graph.fact_count !== 364 ||
+      graph.nodes.length !== graph.fact_count ||
+      graph.version !== "p0-fact-influence-graph.v1"
+    )
+      throw new Error("fact_influence_graph_incomplete");
+    return Object.freeze({
+      view: projectFactInfluenceForRecommendation(
+        graph,
+        context,
+        appliedParentClaimIds,
+      ),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("fact_influence_applied_claim"))
+      return Object.freeze({ issue: "fact_binding_required" as const });
+    return Object.freeze({ issue: "facts_unavailable" as const });
+  }
+}
+
+function uniqueIssues(
+  issues: readonly UnifiedRouteIssue[],
+): readonly UnifiedRouteIssue[] {
+  return Object.freeze([...new Set(issues)]);
+}
+
+async function unifiedSyntheticRoute(
+  input: UnifiedRecommendationInput,
+  dependency: AppCatalogueDependency | undefined,
+): Promise<UnifiedRouteRecord> {
+  const issues: UnifiedRouteIssue[] = [];
+  try {
+    const response = evaluateSynthetic({
+      merchant_id: SYNTHETIC_ALPHA_CONFIG.merchant_id,
+      branch_id: SYNTHETIC_ALPHA_CONFIG.branch_id,
+      amount_jpy: input.amount_jpy,
+      owned_instruments: input.owned_instruments,
+      stored_value_use: input.stored_value_use,
+      ...(input.stored_value_usage === undefined
+        ? {}
+        : { stored_value_usage: input.stored_value_usage }),
+      ...(input.stored_value_value_jpy_per_unit === undefined
+        ? {}
+        : {
+            stored_value_value_jpy_per_unit:
+              input.stored_value_value_jpy_per_unit,
+          }),
+      facts: input.facts,
+      caps: input.caps,
+    });
+    const facts = await unifiedFactInfluence(
+      dependency,
+      input.effective_at,
+      {
+        merchant_id: SYNTHETIC_MERCHANT_ID,
+        payment_method: "synthetic_card",
+        family_ids: ["merchant.synthetic"],
+      },
+      [],
+    );
+    if (facts.issue) issues.push(facts.issue);
+    const view = mapRecommendationForBrowser(response, facts.view);
+    const displayable =
+      view.primary !== null &&
+      (view.outcome === "definite" || view.outcome === "conditional");
+    const recommendationId = displayable
+      ? unifiedRecommendationId("synthetic", input)
+      : undefined;
+    if (recommendationId) rememberRecommendationId(recommendationId);
+    const recommendation = recommendationId
+      ? Object.freeze({ ...view, request_id: recommendationId })
+      : view;
+    return Object.freeze({
+      route_id: "synthetic",
+      label: "サンプルストア・カード比較",
+      kind: "calculation",
+      status:
+        view.outcome === "conditional"
+          ? "conditional"
+          : displayable
+            ? "eligible"
+            : view.outcome === "no_valid_plan"
+              ? "no_valid_plan"
+              : "blocked",
+      validity_state: "active",
+      issues: uniqueIssues(issues),
+      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
+      recommendation: recommendation as unknown as Readonly<
+        Record<string, unknown>
+      >,
+      ...(facts.view ? { fact_influence: facts.view } : {}),
+    });
+  } catch {
+    return Object.freeze({
+      route_id: "synthetic",
+      label: "サンプルストア・カード比較",
+      kind: "calculation",
+      status: "unavailable",
+      validity_state: "unknown",
+      issues: Object.freeze(["route_unavailable" as const]),
+    });
+  }
+}
+
+async function unifiedNanacoPurchaseRoute(
+  input: UnifiedRecommendationInput,
+  dependency: AppCatalogueDependency | undefined,
+): Promise<UnifiedRouteRecord> {
+  const issues: UnifiedRouteIssue[] = [];
+  const catalogue = await catalogueValidity(
+    dependency,
+    "candidate_p0_nanaco_shopping_earning_20260821_v0_1",
+    input.effective_at,
+  );
+  if (catalogue.issue) issues.push(catalogue.issue);
+  try {
+    const routeInput = parseExperimentalRecommendation({
+      selection_id: "candidate_p0_nanaco_shopping_earning_20260821_v0_1",
+      amount_jpy: input.amount_jpy,
+      tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
+      nanaco_balance_jpy: input.nanaco_balance_jpy,
+      effective_at: input.effective_at,
+    });
+    const raw =
+      await resolveExperimentalRecommendation(dependency).evaluate(routeInput);
+    const recommendation = safeExperimentalRecommendation(raw, routeInput);
+    if (recommendation.outcome === "no_valid_plan")
+      issues.push("no_valid_plan");
+    if (catalogue.state === "scheduled" || catalogue.state === "expired")
+      issues.push("rule_not_current");
+    const facts: UnifiedFactResult =
+      recommendation.outcome === "definite"
+        ? await unifiedFactInfluence(
+            dependency,
+            input.effective_at,
+            {
+              merchant_id: "merchant.seveneleven",
+              payment_method: "nanaco",
+              family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
+            },
+            [NANACO_PURCHASE_APPLIED_PARENT_CLAIM_ID],
+          )
+        : Object.freeze({});
+    if (facts.issue) issues.push(facts.issue);
+    const bindingFailed = facts.issue === "fact_binding_required";
+    const status = bindingFailed
+      ? "blocked"
+      : catalogue.state === "scheduled" || catalogue.state === "expired"
+        ? "blocked"
+        : statusFromExperimentalOutcome(recommendation.outcome);
+    const displayable = status === "eligible";
+    const recommendationId = displayable
+      ? unifiedRecommendationId("nanaco_purchase", input)
+      : undefined;
+    if (recommendationId) rememberRecommendationId(recommendationId);
+    return Object.freeze({
+      route_id: "nanaco_purchase",
+      label: "セブン‐イレブン・nanaco購入",
+      kind: "information_only",
+      status,
+      validity_state: catalogue.state,
+      issues: uniqueIssues(issues),
+      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
+      ...(bindingFailed || status === "blocked"
+        ? {}
+        : {
+            recommendation: recommendation as unknown as Readonly<
+              Record<string, unknown>
+            >,
+          }),
+      ...(facts.view ? { fact_influence: facts.view } : {}),
+    });
+  } catch (error) {
+    const issue = issueFromUnknown(error);
+    issues.push(issue);
+    const status: UnifiedRouteStatus =
+      issue === "route_input_invalid" || issue === "no_valid_plan"
+        ? "no_valid_plan"
+        : issue === "rule_not_current"
+          ? "blocked"
+          : "unavailable";
+    return Object.freeze({
+      route_id: "nanaco_purchase",
+      label: "セブン‐イレブン・nanaco購入",
+      kind: "information_only",
+      status,
+      validity_state: catalogue.state,
+      issues: uniqueIssues(issues),
+    });
+  }
+}
+
+async function unifiedNanacoCreditChargeRoute(
+  input: UnifiedRecommendationInput,
+  dependency: AppCatalogueDependency | undefined,
+): Promise<UnifiedRouteRecord> {
+  const issues: UnifiedRouteIssue[] = [];
+  const catalogue = await catalogueValidity(
+    dependency,
+    "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
+    input.effective_at,
+  );
+  if (catalogue.issue) issues.push(catalogue.issue);
+  try {
+    const routeInput = parseNanacoCreditChargeRecommendation({
+      selection_id: "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
+      charge_amount_jpy: input.charge_amount_jpy,
+      nanaco_balance_jpy: input.nanaco_credit_charge_balance_jpy,
+      seven_card_plus_owned: input.seven_card_plus_owned,
+      nanaco_credit_charge_preregistered:
+        input.nanaco_credit_charge_preregistered,
+      effective_at: input.effective_at,
+    });
+    const raw =
+      await resolveNanacoCreditChargeRecommendation(dependency).evaluate(
+        routeInput,
+      );
+    const recommendation = safeNanacoCreditChargeRecommendation(
+      raw,
+      routeInput,
+    );
+    if (recommendation.outcome === "no_valid_plan")
+      issues.push("no_valid_plan");
+    if (catalogue.state === "scheduled" || catalogue.state === "expired")
+      issues.push("rule_not_current");
+    const facts: UnifiedFactResult =
+      recommendation.outcome === "definite"
+        ? await unifiedFactInfluence(
+            dependency,
+            input.effective_at,
+            {
+              merchant_id: "merchant.seveneleven",
+              payment_method: "seven_card_plus",
+              family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
+            },
+            [NANACO_CREDIT_CHARGE_APPLIED_PARENT_CLAIM_ID],
+          )
+        : Object.freeze({});
+    if (facts.issue) issues.push(facts.issue);
+    const bindingFailed = facts.issue === "fact_binding_required";
+    const status = bindingFailed
+      ? "blocked"
+      : catalogue.state === "scheduled" || catalogue.state === "expired"
+        ? "blocked"
+        : statusFromCreditOutcome(recommendation.outcome);
+    const displayable = status === "eligible";
+    const recommendationId = displayable
+      ? unifiedRecommendationId("nanaco_credit_charge", input)
+      : undefined;
+    if (recommendationId) rememberRecommendationId(recommendationId);
+    return Object.freeze({
+      route_id: "nanaco_credit_charge",
+      label: "セブンカード・プラス→nanacoチャージ",
+      kind: "information_only",
+      status,
+      validity_state: catalogue.state,
+      issues: uniqueIssues(issues),
+      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
+      ...(bindingFailed || status === "blocked"
+        ? {}
+        : {
+            recommendation: recommendation as unknown as Readonly<
+              Record<string, unknown>
+            >,
+          }),
+      ...(facts.view ? { fact_influence: facts.view } : {}),
+    });
+  } catch (error) {
+    const issue = issueFromUnknown(error);
+    issues.push(issue);
+    const status: UnifiedRouteStatus =
+      issue === "route_input_invalid" || issue === "no_valid_plan"
+        ? "no_valid_plan"
+        : issue === "rule_not_current"
+          ? "blocked"
+          : "unavailable";
+    return Object.freeze({
+      route_id: "nanaco_credit_charge",
+      label: "セブンカード・プラス→nanacoチャージ",
+      kind: "information_only",
+      status,
+      validity_state: catalogue.state,
+      issues: uniqueIssues(issues),
+    });
+  }
+}
+
+async function unifiedRecommendations(
+  input: UnifiedRecommendationInput,
+  dependency: AppCatalogueDependency | undefined,
+): Promise<readonly UnifiedRouteRecord[]> {
+  // Keep each route isolated: an invalid top-up must not remove a valid
+  // purchase neighbour, and an explanation outage must remain visible only on
+  // the affected route.
+  return Promise.all([
+    unifiedSyntheticRoute(input, dependency),
+    unifiedNanacoPurchaseRoute(input, dependency),
+    unifiedNanacoCreditChargeRoute(input, dependency),
+  ]);
+}
+
 function contentTypeIsJson(
   headers: Readonly<Record<string, string | undefined>> | undefined,
 ): boolean {
@@ -991,7 +1557,8 @@ function parsePath(request: IncomingMessage): string {
     if (
       (parsed.search !== "" || parsed.hash !== "") &&
       (parsed.pathname.startsWith("/go/") ||
-        parsed.pathname.startsWith("/api/"))
+        parsed.pathname.startsWith("/api/") ||
+        parsed.pathname === AGENT_FEED_INTERNAL_EVENT_PATH)
     )
       throw requestError(400, "query_not_allowed");
     return parsed.pathname;
@@ -1101,12 +1668,52 @@ export async function handleRequest(
       (pathname.includes("?") || pathname.includes("#"))
     )
       return errorResponse(requestError(400, "query_not_allowed"));
+    if (pathname === AGENT_FEED_INTERNAL_EVENT_PATH) {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const ingress = resolveAgentFeedIngress(dependency);
+      if (ingress === undefined)
+        return errorResponse(requestError(404, "not_found"));
+      if (request.body === undefined)
+        return errorResponse(requestError(400, "request_body_required"));
+      const result = await ingress.handle({
+        raw_body: request.body,
+        headers: request.headers ?? {},
+      });
+      const outcome = result.outcome;
+      return jsonResponse(result.status_code, {
+        acknowledged: result.acknowledged,
+        ...(outcome === undefined
+          ? {}
+          : {
+              outcome: {
+                status: outcome.status,
+                receipt_id: outcome.receipt_id,
+                ...(outcome.duplicate_kind === undefined
+                  ? {}
+                  : { duplicate_kind: outcome.duplicate_kind }),
+              },
+            }),
+        ...(result.error_code === undefined
+          ? {}
+          : { error_code: result.error_code }),
+      });
+    }
     if (method === "GET" && pathname === "/health") {
       return jsonResponse(200, {
         status: "ok",
         service: "consumer-alpha",
         bind_host: LOCALHOST_BIND_HOST,
-        synthetic_recommendations_only: true,
+        synthetic_recommendations_only: false,
+        recommendation_routes: [
+          "synthetic",
+          "nanaco_purchase",
+          "nanaco_credit_charge",
+        ],
         experimental_catalogue: true,
       });
     }
@@ -1116,7 +1723,9 @@ export async function handleRequest(
     if (
       method !== "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
+        pathname === "/api/recommendations" ||
         pathname === "/api/corrections/draft" ||
+        pathname === "/api/recommendations/corrections" ||
         pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/corrections" ||
@@ -1224,6 +1833,26 @@ export async function handleRequest(
         rememberRecommendationId(result.request_id);
       return jsonResponse(200, { recommendation: result });
     }
+    if (pathname === "/api/recommendations") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      const input = parseUnifiedRecommendation(
+        parseJsonBody(request, MAX_UNIFIED_RECOMMENDATION_BODY_BYTES),
+      );
+      const routes = await unifiedRecommendations(input, dependency);
+      return jsonResponse(200, {
+        version: "unified-recommendations.v1",
+        merchant_id: input.merchant_id,
+        branch_id: input.branch_id,
+        amount_jpy: input.amount_jpy,
+        effective_at: input.effective_at,
+        routes,
+      });
+    }
     if (pathname === "/api/experimental/recommendation") {
       if (method !== "POST") {
         return errorResponseWithHeaders(
@@ -1326,7 +1955,10 @@ export async function handleRequest(
         recommendation: { ...recommendation, fact_influence: factInfluence },
       });
     }
-    if (pathname === "/api/corrections/draft") {
+    if (
+      pathname === "/api/corrections/draft" ||
+      pathname === "/api/recommendations/corrections"
+    ) {
       if (method !== "POST") {
         return errorResponseWithHeaders(
           requestError(405, "method_not_allowed"),
@@ -1488,6 +2120,22 @@ async function route(
     if (contentLength !== undefined) headers["content-length"] = contentLength;
     if (host !== undefined) headers.host = host;
     if (origin !== undefined) headers.origin = origin;
+    if (pathname === AGENT_FEED_INTERNAL_EVENT_PATH) {
+      for (const name of [
+        "x-agent-feed-event-id",
+        "x-agent-feed-delivery-id",
+        "x-agent-feed-attempt",
+        "x-agent-feed-protocol-version",
+        "x-agent-feed-timestamp",
+        "x-agent-feed-key-id",
+        "x-agent-feed-signature",
+      ] as const) {
+        const value = request.headers?.[name];
+        // Duplicate header values are rejected by the signed consumer. Do not
+        // select one value from an ambiguous transport representation.
+        if (typeof value === "string") headers[name] = value;
+      }
+    }
     // Reject a hostile authority before consuming a request body.  This is
     // especially important for a loopback service that accepts no cross-site
     // calls and has no reason to read an unauthorised payload.
@@ -1500,20 +2148,27 @@ async function route(
     const body =
       method === "POST" &&
       (pathname === "/api/synthetic/evaluate" ||
+        pathname === "/api/recommendations" ||
         pathname === "/api/corrections/draft" ||
+        pathname === "/api/recommendations/corrections" ||
         pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/corrections" ||
-        pathname === "/api/experimental/fact-corrections")
+        pathname === "/api/experimental/fact-corrections" ||
+        pathname === AGENT_FEED_INTERNAL_EVENT_PATH)
         ? await readBodyBytes(
             request,
-            pathname === "/api/synthetic/evaluate"
-              ? MAX_EVALUATE_BODY_BYTES
-              : pathname === "/api/experimental/recommendation"
-                ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
-                : pathname === "/api/experimental/nanaco-credit-charge"
-                  ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
-                  : MAX_CORRECTION_BODY_BYTES,
+            pathname === AGENT_FEED_INTERNAL_EVENT_PATH
+              ? AGENT_FEED_INTERNAL_MAX_BODY_BYTES
+              : pathname === "/api/synthetic/evaluate"
+                ? MAX_EVALUATE_BODY_BYTES
+                : pathname === "/api/recommendations"
+                  ? MAX_UNIFIED_RECOMMENDATION_BODY_BYTES
+                  : pathname === "/api/experimental/recommendation"
+                    ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
+                    : pathname === "/api/experimental/nanaco-credit-charge"
+                      ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
+                      : MAX_CORRECTION_BODY_BYTES,
           )
         : undefined;
     sendAppResponse(

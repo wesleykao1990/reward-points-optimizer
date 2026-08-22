@@ -803,8 +803,14 @@ begin
     -- including any nested dates in their value payload.
     if coalesce(p_claim_type, '') <> 'campaign_period'
        and coalesce(p_reason, '') <> 'ended_or_future_inactive'
-       and not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_from')
-       and not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_to')
+       and (
+           not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_from')
+           or jsonb_typeof(p_applicability->'effective_from') = 'null'
+       )
+       and (
+           not (coalesce(p_applicability, '{}'::jsonb) ? 'effective_to')
+           or jsonb_typeof(p_applicability->'effective_to') = 'null'
+       )
     then
         return true;
     end if;

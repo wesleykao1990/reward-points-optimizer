@@ -141,6 +141,31 @@ describe("database candidate to Rule IR boundary", () => {
     }
   });
 
+  it("normalizes only the two node-postgres timestamptz columns", () => {
+    const checkedAt = new Date(candidate.machine_check.checked_at);
+    const result = compileP0EconomicCandidateRow(
+      row({ machine_checked_at: checkedAt, admitted_at: checkedAt }),
+      "2026-08-22T00:00:00Z",
+      bindings,
+    );
+    expect(result.ok).toBe(true);
+
+    const unexpectedDate = compileP0EconomicCandidateRow(
+      row({ candidate_id: checkedAt }),
+      "2026-08-22T00:00:00Z",
+      bindings,
+    );
+    expect(unexpectedDate.ok).toBe(false);
+    expect(unexpectedDate.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "representation_invalid",
+          path: "/candidate_id",
+        }),
+      ]),
+    );
+  });
+
   it("reports incomplete rows instead of inventing graph material", () => {
     const result = compileP0EconomicCandidateRow(row(), "2026-08-22T00:00:00Z");
     expect(result.ok).toBe(false);

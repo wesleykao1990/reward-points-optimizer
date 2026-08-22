@@ -7,6 +7,7 @@ declare
     v_manifest_id uuid;
     v_receipt_id uuid;
     v_retry_receipt_id uuid;
+    v_subset_receipt_id uuid;
     v_stream_id text := 'regulatory.jp.advertising';
     v_family_id text := 'reg.jp.caa.advertising';
     v_run_id text := 'run_p0_operations_complete';
@@ -14,6 +15,9 @@ declare
     v_checkpoints jsonb;
     v_payload jsonb;
     v_retry_payload jsonb;
+    v_subset_checkpoints jsonb;
+    v_subset_target_ids jsonb;
+    v_subset_payload jsonb;
     v_first_target text;
     v_out record;
     v_sqlstate text;
@@ -206,6 +210,103 @@ begin
         raise exception 'incomplete completed P0 work unit was not rejected atomically';
     end if;
 
+    -- A recovery completion may cover an explicitly selected subset, but the
+    -- selected target IDs must come from the signed terminal receipt scope.
+    perform app_private.record_agent_feed_run(
+        v_stream_id, 'run_p0_operations_subset', 'completed', 0, '{}'::jsonb, '{}'::jsonb,
+        '2026-08-22T02:00:00Z'::timestamptz,
+        '2026-08-22T02:01:00Z'::timestamptz
+    );
+    -- Leave the separately retried first target out of this recovery subset,
+    -- so the subset proves a clean monotone second attempt for the others.
+    v_subset_checkpoints := v_checkpoints - 0;
+    select jsonb_agg(item.value->'target_id' order by item.value->>'target_id')
+      into strict v_subset_target_ids
+      from jsonb_array_elements(v_subset_checkpoints) as item(value);
+    insert into app_private.agent_feed_receipts (
+        event_id, protocol_version, stream_id, run_id, event_type, received_at,
+        payload_hash, raw_payload, processing_status, redaction_status,
+        signature_timestamp, signature_key_id, delivery_attempt,
+        signature_verified, acknowledged_at
+    ) values (
+        'evt_p0_operations_subset', '0.1', v_stream_id, 'run_p0_operations_subset',
+        'run.completed', '2026-08-22T02:01:00Z', 'sha256:' || repeat('6', 64),
+        jsonb_build_object(
+            'payload', jsonb_build_object(
+                'expected_scope', jsonb_build_object(
+                    'metadata', jsonb_build_object('target_ids', v_subset_target_ids)
+                ),
+                'actual_scope', jsonb_build_object(
+                    'metadata', jsonb_build_object('target_ids', v_subset_target_ids)
+                )
+            )
+        ),
+        'received', 'complete', '2026-08-22T02:01:00Z', 'key_p0_test', 1, true,
+        clock_timestamp()
+    ) returning id into v_subset_receipt_id;
+    select jsonb_agg(
+        jsonb_set(
+            jsonb_set(
+                jsonb_set(
+                    jsonb_set(
+                        jsonb_set(item.value, '{run_id}', to_jsonb('run_p0_operations_subset'::text), false),
+                        '{event_id}', to_jsonb('evt_p0_operations_subset'::text), false
+                    ),
+                    '{receipt_id}', to_jsonb(v_subset_receipt_id::text), false
+                ),
+                '{attempt_number}', to_jsonb(2), false
+            ),
+            '{idempotency_key}', to_jsonb('p0-ops-subset-' || (item.value->>'target_id')), false
+        ) order by item.value->>'target_id'
+    ) into strict v_subset_checkpoints
+      from jsonb_array_elements(v_subset_checkpoints) as item(value);
+    v_subset_payload := jsonb_build_object(
+        'version', 'p0-receipt-reconciliation.v1',
+        'plan_sha256', 'sha256:a59447525cb207838439a3cdb8b9cc22d19d875a650a64f50354137a78892003',
+        'manifest_sha256', 'sha256:6aa634b868e43f9c3f58417602e7b4465e36824f26d00bd9187f043395b4fae8',
+        'work_unit_sha256', 'sha256:d0da6a5ed36efee9c16beebc439317f5fb9f219e634b165b9ab12563f8857d57',
+        'stream_id', v_stream_id,
+        'family_id', v_family_id,
+        'run_id', 'run_p0_operations_subset',
+        'terminal_status', 'completed',
+        'receipt_id', v_subset_receipt_id::text,
+        'checkpoints', v_subset_checkpoints
+    );
+    select * into strict v_out from app_private.reconcile_p0_agent_feed_work_unit(v_subset_payload);
+    if v_out.inserted_count <> 3 or v_out.duplicate_count <> 0 then
+        raise exception 'signed scoped P0 subset did not insert exactly three checkpoints';
+    end if;
+    select * into strict v_out from app_private.reconcile_p0_agent_feed_work_unit(v_subset_payload);
+    if v_out.inserted_count <> 0 or v_out.duplicate_count <> 3 then
+        raise exception 'signed scoped P0 subset replay was not idempotent';
+    end if;
+
+    -- A scope that is signed but does not exactly match the checkpoints is
+    -- rejected before the idempotent replay path can hide the mismatch.
+    update app_private.agent_feed_receipts
+       set raw_payload = jsonb_build_object(
+           'payload', jsonb_build_object(
+               'expected_scope', jsonb_build_object(
+                   'metadata', jsonb_build_object('target_ids', jsonb_build_array(v_first_target))
+               ),
+               'actual_scope', jsonb_build_object(
+                   'metadata', jsonb_build_object('target_ids', jsonb_build_array(v_first_target))
+               )
+           )
+       )
+     where id = v_subset_receipt_id;
+    v_sqlstate := null;
+    begin
+        perform app_private.reconcile_p0_agent_feed_work_unit(v_subset_payload);
+    exception when others then
+        get stacked diagnostics v_sqlstate = returned_sqlstate;
+    end;
+    if v_sqlstate is distinct from '22023'
+       or (select count(*) from app_private.p0_agent_feed_target_attempts) <> 8
+    then
+        raise exception 'mismatched signed P0 target scope was not rejected atomically';
+    end if;
+
     v_sqlstate := null;
     begin
         perform app_private.reconcile_p0_agent_feed_work_unit(
@@ -215,7 +316,7 @@ begin
         get stacked diagnostics v_sqlstate = returned_sqlstate;
     end;
     if v_sqlstate is distinct from '22023'
-       or (select count(*) from app_private.p0_agent_feed_target_attempts) <> 5
+       or (select count(*) from app_private.p0_agent_feed_target_attempts) <> 8
     then
         raise exception 'foreign checkpoint event was not rejected atomically';
     end if;

@@ -184,7 +184,7 @@ describe("P0 implementation-fact information catalogue", () => {
     expect(fact?.summary).toContain("その他の条件");
   });
 
-  it("returns exactly the 87 browser-safe facts with Japanese facets", async () => {
+  it("returns exactly the 364 browser-safe facts with Japanese facets", async () => {
     resetImplementationFactCatalogue();
     const response = await handleRequest({
       method: "GET",
@@ -195,9 +195,14 @@ describe("P0 implementation-fact information catalogue", () => {
     expect(Object.keys(body).sort()).toEqual(["facts", "status", "updated_at"]);
     expect(body.status).toBe("partial");
     const facts = body.facts as JsonRecord[];
-    expect(facts).toHaveLength(87);
-    expect(new Set(facts.map((fact) => fact.family))).toEqual(
-      new Set(["dポイント", "JRE POINT", "nanacoポイント", "PayPayポイント"]),
+    expect(facts).toHaveLength(364);
+    expect([...new Set(facts.map((fact) => fact.family))]).toEqual(
+      expect.arrayContaining([
+        "dポイント",
+        "JRE POINT",
+        "nanacoポイント",
+        "PayPayポイント",
+      ]),
     );
     expect(facts.every((fact) => fact.use_in_comparison === false)).toBe(true);
     for (const fact of facts) {
@@ -254,7 +259,7 @@ describe("P0 implementation-fact information catalogue", () => {
         pathname: "/api/experimental/facts",
       }),
     ).facts as JsonRecord[];
-    expect(after).toHaveLength(86);
+    expect(after).toHaveLength(363);
     expect(after.some((fact) => fact.fact_key === first?.fact_key)).toBe(false);
     expect(after.some((fact) => fact.fact_key === sibling?.fact_key)).toBe(
       true,

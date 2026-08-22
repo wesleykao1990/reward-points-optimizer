@@ -169,6 +169,54 @@ describe("Rule IR v1", () => {
     });
   });
 
+  it("requires a stored-value principal output for top-up edges", () => {
+    const malformed = draft();
+    malformed.rule.scope.operation_types = ["stored_value_top_up"];
+    malformed.rule.scope.channels = ["not_applicable"];
+    malformed.rule.scope.merchant_ids = [];
+    malformed.rule.scope.tax_basis = "tax_inclusive";
+    delete malformed.rule.scope.included_product_classes;
+    delete malformed.rule.scope.excluded_product_classes;
+    malformed.source_binding.definition_hash = hashDefinition(malformed.rule);
+    malformed.principal_edges = [
+      {
+        operation_type: "stored_value_top_up",
+        direction: "consume",
+        role: "external_funding",
+        asset: {
+          asset_id: "asset.jp.nanaco",
+          asset_kind: "stored_value",
+          program_id: "program.jp.nanaco",
+          reward_class: null,
+          scale: 0,
+        },
+        conservation: "engine_enforced",
+      },
+      {
+        operation_type: "stored_value_top_up",
+        direction: "create",
+        role: "principal_output",
+        asset: {
+          asset_id: "asset.jp.nanaco-point",
+          asset_kind: "reward_point",
+          program_id: "program.jp.nanaco",
+          reward_class: "normal",
+          scale: 0,
+        },
+        conservation: "engine_enforced",
+      },
+    ];
+    expect(compileRuleIR(malformed)).toMatchObject({
+      ok: false,
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          code: "edge_mismatch",
+          message: expect.stringContaining("stored_value"),
+        }),
+      ]),
+    });
+  });
+
   it("binds definition and bundle hashes to every semantic dependency", () => {
     const compiled = compileRuleIR(draft());
     expect(compiled.ok).toBe(true);

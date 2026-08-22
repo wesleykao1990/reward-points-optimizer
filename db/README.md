@@ -46,6 +46,12 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     facts through a private, correction-aware host projection. Inactive and
     corrected facts remain addressable, while only separately verified rule
     bindings may be reported as applied to a recommendation.
+16. `0016_p0_generic_reward_claim_persistence.sql` adds an execute-only,
+    SECURITY DEFINER adapter for generic structured reward-claim candidates.
+    It classifies exact replays under the existing candidate advisory lock,
+    delegates shape/source-observation binding to the generic provisional
+    candidate routine, and never grants relation access or creates canonical
+    rules, evidence, or publication requests.
 
 It separates:
 

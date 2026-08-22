@@ -28,6 +28,10 @@ const packPath = resolve(
   process.cwd(),
   "../../registry/planning/p0-chatgpt-task-pack.v0.1.json",
 );
+const liveRecoveryPath = resolve(
+  process.cwd(),
+  "../../registry/planning/p0-live-recovery-alternatives.2026-08-22.v0.1.json",
+);
 const INPUT_A = `sha256:${"a".repeat(64)}`;
 const INPUT_B = `sha256:${"b".repeat(64)}`;
 const LOCATOR_HASH = `sha256:${"c".repeat(64)}`;
@@ -115,6 +119,44 @@ describe("P0 resumable operations driver", () => {
     expect(second.map((request) => request.request_sha256)).toEqual(
       first.map((request) => request.request_sha256),
     );
+  });
+
+  it("selects the reachable Amazon main page and excludes the invalid CDN host", () => {
+    const liveRecovery = JSON.parse(readFileSync(liveRecoveryPath, "utf8")) as {
+      targets: Array<{
+        family_id: string;
+        source_role_id: string;
+        alternatives: Array<{ source_url: string }>;
+      }>;
+    };
+    const amazonRecovery = liveRecovery.targets.find(
+      (target) =>
+        target.family_id === "merchant.amazon-jp" &&
+        target.source_role_id === "loyalty_program_rules",
+    );
+    expect(amazonRecovery?.alternatives.map((item) => item.source_url)).toEqual(
+      ["https://www.amazon.co.jp/b?node=8123221051"],
+    );
+    expect(
+      amazonRecovery?.alternatives.some(
+        (item) => new URL(item.source_url).hostname === "www.cdn.amazon.co.jp",
+      ),
+    ).toBe(false);
+
+    const rawPack = JSON.parse(readFileSync(packPath, "utf8")) as {
+      tasks: Array<{
+        targets: Array<{
+          family_id: string;
+          recovered_role_locator_hints: Array<{ source_url: string }>;
+        }>;
+      }>;
+    };
+    const amazonTarget = rawPack.tasks
+      .flatMap((task) => task.targets)
+      .find((target) => target.family_id === "merchant.amazon-jp");
+    expect(
+      amazonTarget?.recovered_role_locator_hints.map((item) => item.source_url),
+    ).toEqual(["https://www.amazon.co.jp/b?node=8123221051"]);
   });
 
   it("selects unresolved and stale targets while holding a rejected input", () => {

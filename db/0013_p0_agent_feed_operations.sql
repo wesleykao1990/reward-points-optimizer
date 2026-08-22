@@ -213,6 +213,8 @@ declare
     v_existing app_private.p0_agent_feed_target_attempts%rowtype;
     v_expected_count integer;
     v_expected_work_unit_sha256 text;
+    v_expected_scope_target_ids text[] := '{}';
+    v_actual_scope_target_ids text[] := '{}';
     v_inserted integer := 0;
     v_duplicates integer := 0;
     v_seen text[] := '{}';
@@ -299,8 +301,94 @@ begin
         raise exception 'P0 work unit hash is invalid' using errcode = '22023';
     end if;
     if p_payload->>'terminal_status' = 'completed'
-       and jsonb_array_length(p_payload->'checkpoints') is distinct from v_expected_count then
+       and jsonb_array_length(p_payload->'checkpoints') = 0 then
         raise exception 'completed P0 work unit is missing checkpoints' using errcode = '22023';
+    end if;
+
+    -- A normal completed work unit still covers the entire manifest family.
+    -- Recovery runs may deliberately complete a nonempty subset, but only
+    -- when that exact subset is carried by the signed terminal event.  The
+    -- receipt raw payload is retained at this boundary for the signed-scope
+    -- comparison; no producer-supplied reconciliation field can widen it.
+    if p_payload->>'terminal_status' = 'completed'
+       and jsonb_array_length(p_payload->'checkpoints') < v_expected_count then
+        if jsonb_typeof(v_receipt.raw_payload) is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload') is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload'->'expected_scope') is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload'->'expected_scope'->'metadata') is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload'->'expected_scope'->'metadata'->'target_ids') is distinct from 'array' then
+            raise exception 'completed P0 subset has no signed expected target scope' using errcode = '22023';
+        end if;
+        if exists (
+            select 1
+              from jsonb_array_elements(
+                  v_receipt.raw_payload->'payload'->'expected_scope'->'metadata'->'target_ids'
+              ) as item(value)
+             where jsonb_typeof(item.value) is distinct from 'string'
+                or length(btrim(item.value #>> '{}')) = 0
+        ) then
+            raise exception 'signed P0 expected target scope is malformed' using errcode = '22023';
+        end if;
+        v_expected_scope_target_ids := array(
+            select jsonb_array_elements_text(
+                v_receipt.raw_payload->'payload'->'expected_scope'->'metadata'->'target_ids'
+            )
+        );
+        if cardinality(v_expected_scope_target_ids) = 0
+           or cardinality(v_expected_scope_target_ids) is distinct from (
+               select count(distinct target_id)
+                 from unnest(v_expected_scope_target_ids) as scope(target_id)
+           ) then
+            raise exception 'signed P0 expected target scope is empty or repeated' using errcode = '22023';
+        end if;
+        if cardinality(v_expected_scope_target_ids) <> jsonb_array_length(p_payload->'checkpoints')
+           or cardinality(v_expected_scope_target_ids) is distinct from (
+               select count(*)
+                 from app_private.p0_agent_feed_operation_targets as target
+                where target.manifest_id = v_manifest.id
+                  and target.stream_id = p_payload->>'stream_id'
+                  and target.family_id = p_payload->>'family_id'
+                  and target.target_id = any(v_expected_scope_target_ids)
+           ) then
+            raise exception 'signed P0 expected target scope does not match the manifest work unit' using errcode = '22023';
+        end if;
+
+        -- A scoped terminal event must also report the same actual target
+        -- scope.  Missing or differently shaped actual scope is unsafe to
+        -- interpret as successful completion of the selected subset.
+        if jsonb_typeof(v_receipt.raw_payload->'payload'->'actual_scope') is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload'->'actual_scope'->'metadata') is distinct from 'object'
+           or jsonb_typeof(v_receipt.raw_payload->'payload'->'actual_scope'->'metadata'->'target_ids') is distinct from 'array' then
+            raise exception 'completed P0 subset has no signed actual target scope' using errcode = '22023';
+        end if;
+        if exists (
+            select 1
+              from jsonb_array_elements(
+                  v_receipt.raw_payload->'payload'->'actual_scope'->'metadata'->'target_ids'
+              ) as item(value)
+             where jsonb_typeof(item.value) is distinct from 'string'
+                or length(btrim(item.value #>> '{}')) = 0
+        ) then
+            raise exception 'signed P0 actual target scope is malformed' using errcode = '22023';
+        end if;
+        v_actual_scope_target_ids := array(
+            select jsonb_array_elements_text(
+                v_receipt.raw_payload->'payload'->'actual_scope'->'metadata'->'target_ids'
+            )
+        );
+        if cardinality(v_actual_scope_target_ids) = 0
+           or cardinality(v_actual_scope_target_ids) is distinct from (
+               select count(distinct target_id)
+                 from unnest(v_actual_scope_target_ids) as scope(target_id)
+           )
+           or cardinality(v_actual_scope_target_ids) <> cardinality(v_expected_scope_target_ids)
+           or exists (
+               select 1
+                 from unnest(v_expected_scope_target_ids) as scope(target_id)
+                where not (scope.target_id = any(v_actual_scope_target_ids))
+           ) then
+            raise exception 'signed P0 actual target scope does not match expected scope' using errcode = '22023';
+        end if;
     end if;
 
     -- Preflight every member before the first insert.
@@ -382,6 +470,24 @@ begin
             raise exception 'P0 checkpoint attempt number is not monotone' using errcode = '55000';
         end if;
     end loop;
+
+    if p_payload->>'terminal_status' = 'completed'
+       and jsonb_array_length(p_payload->'checkpoints') < v_expected_count
+       and (
+           cardinality(v_seen) is distinct from cardinality(v_expected_scope_target_ids)
+           or exists (
+               select 1
+                 from unnest(v_expected_scope_target_ids) as scope(target_id)
+                where not (scope.target_id = any(v_seen))
+           )
+           or exists (
+               select 1
+                 from unnest(v_seen) as checkpoint(target_id)
+                where not (checkpoint.target_id = any(v_expected_scope_target_ids))
+           )
+       ) then
+        raise exception 'completed P0 checkpoints do not exactly match signed target scope' using errcode = '22023';
+    end if;
 
     for v_item in select value from jsonb_array_elements(p_payload->'checkpoints')
     loop

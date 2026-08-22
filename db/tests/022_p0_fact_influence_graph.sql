@@ -34,6 +34,18 @@ begin
     ) then
         raise exception 'P0 influence graph did not retain inactive effective-time history';
     end if;
+    if (select count(*)
+          from app_private.p0_implementation_fact_influence_graph_rows(
+              '2026-08-22T00:00:00+09:00'::timestamptz
+          )
+         where parent_claim_id in (
+             'claim.point.nanaco.earn.shopping-immediate.004',
+             'claim.point.nanaco.earn.credit-charge.003'
+         )
+           and active_at = true) <> 2
+    then
+        raise exception 'P0 influence graph treated explicit null bounds as inactive';
+    end if;
     if not exists (
         select 1
           from app_private.p0_implementation_fact_influence_graph_rows(

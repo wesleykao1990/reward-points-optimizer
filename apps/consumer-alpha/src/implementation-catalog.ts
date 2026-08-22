@@ -25,9 +25,14 @@ import {
   localizeImplementationSummary,
 } from "./implementation-localization.js";
 
-const IMPLEMENTATION_FIXTURE =
-  "../../../fixtures/m3/provisional/p0-point-rules-a.implementation.v0.1.json";
-const EXPECTED_FIXTURE_FACT_COUNT = 87;
+const IMPLEMENTATION_FIXTURES = Object.freeze([
+  "../../../fixtures/m3/provisional/p0-point-rules-a.implementation.v0.1.json",
+  "../../../fixtures/m3/provisional/p0-point-rules-b.implementation.v0.4.json",
+  "../../../fixtures/m3/provisional/p0-wallet-card-rules.implementation.v0.5.json",
+  "../../../fixtures/m3/provisional/p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
+] as const);
+/** The complete P0 implementation wave exposed by the information tab. */
+const EXPECTED_FIXTURE_FACT_COUNT = 364;
 /** The PostgreSQL adapter pages at 128; the browser catalogue can hold the
  * current 364-fact P0 wave plus bounded additive snapshots. */
 const MAX_FACTS = 512;
@@ -131,6 +136,7 @@ interface FixtureEntry {
 }
 
 interface FixtureDocument {
+  readonly version: string;
   readonly as_of: string;
   readonly entries: readonly FixtureEntry[];
 }
@@ -219,9 +225,15 @@ function safeUpdatedAt(value: unknown): string | null {
   return value;
 }
 
-function opaqueFixtureKey(entry: FixtureEntry, index: number): string {
+function opaqueFixtureKey(
+  entry: FixtureEntry,
+  index: number,
+  implementationVersion: string,
+): string {
   const digest = createHash("sha256")
-    .update(`${index}\u0000${entry.parent_claim_id}`)
+    .update(
+      `${implementationVersion}\u0000${index}\u0000${entry.parent_claim_id}`,
+    )
     .digest("hex");
   return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-5${digest.slice(
     13,
@@ -362,15 +374,23 @@ function fixtureDocument(value: unknown): FixtureDocument {
   if (!isPlainRecord(value))
     throw new TypeError("implementation_fixture_shape_invalid");
   const document = value as JsonRecord;
+  if (
+    typeof document.version !== "string" ||
+    document.version.length === 0 ||
+    document.version.length > 128
+  )
+    throw new TypeError("implementation_fixture_version_invalid");
   if (!Array.isArray(document.entries))
     throw new TypeError("implementation_fixture_entries_invalid");
   const asOf = safeUpdatedAt(document.as_of);
   if (asOf === null)
     throw new TypeError("implementation_fixture_as_of_invalid");
   const entries = document.entries.map(fixtureEntry);
-  if (entries.length !== EXPECTED_FIXTURE_FACT_COUNT)
-    throw new Error("implementation_fixture_fact_count_invalid");
-  return Object.freeze({ as_of: asOf, entries: Object.freeze(entries) });
+  return Object.freeze({
+    version: document.version,
+    as_of: asOf,
+    entries: Object.freeze(entries),
+  });
 }
 
 function fixtureCards(
@@ -381,7 +401,7 @@ function fixtureCards(
       const family = displayFamily(entry.family_id);
       const claim = displayClaim(entry.claim_type);
       return Object.freeze({
-        fact_key: opaqueFixtureKey(entry, index),
+        fact_key: opaqueFixtureKey(entry, index, document.version),
         family,
         claim,
         subject: localizeImplementationSubject(entry.subject),
@@ -523,11 +543,22 @@ interface FixtureState {
 }
 
 function createFixturePort(
-  document: FixtureDocument,
+  documents: readonly FixtureDocument[],
 ): ImplementationFactCataloguePort {
+  const cards = Object.freeze(
+    documents.flatMap((document) => fixtureCards(document)),
+  );
+  if (cards.length !== EXPECTED_FIXTURE_FACT_COUNT)
+    throw new Error("implementation_fixture_fact_count_invalid");
+  const updatedAt = documents
+    .map((document) => document.as_of)
+    .sort()
+    .at(-1);
+  if (updatedAt === undefined)
+    throw new Error("implementation_fixture_as_of_missing");
   const state: FixtureState = {
-    cards: fixtureCards(document),
-    updated_at: document.as_of,
+    cards,
+    updated_at: updatedAt,
     corrected: new Map(),
   };
   return Object.freeze({
@@ -581,10 +612,15 @@ let defaultPortPromise: Promise<ImplementationFactCataloguePort> | undefined;
 
 export function getDefaultImplementationFactCataloguePort(): ImplementationFactCataloguePort {
   if (defaultPortPromise === undefined) {
-    defaultPortPromise = fs
-      .readFile(new URL(IMPLEMENTATION_FIXTURE, import.meta.url), "utf8")
-      .then((value) => fixtureDocument(JSON.parse(value)))
-      .then(createFixturePort);
+    defaultPortPromise = Promise.all(
+      IMPLEMENTATION_FIXTURES.map(async (fixture) =>
+        fixtureDocument(
+          JSON.parse(
+            await fs.readFile(new URL(fixture, import.meta.url), "utf8"),
+          ),
+        ),
+      ),
+    ).then(createFixturePort);
   }
   const portPromise = defaultPortPromise;
   // The promise is intentionally hidden behind the port so the app's normal

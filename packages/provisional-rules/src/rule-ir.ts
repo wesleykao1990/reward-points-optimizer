@@ -491,44 +491,72 @@ function validateCrossFields(
         "/rule/output/asset",
         "transfer output must equal the calculation destination asset",
       );
-    if (
-      !edges.some(
-        (edge) =>
-          edge.operation_type === "point_transfer" &&
-          edge.direction === "consume" &&
-          edge.role === "principal_tender" &&
-          sameAssetRef(edge.asset, source),
-      ) ||
-      !edges.some(
-        (edge) =>
-          edge.operation_type === "point_transfer" &&
-          edge.direction === "create" &&
-          edge.role === "principal_output" &&
-          sameAssetRef(edge.asset, destination),
-      )
-    )
-      issue(
-        issues,
-        "edge_mismatch",
-        "/principal_edges",
-        "transfer rules require matching source-consume and destination-create edges",
+    const transferOperationTypes = rule.scope.operation_types.filter(
+      (operationType) =>
+        operationType === "point_transfer" ||
+        operationType === "point_redemption",
+    );
+    for (const operationType of transferOperationTypes) {
+      const operationEdges = edges.filter(
+        (edge) => edge.operation_type === operationType,
       );
+      const sourceEdges = operationEdges.filter(
+        (edge) =>
+          edge.direction === "consume" && edge.role === "principal_tender",
+      );
+      const destinationEdges = operationEdges.filter(
+        (edge) =>
+          edge.direction === "create" && edge.role === "principal_output",
+      );
+      const feeEdges = operationEdges.filter(
+        (edge) => edge.direction === "consume" && edge.role === "fee",
+      );
+      const expectedFeeEdges = rule.calculation.fee === null ? 0 : 1;
+      if (
+        operationEdges.length !== 2 + expectedFeeEdges ||
+        sourceEdges.length !== 1 ||
+        destinationEdges.length !== 1 ||
+        feeEdges.length !== expectedFeeEdges ||
+        !sourceEdges[0] ||
+        !destinationEdges[0] ||
+        !sameAssetRef(sourceEdges[0].asset, source) ||
+        !sameAssetRef(destinationEdges[0].asset, destination) ||
+        (expectedFeeEdges === 1 &&
+          (!feeEdges[0] ||
+            !rule.calculation.fee ||
+            !sameAssetRef(feeEdges[0].asset, rule.calculation.fee.asset)))
+      )
+        issue(
+          issues,
+          "edge_mismatch",
+          "/principal_edges",
+          `${operationType} transfer rules require exactly one matching source-consume, destination-create, and declared fee edge`,
+        );
+    }
   }
 
   if (rule.scope.operation_types.includes("stored_value_top_up")) {
+    const topUpEdges = edges.filter(
+      (edge) => edge.operation_type === "stored_value_top_up",
+    );
+    const externalFundingEdges = topUpEdges.filter(
+      (edge) =>
+        edge.direction === "consume" && edge.role === "external_funding",
+    );
+    const principalOutputEdges = topUpEdges.filter(
+      (edge) => edge.direction === "create" && edge.role === "principal_output",
+    );
     if (
-      !edges.some(
-        (edge) =>
-          edge.operation_type === "stored_value_top_up" &&
-          edge.direction === "create" &&
-          edge.role === "principal_output",
-      )
+      topUpEdges.length !== 2 ||
+      externalFundingEdges.length !== 1 ||
+      principalOutputEdges.length !== 1 ||
+      principalOutputEdges[0]?.asset.asset_kind !== "stored_value"
     )
       issue(
         issues,
         "edge_mismatch",
         "/principal_edges",
-        "stored-value top-up rules require a principal-output edge",
+        "stored-value top-up rules require exactly one external-funding consume and one stored_value principal-output create edge",
       );
   }
 

@@ -1,8 +1,9 @@
 # M6 local consumer alpha
 
-This is a localhost-only consumer prototype. It retains the narrow synthetic
-M6 workflow and, when explicitly connected to the P0 PostgreSQL database,
-adds one bounded experimental real-data route for Nanaco at Seven-Eleven. It
+This is a localhost-only consumer prototype. It exposes one bounded merchant
+comparison journey at `POST /api/recommendations`, which evaluates the
+synthetic card route alongside the Nanaco purchase and Seven Card Plus ->
+Nanaco credit-charge experiments when their host ports are available. It
 binds to `127.0.0.1`, accepts only bounded consumer inputs, and keeps rules,
 assurances, evidence, candidate plans, source URLs, database credentials, and
 authorization material on the trusted host.
@@ -25,8 +26,18 @@ JRO_DATABASE_URL=postgresql://.../jro_local \
 `JRO_DATABASE_URL` is explicit and server-only. When set, one bounded pool
 backs the experimental catalogue, its correction route, all 364 P0
 implementation facts, and the exact Nanaco/Seven-Eleven experimental
-recommendation. Without it the localhost shell retains its checked-in demo
-catalogues and the real-data recommendation endpoint fails closed.
+recommendations. Without it the localhost shell retains its checked-in demo
+catalogues; each unavailable real route remains visible with a route-scoped
+issue instead of suppressing its valid neighbors.
+
+The unified response returns one safe record per route. Records distinguish
+`calculation` from `information_only`, report `eligible`, `conditional`,
+`no_valid_plan`, `blocked`, or `unavailable`, and classify campaign validity
+as `active`, `scheduled`, `expired`, or `unknown`. A graph outage is shown as
+`facts_unavailable` while preserving a valid numeric result; an exact applied
+fact binding failure blocks only the affected route. Displayed recommendation
+IDs are host-issued and are the only IDs accepted by
+`POST /api/recommendations/corrections`.
 
 The real-data route accepts gross amount, tax-exclusive eligible amount,
 Nanaco balance, and an explicit effective time. It requires the exact active
@@ -69,21 +80,66 @@ an opaque publication identity, kind, bounded Japanese title/summary, coarse
 confidence, source label, and dates. Hashes, rule payloads, evidence, source
 identifiers, and URLs stay on the trusted host.
 
-The `情報` tab exposes the separate generic P0 implementation-fact catalogue.
-Its default localhost port reads the checked-in 87-fact implementation
-snapshot; a host may inject either the browser-safe fact port or the bounded
-`@jro/agent-feed-postgres` implementation store. `GET
+The five mobile tabs are ordered Home, Wallet, History, Information, and
+Settings. Wallet and History are session-only views of the unified selection;
+they do not claim persistent account state. The `情報` tab exposes the
+separate generic P0 implementation-fact catalogue. Its default localhost port
+reads all 364 checked-in implementation facts; a host may inject either the
+browser-safe fact port or the bounded `@jro/agent-feed-postgres` implementation
+store. `GET
 /api/experimental/facts` returns `{ "status", "updated_at", "facts" }` with an
 opaque UUID, Japanese family/claim labels, subject, predicate, summary, and
 `use_in_comparison` for each card. Search and filters run over the returned
-bounded list in the browser. The fixture response is explicitly `partial`
-because it contains the current 87-fact slice; a database-backed port pages
-through the full bounded catalogue before returning `ready`. `POST
+bounded list in the browser. The checked-in fixture is labeled `partial` for
+provenance even though it contains all 364 facts in this wave; a database-
+backed port pages through the full bounded catalogue before returning `ready`.
+`POST
 /api/experimental/fact-corrections` accepts only `{ "fact_key", "category" }`;
 the trusted host binds the opaque UUID to one exact implementation fact and
 the database view hides only that fact after recording the correction. No
 source IDs, hashes, evidence locators, raw values, parent claim IDs, reasons,
 or internal statuses cross the browser boundary.
+
+## Internal Agent Feed delivery
+
+The server contains one optional, server-only delivery boundary at
+`POST /internal/agent-feed/events`. It is not a browser API and is `404` unless
+the host injects an `agentFeedIngress` port into `AppDependencies`. When
+enabled, the route forwards the untouched request bytes and the seven
+`x-agent-feed-*` signature headers to `createAgentFeedConsumerHandler`; it does
+not parse or re-encode the signed body first. GET, query-string, cross-origin,
+unsigned, stale, malformed, and tampered requests fail closed.
+
+`createP0AgentFeedIngress` composes the generic atomic consumer persistence for
+run-start and finding deliveries with
+`createPostgresP0TerminalAtomicPersistence` for terminal deliveries. The host
+must supply the current admitted P0 operations manifest and an exact
+`reconciliation_by_run_id` map for the five live recovery runs. Each map entry
+is checked against the manifest before the port is created; no run ID, target,
+locator, outcome, or economic claim is discovered from Agent Feed. A terminal
+event without an exact host mapping is rejected by the persistence boundary.
+
+Signing can use a host-owned resolver or the environment resolver. The latter
+reads only `JRO_AGENT_FEED_SIGNING_KEY_ID` plus
+`JRO_AGENT_FEED_SIGNING_SECRET` (or the secret file named by
+`JRO_AGENT_FEED_SIGNING_SECRET_FILE`). These values stay in the process and
+are never returned in HTTP responses or diagnostics. The browser receives only
+the bounded acknowledgement, outcome status, and opaque Rewards receipt ID.
+
+The normal `dist/server.js` startup composes this port automatically when
+`JRO_AGENT_FEED_RECONCILIATION_FILE` is set together with the signing key
+variables. The reconciliation file may be a raw `{ "run_id": reconciliation }`
+object or the strict `p0-agent-feed-reconciliation-map.v1` wrapper containing
+`plan_sha256`, `manifest_sha256`, and `reconciliations`. The current admitted
+plan is loaded from
+`JRO_P0_SOURCE_ROLE_PLAN_FILE` when set, otherwise from
+`registry/planning/p0-source-role-plan.v0.1.json` relative to the process
+working directory; its derived manifest must match every reconciliation entry.
+Missing, stale, malformed, or incomplete configuration aborts startup rather
+than exposing an unauthenticated endpoint. A map entry may contain a completed
+subset of a family work unit when the current P0 operations admission permits
+that exact subset; it is still bound to the run, stream, family, hashes, and
+checkpoint identities.
 
 `GET /api/experimental/rules` returns exactly
 `{ "status", "updated_at", "rules" }`. The status is `ready` or `partial`, and

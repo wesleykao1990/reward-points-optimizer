@@ -18,6 +18,8 @@ export type { FactInfluenceBrowserView } from "./fact-influence-graph.js";
 export const MAX_EVALUATE_BODY_BYTES = 32 * 1024;
 export const MAX_CORRECTION_BODY_BYTES = 12 * 1024;
 export const MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES = 8 * 1024;
+/** The single browser-to-host request for the unified comparison journey. */
+export const MAX_UNIFIED_RECOMMENDATION_BODY_BYTES = 32 * 1024;
 export const MAX_TEXT_LENGTH = 160;
 export const MAX_EXPERIMENTAL_CATALOGUE_CARDS = 128;
 export const MAX_EXPERIMENTAL_TITLE_LENGTH = 120;
@@ -367,6 +369,33 @@ export interface CorrectionDraftInput {
   readonly recommendation_id: `sha256:${string}`;
 }
 
+export type UnifiedMerchantId =
+  | typeof SYNTHETIC_MERCHANT_ID
+  | "merchant.seveneleven";
+export type UnifiedBranchId =
+  | typeof SYNTHETIC_BRANCH_ID
+  | "location.seveneleven.representative";
+
+/** Browser-safe, host-owned input for `/api/recommendations`. */
+export interface UnifiedRecommendationInput {
+  readonly merchant_id: UnifiedMerchantId;
+  readonly branch_id: UnifiedBranchId;
+  readonly amount_jpy: number;
+  readonly tax_exclusive_amount_jpy: number;
+  readonly nanaco_balance_jpy: number;
+  readonly nanaco_credit_charge_balance_jpy: number;
+  readonly charge_amount_jpy: number;
+  readonly seven_card_plus_owned: boolean;
+  readonly nanaco_credit_charge_preregistered: boolean;
+  readonly effective_at: string;
+  readonly owned_instruments: readonly ManualInstrument[];
+  readonly stored_value_use: StoredValueUse;
+  readonly stored_value_usage?: StoredValueUsage;
+  readonly stored_value_value_jpy_per_unit?: string;
+  readonly facts: readonly ManualFactInput[];
+  readonly caps: readonly ManualCapInput[];
+}
+
 const RECOMMENDATION_ID_PATTERN = /^sha256:[0-9a-f]{64}$/u;
 
 export function isCanonicalRecommendationId(
@@ -417,6 +446,29 @@ const TOP_LEVEL_NANACO_CREDIT_CHARGE_RECOMMENDATION_KEYS = new Set([
   "seven_card_plus_owned",
   "nanaco_credit_charge_preregistered",
   "effective_at",
+]);
+/**
+ * Route inputs are deliberately flat and boring. They describe the user's
+ * state and transaction only; rule, evidence, source, and applied-claim
+ * material remains host-owned and is never admitted by this parser.
+ */
+const TOP_LEVEL_UNIFIED_RECOMMENDATION_KEYS = new Set([
+  "merchant_id",
+  "branch_id",
+  "amount_jpy",
+  "tax_exclusive_amount_jpy",
+  "nanaco_balance_jpy",
+  "nanaco_credit_charge_balance_jpy",
+  "charge_amount_jpy",
+  "seven_card_plus_owned",
+  "nanaco_credit_charge_preregistered",
+  "effective_at",
+  "owned_instruments",
+  "stored_value_use",
+  "stored_value_usage",
+  "stored_value_value_jpy_per_unit",
+  "facts",
+  "caps",
 ]);
 const FORBIDDEN_KEY_PARTS = [
   "rule",
@@ -831,6 +883,153 @@ export function parseNanacoCreditChargeRecommendation(
     nanaco_credit_charge_preregistered:
       value.nanaco_credit_charge_preregistered as boolean,
     effective_at: value.effective_at as string,
+  });
+}
+
+/**
+ * Parse the one unified comparison request. Defaults only fill in route
+ * controls omitted by a caller that is interested in the synthetic lane;
+ * they never select rules or evidence. Each nested collection is still
+ * parsed by the exact synthetic-state parser, so the admitted shape remains
+ * as strict as the legacy endpoint.
+ */
+export function parseUnifiedRecommendation(
+  value: unknown,
+): UnifiedRecommendationInput {
+  assertNoForbiddenInput(value);
+  if (!isPlainRecord(value)) throw new InputContractError("body_invalid");
+  assertExactKeys(value, TOP_LEVEL_UNIFIED_RECOMMENDATION_KEYS);
+
+  const merchant =
+    value.merchant_id === undefined ? SYNTHETIC_MERCHANT_ID : value.merchant_id;
+  if (merchant !== SYNTHETIC_MERCHANT_ID && merchant !== "merchant.seveneleven")
+    throw new InputContractError("merchant_id_invalid");
+  const expectedBranch =
+    merchant === SYNTHETIC_MERCHANT_ID
+      ? SYNTHETIC_BRANCH_ID
+      : "location.seveneleven.representative";
+  const branch =
+    value.branch_id === undefined ? expectedBranch : value.branch_id;
+  if (branch !== expectedBranch)
+    throw new InputContractError("branch_id_invalid");
+
+  if (
+    !Number.isSafeInteger(value.amount_jpy) ||
+    (value.amount_jpy as number) < 1 ||
+    (value.amount_jpy as number) > 1_000_000
+  )
+    throw new InputContractError("amount_invalid");
+  const amount = value.amount_jpy as number;
+
+  const taxExclusive =
+    value.tax_exclusive_amount_jpy === undefined
+      ? amount
+      : value.tax_exclusive_amount_jpy;
+  if (
+    !Number.isSafeInteger(taxExclusive) ||
+    (taxExclusive as number) < 0 ||
+    (taxExclusive as number) > 1_000_000
+  )
+    throw new InputContractError("tax_exclusive_amount_invalid");
+
+  const nanacoBalance =
+    value.nanaco_balance_jpy === undefined ? amount : value.nanaco_balance_jpy;
+  if (
+    !Number.isSafeInteger(nanacoBalance) ||
+    (nanacoBalance as number) < 0 ||
+    (nanacoBalance as number) > 10_000_000
+  )
+    throw new InputContractError("nanaco_balance_invalid");
+
+  const nanacoCreditChargeBalance =
+    value.nanaco_credit_charge_balance_jpy === undefined
+      ? 0
+      : value.nanaco_credit_charge_balance_jpy;
+  if (
+    !Number.isSafeInteger(nanacoCreditChargeBalance) ||
+    (nanacoCreditChargeBalance as number) < 0 ||
+    (nanacoCreditChargeBalance as number) > 1_000_000
+  )
+    throw new InputContractError("nanaco_credit_charge_balance_invalid");
+
+  const chargeAmount =
+    value.charge_amount_jpy === undefined ? 5_000 : value.charge_amount_jpy;
+  if (
+    !Number.isSafeInteger(chargeAmount) ||
+    (chargeAmount as number) < 0 ||
+    (chargeAmount as number) > 1_000_000
+  )
+    throw new InputContractError("charge_amount_invalid");
+
+  const owned =
+    value.owned_instruments === undefined
+      ? ["synthetic_card"]
+      : value.owned_instruments;
+  const storedValueUse =
+    value.stored_value_use === undefined ? "unknown" : value.stored_value_use;
+  const syntheticState = parseManualAlphaState({
+    merchant_id: SYNTHETIC_MERCHANT_ID,
+    branch_id: SYNTHETIC_BRANCH_ID,
+    amount_jpy: amount,
+    owned_instruments: owned,
+    stored_value_use: storedValueUse,
+    ...(value.stored_value_usage === undefined
+      ? {}
+      : { stored_value_usage: value.stored_value_usage }),
+    ...(value.stored_value_value_jpy_per_unit === undefined
+      ? {}
+      : {
+          stored_value_value_jpy_per_unit:
+            value.stored_value_value_jpy_per_unit,
+        }),
+    facts: value.facts === undefined ? [] : value.facts,
+    caps: value.caps === undefined ? [] : value.caps,
+  });
+
+  const ownedFlag =
+    value.seven_card_plus_owned === undefined
+      ? false
+      : value.seven_card_plus_owned;
+  if (typeof ownedFlag !== "boolean")
+    throw new InputContractError("seven_card_plus_owned_invalid");
+  const preregistered =
+    value.nanaco_credit_charge_preregistered === undefined
+      ? false
+      : value.nanaco_credit_charge_preregistered;
+  if (typeof preregistered !== "boolean")
+    throw new InputContractError("nanaco_credit_charge_preregistered_invalid");
+
+  const effectiveAt =
+    value.effective_at === undefined
+      ? "2026-08-17T12:30:00+09:00"
+      : value.effective_at;
+  if (!isCanonicalProvisionalDateTime(effectiveAt))
+    throw new InputContractError("effective_at_invalid");
+
+  return Object.freeze({
+    merchant_id: merchant as UnifiedMerchantId,
+    branch_id: branch as UnifiedBranchId,
+    amount_jpy: amount,
+    tax_exclusive_amount_jpy: taxExclusive as number,
+    nanaco_balance_jpy: nanacoBalance as number,
+    nanaco_credit_charge_balance_jpy: nanacoCreditChargeBalance as number,
+    charge_amount_jpy: chargeAmount as number,
+    seven_card_plus_owned: ownedFlag,
+    nanaco_credit_charge_preregistered: preregistered,
+    effective_at: effectiveAt as string,
+    owned_instruments: syntheticState.owned_instruments,
+    stored_value_use: syntheticState.stored_value_use,
+    ...(syntheticState.stored_value_usage === undefined
+      ? {}
+      : { stored_value_usage: syntheticState.stored_value_usage }),
+    ...(syntheticState.stored_value_value_jpy_per_unit === undefined
+      ? {}
+      : {
+          stored_value_value_jpy_per_unit:
+            syntheticState.stored_value_value_jpy_per_unit,
+        }),
+    facts: syntheticState.facts,
+    caps: syntheticState.caps,
   });
 }
 

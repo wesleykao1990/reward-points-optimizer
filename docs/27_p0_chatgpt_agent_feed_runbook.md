@@ -238,14 +238,44 @@ cover exactly eleven roles in the five partial families `merchant.amazon-jp`,
 contains only first-party locator leads: it asserts no economic fact, retains
 no source body, performs no source registration, and creates no canonical
 evidence. Browser-rendered pages are preferred where listed, with the supplied
-official static HTML/CDN and PDF alternatives used only as bounded fallbacks;
-credentials, personal data, and WAF bypasses are prohibited.
+official static HTML and PDF alternatives used only as bounded fallbacks;
+credentials, personal data, WAF bypasses, and TLS-invalid hosts are prohibited.
 
 The planning record keeps every alternative, while the generated task pack
 selects one deterministic lead per family-role because the task-pack contract
-admits one recovered hint per role. Current leads are Amazon's points CDN alias;
-d POINT's rendered exchange directory; the `app.jrepoint.jp` campaign,
+admits one recovered hint per role. The current Amazon lead is the official
+points main page at `https://www.amazon.co.jp/b?node=8123221051`; other current
+leads are d POINT's rendered exchange directory; the `app.jrepoint.jp` campaign,
 merchant, and agreement paths; nanaco's registered ANA exchange page; and the
 METI guideline, data index, ratio release, promotion report, and policy hub.
+
+### Completed unresolved-only recovery and Rewards delivery boundary
+
+The five bounded retries subsequently completed all eleven roles listed in the
+recovery-alternatives record. The exact run IDs, target IDs, locators, input
+hashes, and terminal event IDs are bound in
+`registry/planning/p0-agent-feed-reconciliation-map.v1.json`. The map is an
+operator allowlist, not evidence or a reward-rule publication.
+
+Agent Feed now has a durable delivery-worker process that leases, signs,
+retries, and acknowledges subscription deliveries. Rewards exposes only the
+server-side `POST /internal/agent-feed/events` boundary when all of the
+following are configured:
+
+- `JRO_AGENT_FEED_RECONCILIATION_FILE`;
+- `JRO_AGENT_FEED_SIGNING_KEY_ID`;
+- `JRO_AGENT_FEED_SIGNING_SECRET` or
+  `JRO_AGENT_FEED_SIGNING_SECRET_FILE`;
+- optionally `JRO_P0_SOURCE_ROLE_PLAN_FILE` when the plan is not at its default
+  repository path.
+
+The receiver verifies the exact signed bytes before any persistence, imports
+run/finding/evidence payloads through the generic atomic consumer path, and
+binds a terminal receipt plus its P0 target checkpoints in one transaction.
+A missing or stale reconciliation entry fails closed. Existing historical
+Agent Feed outbox events must be materialized into one explicitly scoped
+consumer subscription before the worker can deliver them; that replay/egress
+step remains a separately authorized operator action and must not be replaced
+with direct receipt or checkpoint inserts.
 Identical family-role-URL rows from the historical recovery manifests are
 deduplicated without modifying those historical files.

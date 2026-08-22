@@ -56,7 +56,12 @@ describe("M6 localhost consumer shell", () => {
     expect(response.headers["Access-Control-Allow-Origin"]).toBeUndefined();
     expect(jsonBody(response)).toMatchObject({
       status: "ok",
-      synthetic_recommendations_only: true,
+      synthetic_recommendations_only: false,
+      recommendation_routes: [
+        "synthetic",
+        "nanaco_purchase",
+        "nanaco_credit_charge",
+      ],
       experimental_catalogue: true,
       bind_host: "127.0.0.1",
     });

@@ -263,11 +263,64 @@ function rowCandidateId(value: Record<string, unknown>): string | undefined {
     : undefined;
 }
 
+/**
+ * node-postgres returns `timestamptz` columns as Date instances by default.
+ * Normalize only the two timestamp columns selected by the fixed catalogue
+ * query, before the general plain-data scanner runs. Descriptor inspection is
+ * deliberate: accessors, hidden fields, symbols, proxies, and Date instances
+ * anywhere else remain invalid.
+ */
+function normalizePostgresTimestampColumns(value: unknown): unknown {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    nodeTypes.isProxy(value)
+  )
+    return value;
+  let prototype: object | null;
+  let descriptors: Record<string, PropertyDescriptor>;
+  let symbols: symbol[];
+  try {
+    prototype = Object.getPrototypeOf(value);
+    descriptors = Object.getOwnPropertyDescriptors(value);
+    symbols = Object.getOwnPropertySymbols(value);
+  } catch {
+    return value;
+  }
+  if (
+    (prototype !== Object.prototype && prototype !== null) ||
+    symbols.length > 0
+  )
+    return value;
+  const output: Record<string, unknown> = Object.create(null) as Record<
+    string,
+    unknown
+  >;
+  for (const [key, descriptor] of Object.entries(descriptors)) {
+    if (!descriptor.enumerable || !("value" in descriptor)) return value;
+    let child = descriptor.value;
+    if (key === "admitted_at" || key === "machine_checked_at") {
+      if (child instanceof Date) {
+        if (!Number.isFinite(child.getTime())) return value;
+        child = child.toISOString();
+      }
+    }
+    Object.defineProperty(output, key, {
+      value: child,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  }
+  return output;
+}
+
 function parseRow(value: unknown): {
   readonly row: Record<string, unknown> | null;
   readonly issues: readonly P0RuleIRIssue[];
 } {
-  const scanned = scanPublicValue(value);
+  const scanned = scanPublicValue(normalizePostgresTimestampColumns(value));
   if (!scanned.valid)
     return {
       row: null,
@@ -516,7 +569,10 @@ export function compileP0EconomicCandidateRow(
       );
     if (
       !record(candidate.machine_check) ||
-      candidate.machine_check.checked_at !== row.machine_checked_at
+      typeof candidate.machine_check.checked_at !== "string" ||
+      typeof row.machine_checked_at !== "string" ||
+      Date.parse(candidate.machine_check.checked_at) !==
+        Date.parse(row.machine_checked_at)
     )
       issue(
         issues,

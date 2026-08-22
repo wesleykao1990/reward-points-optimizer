@@ -208,7 +208,7 @@ describe("P0 target checkpoints", () => {
 });
 
 describe("P0 receipt reconciliation", () => {
-  it("preflights a complete receipt and rejects partial completion without mutation", () => {
+  it("preflights a complete receipt and admits a nonempty scoped completion", () => {
     const currentPlan = plan();
     const manifest = buildP0OperationsManifest(currentPlan);
     const family = currentPlan.families.find(
@@ -238,10 +238,15 @@ describe("P0 receipt reconciliation", () => {
     expect(reconcileP0AgentFeedReceipt(manifest, accepted, receipt)).toEqual(
       accepted,
     );
+    const scoped = reconcileP0AgentFeedReceipt(manifest, accepted, {
+      ...receipt,
+      checkpoints: checkpoints.slice(1),
+    });
+    expect(scoped).toHaveLength(unit.targets.length);
     expect(() =>
       reconcileP0AgentFeedReceipt(manifest, accepted, {
         ...receipt,
-        checkpoints: checkpoints.slice(1),
+        checkpoints: [],
       }),
     ).toThrow("p0_reconciliation_incomplete");
     expect(accepted).toHaveLength(unit.targets.length);

@@ -505,10 +505,7 @@ export function admitP0ReceiptReconciliation(
     new Set(admitted.map((item) => item.target_id)).size !== admitted.length
   )
     throw new TypeError("p0_reconciliation_invalid");
-  if (
-    value.terminal_status === "completed" &&
-    admitted.length !== workUnit.targets.length
-  )
+  if (value.terminal_status === "completed" && admitted.length === 0)
     throw new TypeError("p0_reconciliation_incomplete");
   return deepFreeze({
     version: P0_RECEIPT_RECONCILIATION_VERSION,

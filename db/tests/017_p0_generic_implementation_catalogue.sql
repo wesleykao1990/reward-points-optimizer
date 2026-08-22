@@ -98,8 +98,11 @@ begin
           '2026-09-01T00:00:00+09:00'::timestamptz
       )
      where claim_type = 'campaign_period';
-    if v_current_facts <> 115
-       or v_later_facts <> 85
+    -- Null top-level bounds are intentionally unbounded for non-campaign
+    -- catalogue facts.  The 30-row delta remains the bounded campaign and
+    -- sibling applicability projection; immutable history still has 364 rows.
+    if v_current_facts <> 275
+       or v_later_facts <> 245
        or v_current_campaigns <> 9
        or v_later_campaigns <> 4
     then

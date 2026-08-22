@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   buildFactInfluenceGraph,
   classifyFactInfluence,
+  FACT_GRAPH_ROLES,
   getDefaultFactInfluenceGraphPort,
   projectFactInfluenceForRecommendation,
 } from "../src/fact-influence-graph.js";
@@ -22,6 +24,250 @@ describe("P0 fact influence graph", () => {
     expect(first.nodes.every((node) => node.raw.value !== undefined)).toBe(
       true,
     );
+  });
+
+  it("partitions every P0 fact into one deterministic primary graph role", async () => {
+    const graph = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const counts = Object.fromEntries(
+      FACT_GRAPH_ROLES.map((role) => [
+        role,
+        graph.nodes.filter((node) => node.graph_role === role).length,
+      ]),
+    );
+    expect(counts).toEqual({
+      applied: 2,
+      constraint: 48,
+      question: 162,
+      warning: 32,
+      information: 120,
+    });
+    expect(
+      graph.nodes.every((node) =>
+        (FACT_GRAPH_ROLES as readonly string[]).includes(node.graph_role),
+      ),
+    ).toBe(true);
+    expect(
+      Object.values(counts).reduce((total, count) => total + count, 0),
+    ).toBe(364);
+    expect(graph.nodes.filter((node) => node.graph_role === "applied")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          graph_role: "applied",
+          raw: expect.objectContaining({
+            parent_claim_id: "claim.point.nanaco.earn.shopping-immediate.004",
+          }),
+        }),
+        expect.objectContaining({
+          graph_role: "applied",
+          raw: expect.objectContaining({
+            parent_claim_id: "claim.point.nanaco.earn.credit-charge.003",
+          }),
+        }),
+      ]),
+    );
+    expect(
+      graph.nodes
+        .filter((node) => node.raw.family_id.startsWith("reg."))
+        .every((node) => node.graph_role === "warning" && !node.rankable),
+    ).toBe(true);
+  });
+
+  it("keeps ordering and graph hash stable under fact permutation", async () => {
+    const source = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const permuted = buildFactInfluenceGraph(
+      [...source.nodes].reverse().map((node) => node.raw),
+      source.effective_at,
+    );
+    expect(permuted.graph_hash).toBe(source.graph_hash);
+    expect(permuted.nodes.map((node) => node.factor_id)).toEqual(
+      source.nodes.map((node) => node.factor_id),
+    );
+    expect(permuted.nodes.map((node) => node.graph_role)).toEqual(
+      source.nodes.map((node) => node.graph_role),
+    );
+  });
+
+  it("binds the graph hash to normalized fact content, not only node metadata", async () => {
+    const source = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const first = source.nodes[0];
+    if (!first) throw new Error("fixture_fact_missing");
+    const mutated = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === first
+          ? {
+              ...node.raw,
+              value: { changed_for_integrity_test: true },
+              short_paraphrase: `${node.raw.short_paraphrase}（内容変更）`,
+            }
+          : node.raw,
+      ),
+      source.effective_at,
+    );
+    expect(mutated.graph_hash).not.toBe(source.graph_hash);
+    const reordered = buildFactInfluenceGraph(
+      [...source.nodes].reverse().map((node) => node.raw),
+      source.effective_at,
+    );
+    expect(reordered.graph_hash).toBe(source.graph_hash);
+  });
+
+  it("marks corrected and inactive facts as warnings and never rankable", async () => {
+    const source = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const first = source.nodes[0];
+    if (!first) throw new Error("fixture_fact_missing");
+    const corrected = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === first ? { ...node.raw, corrected: true } : node.raw,
+      ),
+      source.effective_at,
+    );
+    const correctedNode = corrected.nodes.find(
+      (node) => node.factor_id === first.factor_id,
+    );
+    expect(correctedNode).toMatchObject({
+      graph_role: "warning",
+      corrected: true,
+      rankable: false,
+    });
+
+    const inactive = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === first ? { ...node.raw, active_at: false } : node.raw,
+      ),
+      source.effective_at,
+    );
+    expect(
+      inactive.nodes.find((node) => node.factor_id === first.factor_id),
+    ).toMatchObject({
+      graph_role: "warning",
+      active: false,
+      rankable: false,
+    });
+  });
+
+  it("does not treat a claim ID alone as an applied RuleIR binding", async () => {
+    const source = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const applied = source.nodes.find((node) => node.graph_role === "applied");
+    if (!applied) throw new Error("applied_fact_missing");
+    const graph = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === applied
+          ? { ...node.raw, predicate: "narrative_only_predicate" }
+          : node.raw,
+      ),
+      source.effective_at,
+    );
+    expect(
+      graph.nodes.find((node) => node.factor_id === applied.factor_id),
+    ).toMatchObject({ graph_role: "question" });
+    expect(() =>
+      projectFactInfluenceForRecommendation(
+        graph,
+        { merchant_id: "merchant.seveneleven", payment_method: "nanaco" },
+        [applied.raw.parent_claim_id],
+      ),
+    ).toThrow("fact_influence_applied_claim_unavailable");
+  });
+
+  it("ranks only an explicitly marked executable RuleIR fact", async () => {
+    const source = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const first = source.nodes[0];
+    if (!first) throw new Error("fixture_fact_missing");
+    const executable = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === first
+          ? {
+              ...node.raw,
+              disposition: "engine_rule" as const,
+              derived_rule_ids: ["rule.example"],
+              active_at: true,
+              corrected: false,
+            }
+          : node.raw,
+      ),
+      source.effective_at,
+    );
+    expect(
+      executable.nodes.find((node) => node.factor_id === first.factor_id),
+    ).toMatchObject({ rankable: true });
+
+    const unvalidated = buildFactInfluenceGraph(
+      source.nodes.map((node) =>
+        node === first
+          ? {
+              ...node.raw,
+              disposition: "engine_rule" as const,
+              derived_rule_ids: ["not-a-rule-id"],
+              active_at: true,
+              corrected: false,
+            }
+          : node.raw,
+      ),
+      source.effective_at,
+    );
+    expect(
+      unvalidated.nodes.find((node) => node.factor_id === first.factor_id),
+    ).toMatchObject({ rankable: false });
+  });
+
+  it("gives every non-applied role a useful Japanese message and labels roles in the UI", async () => {
+    const graph = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    expect(
+      graph.nodes
+        .filter((node) => node.graph_role !== "applied")
+        .every((node) =>
+          [node.question, node.warning, node.information].some(
+            (value) =>
+              typeof value === "string" &&
+              value.length > 0 &&
+              /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(
+                value,
+              ),
+          ),
+        ),
+    ).toBe(true);
+    expect(
+      graph.nodes
+        .filter((node) => node.graph_role === "constraint")
+        .every((node) => node.information !== null),
+    ).toBe(true);
+    expect(
+      graph.nodes
+        .filter((node) => node.graph_role === "question")
+        .every((node) => node.question !== null),
+    ).toBe(true);
+    expect(
+      graph.nodes
+        .filter((node) => node.graph_role === "warning")
+        .every((node) => node.warning !== null),
+    ).toBe(true);
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    for (const label of [
+      "判定に反映",
+      "適用候補",
+      "条件候補・要確認",
+      "確認が必要",
+      "注意",
+      "参考情報",
+    ])
+      expect(app).toContain(label);
   });
 
   it("classifies explicit engine bindings as calculation inputs and never ranks advisory facts", () => {
@@ -118,6 +364,59 @@ describe("P0 fact influence graph", () => {
       ]),
     );
     expect(JSON.stringify(projection)).not.toContain(claim);
+  });
+
+  it("separates route-bound application from static applied capability", async () => {
+    const graph = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const purchase = projectFactInfluenceForRecommendation(
+      graph,
+      { merchant_id: "merchant.seveneleven", payment_method: "nanaco" },
+      ["claim.point.nanaco.earn.shopping-immediate.004"],
+    );
+    const credit = projectFactInfluenceForRecommendation(
+      graph,
+      { merchant_id: "merchant.seveneleven", payment_method: "nanaco" },
+      ["claim.point.nanaco.earn.credit-charge.003"],
+    );
+    for (const projection of [purchase, credit]) {
+      expect(
+        projection.factors.filter((factor) => factor.graph_role === "applied"),
+      ).toHaveLength(2);
+      expect(projection.applied_count).toBe(1);
+      expect(
+        projection.factors.filter((factor) => factor.applied),
+      ).toHaveLength(1);
+      expect(
+        projection.factors
+          .filter((factor) => factor.applied)
+          .every((factor) => factor.graph_role === "applied"),
+      ).toBe(true);
+    }
+  });
+
+  it("does not present unrelated constraints as checked on a purchase route", async () => {
+    const graph = await getDefaultFactInfluenceGraphPort().load(
+      "2026-08-21T00:00:00.000Z",
+    );
+    const projection = projectFactInfluenceForRecommendation(
+      graph,
+      { merchant_id: "merchant.seveneleven", payment_method: "nanaco" },
+      ["claim.point.nanaco.earn.shopping-immediate.004"],
+    );
+    const constraints = projection.factors.filter(
+      (factor) => factor.graph_role === "constraint",
+    );
+    expect(constraints.length).toBeGreaterThan(0);
+    expect(constraints.every((factor) => factor.applied === false)).toBe(true);
+    expect(
+      constraints.every(
+        (factor) =>
+          factor.information?.includes("まだ照合していません") === true &&
+          !factor.information?.includes("照合する情報"),
+      ),
+    ).toBe(true);
   });
 
   it("sanitizes arbitrary Japanese subjects and URLs at the browser boundary", async () => {

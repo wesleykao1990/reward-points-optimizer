@@ -34,12 +34,23 @@ export const FACT_INFLUENCE_KINDS = Object.freeze([
 ] as const);
 export type FactInfluenceKind = (typeof FACT_INFLUENCE_KINDS)[number];
 
+/** One primary participation role for every fact in the complete graph. */
+export const FACT_GRAPH_ROLES = Object.freeze([
+  "applied",
+  "constraint",
+  "question",
+  "warning",
+  "information",
+] as const);
+export type FactGraphRole = (typeof FACT_GRAPH_ROLES)[number];
+
 /** Host-only graph node.  The raw fact is deliberately not part of any
  * browser DTO; it exists solely for deterministic context matching. */
 export interface FactInfluenceNode {
   readonly factor_id: string;
   readonly graph_order: string;
   readonly kind: FactInfluenceKind;
+  readonly graph_role: FactGraphRole;
   readonly family_id: string;
   readonly claim_type: string;
   readonly subject: string;
@@ -47,6 +58,7 @@ export interface FactInfluenceNode {
   readonly summary: string;
   readonly question: string | null;
   readonly warning: string | null;
+  readonly information: string | null;
   readonly active: boolean;
   readonly corrected: boolean;
   readonly rankable: boolean;
@@ -74,12 +86,14 @@ export interface FactInfluenceBrowserFactor {
   readonly family: string;
   readonly claim: string;
   readonly influence_kind: FactInfluenceKind;
+  readonly graph_role: FactGraphRole;
   readonly active: boolean;
   readonly corrected: boolean;
   readonly applied: boolean;
   readonly summary: string;
   readonly question: string | null;
   readonly warning: string | null;
+  readonly information: string | null;
 }
 
 export interface FactInfluenceBrowserView {
@@ -216,12 +230,143 @@ const TIMING_CLAIMS = new Set([
   "program_term",
   "change_notice",
 ]);
+
+/**
+ * These are exact, bounded machine predicates.  They are the only
+ * predicates eligible for the constraint role; narrative reward/rate
+ * predicates remain questions or information unless host-bound below.
+ * The generic names cover injected graph tests, while the fixture names keep
+ * the current P0 wave useful without guessing from free-form text.
+ */
+const MACHINE_CONSTRAINT_PREDICATES = new Set([
+  "merchant_id",
+  "branch_id",
+  "channel",
+  "interface",
+  "payment_method",
+  "payment_instrument",
+  "product_class",
+  "asset_id",
+  "date",
+  "effective_from",
+  "effective_to",
+  "cap",
+  "minimum",
+  "minimum_amount",
+  "minimum_amount_jpy",
+  "minimum_payment",
+  "minimum_payment_jpy",
+  "enrollment",
+  "enrollment_required",
+  "registration",
+  "registration_required",
+  "expiry",
+  "expiry_date",
+  "expiry_rule",
+  "campaign_expiry",
+  "rate_expiry",
+  "rate_value_expiry",
+  "merchant_scope",
+  "merchant_acceptance",
+  "lists_named_merchants",
+  "varies_by_merchant",
+  "applies_location_rates",
+  "methods",
+  "methods_cap",
+  "supports_listed_channels",
+  "supports_listed_routes",
+  "supports_listed_use_routes",
+  "supports_payment_routes",
+  "supports_card_or_barcode_earn_and_point_use",
+  "supports_registered_suica_earn_but_not_in_store_point_use",
+  "follows_selected_payment_method",
+  "distinguishes_payment_routes",
+  "restricts_tenders",
+  "excludes_payment_methods",
+  "excludes_payment_types",
+  "excludes_payment_categories",
+  "excludes_named_payment_methods_and_transactions",
+  "excludes_wallet_and_e_money_charges",
+  "excludes_wallet_and_prepaid_charges",
+  "excludes_other_wallet_charges",
+  "excludes_named_merchants",
+  "excluded_classes",
+  "lists_named_skus",
+  "lists_named_sku",
+  "identifies_named_skus",
+  "requires_minimum_payment",
+  "minimum_limit",
+  "requires_service_specific_minimum",
+  "requires_entry_and_minimum_spend",
+  "requires_monthly_threshold",
+  "requires_payment_during_period",
+  "requires_first_app_login_without_entry",
+  "requires_identity_verification",
+  "requires_identity_verification_and_excludes_point-funded-award",
+  "requires_valid_authentication_by_channel",
+  "requires_initial_cash_or_other_charge",
+  "requires_eligible_sender_and_recipient",
+  "requires_two_factor_phone_setup",
+  "requires_eligible_charge_accounts_and_excludes_mixed_balances",
+  "registration",
+  "methods_registration",
+  "linked_card",
+  "app_combination",
+  "registered_suica_required",
+  "has_charge_limits",
+  "has_charge_constraints",
+  "has_method_specific_limits",
+  "has_route_specific_limits",
+  "has_minimum_unit_and_processing_time",
+  "has_payment_code_constraints",
+  "fee_caps",
+  "caps_rates",
+  "caps_reward",
+  "period_minimum_caps",
+  "campaign_cap",
+  "thresholds_cap",
+  "runs_during",
+  "visible_periods",
+  "ended_period",
+  "requires_payment_during_period",
+  "rate_dates",
+  "bonus_period",
+  "future_bonus",
+  "period_minimum_caps",
+  "uses_age_tier_thresholds",
+  "has_separately_defined_expiry",
+]);
 const CLAIM_ID_PATTERN = /^claim\.[A-Za-z0-9._:-]{1,240}$/u;
 const UNSAFE_PUBLIC_TEXT_PATTERN =
   /https?:\/\/|www\.|sha256:|claim\.|source[_-]?(?:id|url)|evidence[_-]?locator/iu;
 const VERIFIED_APPLIED_PARENT_CLAIMS = new Set<string>(
   Object.values(FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS),
 );
+const VERIFIED_APPLIED_FACT_SIGNATURES: Readonly<
+  Record<
+    string,
+    Readonly<{
+      readonly family_id: string;
+      readonly claim_type: string;
+      readonly predicate: string;
+    }>
+  >
+> = Object.freeze({
+  [FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS.nanaco_purchase]:
+    Object.freeze({
+      family_id: "point.nanaco",
+      claim_type: "earn_rule",
+      predicate: "awards_points_per_amount",
+    }),
+  [FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS.nanaco_credit_charge]:
+    Object.freeze({
+      family_id: "point.nanaco",
+      claim_type: "earn_rule",
+      predicate: "awards_points_per_amount",
+    }),
+});
+
+const RULE_ID_PATTERN = /^rule\.[A-Za-z0-9._:-]{1,240}$/u;
 
 function isRecord(value: unknown): value is JsonRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -236,6 +381,41 @@ function canonicalJson(value: unknown): string {
     .sort()
     .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
     .join(",")}}`;
+}
+
+/**
+ * Host-only integrity material.  The browser receives a bounded projection,
+ * while the graph hash must still commit to the fact content which can alter
+ * role classification, explanations, or later host-side binding decisions.
+ */
+function normalizedFactForHash(fact: P0FactInfluenceGraphFact): JsonRecord {
+  return {
+    graph_order: fact.graph_order,
+    fact_id: fact.fact_id,
+    implementation_version: fact.implementation_version,
+    implementation_hash: fact.implementation_hash,
+    fact_version: fact.fact_version,
+    parent_claim_id: fact.parent_claim_id,
+    family_id: fact.family_id,
+    source_role_id: fact.source_role_id,
+    source_ids: fact.source_ids,
+    source_identity: fact.source_identity,
+    claim_type: fact.claim_type,
+    subject: fact.subject,
+    predicate: fact.predicate,
+    value: fact.value,
+    applicability: fact.applicability,
+    exclusions: fact.exclusions,
+    evidence_locator: fact.evidence_locator,
+    short_paraphrase: fact.short_paraphrase,
+    disposition: fact.disposition,
+    derived_rule_ids: fact.derived_rule_ids,
+    reason: fact.reason,
+    reason_detail: fact.reason_detail,
+    fact_payload: fact.fact_payload,
+    active_at: fact.active_at,
+    corrected: fact.corrected,
+  };
 }
 
 function hash(value: string): `sha256:${string}` {
@@ -333,41 +513,143 @@ export function classifyFactInfluence(
   return "advisory_unknown";
 }
 
+type FactGraphRoleInput = Pick<
+  P0FactInfluenceGraphFact,
+  | "parent_claim_id"
+  | "family_id"
+  | "claim_type"
+  | "predicate"
+  | "disposition"
+  | "derived_rule_ids"
+  | "reason"
+  | "corrected"
+>;
+
+function isRegulatoryFact(fact: FactGraphRoleInput): boolean {
+  return fact.family_id.toLocaleLowerCase("en-US").startsWith("reg.");
+}
+
+function hasMachineConstraintPredicate(fact: FactGraphRoleInput): boolean {
+  return MACHINE_CONSTRAINT_PREDICATES.has(fact.predicate);
+}
+
+function isVerifiedAppliedFact(fact: FactGraphRoleInput): boolean {
+  const signature = VERIFIED_APPLIED_FACT_SIGNATURES[fact.parent_claim_id];
+  return (
+    signature !== undefined &&
+    fact.family_id === signature.family_id &&
+    fact.claim_type === signature.claim_type &&
+    fact.predicate === signature.predicate
+  );
+}
+
+/**
+ * Classify one fact using a total, host-owned precedence order.  Exact
+ * approved bindings are the only applied path.  Inactive/corrected,
+ * regulatory, explicit-no-rate, and unsupported-model facts are warnings;
+ * incomplete active operation mappings become questions; only the exact
+ * machine predicate allowlist becomes a constraint; the remainder is
+ * information.
+ */
+export function classifyFactGraphRole(
+  fact: FactGraphRoleInput,
+  active: boolean,
+): FactGraphRole {
+  if (
+    fact.corrected ||
+    !active ||
+    isRegulatoryFact(fact) ||
+    fact.reason === "explicit_no_rate" ||
+    fact.reason === "unsupported_calculation_model"
+  )
+    return "warning";
+  if (
+    VERIFIED_APPLIED_PARENT_CLAIMS.has(fact.parent_claim_id) &&
+    isVerifiedAppliedFact(fact)
+  )
+    return "applied";
+  if (fact.reason === "insufficient_operation_mapping") return "question";
+  if (hasMachineConstraintPredicate(fact)) return "constraint";
+  return "information";
+}
+
+function isValidatedExecutableRuleIr(fact: FactGraphRoleInput): boolean {
+  return (
+    fact.disposition === "engine_rule" &&
+    fact.derived_rule_ids.length > 0 &&
+    fact.derived_rule_ids.every((ruleId) => RULE_ID_PATTERN.test(ruleId)) &&
+    !isRegulatoryFact(fact) &&
+    fact.reason !== "unsupported_calculation_model"
+  );
+}
+
 function nodeText(
   fact: P0FactInfluenceGraphFact,
-  kind: FactInfluenceKind,
+  role: FactGraphRole,
   active: boolean,
-): { readonly question: string | null; readonly warning: string | null } {
+): {
+  readonly question: string | null;
+  readonly warning: string | null;
+  readonly information: string | null;
+} {
   if (fact.corrected)
     return {
       question: null,
       warning: "訂正済みのため、この情報は判定に使っていません。",
+      information: null,
     };
   if (!active)
     return {
       question: "この情報の適用期間を確認できますか？",
       warning: "適用期間外のため、現在の判定には使っていません。",
+      information: null,
     };
-  if (
-    fact.reason === "insufficient_operation_mapping" ||
-    fact.reason === "unsupported_calculation_model"
-  )
+  if (isRegulatoryFact(fact))
     return {
-      question: "この条件を公式情報で確認できますか？",
-      warning: "現在の計算モデルでは数値計算に使えない情報です。",
+      question: null,
+      warning: "規制・制度に関する参考情報で、支払い判定には使っていません。",
+      information: null,
     };
-  if (kind === "calculation_input") return { question: null, warning: null };
   if (fact.reason === "explicit_no_rate")
     return {
       question: "この支払いに特典が付かない条件を確認しますか？",
       warning: "明示的に還元対象外と記載された情報です。",
+      information: null,
     };
-  if (kind === "advisory_unknown")
+  if (fact.reason === "unsupported_calculation_model")
     return {
-      question: "この条件が今回の支払いに当てはまるか確認できますか？",
-      warning: "参考情報として表示しています。特典額は推定していません。",
+      question: null,
+      warning: "現在の計算モデルでは数値計算に使えない情報です。",
+      information: null,
     };
-  return { question: null, warning: null };
+  if (role === "applied" && fact.reason === "insufficient_operation_mapping")
+    return {
+      question: null,
+      warning:
+        "ホスト確認済みの適用ルールですが、元情報の操作対応は限定されています。",
+      information: null,
+    };
+  if (role === "applied")
+    return { question: null, warning: null, information: null };
+  if (role === "question")
+    return {
+      question: "この条件を今回の支払いに適用できるか確認できますか？",
+      warning: null,
+      information: null,
+    };
+  if (role === "constraint")
+    return {
+      question: null,
+      warning: null,
+      information:
+        "今回の支払いにはまだ照合していません。条件候補として要確認です。",
+    };
+  return {
+    question: null,
+    warning: null,
+    information:
+      "参考情報として表示しています。今回の数値計算には直接使っていません。",
+  };
 }
 
 function publicSubject(subject: string): string {
@@ -404,16 +686,18 @@ function graphNode(
 ): FactInfluenceNode {
   const active = fact.active_at && activeAt(fact, timestamp);
   const kind = classifyFactInfluence(fact);
+  const graphRole = classifyFactGraphRole(fact, active);
   const family = displayFamily(fact.family_id);
   const claim = displayClaim(fact.claim_type);
   const subject = publicSubject(fact.subject);
   const summary = publicSummary(fact.short_paraphrase, subject, claim, family);
-  const text = nodeText(fact, kind, active);
+  const text = nodeText(fact, graphRole, active);
   const identity = `${fact.implementation_hash}\u0000${fact.parent_claim_id}\u0000${fact.fact_version}`;
   return Object.freeze({
     factor_id: `factor_${hash(identity).slice(7, 39)}`,
     graph_order: fact.graph_order,
     kind,
+    graph_role: graphRole,
     family_id: fact.family_id,
     claim_type: fact.claim_type,
     subject,
@@ -421,9 +705,11 @@ function graphNode(
     summary,
     question: text.question,
     warning: text.warning,
-    active,
+    information: text.information,
+    active: Boolean(active),
     corrected: fact.corrected,
-    rankable: active && !fact.corrected && kind === "calculation_input",
+    rankable:
+      Boolean(active) && !fact.corrected && isValidatedExecutableRuleIr(fact),
     raw: fact,
   });
 }
@@ -441,7 +727,11 @@ export function buildFactInfluenceGraph(
       ? -1
       : left.graph_order > right.graph_order
         ? 1
-        : 0,
+        : left.factor_id < right.factor_id
+          ? -1
+          : left.factor_id > right.factor_id
+            ? 1
+            : 0,
   );
   const seen = new Set<string>();
   for (const node of nodes) {
@@ -453,9 +743,11 @@ export function buildFactInfluenceGraph(
     factor_id: node.factor_id,
     graph_order: node.graph_order,
     kind: node.kind,
+    graph_role: node.graph_role,
     active: node.active,
     corrected: node.corrected,
     rankable: node.rankable,
+    fact: normalizedFactForHash(node.raw),
   }));
   return Object.freeze({
     version: FACT_INFLUENCE_GRAPH_VERSION,
@@ -524,12 +816,14 @@ function browserFactor(
     family: displayFamily(node.family_id),
     claim: displayClaim(node.claim_type),
     influence_kind: node.kind,
+    graph_role: node.graph_role,
     active: node.active && !node.corrected,
     corrected: node.corrected,
     applied,
     summary: node.summary,
     question: node.question,
     warning: node.warning,
+    information: node.information,
   });
 }
 
@@ -560,7 +854,11 @@ export function projectFactInfluenceForRecommendation(
       (node) => node.raw.parent_claim_id === claimId,
     );
     const activeMatches = matches.filter(
-      (node) => node.active && !node.corrected,
+      (node) =>
+        node.active &&
+        !node.corrected &&
+        node.graph_role === "applied" &&
+        isVerifiedAppliedFact(node.raw),
     );
     if (matches.length === 0)
       throw new Error("fact_influence_applied_claim_missing");

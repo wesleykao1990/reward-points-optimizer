@@ -5,6 +5,11 @@ import {
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
 import { Pool } from "pg";
+import {
+  createP0AgentFeedIngress,
+  loadP0AgentFeedIngressFromEnvironment,
+  type P0AgentFeedIngressOptions,
+} from "./agent-feed-ingress.js";
 import { createFactInfluenceGraphPort } from "./fact-influence-graph.js";
 import { createPostgresImplementationFactCataloguePort } from "./implementation-catalog.js";
 import {
@@ -20,7 +25,15 @@ export interface PostgresAppRuntime {
 }
 
 /** Host-owned time source for all effective-at current catalogue reads. */
-export type PostgresAppRuntimeOptions = P0ImplementationCatalogueOptions;
+export interface PostgresAppRuntimeOptions
+  extends P0ImplementationCatalogueOptions {
+  /**
+   * Optional host-owned Agent Feed delivery composition. The runtime supplies
+   * its own PostgreSQL pool as `target`; the manifest and exact reconciliation
+   * mapping remain deployment inputs.
+   */
+  readonly agentFeedIngress?: Omit<P0AgentFeedIngressOptions, "target">;
+}
 
 type CloseableQueryTarget = QueryTarget & {
   readonly end: () => Promise<void>;
@@ -58,6 +71,14 @@ export function createPostgresAppDependencies(
     factInfluenceGraph: createFactInfluenceGraphPort(
       createPostgresP0FactInfluenceGraphStore(target, options),
     ),
+    ...(options.agentFeedIngress === undefined
+      ? {}
+      : {
+          agentFeedIngress: createP0AgentFeedIngress({
+            target,
+            ...options.agentFeedIngress,
+          }),
+        }),
   });
 }
 
@@ -66,13 +87,21 @@ export function createPostgresAppRuntime(
   connectionString: string,
   options: PostgresAppRuntimeOptions = {},
 ): PostgresAppRuntime {
+  const environmentIngress =
+    options.agentFeedIngress === undefined
+      ? loadP0AgentFeedIngressFromEnvironment()
+      : undefined;
+  const runtimeOptions =
+    options.agentFeedIngress !== undefined || environmentIngress === undefined
+      ? options
+      : { ...options, agentFeedIngress: environmentIngress };
   const pool = new Pool({
     connectionString: requireDatabaseUrl(connectionString),
     max: 4,
   }) as unknown as CloseableQueryTarget;
   let closed = false;
   return Object.freeze({
-    dependencies: createPostgresAppDependencies(pool, options),
+    dependencies: createPostgresAppDependencies(pool, runtimeOptions),
     async close() {
       if (closed) return;
       closed = true;

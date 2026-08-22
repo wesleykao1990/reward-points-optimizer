@@ -1432,7 +1432,7 @@
           "recovered_role_locator_hints": [
             {
               "source_role_id": "loyalty_program_rules",
-              "source_url": "https://www.cdn.amazon.co.jp/b?node=8123221051",
+              "source_url": "https://www.amazon.co.jp/b?node=8123221051",
               "publisher": "Amazon Japan",
               "role_marker": "Amazon Points page (verify role marker at fetch)",
               "exact_registered_source_id": null,
@@ -1831,5 +1831,5 @@
       ]
     }
   ],
-  "pack_sha256": "sha256:ec5478d2fd82a0cc281640bbd10370748c576f7b29507e03f35b31911c0d3152"
+  "pack_sha256": "sha256:f0cdcfc20bc32c11d3024e054d64c334840c7cd7d453e871b70163ed327c03c2"
 }
