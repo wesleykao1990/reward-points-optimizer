@@ -72,12 +72,6 @@
       .forEach((input) => {
         instruments.push(input.value);
       });
-    const storedValueUse = document.getElementById("stored-value-use").value;
-    const storedValueUsage =
-      document.getElementById("stored-value-usage").value;
-    const value = document.getElementById("stored-value-value").value.trim();
-    const hasUsage = storedValueUse === "yes" && Boolean(storedValueUsage);
-    const hasCustomValue = hasUsage && storedValueUsage === "custom" && value;
     return {
       // These identifiers are fixed by the host-owned synthetic catalogue;
       // the browser never submits editable aliases.
@@ -85,15 +79,9 @@
       branch_id: "location.synthetic",
       amount_jpy: Number(document.getElementById("amount-jpy").value),
       owned_instruments: instruments,
-      stored_value_use: storedValueUse,
-      ...(hasUsage
-        ? {
-            stored_value_usage: storedValueUsage,
-            ...(hasCustomValue
-              ? { stored_value_value_jpy_per_unit: value }
-              : {}),
-          }
-        : {}),
+      // The old generic stored-value control did not represent a real service.
+      // Real electronic-money routes provide their own service-specific inputs.
+      stored_value_use: "no",
       facts: [],
       caps: [],
     };
@@ -143,11 +131,10 @@
       "External card funding is explicitly included.":
         "カードからのチャージ金額を支出として含めています。",
       "Stored-value use is unknown; the stored-value candidate is withheld.":
-        "電子マネーを使うか未回答のため、その候補を保留しています。",
+        "",
       "The host supplies the complete fixture rule and evidence set.":
         "デモ用のルールと根拠は安全なホスト側で管理しています。",
-      "The user opted out of stored-value use for this run.":
-        "今回は電子マネーを使わない設定です。",
+      "The user opted out of stored-value use for this run.": "",
     };
     if (translations[value]) return translations[value];
     const usage =
@@ -171,12 +158,16 @@
     section.appendChild(text("h3", heading));
     const list = node("ul");
     values.forEach((value) => {
+      const translated = translatedText(String(value));
+      if (!translated) return;
       const item = node("li");
-      item.textContent = translatedText(String(value));
+      item.textContent = translated;
       list.appendChild(item);
     });
-    section.appendChild(list);
-    parent.appendChild(section);
+    if (list.children.length) {
+      section.appendChild(list);
+      parent.appendChild(section);
+    }
   };
 
   const planName = (plan) => {
@@ -1841,9 +1832,6 @@
       }
     });
 
-  const storedValueUse = document.getElementById("stored-value-use");
-  const storedValueUsage = document.getElementById("stored-value-usage");
-  const storedValueValue = document.getElementById("stored-value-value");
   const instrumentInputs = document.querySelectorAll(
     'input[name="instrument"]',
   );
@@ -1859,14 +1847,6 @@
       ? "選択したサービスの通常還元率に、セブン‐イレブン固有のnanacoルートを加えて比較します。"
       : "選択したカードとモバイル決済の通常還元率で比較します。";
   };
-  const updateStoredValueControls = () => {
-    const optedIn = storedValueUse.value === "yes";
-    storedValueUsage.disabled = !optedIn;
-    storedValueValue.disabled = !optedIn || storedValueUsage.value !== "custom";
-  };
-  storedValueUse.addEventListener("change", updateStoredValueControls);
-  storedValueUsage.addEventListener("change", updateStoredValueControls);
-
   const syncInstrumentViews = () => {
     const checked = [...instrumentInputs].filter((input) => input.checked);
     document.getElementById("summary-instruments").textContent =
@@ -1959,26 +1939,8 @@
   document
     .getElementById("p0-point-toggle")
     .addEventListener("change", syncP0ProductPickers);
-  document.querySelectorAll("[data-usage-preset]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const storedValueInput = [...instrumentInputs].find(
-        (input) => input.value === "synthetic_stored_value",
-      );
-      storedValueInput.checked = true;
-      storedValueUse.value = "yes";
-      storedValueUsage.value = button.dataset.usagePreset;
-      updateStoredValueControls();
-      syncInstrumentViews();
-      document.querySelectorAll("[data-usage-preset]").forEach((option) => {
-        option.classList.toggle("is-active", option === button);
-      });
-      document.getElementById("settings-status").textContent =
-        "ホームの比較条件に反映しました（保存はされません）";
-    });
-  });
   amountInput.addEventListener("input", syncAmountSummary);
   merchantSelector.addEventListener("change", syncMerchantContext);
-  updateStoredValueControls();
   syncInstrumentViews();
   syncAmountSummary();
   syncMerchantContext();
