@@ -203,6 +203,28 @@ function isAppResponse(value: unknown): value is AppResponse {
   );
 }
 
+function deploymentPathname(parsed: URL): string {
+  if (parsed.hash !== "") throw deploymentError(400, "query_not_allowed");
+  if (parsed.pathname !== "/api/handler") {
+    if (parsed.search !== "") throw deploymentError(400, "query_not_allowed");
+    return parsed.pathname;
+  }
+
+  const entries = [...parsed.searchParams.entries()];
+  if (entries.length !== 1 || entries[0]?.[0] !== "path")
+    throw deploymentError(400, "query_not_allowed");
+  const path = entries[0][1];
+  if (
+    path.length === 0 ||
+    path.length > 256 ||
+    !/^[a-z0-9](?:[a-z0-9._/-]*[a-z0-9])?$/u.test(path) ||
+    path.includes("..") ||
+    path.includes("//")
+  )
+    throw deploymentError(400, "query_not_allowed");
+  return `/api/${path}`;
+}
+
 /**
  * Adapt the bounded application request contract to a Vercel Node function.
  * Vercel terminates TLS; this boundary rechecks the forwarded authority and
@@ -238,12 +260,9 @@ export function createVercelRequestHandler(
       allowedHosts ??= deploymentHosts(environment);
       const host = validateAuthority(request, allowedHosts);
       const parsed = new URL(request.url ?? "/", `https://${host}`);
-      if (!parsed.pathname.startsWith("/api/")) {
+      const pathname = deploymentPathname(parsed);
+      if (!pathname.startsWith("/api/")) {
         send(response, deploymentError(404, "not_found"));
-        return;
-      }
-      if (parsed.search !== "" || parsed.hash !== "") {
-        send(response, deploymentError(400, "query_not_allowed"));
         return;
       }
       let body: Uint8Array | undefined;
@@ -257,7 +276,7 @@ export function createVercelRequestHandler(
       const result = await handleRequest(
         {
           method: request.method ?? "",
-          pathname: parsed.pathname,
+          pathname,
           headers,
           body,
         },
