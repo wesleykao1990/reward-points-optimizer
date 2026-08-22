@@ -23,6 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@jro/provisional-rules": "workspace:*",
     "@jro/rule-engine": "workspace:*"
   },
   "devDependencies": {

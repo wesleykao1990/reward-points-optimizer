@@ -233,6 +233,9 @@ importers:
 
   packages/recommendation-api:
     dependencies:
+      '@jro/provisional-rules':
+        specifier: workspace:*
+        version: link:../provisional-rules
       '@jro/rule-engine':
         specifier: workspace:*
         version: link:../rule-engine

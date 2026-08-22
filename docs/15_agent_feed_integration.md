@@ -60,6 +60,48 @@ Agent Feed evidence means “material supplied by the producer.” The Rewards O
 
 `canonical_evidence_ids` remains empty until promotion. Agent confidence never becomes source authority.
 
+## Rule and plan update semantics
+
+Agent Feed never writes or edits a `RewardRule` or `PurchasePlan` directly.
+An accepted delivery can only start the Rewards-owned processing pipeline above.
+When canonical evidence and a complete structured economic claim pass the
+Rewards compiler and review policy, Rewards records a new immutable rule
+candidate or `RewardRuleVersion`; it does not mutate the previous version.
+
+The recommendation host then performs these deterministic steps:
+
+```text
+current eligible RewardRule versions at effective_at
+  + exact source/evidence/candidate bindings
+  + asset and merchant definitions
+  -> hash-bound Rule IR records
+  -> hash-bound executable-rule bundle
+  -> request-specific candidate PurchasePlans
+  -> deterministic engine evaluation and ranking
+```
+
+The executable bundle is derived state, not another publication authority. A
+new active rule version, a correction, quarantine, supersession, source-trust
+downgrade, or economic-validity boundary changes the eligible rule set and
+therefore invalidates the prior bundle. The next recommendation request must
+load the current eligible set and recompile or retrieve a bundle bound to that
+exact set. It must never reuse a bundle whose rule, evidence, asset, merchant,
+or validity binding is stale.
+
+`PurchasePlan` remains ephemeral and request-specific. It represents the
+operations and asset flows possible for the current merchant, amount, owned
+instruments, balances, facts, and effective time. It is regenerated from the
+current executable bundle; there is no Agent Feed event that edits an existing
+plan. An incomplete claim can remain a searchable catalogue fact or make a
+previous rule stale, but it cannot invent an operation, asset edge, tax basis,
+rounding rule, cap, validity window, or candidate plan.
+
+An optional LLM may propose extraction fields, Japanese wording, follow-up
+question phrasing, or correction clusters. Those outputs are untrusted
+annotations. Removing the model must leave rule hashes, candidate plans,
+arithmetic, eligibility, ranking, winner IDs, and publication decisions
+unchanged.
+
 ## Delivery
 
 The production default is a signed HTTPS event from Agent Feed to:

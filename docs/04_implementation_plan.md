@@ -671,6 +671,45 @@ asset flow, eligibility boundary, rounding basis, validity window, and
 source-bound evidence tuple. Other results stay searchable facts and correction
 targets.
 
+### Interim Milestone 7P.10 — Rule IR and executable plan graph
+
+Implementation checkpoint (2026-08-22): `RewardRule` remains the sole economic
+rule language and `PurchasePlan` remains the request-specific operation and
+asset graph. A new hash-bound Rule IR envelope joins an admitted rule to its
+claim, family-role, source, observation, evidence, candidate, asset, and
+principal-edge bindings. It rejects loose catalogue facts, unresolved assets,
+definition drift, evidence mismatches, malformed validity, extra fields, and
+hostile JavaScript representations before graph generation.
+
+The recommendation package can compile a deterministic executable-rule bundle
+from those Rule IR records plus a host-owned merchant catalogue. Its first
+generic generator covers direct merchant purchases with either external funding
+or conserved stored-value/point lots. It checks ownership, required programs,
+funding sources, merchant/product/channel/interface scope, current validity,
+and principal balance before producing a `PurchasePlan`, then delegates all
+reward arithmetic, conservation, eligibility, and ranking to the existing
+deterministic engine. Unsupported top-up, transfer, campaign-stack, and
+lifecycle graphs remain explicit issues rather than inferred plans.
+
+The existing Japanese Nanaco purchase experiment now executes through this
+Rule IR and bundle path, so the browser-visible result exercises the generated
+operation graph rather than a hand-written plan. The host still reloads the
+correction-sensitive current catalogue for every request. A correction or
+deactivation therefore removes the route immediately. The present Nanaco
+binding intentionally accepts only the checked-in economic definition; a new
+Agent Feed candidate/version does not become executable merely because it was
+delivered. Broad automatic updates require a host compiler mapping that reads
+the current DB candidate, supplies exact assets and principal edges, compiles a
+new bundle hash, and regenerates plans on the next request.
+
+LLM calls are optional assistants outside the decision core. They may propose
+structured extraction candidates, Japanese explanations, follow-up-question
+wording, and correction clusters. Their outputs remain untrusted and cannot
+perform arithmetic, determine eligibility, rank plans, choose a winner, set
+economic validity, publish a rule, or write trusted database state. Disabling
+the model must leave rule/bundle hashes, generated plans, engine results, and
+winner IDs unchanged.
+
 ## Later milestones
 
 - full data-operations console;

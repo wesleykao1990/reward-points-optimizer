@@ -99,6 +99,22 @@ export {
   RESEARCH_FACT_REASONS,
   RESEARCH_IMPLEMENTATION_VERSION,
 } from "./research.js";
+export type {
+  PrincipalEdgeV1,
+  RuleIRDraftV1,
+  RuleIRIssue,
+  RuleIRIssueCode,
+  RuleIROperationType,
+  RuleIRResult,
+  RuleIRSourceBindingV1,
+  RuleIRV1,
+} from "./rule-ir.js";
+export {
+  compileRuleIR,
+  hashRuleIR,
+  RULE_IR_VERSION,
+  validateRuleIR,
+} from "./rule-ir.js";
 export { deepFreeze, isDeeplyFrozen, scanPublicValue } from "./security.js";
 export {
   activateExperimental,

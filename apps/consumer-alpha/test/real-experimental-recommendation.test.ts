@@ -51,12 +51,24 @@ describe("real experimental Nanaco recommendation", () => {
     expect(at.winner?.reward_points).toBe("1");
     expect(at.winner?.objective_score_jpy).toBeNull();
     expect(at.tax_exclusive_amount_jpy).toBe(200);
+    expect(at.winner?.plan_id).toMatch(/^plan_direct_[0-9a-f]{16}$/u);
   });
 
   it("rejects a source rule that fabricates reviewed or published status", async () => {
     const fake = structuredClone(getNanacoEconomicPilotRule());
     fake.status = "published";
     const port = createNanacoExperimentalRecommendationPort(source(fake));
+
+    await expect(port.evaluate(input(200))).rejects.toMatchObject({
+      code: "rule_not_current",
+    });
+  });
+
+  it("rejects a drifted economic definition before graph generation", async () => {
+    const drifted = structuredClone(getNanacoEconomicPilotRule());
+    if (drifted.calculation?.model === "points_per_unit")
+      drifted.calculation.spend_jpy = 1;
+    const port = createNanacoExperimentalRecommendationPort(source(drifted));
 
     await expect(port.evaluate(input(200))).rejects.toMatchObject({
       code: "rule_not_current",

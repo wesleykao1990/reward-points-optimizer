@@ -1,4 +1,5 @@
 export * from "./core.js";
+export * from "./execution-bundle.js";
 export * from "./history.js";
 export * from "./merchant.js";
 export * from "./replay.js";

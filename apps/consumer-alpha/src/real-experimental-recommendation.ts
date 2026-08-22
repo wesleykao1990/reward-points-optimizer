@@ -1,14 +1,22 @@
 import { createHash } from "node:crypto";
 import {
+  compileRuleIR,
+  getNanacoEconomicPilotCandidate,
   getNanacoEconomicPilotRule,
+  hashCandidate,
+  hashDefinition,
   isActiveProvisionalRule,
   isCanonicalProvisionalDateTime,
   NANACO_PILOT_MERCHANT_ID,
+  RULE_IR_VERSION,
 } from "@jro/provisional-rules";
 import {
+  compileExecutionBundle,
+  DIRECT_PURCHASE_GRAPH_INPUT_VERSION,
+  EXECUTABLE_RULE_BUNDLE_VERSION,
   type RecommendationRequest,
   type RecommendationResponse,
-  recommend,
+  recommendExecutionBundle,
 } from "@jro/recommendation-api";
 import {
   type AssetDefinition,
@@ -123,11 +131,13 @@ function assertCurrentAvailability(
   )
     throw new ExperimentalRecommendationError("source_unavailable");
   const rewardRule = availability.reward_rule;
+  const sealedCandidate = getNanacoEconomicPilotCandidate();
   if (
     !isRecord(rewardRule) ||
     rewardRule.rule_id !== "rr_jp_cvs_006_nanaco_purchase_reward" ||
     !ruleIsExperimentalCandidate(rewardRule) ||
-    !isActiveProvisionalRule(rewardRule, effectiveAt)
+    !isActiveProvisionalRule(rewardRule, effectiveAt) ||
+    hashDefinition(rewardRule) !== hashDefinition(sealedCandidate.rule)
   )
     throw new ExperimentalRecommendationError("rule_not_current");
   return Object.freeze({
@@ -321,6 +331,73 @@ function merchantCatalog() {
   } as const;
 }
 
+function executionBundle(availability: NanacoExperimentalAvailability) {
+  const candidate = getNanacoEconomicPilotCandidate();
+  const definitionHash = hashDefinition(availability.reward_rule);
+  const compiledRule = compileRuleIR({
+    version: RULE_IR_VERSION,
+    rule: availability.reward_rule,
+    source_binding: {
+      claim_id: "claim.point.nanaco.earn.shopping-immediate.004",
+      family_id: candidate.p0_family_id,
+      source_role_id: candidate.source_role_id,
+      source_ids: [...candidate.source_ids],
+      observation_id: candidate.observation_id,
+      observation_fingerprint: candidate.observation_fingerprint,
+      evidence_ids: [...availability.reward_rule.provenance.evidence_ids],
+      candidate_id: candidate.candidate_id,
+      candidate_hash: hashCandidate(candidate, definitionHash),
+      definition_hash: definitionHash,
+    },
+    assets: assets(),
+    principal_edges: [
+      {
+        operation_type: "merchant_purchase",
+        direction: "consume",
+        role: "principal_tender",
+        asset: nanacoAsset(),
+        conservation: "engine_enforced",
+      },
+    ],
+  });
+  if (!compiledRule.ok)
+    throw new ExperimentalRecommendationError("recommendation_unavailable");
+  const compiledBundle = compileExecutionBundle({
+    version: EXECUTABLE_RULE_BUNDLE_VERSION,
+    bundle_id: "bundle.experimental.seveneleven.nanaco.v1",
+    rule_irs: [compiledRule.value],
+    merchant_catalog: merchantCatalog(),
+  });
+  if (!compiledBundle.ok)
+    throw new ExperimentalRecommendationError("recommendation_unavailable");
+  return compiledBundle.value;
+}
+
+function graphInput(input: ExperimentalRecommendationInput) {
+  return {
+    version: DIRECT_PURCHASE_GRAPH_INPUT_VERSION,
+    request_id: "experimental_nanaco_seveneleven",
+    merchant_id: NANACO_PILOT_MERCHANT_ID,
+    branch_id: NANACO_EXPERIMENTAL_BRANCH_ID,
+    channel: "in_store" as const,
+    interface: "not_applicable" as const,
+    amount_jpy: input.amount_jpy,
+    tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
+    product_class: "ordinary",
+    effective_at: input.effective_at,
+    owned_instrument_ids: [NANACO_EXPERIMENTAL_INSTRUMENT_ID],
+    owned_loyalty_program_ids: ["program.jp.nanaco"],
+    available_funding_source_ids: [NANACO_EXPERIMENTAL_FUNDING_SOURCE_ID],
+    asset_lots: [openingLot(input)],
+    facts: {},
+    cap_progress: {},
+    valuation_profile: {
+      version: "experimental-nanaco-unvalued-v1",
+      entries: [],
+    },
+  };
+}
+
 export function buildNanacoExperimentalRecommendationRequest(
   input: ExperimentalRecommendationInput,
   availability: NanacoExperimentalAvailability,
@@ -455,11 +532,12 @@ export async function evaluateNanacoExperimentalRecommendation(
   assertSafeInput(input);
   try {
     const availability = await source.current(input.effective_at);
-    const request = buildNanacoExperimentalRecommendationRequest(
-      input,
-      availability,
+    const current = assertCurrentAvailability(availability, input.effective_at);
+    const evaluated = recommendExecutionBundle(
+      executionBundle(current),
+      graphInput(input),
     );
-    return resultFromEngine(input, recommend(request));
+    return resultFromEngine(input, evaluated.response);
   } catch (error) {
     if (error instanceof ExperimentalRecommendationError) throw error;
     throw new ExperimentalRecommendationError("recommendation_unavailable");
