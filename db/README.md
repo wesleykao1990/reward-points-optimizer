@@ -52,6 +52,11 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     delegates shape/source-observation binding to the generic provisional
     candidate routine, and never grants relation access or creates canonical
     rules, evidence, or publication requests.
+17. `0017_p0_agent_feed_scope_projection.sql` adds an append-only private
+    projection of verified terminal expected/actual target scopes before raw
+    receipt redaction, and makes completed recovery-subset reconciliation use
+    that projection. It retains no raw payload and fails closed on missing,
+    forged, or drifted scope bindings.
 
 It separates:
 

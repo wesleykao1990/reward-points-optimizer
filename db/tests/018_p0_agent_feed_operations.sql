@@ -244,6 +244,19 @@ begin
         'received', 'complete', '2026-08-22T02:01:00Z', 'key_p0_test', 1, true,
         clock_timestamp()
     ) returning id into v_subset_receipt_id;
+    -- The production adapter captures this signed scope in the append-only
+    -- projection immediately before terminal raw-payload redaction.  Exercise
+    -- that same boundary here instead of relying on the redacted receipt.
+    update app_private.agent_feed_receipts
+       set processing_status = 'mapped',
+           raw_payload = '{}'::jsonb,
+           redaction_status = 'complete'
+     where id = v_subset_receipt_id;
+    if (select count(*) from app_private.p0_agent_feed_receipt_scope_projections
+         where receipt_id = v_subset_receipt_id) <> 1
+    then
+        raise exception 'signed P0 subset scope was not projected before redaction';
+    end if;
     select jsonb_agg(
         jsonb_set(
             jsonb_set(
@@ -283,21 +296,13 @@ begin
 
     -- A scope that is signed but does not exactly match the checkpoints is
     -- rejected before the idempotent replay path can hide the mismatch.
-    update app_private.agent_feed_receipts
-       set raw_payload = jsonb_build_object(
-           'payload', jsonb_build_object(
-               'expected_scope', jsonb_build_object(
-                   'metadata', jsonb_build_object('target_ids', jsonb_build_array(v_first_target))
-               ),
-               'actual_scope', jsonb_build_object(
-                   'metadata', jsonb_build_object('target_ids', jsonb_build_array(v_first_target))
-               )
-           )
-       )
-     where id = v_subset_receipt_id;
     v_sqlstate := null;
     begin
-        perform app_private.reconcile_p0_agent_feed_work_unit(v_subset_payload);
+        -- The immutable projection still declares three targets, while this
+        -- forged terminal payload supplies only two checkpoints.
+        perform app_private.reconcile_p0_agent_feed_work_unit(
+            jsonb_set(v_subset_payload, '{checkpoints}', v_subset_checkpoints - 0, false)
+        );
     exception when others then
         get stacked diagnostics v_sqlstate = returned_sqlstate;
     end;

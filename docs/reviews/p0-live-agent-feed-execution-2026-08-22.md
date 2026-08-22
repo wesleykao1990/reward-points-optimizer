@@ -82,12 +82,38 @@ The Rewards-owned allowlist for those terminal identities is
 eleven targets to the current plan and manifest without copying page bodies or
 inventing an economic value.
 
-## Downstream boundary
+## Completed downstream delivery
 
-The live runs are durable in Agent Feed. Rewards now contains the optional
-signed internal ingress, exact five-run reconciliation map, and atomic receipt
-plus checkpoint transaction. Agent Feed contains a durable signed delivery
-worker. Historical event materialization and the live signed delivery itself
-remain an explicit operator action; until the resulting Rewards receipt and
-eleven checkpoint rows are independently observed, this report does not claim
-that cross-database delivery is complete.
+The five-run recovery set was delivered on 2026-08-22 through one temporary
+HTTPS webhook and one explicitly scoped Agent Feed consumer subscription. The
+historical materializer admitted exactly 21 event IDs from exactly these five
+run IDs: five starts, eleven findings, and five terminal events. It created 21
+delivery rows and no other historical delivery.
+
+The first tunnel hostname expired before any request arrived, so all 21
+deliveries entered bounded retry. After endpoint rotation, 17 events were
+acknowledged. The four remaining subset-completion terminals then exposed a
+real integration defect: terminal redaction removed the signed target scope
+before P0 reconciliation. Migration `0017_p0_agent_feed_scope_projection.sql`
+now captures only the exact expected/actual P0 target IDs in an immutable
+private projection before redaction; it retains no raw terminal payload. The
+four retries then acknowledged successfully.
+
+Final live reconciliation was exact:
+
+| Measure | Result |
+|---|---:|
+| Agent Feed delivery rows | 21 |
+| acknowledged delivery rows | 21 |
+| dead or retry-wait rows | 0 |
+| Agent Feed delivery attempts | 46 (21 succeeded, 25 failed before retry) |
+| Rewards receipts for the five runs | 21, all processed |
+| Rewards P0 target attempts | 11 |
+| distinct resolved P0 targets | 11 |
+| private subset scope projections | 4, all expected/actual sets equal |
+| unredacted live receipts | 0 |
+
+The one full-family METI terminal reconciled without a scope projection; the
+four subset terminals required one. This completes the cross-database proof
+for the bounded recovery set. It does not promote the delivered findings to
+canonical evidence or published reward rules.

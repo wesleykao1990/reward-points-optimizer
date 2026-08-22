@@ -22,6 +22,9 @@ JRO_TEST_DATABASE_URL=postgresql://.../jro_test JRO_DB_TEST_CONFIRM=isolated pnp
 - `010_p0_provisional_rehearsal_seed.sql`: exact local receipt, observation,
   lead-only evidence, candidate and definition hashes, experimental selection,
   absence of canonical publication, and rollback-safe correction exclusion.
+- `024_p0_agent_feed_scope_projection.sql`: terminal raw-payload redaction,
+  signed subset scope projection, receipt/event/run binding, missing/forged/
+  drifted scope rejection, and append-only/private projection controls.
 
 The runner applies all numbered seeds after all migrations and before all SQL
 tests. Use `pnpm seed:m3:check` to prove the generated M3 SQL still matches the

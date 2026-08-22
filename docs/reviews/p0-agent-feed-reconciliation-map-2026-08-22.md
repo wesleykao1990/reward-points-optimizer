@@ -57,6 +57,15 @@ replaces the placeholder with the UUID returned by the atomic persistence
 function, and reconciles that bound UUID in the same transaction. A failed
 binding rolls back both writes.
 
+The live delivery completed on 2026-08-22. All five terminal identities were
+accepted and all eleven checkpoint rows were committed as `resolved`. Four
+terminals represented a strict subset of their family work unit. Their signed
+expected/actual target IDs were captured before terminal redaction in the
+private append-only scope-projection table introduced by migration `0017`.
+Only target IDs are retained there; every delivered receipt has
+`raw_payload = {}` after processing. The full-family METI terminal required no
+projection.
+
 ## Trust boundary
 
 Agent Feed findings and submitted evidence remain untrusted inputs. The map
@@ -66,4 +75,3 @@ bounded finding outcome associated with each recovered target for P0 coverage
 accounting only; it must not be read as a canonical rule count. Canonical
 economic truth still requires the existing source, evidence, bitemporal,
 review, and reward-class conservation gates.
-

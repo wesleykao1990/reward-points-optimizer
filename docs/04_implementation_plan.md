@@ -741,10 +741,13 @@ unsupported, corrected, inactive, drifted, or hostile rows produce issues and
 are skipped. The database-backed Nanaco recommendation uses this loader; it no
 longer injects the checked-in Nanaco rule on the PostgreSQL route.
 
-Agent Feed terminal envelopes remain in the Agent Feed database. Importing
-them as Rewards-owned `p0-receipt-reconciliation.v1` checkpoints requires a
-configured durable Rewards database/consumer and is a separate deployment
-operation; this checkpoint does not pretend that cross-project import occurred.
+The five recovered Agent Feed terminal envelopes were imported through the
+configured signed Rewards consumer on 2026-08-22. The exact 21-event delivery
+set produced 21 processed Rewards receipts and eleven resolved
+`p0-receipt-reconciliation.v1` target attempts. Four subset terminals use the
+private append-only scope projection added by migration `0017`; no terminal
+raw payload remains after processing. This bounded proof does not generalize
+historical visibility or publish any delivered finding as economic truth.
 
 ### Interim Milestone 7P.12 — Verified receipt bridge and P0 fact influence graph
 
@@ -775,11 +778,11 @@ questions/warnings—never raw values, source identities, evidence locators,
 hashes, claim IDs, or URLs. An injected database runtime without the complete
 364-node graph fails closed and cannot substitute checked-in fixtures.
 
-This finishes the in-repository bridge and explanation path, not the live
-cross-database delivery. The remaining operational step is to deliver a signed
-terminal event through a configured Rewards consumer, resolve its exact target
-checkpoint outcomes, and verify the resulting receipt in the deployment
-database.
+The bounded live cross-database proof is complete: the signed consumer
+acknowledged exactly 21 events from five allowlisted runs and the Rewards
+database contains exactly eleven resolved target checkpoints. Production
+hosting, durable secret management, and recurring future-event delivery remain
+deployment work rather than blockers for this local P0 checkpoint.
 
 ## Later milestones
 

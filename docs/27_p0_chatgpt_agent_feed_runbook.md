@@ -273,9 +273,13 @@ The receiver verifies the exact signed bytes before any persistence, imports
 run/finding/evidence payloads through the generic atomic consumer path, and
 binds a terminal receipt plus its P0 target checkpoints in one transaction.
 A missing or stale reconciliation entry fails closed. Existing historical
-Agent Feed outbox events must be materialized into one explicitly scoped
-consumer subscription before the worker can deliver them; that replay/egress
-step remains a separately authorized operator action and must not be replaced
-with direct receipt or checkpoint inserts.
+Agent Feed outbox events may be materialized only as an explicitly enumerated
+event/run set into one scoped consumer subscription; the materializer has no
+date, position, stream, or all-history selector. The authorized 2026-08-22 P0
+proof materialized exactly 21 events from the five recovered runs, delivered
+and acknowledged all 21, and committed eleven resolved Rewards checkpoints.
+Four subset terminals use an immutable, target-ID-only scope projection so
+the signed scope remains comparable after the raw terminal payload is
+redacted. Direct receipt or checkpoint inserts remain prohibited.
 Identical family-role-URL rows from the historical recovery manifests are
 deduplicated without modifying those historical files.
