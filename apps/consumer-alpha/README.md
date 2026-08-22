@@ -76,6 +76,10 @@ and eight point families. The selected cards and mobile payments create real
 calculation candidates from their structured base-rate claims, so selection
 changes both the arithmetic result and the recommendation/correction hash.
 Selected point programmes feed the deterministic point-spending graph.
+Home does not expose a generic electronic-money switch or a global
+`use / do not use` valuation question. Electronic money is represented only by
+named, service-specific routes such as Nanaco, with inputs collected when that
+route is relevant.
 
 The Wallet tab exposes the same 21 service families plus the deterministic
 fixed-ratio point-spending graph. Only complete transfer/redemption claims are

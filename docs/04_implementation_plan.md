@@ -326,7 +326,8 @@ Initial scope:
 - major convenience-store chains;
 - a small set of widely owned cards, QR wallets, stored-value systems, and common points;
 - manual user state and cap entry;
-- asset-specific stored-value usage question during onboarding;
+- asset-specific stored-value inputs only when a named service route needs
+  them; never one generic electronic-money usage question;
 - one recommendation, one fallback, and visible conditional/sensitivity explanation;
 - official-app deep links;
 - correction reporting.

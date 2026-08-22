@@ -655,44 +655,11 @@ fieldset {
   transform: translateX(16px);
 }
 
-.preference-panel,
 .settings-card {
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface-raised);
-}
-
-.preference-heading {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
-}
-
-.preference-heading > span {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #243820;
-  color: var(--lime);
-  font-weight: 800;
-}
-
-.preference-heading > div {
-  display: grid;
-}
-
-.preference-heading strong {
-  font-size: 0.82rem;
-}
-
-.preference-heading small {
-  color: var(--muted);
-  font-size: 0.64rem;
 }
 
 .helper,
@@ -2119,29 +2086,6 @@ button.remove {
   margin-top: 10px;
   color: var(--muted);
   font-size: 0.6rem;
-}
-
-.segmented-control {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.segmented-control button {
-  min-height: 42px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: #292d29;
-  color: var(--text-soft);
-  font-size: 0.68rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.segmented-control button.is-active {
-  border-color: var(--lime);
-  background: var(--lime);
-  color: #132019;
 }
 
 .settings-row {

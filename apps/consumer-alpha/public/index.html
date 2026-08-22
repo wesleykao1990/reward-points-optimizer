@@ -91,40 +91,9 @@
                   <span class="choice-toggle" aria-hidden="true"></span>
                 </label>
                 <div id="p0-point-picker" class="p0-product-picker" hidden><p class="helper">ポイント一覧を読み込んでいます…</p></div>
-                <label class="choice-row">
-                  <input type="checkbox" name="instrument" value="synthetic_stored_value">
-                  <span class="choice-icon value-icon" aria-hidden="true">P</span>
-                  <span class="choice-copy"><strong>電子マネー</strong><small>カテゴリ入力・残高価値の試算用</small></span>
-                  <span class="choice-toggle" aria-hidden="true"></span>
-                </label>
               </div>
               <p id="p0-selection-status" class="helper" aria-live="polite">クレジットカードを1つ以上選んでください。</p>
             </fieldset>
-
-            <div class="preference-panel">
-              <div class="preference-heading"><span aria-hidden="true">P</span><div><strong>電子マネーの使い方</strong><small>残高価値の見積もりに使います</small></div></div>
-              <label>今回使いたいですか？
-                <select id="stored-value-use" name="stored_value_use">
-                  <option value="unknown">まだ決めていない</option>
-                  <option value="yes">使いたい</option>
-                  <option value="no">使わない</option>
-                </select>
-              </label>
-              <label>いつ頃使う予定ですか？
-                <select id="stored-value-usage" name="stored_value_usage" disabled>
-                  <option value="" disabled selected>「使いたい」を選んでください</option>
-                  <option value="within_30_days">30日以内</option>
-                  <option value="within_90_days">90日以内</option>
-                  <option value="eventually">いずれ使う</option>
-                  <option value="rarely">ほとんど使わない</option>
-                  <option value="custom">価値を自分で設定</option>
-                </select>
-              </label>
-              <label id="stored-value-custom-label">1単位あたりの価値（円）
-                <input id="stored-value-value" name="stored_value_value_jpy_per_unit" inputmode="decimal" placeholder="例：0.8" maxlength="24" autocomplete="off" disabled>
-              </label>
-              <p class="helper">「使わない」を選ぶと、電子マネー候補は比較から外れます。</p>
-            </div>
 
             <button type="submit" class="primary"><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>
             <p class="privacy-note">入力内容はブラウザに保存されません</p>
@@ -181,12 +150,7 @@
 
       <section id="tab-settings" class="tab-panel" data-tab-panel="settings" role="tabpanel" aria-labelledby="tab-button-settings" tabindex="-1" hidden>
         <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 保存なし</span></header>
-        <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>ポイントの使い方に合わせて、残高価値の前提を調整します。</p></section>
-
-        <section class="settings-group" aria-labelledby="valuation-title">
-          <h2 id="valuation-title">運用シミュレーション設定</h2>
-          <div class="settings-card"><strong>電子マネーを使い切る目安</strong><p>比較時に残る電子マネーの価値を見積もるための期間です。</p><div class="segmented-control"><button type="button" data-usage-preset="within_30_days">30日以内</button><button type="button" data-usage-preset="within_90_days">90日以内</button><button type="button" data-usage-preset="eventually">いずれ</button></div><small id="settings-status">ホームの比較条件に反映されます</small></div>
-        </section>
+        <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>通知やプライバシーに関する設定を確認できます。</p></section>
 
         <section class="settings-group" aria-labelledby="notifications-title">
           <h2 id="notifications-title">通知設定</h2>

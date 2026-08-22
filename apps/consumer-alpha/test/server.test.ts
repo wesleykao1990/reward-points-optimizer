@@ -589,6 +589,11 @@ describe("M6 localhost consumer shell", () => {
     expect(html).toContain("持っているカードを7種類から選択");
     expect(html).toContain("利用中のサービスを6種類から選択");
     expect(html).toContain("保有するポイントを8種類から選択");
+    expect(html).not.toContain("電子マネーの使い方");
+    expect(html).not.toContain("今回使いたいですか？");
+    expect(html).not.toContain('value="synthetic_stored_value"');
+    expect(source).toContain('stored_value_use: "no"');
+    expect(source).not.toContain('getElementById("stored-value-use")');
     expect(html).toContain('id="merchant-selector"');
     expect(html).toContain("一般のお買い物");
     expect(html).toContain("選択したカードとモバイル決済の通常還元率");
