@@ -39,7 +39,11 @@ function postgresSql(source, sourceName) {
   const unsupported = lines.find((line) => /^\\/u.test(line));
   if (unsupported !== undefined)
     throw new Error(`psql_meta_command_unsupported:${sourceName}`);
-  return `-- Staged from ${sourceName}; edit the canonical source, not this file.\n${lines.join("\n").replace(/\n*$/u, "\n")}`;
+  const hostedSql = lines
+    .join("\n")
+    .replace(/\bpublic\.digest\(/gu, "extensions.digest(")
+    .replace(/\n*$/u, "\n");
+  return `-- Staged from ${sourceName}; edit the canonical source, not this file.\n${hostedSql}`;
 }
 
 async function main(requestedMode) {

@@ -38,7 +38,8 @@ alpha must not be described as a production consumer release.
 - `scripts/stage_supabase_migrations.mjs` converts the canonical `db/*.sql`
   schema chain and `db/seeds/*.sql` released data into stable, one-time
   Supabase migration versions. It removes only the supported psql
-  `ON_ERROR_STOP` directive; any other psql meta-command fails the check.
+  `ON_ERROR_STOP` directive and qualifies `pgcrypto.digest` with Supabase's
+  hosted `extensions` schema; any other psql meta-command fails the check.
 - `db/0018_deployment_runtime_role.sql` grants the runtime only exact reads and
   correction functions. Existing migration files are append-only after their
   first production application.
