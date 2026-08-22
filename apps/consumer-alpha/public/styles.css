@@ -1660,6 +1660,175 @@ button.remove {
   color: var(--lime) !important;
 }
 
+.point-spend-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #303a31;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 92% 0%, rgb(171 255 104 / 9%), transparent 38%),
+    #171b17;
+}
+
+.point-spend-card > p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.point-spend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.point-spend-grid label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.point-spend-grid select,
+.point-spend-grid input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid #374037;
+  border-radius: 11px;
+  background: #0f120f;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.point-spend-conditions {
+  display: grid;
+  gap: 8px;
+}
+
+.point-spend-conditions > strong {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.point-spend-check {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 10px;
+  border-radius: 11px;
+  background: #222722;
+}
+
+.point-spend-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--lime);
+}
+
+.point-spend-check span,
+.point-spend-check small {
+  display: block;
+}
+
+.point-spend-check b {
+  font-size: 0.7rem;
+}
+
+.point-spend-check small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.61rem;
+  line-height: 1.5;
+}
+
+.point-spend-result {
+  margin-top: 12px;
+}
+
+.point-spend-route {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #171a17;
+}
+
+.point-spend-route + .point-spend-route {
+  margin-top: 10px;
+}
+
+.point-spend-route.is-primary {
+  border-color: #6b9c50;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
+}
+
+.point-spend-route-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.point-spend-route-heading span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #294129;
+  color: var(--lime);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.point-spend-route-heading strong {
+  color: var(--lime);
+  font-size: 1.05rem;
+}
+
+.point-spend-steps {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.point-spend-steps li {
+  display: grid;
+  gap: 3px;
+  padding-left: 12px;
+  border-left: 2px solid #527347;
+}
+
+.point-spend-steps strong,
+.point-spend-steps span,
+.point-spend-steps small {
+  display: block;
+}
+
+.point-spend-steps strong {
+  font-size: 0.72rem;
+}
+
+.point-spend-steps span {
+  color: var(--text-soft);
+  font-size: 0.7rem;
+}
+
+.point-spend-steps small {
+  color: var(--muted);
+  font-size: 0.6rem;
+}
+
+@media (max-width: 390px) {
+  .point-spend-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .history-summary {
   display: flex;
   align-items: flex-end;
@@ -1910,6 +2079,215 @@ button.remove {
   .bottom-nav svg {
     width: 20px;
     height: 20px;
+  }
+}
+
+.p0-wallet-catalogue,
+.p0-wallet-family-list,
+.lottery-link-list {
+  display: grid;
+  gap: 10px;
+}
+
+.p0-product-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: -2px 0 6px 48px;
+}
+
+.p0-product-picker[hidden] {
+  display: none;
+}
+
+.p0-product-option {
+  position: relative;
+  display: grid;
+  min-height: 52px;
+  padding: 10px 12px 10px 38px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #171b17;
+  cursor: pointer;
+}
+
+.p0-product-option:has(input:checked) {
+  border-color: #7eb94d;
+  background: linear-gradient(145deg, #243324, #1c261d);
+  box-shadow: inset 0 0 0 1px rgb(167 240 104 / 14%);
+}
+
+.p0-product-option input {
+  position: absolute;
+  top: 16px;
+  left: 13px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--lime);
+}
+
+.p0-product-option span {
+  display: grid;
+  gap: 2px;
+}
+
+.p0-product-option strong {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.p0-product-option small {
+  color: var(--muted);
+  font-size: 0.57rem;
+}
+
+#p0-selection-status.is-error {
+  color: #ffaea8;
+}
+
+.selected-products-summary {
+  margin-top: 10px;
+  color: var(--lime-soft);
+  font-size: 0.68rem;
+}
+
+.p0-wallet-family-group {
+  display: grid;
+  gap: 8px;
+}
+
+.p0-wallet-family-group + .p0-wallet-family-group {
+  margin-top: 18px;
+}
+
+.p0-wallet-family-group h3 {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+}
+
+.p0-wallet-family-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.p0-wallet-family-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+
+.p0-wallet-family-icon {
+  display: grid;
+  grid-row: span 2;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #263327;
+  color: var(--lime);
+  font-weight: 800;
+}
+
+.p0-wallet-family-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.p0-wallet-family-copy strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.p0-wallet-family-copy small {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.p0-wallet-family-card em {
+  grid-column: 2;
+  width: max-content;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #313631;
+  color: var(--text-soft);
+  font-size: 0.56rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.p0-wallet-family-card em.is-route {
+  background: #29432d;
+  color: var(--lime);
+}
+
+.lottery-information {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #52633f;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #1d281e, #171d18);
+}
+
+.lottery-link-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+
+.lottery-link-card > div {
+  display: grid;
+  gap: 2px;
+}
+
+.lottery-link-card small,
+.lottery-link-card span {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.lottery-link-card strong {
+  color: var(--text);
+  font-size: 0.76rem;
+}
+
+.lottery-official-link {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--lime);
+  color: #152216;
+  font-size: 0.61rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@media (max-width: 430px) {
+  .p0-product-picker {
+    grid-template-columns: 1fr;
+    margin-left: 0;
+  }
+
+  .p0-wallet-family-list {
+    grid-template-columns: 1fr;
+  }
+
+  .lottery-link-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lottery-official-link {
+    text-align: center;
   }
 }
 

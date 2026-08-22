@@ -5,6 +5,7 @@ import {
   handleRequest,
   LOCALHOST_BIND_HOST,
   MAX_EVALUATE_BODY_BYTES,
+  requestBodyLimit,
   resetIssuedRecommendationIds,
 } from "../src/server.js";
 
@@ -61,6 +62,7 @@ describe("M6 localhost consumer shell", () => {
         "synthetic",
         "nanaco_purchase",
         "nanaco_credit_charge",
+        "p0_point_spend",
       ],
       experimental_catalogue: true,
       bind_host: "127.0.0.1",
@@ -68,6 +70,14 @@ describe("M6 localhost consumer shell", () => {
   });
 
   it("has explicit route methods and JSON content type", async () => {
+    expect(
+      requestBodyLimit("POST", "/api/experimental/point-spend/recommendation"),
+    ).toBe(4096);
+    expect(
+      requestBodyLimit("GET", "/api/experimental/point-spend/recommendation"),
+    ).toBeNull();
+    expect(requestBodyLimit("POST", "/api/unknown")).toBeNull();
+
     const get = await handleRequest({
       method: "GET",
       pathname: "/api/synthetic/evaluate",
@@ -567,6 +577,22 @@ describe("M6 localhost consumer shell", () => {
     expect(html).not.toContain("最終確認前");
     expect(html).not.toContain("未検証");
     expect(html).not.toContain("現在のおすすめには使わない");
+    expect(html).toContain("対応サービス一覧");
+    expect(html).toContain("抽選・スクラッチ情報");
+    expect(html).toContain('id="p0-card-picker"');
+    expect(html).toContain('id="p0-mobile-pay-picker"');
+    expect(html).toContain('id="p0-point-picker"');
+    expect(html).toContain("P0の7系列から選択");
+    expect(html).toContain("P0の6系列から選択");
+    expect(html).toContain("P0の8系列から選択");
+    expect(html).toContain("セブン‐イレブン");
+    expect(html).toContain("東京エリア");
+    expect(html).not.toContain("サンプルストア");
+    expect(html).not.toContain("東京サンプル店");
+    expect(html).not.toContain("サンプルカード");
+    expect(html).not.toContain("サンプルQR");
+    expect(source).toContain("/api/experimental/lotteries");
+    expect(source).toContain('link.rel = "noopener noreferrer"');
     expect(source).toContain("/api/experimental/rules");
     expect(source).toContain("/api/experimental/corrections");
     expect(source).toContain("誤りを報告する");

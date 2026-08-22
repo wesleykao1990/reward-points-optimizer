@@ -69,5 +69,6 @@ export {
   separateProbabilisticValue,
 } from "./m1b-uncertainty.js";
 export * from "./math.js";
+export * from "./point-spend-optimizer.js";
 export * from "./types.js";
 export * from "./validation.js";

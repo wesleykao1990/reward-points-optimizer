@@ -784,13 +784,53 @@ database contains exactly eleven resolved target checkpoints. Production
 hosting, durable secret management, and recurring future-event delivery remain
 deployment work rather than blockers for this local P0 checkpoint.
 
+### Interim Milestone 7P.13 — P0 spend rule shapes and goal-based route search
+
+Implementation checkpoint (2026-08-23): the complete 364-claim P0 research
+wave now passes through a separate spend-rule classifier. Twenty-three claims
+or compatible claim groups with explicit source and destination quantities are
+compiled into fixed-ratio transfer/redemption edges; every other claim retains
+an explicit non-executable disposition. The compiler does not infer rates from
+examples, maxima, lotteries, prose, or incomplete directories.
+
+The rule engine now provides a bounded acyclic point-spending optimizer. Every
+hop is evaluated by the existing exact transfer kernel, and ranking supports
+maximum destination quantity, fastest known route, and preservation of
+expiring balances. Conditions require explicit confirmation, expired edges are
+excluded, period-capped routes require prior usage, and canonical hashes make
+the result deterministic.
+
+The Japanese Wallet tab loads the P0 graph, accepts a session-only balance and
+goal, and shows the selected route, quantities, timing and alternatives. The
+browser receives no evidence/source/claim internals and clearly labels the
+result as an experimental estimate. See `docs/27_point_spend_optimizer.md`.
+
+The Wallet catalogue now replaces its three sample rows with all 21 P0
+consumer families: eight point programmes, six mobile-payment services, and
+seven credit-card families. Lottery/draw/scratch facts stay outside every
+calculation route and are deduplicated into nine bounded official HTTPS links;
+expired entries lead to the official announcement rather than an application
+claim.
+
+The Home payment selector now expands those same P0 families when the user
+enables credit cards, mobile payments, or point programmes. At least one exact
+family must be selected for each enabled category; the canonical selection is
+bound to the recommendation/correction ID and echoed in Japanese in the result.
+The browser starts from the P0 Seven-Eleven merchant lane and no longer shows
+sample card, QR-payment, merchant, or branch labels. These are family-level
+ownership inputs, not fabricated individual product SKUs, and only already
+executable P0 rules participate in arithmetic.
+
 ## Later milestones
 
 - full data-operations console;
 - mobile static loyalty wallet with local encryption;
 - campaign reminders and cap tracking;
 - online cashback/share extension;
-- broader point/mile/hotel conversion graph;
+- persist and version the P0 spend-edge graph behind the PostgreSQL port;
+- broader point/mile/hotel conversion graph and multi-balance allocation;
+- AwardWallet-like balance aggregation, balance history, expiration tracking,
+  reminders, certificates/status metadata, and later read-only account sync;
 - partner-based transaction aggregation;
 - retrospective reward-regret analysis;
 - transparent best-new-card ranking.

@@ -37,6 +37,33 @@ export const MANUAL_INSTRUMENTS = [
 ] as const;
 export type ManualInstrument = (typeof MANUAL_INSTRUMENTS)[number];
 
+/** Exact P0 consumer families the browser may select. Economic definitions
+ * remain host-owned; these identifiers bind user ownership only. */
+export const P0_PRODUCT_FAMILY_IDS = Object.freeze([
+  "point.d",
+  "point.jre",
+  "point.nanaco",
+  "point.paypay",
+  "point.ponta",
+  "point.rakuten",
+  "point.v",
+  "point.waon",
+  "wallet.aeonpay",
+  "wallet.aupay",
+  "wallet.dbarai",
+  "wallet.famipay",
+  "wallet.paypay",
+  "wallet.rakutenpay",
+  "card.aeon",
+  "card.aupay",
+  "card.d",
+  "card.paypay",
+  "card.rakuten",
+  "card.smbc",
+  "card.view",
+] as const);
+export type P0ProductFamilyId = (typeof P0_PRODUCT_FAMILY_IDS)[number];
+
 export const STORED_VALUE_USE = ["yes", "no", "unknown"] as const;
 export type StoredValueUse = (typeof STORED_VALUE_USE)[number];
 
@@ -389,6 +416,7 @@ export interface UnifiedRecommendationInput {
   readonly nanaco_credit_charge_preregistered: boolean;
   readonly effective_at: string;
   readonly owned_instruments: readonly ManualInstrument[];
+  readonly selected_p0_products: readonly P0ProductFamilyId[];
   readonly stored_value_use: StoredValueUse;
   readonly stored_value_usage?: StoredValueUsage;
   readonly stored_value_value_jpy_per_unit?: string;
@@ -464,6 +492,7 @@ const TOP_LEVEL_UNIFIED_RECOMMENDATION_KEYS = new Set([
   "nanaco_credit_charge_preregistered",
   "effective_at",
   "owned_instruments",
+  "selected_p0_products",
   "stored_value_use",
   "stored_value_usage",
   "stored_value_value_jpy_per_unit",
@@ -986,6 +1015,45 @@ export function parseUnifiedRecommendation(
     caps: value.caps === undefined ? [] : value.caps,
   });
 
+  const selectedRaw =
+    value.selected_p0_products === undefined ? [] : value.selected_p0_products;
+  if (
+    !Array.isArray(selectedRaw) ||
+    selectedRaw.length > P0_PRODUCT_FAMILY_IDS.length ||
+    !selectedRaw.every(
+      (item) =>
+        typeof item === "string" &&
+        (P0_PRODUCT_FAMILY_IDS as readonly string[]).includes(item),
+    )
+  )
+    throw new InputContractError("selected_p0_products_invalid");
+  const selectedProducts = [...new Set(selectedRaw)] as P0ProductFamilyId[];
+  if (selectedProducts.length !== selectedRaw.length)
+    throw new InputContractError("selected_p0_products_invalid");
+  if (
+    selectedProducts.some((item) => item.startsWith("card.")) &&
+    !syntheticState.owned_instruments.includes("synthetic_card")
+  )
+    throw new InputContractError("selected_p0_products_invalid");
+  if (
+    selectedProducts.some((item) => item.startsWith("wallet.")) &&
+    !syntheticState.owned_instruments.includes("synthetic_qr_wallet")
+  )
+    throw new InputContractError("selected_p0_products_invalid");
+  if (
+    value.selected_p0_products !== undefined &&
+    syntheticState.owned_instruments.includes("synthetic_card") &&
+    !selectedProducts.some((item) => item.startsWith("card."))
+  )
+    throw new InputContractError("selected_p0_card_required");
+  if (
+    value.selected_p0_products !== undefined &&
+    syntheticState.owned_instruments.includes("synthetic_qr_wallet") &&
+    !selectedProducts.some((item) => item.startsWith("wallet."))
+  )
+    throw new InputContractError("selected_p0_mobile_pay_required");
+  selectedProducts.sort();
+
   const ownedFlag =
     value.seven_card_plus_owned === undefined
       ? false
@@ -1018,6 +1086,7 @@ export function parseUnifiedRecommendation(
     nanaco_credit_charge_preregistered: preregistered,
     effective_at: effectiveAt as string,
     owned_instruments: syntheticState.owned_instruments,
+    selected_p0_products: Object.freeze(selectedProducts),
     stored_value_use: syntheticState.stored_value_use,
     ...(syntheticState.stored_value_usage === undefined
       ? {}

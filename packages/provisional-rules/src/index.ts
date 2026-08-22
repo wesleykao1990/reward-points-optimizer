@@ -78,6 +78,18 @@ export {
   NANACO_PILOT_PROGRAM_ID,
 } from "./nanaco-pilot.js";
 export type {
+  P0SpendAsset,
+  P0SpendAssetKind,
+  P0SpendClaimDisposition,
+  P0SpendDispositionStatus,
+  P0SpendRule,
+  P0SpendRuleSet,
+} from "./p0-spend-rules.js";
+export {
+  compileP0SpendRuleSet,
+  P0_SPEND_RULE_SET_VERSION,
+} from "./p0-spend-rules.js";
+export type {
   P0ResearchImplementationDescriptor,
   ResearchDerivedRule,
   ResearchFactReason,

@@ -3,6 +3,7 @@
   let sessionHistoryCount = 0;
   let informationFacts = [];
   let informationLoaded = false;
+  let lotteryLinksLoaded = false;
 
   const node = (tag, className) => {
     const value = document.createElement(tag);
@@ -47,6 +48,7 @@
     if (tabName === "information") {
       void loadExperimentalRules();
       void loadInformationFacts();
+      void loadLotteryLinks();
     }
   };
 
@@ -205,8 +207,8 @@
     };
     return {
       ...manual,
-      merchant_id: "merchant.synthetic",
-      branch_id: "location.synthetic",
+      merchant_id: "merchant.seveneleven",
+      branch_id: "location.seveneleven.representative",
       amount_jpy: amount,
       tax_exclusive_amount_jpy: numericValueOr("nanaco-tax-exclusive", amount),
       nanaco_balance_jpy: numericValueOr("nanaco-balance", amount),
@@ -219,6 +221,7 @@
         document.getElementById("credit-preregistered")?.checked,
       ),
       effective_at: new Date().toISOString(),
+      selected_p0_products: selectedP0Products(true),
     };
   };
 
@@ -568,6 +571,19 @@
   };
 
   const renderUnifiedRecommendation = (body) => {
+    if (body?.version !== "unified-recommendations.v2")
+      throw new Error("recommendation_version_invalid");
+    if (
+      !Array.isArray(body.selected_p0_products) ||
+      body.selected_p0_products.some(
+        (familyId) =>
+          typeof familyId !== "string" ||
+          !pointSpendOptions?.walletCatalogue.some(
+            (item) => item.family_id === familyId,
+          ),
+      )
+    )
+      throw new Error("selected_p0_products_invalid");
     const routes = Array.isArray(body?.routes) ? body.routes : [];
     if (!routes.length) throw new Error("routes_invalid");
     currentRecommendationId =
@@ -587,6 +603,20 @@
         "result-summary",
       ),
     );
+    const selectedProducts = body.selected_p0_products.map(
+      (familyId) =>
+        pointSpendOptions.walletCatalogue.find(
+          (item) => item.family_id === familyId,
+        ).label,
+    );
+    if (selectedProducts.length)
+      hero.appendChild(
+        text(
+          "p",
+          `選択中：${selectedProducts.join("、")}`,
+          "selected-products-summary",
+        ),
+      );
     result.appendChild(hero);
     const intro = node("p", "", "unified-disclosure");
     intro.textContent =
@@ -1294,6 +1324,94 @@
     }
   };
 
+  const safeLotteryLinks = (body) => {
+    if (
+      !body ||
+      body.version !== "p0-lottery-links.v1" ||
+      body.calculation_use !== false ||
+      !Array.isArray(body.links) ||
+      body.links.length > 24
+    )
+      throw new Error("lottery_links_invalid");
+    return body.links.map((item) => {
+      if (
+        !item ||
+        typeof item.title !== "string" ||
+        item.title.length < 1 ||
+        item.title.length > 80 ||
+        typeof item.family !== "string" ||
+        item.family.length < 1 ||
+        item.family.length > 48 ||
+        !["application_or_details", "official_announcement"].includes(
+          item.status,
+        ) ||
+        typeof item.period_label !== "string" ||
+        item.period_label.length > 64 ||
+        typeof item.official_url !== "string" ||
+        item.official_url.length > 512
+      )
+        throw new Error("lottery_links_invalid");
+      const officialUrl = new URL(item.official_url);
+      if (
+        officialUrl.protocol !== "https:" ||
+        officialUrl.username ||
+        officialUrl.password ||
+        officialUrl.port ||
+        officialUrl.hash
+      )
+        throw new Error("lottery_links_invalid");
+      return {
+        title: item.title,
+        family: item.family,
+        status: item.status,
+        period_label: item.period_label,
+        official_url: officialUrl.href,
+      };
+    });
+  };
+
+  const loadLotteryLinks = async () => {
+    if (lotteryLinksLoaded) return;
+    const container = document.getElementById("lottery-links");
+    try {
+      const response = await fetch("/api/experimental/lotteries", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("request_failed");
+      const links = safeLotteryLinks(await response.json());
+      clear(container);
+      links.forEach((item) => {
+        const card = node("article", "lottery-link-card");
+        const copy = node("div");
+        copy.appendChild(text("small", item.family));
+        copy.appendChild(text("strong", item.title));
+        copy.appendChild(text("span", item.period_label));
+        card.appendChild(copy);
+        const link = node("a", "lottery-official-link");
+        link.href = item.official_url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent =
+          item.status === "official_announcement"
+            ? "公式告知を確認"
+            : "公式ページで応募・詳細を確認";
+        card.appendChild(link);
+        container.appendChild(card);
+      });
+      if (links.length === 0)
+        container.appendChild(
+          text("p", "現在案内できる抽選情報はありません。", "helper"),
+        );
+      lotteryLinksLoaded = true;
+    } catch {
+      clear(container);
+      container.appendChild(
+        text("p", "公式キャンペーン情報を読み込めませんでした。", "helper"),
+      );
+    }
+  };
+
   const postJson = async (path, payload) => {
     const response = await fetch(path, {
       method: "POST",
@@ -1309,6 +1427,439 @@
     }
     return body;
   };
+
+  let pointSpendOptions = null;
+
+  const safePointSpendOptions = (body) => {
+    if (
+      !body ||
+      body.version !== "p0-point-spend-options.v2" ||
+      body.experimental !== true ||
+      !Number.isSafeInteger(body.rule_count) ||
+      !Array.isArray(body.assets) ||
+      !Array.isArray(body.wallet_catalogue) ||
+      !Array.isArray(body.conditional_rules) ||
+      body.assets.length > 64 ||
+      body.wallet_catalogue.length > 32 ||
+      body.conditional_rules.length > 32
+    )
+      throw new Error("point_spend_options_invalid");
+    const assets = body.assets.map((asset) => {
+      if (
+        !asset ||
+        typeof asset.asset_id !== "string" ||
+        !/^asset\.[a-z0-9.-]{2,80}$/u.test(asset.asset_id) ||
+        typeof asset.label !== "string" ||
+        asset.label.length < 1 ||
+        asset.label.length > 48 ||
+        typeof asset.kind !== "string"
+      )
+        throw new Error("point_spend_options_invalid");
+      return {
+        asset_id: asset.asset_id,
+        label: asset.label,
+        kind: asset.kind,
+      };
+    });
+    const conditionalRules = body.conditional_rules.map((rule) => {
+      if (
+        !rule ||
+        typeof rule.rule_id !== "string" ||
+        !/^p0\.[a-z0-9.-]{2,100}$/u.test(rule.rule_id) ||
+        typeof rule.label !== "string" ||
+        rule.label.length > 80 ||
+        typeof rule.source_asset_id !== "string" ||
+        typeof rule.destination_asset_id !== "string" ||
+        !Array.isArray(rule.conditions) ||
+        rule.conditions.length > 8 ||
+        !rule.conditions.every(
+          (condition) =>
+            typeof condition === "string" && condition.length <= 120,
+        )
+      )
+        throw new Error("point_spend_options_invalid");
+      return {
+        rule_id: rule.rule_id,
+        label: rule.label,
+        source_asset_id: rule.source_asset_id,
+        destination_asset_id: rule.destination_asset_id,
+        conditions: [...rule.conditions],
+      };
+    });
+    const walletCatalogue = body.wallet_catalogue.map((item) => {
+      if (
+        !item ||
+        typeof item.family_id !== "string" ||
+        !/^(?:point|wallet|card)\.[a-z0-9.-]{1,64}$/u.test(item.family_id) ||
+        typeof item.label !== "string" ||
+        item.label.length < 1 ||
+        item.label.length > 48 ||
+        !["point", "mobile_pay", "credit_card"].includes(item.kind) ||
+        !Number.isSafeInteger(item.fact_count) ||
+        item.fact_count < 1 ||
+        !["spend_route", "information_only"].includes(item.calculation_status)
+      )
+        throw new Error("point_spend_options_invalid");
+      return {
+        family_id: item.family_id,
+        label: item.label,
+        kind: item.kind,
+        fact_count: item.fact_count,
+        calculation_status: item.calculation_status,
+      };
+    });
+    return {
+      assets,
+      conditionalRules,
+      walletCatalogue,
+      rule_count: body.rule_count,
+    };
+  };
+
+  const renderP0WalletCatalogue = () => {
+    const container = document.getElementById("p0-wallet-catalogue");
+    clear(container);
+    if (!pointSpendOptions) {
+      container.appendChild(
+        text("p", "サービス一覧を読み込めませんでした。", "helper"),
+      );
+      return;
+    }
+    const groups = [
+      ["point", "ポイント・マイル", "P"],
+      ["mobile_pay", "モバイル決済", "▦"],
+      ["credit_card", "クレジットカード", "▰"],
+    ];
+    groups.forEach(([kind, heading, icon]) => {
+      const items = pointSpendOptions.walletCatalogue.filter(
+        (item) => item.kind === kind,
+      );
+      if (items.length === 0) return;
+      const section = node("section", "p0-wallet-family-group");
+      section.appendChild(text("h3", `${heading}（${items.length}）`));
+      const list = node("div", "p0-wallet-family-list");
+      items.forEach((item) => {
+        const card = node("article", "p0-wallet-family-card");
+        card.appendChild(text("span", icon, "p0-wallet-family-icon"));
+        const copy = node("span", "p0-wallet-family-copy");
+        copy.appendChild(text("strong", item.label));
+        copy.appendChild(text("small", `P0情報 ${item.fact_count}件`));
+        card.appendChild(copy);
+        card.appendChild(
+          text(
+            "em",
+            item.calculation_status === "spend_route"
+              ? "交換計算対応"
+              : "情報掲載",
+            item.calculation_status === "spend_route" ? "is-route" : "",
+          ),
+        );
+        list.appendChild(card);
+      });
+      section.appendChild(list);
+      container.appendChild(section);
+    });
+    document.getElementById("wallet-count").textContent = String(
+      pointSpendOptions.walletCatalogue.length,
+    );
+    const routeCount = pointSpendOptions.walletCatalogue.filter(
+      (item) => item.calculation_status === "spend_route",
+    ).length;
+    document.getElementById("wallet-route-summary").textContent =
+      `${routeCount}系列はポイント利用・交換計算に対応、その他は情報掲載です`;
+  };
+
+  const p0PickerDefinitions = Object.freeze([
+    {
+      kind: "credit_card",
+      containerId: "p0-card-picker",
+      toggleId: "p0-card-toggle",
+      requiredMessage: "クレジットカードを1つ以上選んでください。",
+    },
+    {
+      kind: "mobile_pay",
+      containerId: "p0-mobile-pay-picker",
+      toggleId: "p0-mobile-pay-toggle",
+      requiredMessage: "利用中のモバイル決済を1つ以上選んでください。",
+    },
+    {
+      kind: "point",
+      containerId: "p0-point-picker",
+      toggleId: "p0-point-toggle",
+      requiredMessage: "保有するポイントプログラムを1つ以上選んでください。",
+    },
+  ]);
+
+  const selectedP0Products = (required = false) => {
+    const selected = [...document.querySelectorAll("[data-p0-product]:checked")]
+      .filter((input) => !input.disabled)
+      .map((input) => input.value)
+      .sort();
+    if (required) {
+      for (const definition of p0PickerDefinitions) {
+        const toggle = document.getElementById(definition.toggleId);
+        if (
+          toggle.checked &&
+          !selected.some(
+            (value) =>
+              pointSpendOptions?.walletCatalogue.find(
+                (item) => item.family_id === value,
+              )?.kind === definition.kind,
+          )
+        ) {
+          const status = document.getElementById("p0-selection-status");
+          status.textContent = definition.requiredMessage;
+          status.classList.add("is-error");
+          document.getElementById(definition.containerId).scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          throw new Error("p0_product_selection_required");
+        }
+      }
+    }
+    return selected;
+  };
+
+  const syncP0ProductPickers = () => {
+    p0PickerDefinitions.forEach((definition) => {
+      const toggle = document.getElementById(definition.toggleId);
+      const container = document.getElementById(definition.containerId);
+      container.hidden = !toggle.checked;
+      container.querySelectorAll("[data-p0-product]").forEach((input) => {
+        input.disabled = !toggle.checked;
+        if (!toggle.checked) input.checked = false;
+      });
+    });
+    const selected = selectedP0Products();
+    const status = document.getElementById("p0-selection-status");
+    status.classList.remove("is-error");
+    const missing = p0PickerDefinitions.find((definition) => {
+      const toggle = document.getElementById(definition.toggleId);
+      return (
+        toggle.checked &&
+        !selected.some(
+          (value) =>
+            pointSpendOptions?.walletCatalogue.find(
+              (item) => item.family_id === value,
+            )?.kind === definition.kind,
+        )
+      );
+    });
+    status.textContent = missing
+      ? missing.requiredMessage
+      : selected.length
+        ? `${selected.length}サービスを選択しています。選択内容は保存されません。`
+        : "比較するサービスを選んでください。";
+  };
+
+  const renderP0ProductPickers = () => {
+    if (!pointSpendOptions) return;
+    p0PickerDefinitions.forEach((definition) => {
+      const container = document.getElementById(definition.containerId);
+      clear(container);
+      pointSpendOptions.walletCatalogue
+        .filter((item) => item.kind === definition.kind)
+        .forEach((item) => {
+          const label = node("label", "p0-product-option");
+          const checkbox = node("input");
+          checkbox.type = "checkbox";
+          checkbox.value = item.family_id;
+          checkbox.dataset.p0Product = "true";
+          checkbox.addEventListener("change", syncP0ProductPickers);
+          const copy = node("span");
+          copy.appendChild(text("strong", item.label));
+          copy.appendChild(
+            text(
+              "small",
+              item.calculation_status === "spend_route"
+                ? "ポイント利用・交換計算対応"
+                : `P0情報 ${item.fact_count}件`,
+            ),
+          );
+          label.appendChild(checkbox);
+          label.appendChild(copy);
+          container.appendChild(label);
+        });
+    });
+    syncP0ProductPickers();
+  };
+
+  const pointSpendSelectOption = (asset) => {
+    const option = node("option");
+    option.value = asset.asset_id;
+    option.textContent = asset.label;
+    return option;
+  };
+
+  const renderPointSpendConditions = () => {
+    const container = document.getElementById("point-spend-conditions");
+    clear(container);
+    if (!pointSpendOptions) return;
+    const source = document.getElementById("point-spend-source").value;
+    const relevant = pointSpendOptions.conditionalRules.filter(
+      (rule) => rule.source_asset_id === source,
+    );
+    if (relevant.length === 0) return;
+    container.appendChild(text("strong", "追加条件の確認"));
+    relevant.forEach((rule) => {
+      const label = node("label", "point-spend-check");
+      const checkbox = node("input");
+      checkbox.type = "checkbox";
+      checkbox.value = rule.rule_id;
+      checkbox.dataset.pointSpendConfirmation = "true";
+      const copy = node("span");
+      copy.appendChild(text("b", rule.label));
+      copy.appendChild(text("small", rule.conditions.join("・")));
+      label.appendChild(checkbox);
+      label.appendChild(copy);
+      container.appendChild(label);
+    });
+  };
+
+  const loadPointSpendOptions = async () => {
+    const result = document.getElementById("point-spend-result");
+    try {
+      const response = await fetch("/api/experimental/point-spend/options", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error("request_failed");
+      pointSpendOptions = safePointSpendOptions(await response.json());
+      const source = document.getElementById("point-spend-source");
+      const target = document.getElementById("point-spend-target");
+      clear(source);
+      clear(target);
+      pointSpendOptions.assets.forEach((asset) => {
+        source.appendChild(pointSpendSelectOption(asset));
+        target.appendChild(pointSpendSelectOption(asset));
+      });
+      source.value = pointSpendOptions.assets.some(
+        (asset) => asset.asset_id === "asset.point.rakuten",
+      )
+        ? "asset.point.rakuten"
+        : pointSpendOptions.assets[0]?.asset_id || "";
+      target.value = pointSpendOptions.assets.some(
+        (asset) => asset.asset_id === "asset.mile.ana",
+      )
+        ? "asset.mile.ana"
+        : pointSpendOptions.assets[1]?.asset_id || "";
+      renderP0WalletCatalogue();
+      renderP0ProductPickers();
+      renderPointSpendConditions();
+      clear(result);
+      result.appendChild(
+        text(
+          "p",
+          `${pointSpendOptions.rule_count}件の固定比率ルートを比較できます。`,
+          "helper",
+        ),
+      );
+    } catch {
+      pointSpendOptions = null;
+      renderP0WalletCatalogue();
+      clear(result);
+      result.appendChild(
+        text("p", "ポイント交換ルートを読み込めませんでした。", "error-panel"),
+      );
+    }
+  };
+
+  const renderPointSpendRoute = (route, primary) => {
+    const card = node(
+      "article",
+      `point-spend-route${primary ? " is-primary" : ""}`,
+    );
+    const heading = node("div", "point-spend-route-heading");
+    heading.appendChild(text("span", primary ? "おすすめ" : "別の候補"));
+    heading.appendChild(
+      text("strong", `${route.target_amount} ${route.target_label}`),
+    );
+    card.appendChild(heading);
+    card.appendChild(
+      text(
+        "p",
+        `${route.processing_days}・交換元の残り ${route.residual_source_amount}`,
+        "helper",
+      ),
+    );
+    const steps = node("ol", "point-spend-steps");
+    route.steps.forEach((step) => {
+      const item = node("li");
+      item.appendChild(text("strong", step.label));
+      item.appendChild(
+        text(
+          "span",
+          `${step.source_amount} ${step.source_label} → ${step.destination_amount} ${step.destination_label}`,
+        ),
+      );
+      item.appendChild(text("small", step.processing_days));
+      steps.appendChild(item);
+    });
+    card.appendChild(steps);
+    return card;
+  };
+
+  document
+    .getElementById("point-spend-source")
+    .addEventListener("change", renderPointSpendConditions);
+  document
+    .getElementById("point-spend-target")
+    .addEventListener("change", renderPointSpendConditions);
+  document
+    .getElementById("point-spend-form")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const result = document.getElementById("point-spend-result");
+      const button = document.getElementById("point-spend-submit");
+      button.disabled = true;
+      clear(result);
+      result.appendChild(text("p", "交換ルートを計算しています…", "helper"));
+      try {
+        const confirmed = [
+          ...document.querySelectorAll(
+            'input[data-point-spend-confirmation="true"]:checked',
+          ),
+        ].map((checkbox) => checkbox.value);
+        const body = await postJson(
+          "/api/experimental/point-spend/recommendation",
+          {
+            source_asset_id:
+              document.getElementById("point-spend-source").value,
+            target_asset_id:
+              document.getElementById("point-spend-target").value,
+            balance: Number(
+              document.getElementById("point-spend-balance").value,
+            ),
+            objective: document.getElementById("point-spend-objective").value,
+            effective_at: new Date().toISOString(),
+            confirmed_rule_ids: confirmed,
+          },
+        );
+        clear(result);
+        if (body.status !== "ready" || !body.winner) {
+          result.appendChild(
+            text("strong", "安全に計算できるルートがありません"),
+          );
+          result.appendChild(
+            text("p", body.message || "条件を確認してください。", "helper"),
+          );
+          return;
+        }
+        result.appendChild(renderPointSpendRoute(body.winner, true));
+        (body.alternatives || []).forEach((route) => {
+          result.appendChild(renderPointSpendRoute(route, false));
+        });
+        result.appendChild(text("p", body.message, "helper"));
+      } catch {
+        clear(result);
+        result.appendChild(
+          text("p", "交換ルートを計算できませんでした。", "error-panel"),
+        );
+      } finally {
+        button.disabled = false;
+      }
+    });
 
   document.getElementById("add-fact").addEventListener("click", addFactRow);
   document.getElementById("add-cap").addEventListener("click", addCapRow);
@@ -1331,21 +1882,9 @@
     const checked = [...instrumentInputs].filter((input) => input.checked);
     document.getElementById("summary-instruments").textContent =
       `支払い方法 ${checked.length}つ`;
-    document.getElementById("wallet-count").textContent = String(
-      checked.length,
-    );
     document.getElementById("summary-meter").dataset.count = String(
       checked.length,
     );
-    document.querySelectorAll("[data-wallet-instrument]").forEach((button) => {
-      const input = [...instrumentInputs].find(
-        (candidate) => candidate.value === button.dataset.walletInstrument,
-      );
-      const active = Boolean(input?.checked);
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", String(active));
-      button.querySelector("em").textContent = active ? "比較対象" : "未選択";
-    });
   };
 
   const syncAmountSummary = () => {
@@ -1425,18 +1964,14 @@
     });
   });
   instrumentInputs.forEach((input) => {
-    input.addEventListener("change", syncInstrumentViews);
-  });
-  document.querySelectorAll("[data-wallet-instrument]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const input = [...instrumentInputs].find(
-        (candidate) => candidate.value === button.dataset.walletInstrument,
-      );
-      if (!input) return;
-      input.checked = !input.checked;
+    input.addEventListener("change", () => {
       syncInstrumentViews();
+      syncP0ProductPickers();
     });
   });
+  document
+    .getElementById("p0-point-toggle")
+    .addEventListener("change", syncP0ProductPickers);
   document.querySelectorAll("[data-usage-preset]").forEach((button) => {
     button.addEventListener("click", () => {
       const storedValueInput = [...instrumentInputs].find(
@@ -1527,4 +2062,5 @@
     });
 
   void loadExperimentalRules();
+  void loadPointSpendOptions();
 })();

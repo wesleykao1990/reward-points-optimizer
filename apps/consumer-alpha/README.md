@@ -67,11 +67,20 @@ The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.
 
-The current fixture exposes one exact synthetic Tokyo branch, a direct card
-route, and an optional stored-value top-up route. Unknown stored-value use is
-shown as conditional. QR ownership can be recorded, but no QR purchase route
-is evaluated; a supported card is required. All outbound links use the fixed
-synthetic `.test` catalog and are not real official-app links.
+The legacy synthetic endpoint still exposes one exact Tokyo test branch, but
+the browser's primary comparison journey now starts from the P0
+Seven-Eleven/Nanaco lane. Enabling credit cards, mobile payments, or point
+programmes expands an exact allowlisted catalogue of seven card families, six
+mobile-payment families, and eight point families. At least one concrete P0
+family is required for each enabled category. These session-only selections
+are included in the recommendation/correction hash and echoed in the result;
+they do not fabricate individual card SKUs or make information-only facts
+executable.
+
+The Wallet tab exposes the same 21 P0 families plus the deterministic fixed-
+ratio point-spending graph. Only complete transfer/redemption claims are
+calculated. Official lottery, draw, game and scratch links appear in the
+Information tab and never enter recommendation arithmetic.
 
 The `カタログ` tab presents host-owned routes and point families together. The
 local demo port builds its 11 Seven-Eleven payment-family records from the

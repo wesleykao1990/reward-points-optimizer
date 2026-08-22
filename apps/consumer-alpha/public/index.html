@@ -44,7 +44,7 @@
           <form id="recommendation-form">
             <div class="merchant-row">
               <span class="merchant-icon" aria-hidden="true">店</span>
-              <div class="merchant-copy"><small>お店</small><output id="merchant-name">サンプルストア</output><span><output id="branch-name">東京サンプル店</output></span></div>
+              <div class="merchant-copy"><small>お店</small><output id="merchant-name">セブン‐イレブン</output><span><output id="branch-name">東京エリア</output></span></div>
               <span class="state-label">選択済み</span>
             </div>
 
@@ -70,24 +70,34 @@
               <legend><span>持っている支払い方法</span><small>複数選べます</small></legend>
               <div class="choice-list">
                 <label class="choice-row">
-                  <input type="checkbox" name="instrument" value="synthetic_card" checked>
+                  <input id="p0-card-toggle" type="checkbox" name="instrument" value="synthetic_card" checked>
                   <span class="choice-icon card-icon" aria-hidden="true">▰</span>
-                  <span class="choice-copy"><strong>クレジットカード</strong><small>サンプルカード</small></span>
+                  <span class="choice-copy"><strong>クレジットカード</strong><small>持っているカードをP0の7系列から選択</small></span>
                   <span class="choice-toggle" aria-hidden="true"></span>
                 </label>
+                <div id="p0-card-picker" class="p0-product-picker"><p class="helper">カード一覧を読み込んでいます…</p></div>
                 <label class="choice-row">
-                  <input type="checkbox" name="instrument" value="synthetic_qr_wallet">
+                  <input id="p0-mobile-pay-toggle" type="checkbox" name="instrument" value="synthetic_qr_wallet">
                   <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
-                  <span class="choice-copy"><strong>QR決済</strong><small>記録のみ・ルート比較は未対応</small></span>
+                  <span class="choice-copy"><strong>モバイル決済</strong><small>利用中のサービスをP0の6系列から選択</small></span>
                   <span class="choice-toggle" aria-hidden="true"></span>
                 </label>
+                <div id="p0-mobile-pay-picker" class="p0-product-picker" hidden><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
+                <label class="choice-row">
+                  <input id="p0-point-toggle" type="checkbox">
+                  <span class="choice-icon value-icon" aria-hidden="true">P</span>
+                  <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントをP0の8系列から選択</small></span>
+                  <span class="choice-toggle" aria-hidden="true"></span>
+                </label>
+                <div id="p0-point-picker" class="p0-product-picker" hidden><p class="helper">ポイント一覧を読み込んでいます…</p></div>
                 <label class="choice-row">
                   <input type="checkbox" name="instrument" value="synthetic_stored_value">
                   <span class="choice-icon value-icon" aria-hidden="true">P</span>
-                  <span class="choice-copy"><strong>電子マネー</strong><small>サンプル残高</small></span>
+                  <span class="choice-copy"><strong>電子マネー</strong><small>カテゴリ入力・残高価値の試算用</small></span>
                   <span class="choice-toggle" aria-hidden="true"></span>
                 </label>
               </div>
+              <p id="p0-selection-status" class="helper" aria-live="polite">クレジットカードを1つ以上選んでください。</p>
             </fieldset>
 
             <div class="preference-panel">
@@ -156,18 +166,29 @@
         <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> デモ版</span></header>
         <aside class="inline-disclosure"><strong>このウォレットは端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
 
-        <section class="wallet-overview"><small>比較対象の支払い方法</small><strong id="wallet-count">1</strong><span>個を選択中</span><p id="wallet-route-summary" class="helper">統合ルートは未比較です</p></section>
+        <section class="wallet-overview"><small>P0で情報を収録しているサービス</small><strong id="wallet-count">—</strong><span>系列</span><p id="wallet-route-summary" class="helper">実データを読み込んでいます</p></section>
 
         <section class="wallet-group" aria-labelledby="wallet-payment-title">
-          <div class="group-heading"><h2 id="wallet-payment-title">支払い方法</h2><button type="button" data-tab-target="home">ホームで編集</button></div>
-          <button type="button" class="wallet-item is-active" data-wallet-instrument="synthetic_card" aria-pressed="true"><span class="wallet-logo card-icon">▰</span><span><strong>サンプルカード</strong><small>クレジットカード</small></span><em>比較対象</em></button>
-          <button type="button" class="wallet-item" data-wallet-instrument="synthetic_qr_wallet" aria-pressed="false"><span class="wallet-logo qr-icon">▦</span><span><strong>サンプルQR</strong><small>ルート比較は未対応</small></span><em>未選択</em></button>
-          <button type="button" class="wallet-item" data-wallet-instrument="synthetic_stored_value" aria-pressed="false"><span class="wallet-logo value-icon">P</span><span><strong>サンプル電子マネー</strong><small>残高価値を設定できます</small></span><em>未選択</em></button>
+          <div class="group-heading"><h2 id="wallet-payment-title">対応サービス一覧</h2><button type="button" data-tab-target="information">詳しい情報</button></div>
+          <p class="helper">P0で収集済みのポイント、モバイル決済、クレジットカードを表示します。現在の保有状況はまだ保存しません。</p>
+          <div id="p0-wallet-catalogue" class="p0-wallet-catalogue" aria-live="polite"><p class="helper">サービス一覧を読み込んでいます…</p></div>
         </section>
 
         <section class="wallet-group" aria-labelledby="wallet-program-title">
-          <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイル</h2><span>準備中</span></div>
-          <div class="empty-state"><span aria-hidden="true">＋</span><strong>ポイントプログラムは未登録です</strong><p>実データとアカウント連携は今後のマイルストーンで追加します。</p></div>
+          <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイルの使い方</h2><span>P0先行版</span></div>
+          <form id="point-spend-form" class="point-spend-card">
+            <p>保有ポイントから、明示された固定比率だけを使って交換ルートを比較します。残高は保存されません。</p>
+            <div class="point-spend-grid">
+              <label>保有するポイント<select id="point-spend-source" required><option value="">読み込み中…</option></select></label>
+              <label>残高<input id="point-spend-balance" type="number" min="1" max="1000000000" step="1" value="1000" inputmode="numeric" required></label>
+              <label>交換先<select id="point-spend-target" required><option value="">読み込み中…</option></select></label>
+              <label>優先すること<select id="point-spend-objective"><option value="maximize_target">受取数を最大化</option><option value="fastest">所要日数を優先</option><option value="preserve_expiring">期限がある残高を優先</option></select></label>
+            </div>
+            <div id="point-spend-conditions" class="point-spend-conditions"></div>
+            <button id="point-spend-submit" type="submit" class="primary wide">おすすめの使い方を計算</button>
+            <p class="helper">先行情報を使った試算です。交換実行前に提供元の条件を確認してください。</p>
+          </form>
+          <div id="point-spend-result" class="point-spend-result" aria-live="polite"><p class="helper">ポイント情報を読み込んでいます…</p></div>
         </section>
       </section>
 
@@ -219,6 +240,12 @@
           <div id="experimental-rules" class="experimental-list" aria-live="polite">
             <p class="helper">ルート情報を読み込んでいます…</p>
           </div>
+        </section>
+
+        <section class="lottery-information" aria-labelledby="lottery-information-title">
+          <div class="group-heading"><h2 id="lottery-information-title">抽選・スクラッチ情報</h2><span>計算には不使用</span></div>
+          <p class="helper">当選率を還元率として扱わず、応募・詳細または終了後の公式告知だけを案内します。</p>
+          <div id="lottery-links" class="lottery-link-list" aria-live="polite"><p class="helper">公式キャンペーン情報を読み込んでいます…</p></div>
         </section>
 
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">

@@ -175,6 +175,8 @@ function dependencies(
 
 function responseJson(response: { readonly body: string }) {
   return JSON.parse(response.body) as {
+    version: string;
+    selected_p0_products: string[];
     routes: Array<Record<string, unknown>>;
   };
 }
@@ -249,6 +251,8 @@ describe("unified merchant recommendation journey", () => {
     const response = await jsonRequest(requestBody(), dependencies());
     expect(response.status).toBe(200);
     const body = responseJson(response);
+    expect(body.version).toBe("unified-recommendations.v2");
+    expect(body.selected_p0_products).toEqual([]);
     expect(body.routes.map((route) => route.route_id)).toEqual([
       "synthetic",
       "nanaco_purchase",
@@ -270,6 +274,84 @@ describe("unified merchant recommendation journey", () => {
     expect(response.body).not.toMatch(
       /https?:\/\/|evidence_ids|source_ids|parent_claim_id|candidate_hash|definition_hash/iu,
     );
+  });
+
+  it("uses only P0 routes for the Seven-Eleven browser merchant", async () => {
+    const body = responseJson(
+      await jsonRequest(
+        requestBody({
+          merchant_id: "merchant.seveneleven",
+          branch_id: "location.seveneleven.representative",
+          selected_p0_products: ["card.rakuten"],
+        }),
+        dependencies(),
+      ),
+    );
+    expect(body.routes.map((route) => route.route_id)).toEqual([
+      "nanaco_purchase",
+      "nanaco_credit_charge",
+    ]);
+    expect(JSON.stringify(body.routes)).not.toContain("サンプル");
+  });
+
+  it("binds exact P0 card, mobile-pay, and point selections to the recommendation", async () => {
+    resetIssuedRecommendationIds();
+    const selected = responseJson(
+      await jsonRequest(
+        requestBody({
+          owned_instruments: ["synthetic_card", "synthetic_qr_wallet"],
+          selected_p0_products: [
+            "wallet.paypay",
+            "point.rakuten",
+            "card.rakuten",
+          ],
+        }),
+        dependencies(),
+      ),
+    );
+    expect(selected.selected_p0_products).toEqual([
+      "card.rakuten",
+      "point.rakuten",
+      "wallet.paypay",
+    ]);
+    const firstId = selected.routes.find(
+      (route) => route.route_id === "synthetic",
+    )?.recommendation_id;
+    const changed = responseJson(
+      await jsonRequest(
+        requestBody({
+          selected_p0_products: ["card.view"],
+        }),
+        dependencies(),
+      ),
+    );
+    expect(firstId).toMatch(/^sha256:[0-9a-f]{64}$/u);
+    expect(
+      changed.routes.find((route) => route.route_id === "synthetic")
+        ?.recommendation_id,
+    ).not.toBe(firstId);
+  });
+
+  it("rejects unknown, duplicate, and category-incoherent P0 product selections", async () => {
+    for (const overrides of [
+      { selected_p0_products: ["card.unknown"] },
+      { selected_p0_products: ["card.rakuten", "card.rakuten"] },
+      {
+        owned_instruments: ["synthetic_qr_wallet"],
+        selected_p0_products: ["card.rakuten", "wallet.paypay"],
+      },
+      {
+        owned_instruments: ["synthetic_card", "synthetic_qr_wallet"],
+        selected_p0_products: ["card.rakuten"],
+      },
+    ]) {
+      const response = await jsonRequest(
+        requestBody(overrides),
+        dependencies(),
+      );
+      expect(response.status).toBe(400);
+      expect(response.body).not.toContain("card.unknown");
+    }
   });
 
   it("binds the synthetic correction ID to unified Nanaco and effective inputs", async () => {

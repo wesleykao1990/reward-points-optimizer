@@ -1,0 +1,168 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  listP0LotteryBrowserLinks,
+  listPointSpendBrowserOptions,
+  parsePointSpendBrowserInput,
+  recommendPointSpend,
+} from "../src/point-spend-recommendation.js";
+import { handleRequest } from "../src/server.js";
+
+const input = {
+  source_asset_id: "asset.point.rakuten",
+  target_asset_id: "asset.mile.ana",
+  balance: 1000,
+  objective: "maximize_target" as const,
+  effective_at: "2026-08-23T12:00:00+09:00",
+  confirmed_rule_ids: ["p0.transfer.rakuten.ana"],
+};
+
+describe("P0 point spending browser route", () => {
+  it("lists the bounded P0 asset graph without evidence internals", async () => {
+    const result = await listPointSpendBrowserOptions();
+    expect(result.rule_count).toBe(23);
+    expect(result.assets).toContainEqual({
+      asset_id: "asset.point.rakuten",
+      label: "楽天ポイント",
+      kind: "reward_point",
+    });
+    expect(result.wallet_catalogue).toHaveLength(21);
+    expect(
+      result.wallet_catalogue.filter((item) => item.kind === "point"),
+    ).toHaveLength(8);
+    expect(
+      result.wallet_catalogue.filter((item) => item.kind === "mobile_pay"),
+    ).toHaveLength(6);
+    expect(
+      result.wallet_catalogue.filter((item) => item.kind === "credit_card"),
+    ).toHaveLength(7);
+    expect(result.wallet_catalogue).toContainEqual({
+      family_id: "wallet.rakutenpay",
+      label: "楽天ペイ",
+      kind: "mobile_pay",
+      fact_count: 9,
+      calculation_status: "information_only",
+    });
+    expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+  });
+
+  it("keeps lotteries informational and exposes only bounded official links", async () => {
+    const result = await listP0LotteryBrowserLinks("2026-08-23");
+    expect(result.calculation_use).toBe(false);
+    expect(result.links).toHaveLength(9);
+    expect(result.links).toContainEqual({
+      title: "楽天ペイ デイリースクラッチ",
+      family: "楽天ペイ",
+      status: "official_announcement",
+      period_label: "終了したキャンペーン",
+      official_url: "https://pay.rakuten.co.jp/campaign/pay-scratch/",
+    });
+    expect(result.links).toContainEqual({
+      title: "nanaco夏祭り",
+      family: "nanacoポイント",
+      status: "application_or_details",
+      period_label: "2026/06/15〜2026/08/31",
+      official_url: "https://www.nanaco-net.jp/cp/index.html",
+    });
+    expect(
+      result.links.every((item) => item.official_url.startsWith("https://")),
+    ).toBe(true);
+    expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+  });
+
+  it("recommends Rakuten points to ANA miles using exact engine math", async () => {
+    const result = await recommendPointSpend(input);
+    expect(result).toMatchObject({
+      status: "ready",
+      experimental: true,
+      current_advice: false,
+      winner: {
+        target_amount: "500",
+        target_label: "ANAマイル",
+        residual_source_amount: "0",
+      },
+    });
+    expect(result.winner?.steps).toHaveLength(1);
+    expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+  });
+
+  it("rejects unknown fields, accessors, and unknown assets", async () => {
+    expect(() =>
+      parsePointSpendBrowserInput({ ...input, extra: true }),
+    ).toThrow("point_spend_request_invalid");
+    expect(() =>
+      parsePointSpendBrowserInput({
+        ...input,
+        effective_at: "2026-09-31T00:00:00+09:00",
+      }),
+    ).toThrow("point_spend_request_invalid");
+    let reads = 0;
+    const hostile = { ...input } as Record<string, unknown>;
+    Object.defineProperty(hostile, "balance", {
+      enumerable: true,
+      get() {
+        reads += 1;
+        return 1000;
+      },
+    });
+    expect(() => parsePointSpendBrowserInput(hostile)).toThrow(
+      "point_spend_request_invalid",
+    );
+    expect(reads).toBe(0);
+    await expect(
+      recommendPointSpend({ ...input, source_asset_id: "asset.point.unknown" }),
+    ).rejects.toThrow("point_spend_asset_unknown");
+  });
+
+  it("serves options and recommendations through exact localhost APIs", async () => {
+    const options = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/point-spend/options",
+      headers: { host: "127.0.0.1:3010" },
+    });
+    expect(options.status).toBe(200);
+    expect(JSON.parse(options.body)).toMatchObject({
+      rule_count: 23,
+      wallet_catalogue: expect.any(Array),
+    });
+
+    const lotteries = await handleRequest({
+      method: "GET",
+      pathname: "/api/experimental/lotteries",
+      headers: { host: "127.0.0.1:3010" },
+    });
+    expect(lotteries.status).toBe(200);
+    expect(JSON.parse(lotteries.body)).toMatchObject({
+      calculation_use: false,
+      links: expect.any(Array),
+    });
+
+    const recommendation = await handleRequest({
+      method: "POST",
+      pathname: "/api/experimental/point-spend/recommendation",
+      headers: {
+        host: "127.0.0.1:3010",
+        origin: "http://127.0.0.1:3010",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+    expect(recommendation.status).toBe(200);
+    expect(JSON.parse(recommendation.body)).toMatchObject({
+      status: "ready",
+      winner: { target_amount: "500" },
+    });
+
+    const invalid = await handleRequest({
+      method: "POST",
+      pathname: "/api/experimental/point-spend/recommendation",
+      headers: {
+        host: "127.0.0.1:3010",
+        origin: "http://127.0.0.1:3010",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ ...input, extra: true }),
+    });
+    expect(invalid.status).toBe(400);
+  });
+});

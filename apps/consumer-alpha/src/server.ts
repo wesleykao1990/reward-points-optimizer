@@ -68,6 +68,12 @@ import {
   NanacoCreditChargeRecommendationError,
 } from "./nanaco-credit-charge-recommendation.js";
 import {
+  listP0LotteryBrowserLinks,
+  listPointSpendBrowserOptions,
+  MAX_POINT_SPEND_BODY_BYTES,
+  recommendPointSpend,
+} from "./point-spend-recommendation.js";
+import {
   mapCorrectionDraftForBrowser,
   mapRecommendationForBrowser,
   resolveOfficialLink,
@@ -1061,6 +1067,7 @@ function unifiedRecommendationId(
       input.nanaco_credit_charge_preregistered,
     effective_at: input.effective_at,
     owned_instruments: input.owned_instruments,
+    selected_p0_products: input.selected_p0_products,
     stored_value_use: input.stored_value_use,
     stored_value_usage: input.stored_value_usage ?? null,
     stored_value_value_jpy_per_unit:
@@ -1503,11 +1510,13 @@ async function unifiedRecommendations(
   // Keep each route isolated: an invalid top-up must not remove a valid
   // purchase neighbour, and an explanation outage must remain visible only on
   // the affected route.
-  return Promise.all([
-    unifiedSyntheticRoute(input, dependency),
+  const p0Routes = [
     unifiedNanacoPurchaseRoute(input, dependency),
     unifiedNanacoCreditChargeRoute(input, dependency),
-  ]);
+  ];
+  return input.merchant_id === "merchant.seveneleven"
+    ? Promise.all(p0Routes)
+    : Promise.all([unifiedSyntheticRoute(input, dependency), ...p0Routes]);
 }
 
 function contentTypeIsJson(
@@ -1736,6 +1745,7 @@ export async function handleRequest(
           "synthetic",
           "nanaco_purchase",
           "nanaco_credit_charge",
+          "p0_point_spend",
         ],
         experimental_catalogue: true,
       });
@@ -1751,6 +1761,7 @@ export async function handleRequest(
         pathname === "/api/recommendations/corrections" ||
         pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/nanaco-credit-charge" ||
+        pathname === "/api/experimental/point-spend/recommendation" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -1763,7 +1774,40 @@ export async function handleRequest(
         Allow: "GET",
       });
     }
+    if (
+      method !== "GET" &&
+      (pathname === "/api/experimental/point-spend/options" ||
+        pathname === "/api/experimental/lotteries")
+    ) {
+      return errorResponseWithHeaders(requestError(405, "method_not_allowed"), {
+        Allow: "GET",
+      });
+    }
     if (method === "GET") {
+      if (pathname === "/api/experimental/lotteries") {
+        try {
+          return jsonResponse(
+            200,
+            (await listP0LotteryBrowserLinks()) as unknown as Readonly<
+              Record<string, unknown>
+            >,
+          );
+        } catch {
+          throw requestError(503, "p0_lottery_links_unavailable");
+        }
+      }
+      if (pathname === "/api/experimental/point-spend/options") {
+        try {
+          return jsonResponse(
+            200,
+            (await listPointSpendBrowserOptions()) as unknown as Readonly<
+              Record<string, unknown>
+            >,
+          );
+        } catch {
+          throw requestError(503, "point_spend_options_unavailable");
+        }
+      }
       if (pathname === "/api/experimental/facts") {
         try {
           const snapshot =
@@ -1858,6 +1902,27 @@ export async function handleRequest(
         rememberRecommendationId(result.request_id);
       return jsonResponse(200, { recommendation: result });
     }
+    if (pathname === "/api/experimental/point-spend/recommendation") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      try {
+        const input = parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES);
+        return jsonResponse(
+          200,
+          (await recommendPointSpend(input)) as unknown as Readonly<
+            Record<string, unknown>
+          >,
+        );
+      } catch (error) {
+        if (error instanceof TypeError)
+          return errorResponse(requestError(400, error.message));
+        throw requestError(503, "point_spend_recommendation_unavailable");
+      }
+    }
     if (pathname === "/api/recommendations") {
       if (method !== "POST") {
         return errorResponseWithHeaders(
@@ -1870,11 +1935,12 @@ export async function handleRequest(
       );
       const routes = await unifiedRecommendations(input, dependency);
       return jsonResponse(200, {
-        version: "unified-recommendations.v1",
+        version: "unified-recommendations.v2",
         merchant_id: input.merchant_id,
         branch_id: input.branch_id,
         amount_jpy: input.amount_jpy,
         effective_at: input.effective_at,
+        selected_p0_products: input.selected_p0_products,
         routes,
       });
     }
@@ -2170,32 +2236,9 @@ async function route(
       sendAppResponse(response, errorResponse(error as RequestError));
       return;
     }
+    const bodyLimit = requestBodyLimit(method, pathname);
     const body =
-      method === "POST" &&
-      (pathname === "/api/synthetic/evaluate" ||
-        pathname === "/api/recommendations" ||
-        pathname === "/api/corrections/draft" ||
-        pathname === "/api/recommendations/corrections" ||
-        pathname === "/api/experimental/recommendation" ||
-        pathname === "/api/experimental/nanaco-credit-charge" ||
-        pathname === "/api/experimental/corrections" ||
-        pathname === "/api/experimental/fact-corrections" ||
-        pathname === AGENT_FEED_INTERNAL_EVENT_PATH)
-        ? await readBodyBytes(
-            request,
-            pathname === AGENT_FEED_INTERNAL_EVENT_PATH
-              ? AGENT_FEED_INTERNAL_MAX_BODY_BYTES
-              : pathname === "/api/synthetic/evaluate"
-                ? MAX_EVALUATE_BODY_BYTES
-                : pathname === "/api/recommendations"
-                  ? MAX_UNIFIED_RECOMMENDATION_BODY_BYTES
-                  : pathname === "/api/experimental/recommendation"
-                    ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
-                    : pathname === "/api/experimental/nanaco-credit-charge"
-                      ? MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES
-                      : MAX_CORRECTION_BODY_BYTES,
-          )
-        : undefined;
+      bodyLimit === null ? undefined : await readBodyBytes(request, bodyLimit);
     sendAppResponse(
       response,
       await handleRequest({ method, pathname, headers, body }, dependency),
@@ -2217,6 +2260,34 @@ async function route(
       errorResponse(requestError(422, "synthetic_evaluation_unavailable")),
     );
   }
+}
+
+/** Exact network-body allowlist shared by the live server and regression tests. */
+export function requestBodyLimit(
+  method: string,
+  pathname: string,
+): number | null {
+  if (method !== "POST") return null;
+  if (pathname === AGENT_FEED_INTERNAL_EVENT_PATH)
+    return AGENT_FEED_INTERNAL_MAX_BODY_BYTES;
+  if (pathname === "/api/synthetic/evaluate") return MAX_EVALUATE_BODY_BYTES;
+  if (pathname === "/api/recommendations")
+    return MAX_UNIFIED_RECOMMENDATION_BODY_BYTES;
+  if (
+    pathname === "/api/experimental/recommendation" ||
+    pathname === "/api/experimental/nanaco-credit-charge"
+  )
+    return MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES;
+  if (pathname === "/api/experimental/point-spend/recommendation")
+    return MAX_POINT_SPEND_BODY_BYTES;
+  if (
+    pathname === "/api/corrections/draft" ||
+    pathname === "/api/recommendations/corrections" ||
+    pathname === "/api/experimental/corrections" ||
+    pathname === "/api/experimental/fact-corrections"
+  )
+    return MAX_CORRECTION_BODY_BYTES;
+  return null;
 }
 
 export function createAppServer(dependency?: AppCatalogueDependency): Server {
