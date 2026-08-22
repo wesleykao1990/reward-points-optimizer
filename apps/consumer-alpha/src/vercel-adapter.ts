@@ -4,6 +4,7 @@ import {
 } from "./runtime.js";
 import type { AppCatalogueDependency, AppResponse } from "./server.js";
 import { handleRequest } from "./server.js";
+import { SUPABASE_PROD_CA_2021 } from "./supabase-ca.js";
 
 type HeaderValue = string | readonly string[] | undefined;
 type DeploymentEnvironment = Readonly<Record<string, string | undefined>>;
@@ -256,6 +257,7 @@ export function createVercelRequestHandler(
     runtime = runtimeFactory(connectionString, {
       databaseRole: "jro_runtime",
       poolMax: 1,
+      sslRootCertificate: SUPABASE_PROD_CA_2021,
     });
     return runtime.dependencies;
   };

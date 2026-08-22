@@ -30,10 +30,12 @@ export interface PostgresAppRuntime {
 /** Host-owned time source for all effective-at current catalogue reads. */
 export interface PostgresAppRuntimeOptions
   extends P0ImplementationCatalogueOptions {
-  /** Bound application role selected at connection startup. */
+  /** Bound application role selected inside each checked-out transaction. */
   readonly databaseRole?: string;
   /** Keep serverless instances to one client connection by default. */
   readonly poolMax?: number;
+  /** Optional trusted root used for hostname-verified PostgreSQL TLS. */
+  readonly sslRootCertificate?: string;
   /**
    * Optional host-owned Agent Feed delivery composition. The runtime supplies
    * its own PostgreSQL pool as `target`; the manifest and exact reconciliation
@@ -64,6 +66,13 @@ function poolMaximum(value: number | undefined): number {
   if (!Number.isSafeInteger(value) || value < 1 || value > 4)
     throw new TypeError("jro_database_pool_max_invalid");
   return value;
+}
+
+function tlsConnectionString(connectionString: string): string {
+  const parsed = new URL(connectionString);
+  for (const parameter of ["sslcert", "sslkey", "sslrootcert", "sslmode"])
+    parsed.searchParams.delete(parameter);
+  return parsed.toString();
 }
 
 function transactionCommand(
@@ -180,15 +189,30 @@ export function createRoleScopedQueryPool(
 /** Build a bounded pool config without exposing or logging the URL. */
 export function createPostgresPoolConfig(
   connectionString: string,
-  options: Pick<PostgresAppRuntimeOptions, "databaseRole" | "poolMax"> = {},
+  options: Pick<
+    PostgresAppRuntimeOptions,
+    "databaseRole" | "poolMax" | "sslRootCertificate"
+  > = {},
 ): PoolConfig {
   optionalDatabaseRole(options.databaseRole);
+  const requiredConnectionString = requireDatabaseUrl(connectionString);
   return {
-    connectionString: requireDatabaseUrl(connectionString),
+    connectionString:
+      options.sslRootCertificate === undefined
+        ? requiredConnectionString
+        : tlsConnectionString(requiredConnectionString),
     max: poolMaximum(options.poolMax),
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
     allowExitOnIdle: true,
+    ...(options.sslRootCertificate === undefined
+      ? {}
+      : {
+          ssl: {
+            ca: options.sslRootCertificate,
+            rejectUnauthorized: true,
+          },
+        }),
   };
 }
 

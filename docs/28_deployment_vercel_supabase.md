@@ -97,6 +97,10 @@ Supabase Vercel integration. The adapter prefers the synchronized server-only
 back to `POSTGRES_URL_NON_POOLING` only for integrations that omit it. The
 runtime selects `jro_runtime` with `SET LOCAL ROLE` inside every checked-out
 transaction so no session state can leak through the shared pooler.
+The Vercel adapter also supplies Supabase's published 2021 production CA and
+keeps certificate and hostname verification enabled. URL-level SSL parameters
+are removed before the explicit trusted-root configuration is handed to `pg`,
+because `pg` otherwise replaces the supplied TLS object when parsing them.
 `JRO_DATABASE_URL` remains an explicit override for local or independently
 managed deployments. Enable Vercel's automatic system environment variables so
 generated preview and deployment hosts can be admitted exactly through
