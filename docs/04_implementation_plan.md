@@ -812,14 +812,14 @@ calculation route and are deduplicated into nine bounded official HTTPS links;
 expired entries lead to the official announcement rather than an application
 claim.
 
-The Home payment selector now expands those same P0 families when the user
-enables credit cards, mobile payments, or point programmes. At least one exact
-family must be selected for each enabled category; the canonical selection is
-bound to the recommendation/correction ID and echoed in Japanese in the result.
-The browser starts from the P0 Seven-Eleven merchant lane and no longer shows
-sample card, QR-payment, merchant, or branch labels. These are family-level
-ownership inputs, not fabricated individual product SKUs, and only already
-executable P0 rules participate in arithmetic.
+The Home payment selector expands those same service families when the user
+enables credit cards, mobile payments, or point programmes. The canonical
+selection is bound to the recommendation/correction ID and echoed in Japanese
+in the result. Selected card and mobile-payment families create actual purchase
+calculation candidates from their structured base-rate claims, while selected
+point families feed the fixed-ratio spending optimizer. The browser starts
+with neutral general shopping; Seven-Eleven is an explicit merchant choice and
+only that choice adds the Nanaco-specific routes.
 
 ## Later milestones
 

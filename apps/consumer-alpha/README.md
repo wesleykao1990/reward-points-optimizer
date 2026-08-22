@@ -67,18 +67,18 @@ The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.
 
-The legacy synthetic endpoint still exposes one exact Tokyo test branch, but
-the browser's primary comparison journey now starts from the P0
-Seven-Eleven/Nanaco lane. Enabling credit cards, mobile payments, or point
-programmes expands an exact allowlisted catalogue of seven card families, six
-mobile-payment families, and eight point families. At least one concrete P0
-family is required for each enabled category. These session-only selections
-are included in the recommendation/correction hash and echoed in the result;
-they do not fabricate individual card SKUs or make information-only facts
-executable.
+The legacy synthetic endpoint still exposes one exact Tokyo test branch. The
+browser now starts with a neutral general-shopping merchant; Seven-Eleven is
+an explicit merchant choice and only that choice adds the Nanaco routes.
+Enabling credit cards, mobile payments, or point programmes expands an exact
+allowlisted catalogue of seven card families, six mobile-payment families,
+and eight point families. The selected cards and mobile payments create real
+calculation candidates from their structured base-rate claims, so selection
+changes both the arithmetic result and the recommendation/correction hash.
+Selected point programmes feed the deterministic point-spending graph.
 
-The Wallet tab exposes the same 21 P0 families plus the deterministic fixed-
-ratio point-spending graph. Only complete transfer/redemption claims are
+The Wallet tab exposes the same 21 service families plus the deterministic
+fixed-ratio point-spending graph. Only complete transfer/redemption claims are
 calculated. Official lottery, draw, game and scratch links appear in the
 Information tab and never enter recommendation arithmetic.
 

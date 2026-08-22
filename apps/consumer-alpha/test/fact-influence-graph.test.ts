@@ -222,7 +222,7 @@ describe("P0 fact influence graph", () => {
     ).toMatchObject({ rankable: false });
   });
 
-  it("gives every non-applied role a useful Japanese message and labels roles in the UI", async () => {
+  it("gives every non-applied role a useful Japanese message without exposing graph roles in the UI", async () => {
     const graph = await getDefaultFactInfluenceGraphPort().load(
       "2026-08-21T00:00:00.000Z",
     );
@@ -259,15 +259,8 @@ describe("P0 fact influence graph", () => {
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
-    for (const label of [
-      "判定に反映",
-      "適用候補",
-      "条件候補・要確認",
-      "確認が必要",
-      "注意",
-      "参考情報",
-    ])
-      expect(app).toContain(label);
+    for (const label of ["適用候補", "条件候補・要確認", "判定に反映した情報"])
+      expect(app).not.toContain(label);
   });
 
   it("classifies explicit engine bindings as calculation inputs and never ranks advisory facts", () => {

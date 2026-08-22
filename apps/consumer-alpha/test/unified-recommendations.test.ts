@@ -246,7 +246,7 @@ describe("unified merchant recommendation journey", () => {
     expect(response.body).not.toContain("forged");
   });
 
-  it("returns synthetic calculation plus both Nanaco information routes", async () => {
+  it("returns synthetic and Nanaco routes as calculations", async () => {
     resetIssuedRecommendationIds();
     const response = await jsonRequest(requestBody(), dependencies());
     expect(response.status).toBe(200);
@@ -260,8 +260,8 @@ describe("unified merchant recommendation journey", () => {
     ]);
     expect(body.routes.map((route) => route.kind)).toEqual([
       "calculation",
-      "information_only",
-      "information_only",
+      "calculation",
+      "calculation",
     ]);
     expect(body.routes.map((route) => route.status)).toEqual([
       "eligible",
@@ -276,7 +276,7 @@ describe("unified merchant recommendation journey", () => {
     );
   });
 
-  it("uses only P0 routes for the Seven-Eleven browser merchant", async () => {
+  it("uses selected product rates in the Seven-Eleven calculation", async () => {
     const body = responseJson(
       await jsonRequest(
         requestBody({
@@ -288,13 +288,46 @@ describe("unified merchant recommendation journey", () => {
       ),
     );
     expect(body.routes.map((route) => route.route_id)).toEqual([
+      "selected_product_card.rakuten",
       "nanaco_purchase",
       "nanaco_credit_charge",
     ]);
+    expect(body.routes[0]).toMatchObject({
+      kind: "calculation",
+      status: "eligible",
+      recommendation: {
+        winner: {
+          display_name: "楽天カードで支払う",
+          reward_points: "2",
+          reward_label: "楽天ポイント",
+          reward_rate_percent: "1",
+        },
+      },
+    });
     expect(JSON.stringify(body.routes)).not.toContain("サンプル");
   });
 
-  it("binds exact P0 card, mobile-pay, and point selections to the recommendation", async () => {
+  it("does not add Seven-Eleven or Nanaco routes to general shopping", async () => {
+    const body = responseJson(
+      await jsonRequest(
+        requestBody({ selected_p0_products: ["card.rakuten"] }),
+        dependencies(),
+      ),
+    );
+    expect(body.routes.map((route) => route.route_id)).toEqual([
+      "selected_product_card.rakuten",
+    ]);
+    expect(body.routes[0]).toMatchObject({
+      label: "通常のお買い物・楽天カード",
+      kind: "calculation",
+      status: "eligible",
+      recommendation: {
+        winner: { reward_points: "2", reward_rate_percent: "1" },
+      },
+    });
+  });
+
+  it("binds exact card, mobile-pay, and point selections to calculated routes", async () => {
     resetIssuedRecommendationIds();
     const selected = responseJson(
       await jsonRequest(
@@ -315,7 +348,7 @@ describe("unified merchant recommendation journey", () => {
       "wallet.paypay",
     ]);
     const firstId = selected.routes.find(
-      (route) => route.route_id === "synthetic",
+      (route) => route.route_id === "selected_product_card.rakuten",
     )?.recommendation_id;
     const changed = responseJson(
       await jsonRequest(
@@ -327,8 +360,9 @@ describe("unified merchant recommendation journey", () => {
     );
     expect(firstId).toMatch(/^sha256:[0-9a-f]{64}$/u);
     expect(
-      changed.routes.find((route) => route.route_id === "synthetic")
-        ?.recommendation_id,
+      changed.routes.find(
+        (route) => route.route_id === "selected_product_card.view",
+      )?.recommendation_id,
     ).not.toBe(firstId);
   });
 
@@ -513,7 +547,7 @@ describe("unified merchant recommendation journey", () => {
     });
   });
 
-  it("keeps numeric results visible during graph outage and blocks only a missing binding", async () => {
+  it("keeps numeric results visible during graph or binding outages", async () => {
     const graphUnavailable = {
       load: async () => {
         throw new Error("graph temporarily unavailable");
@@ -553,7 +587,7 @@ describe("unified merchant recommendation journey", () => {
     expect(
       blocked.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
-      status: "blocked",
+      status: "eligible",
       issues: expect.arrayContaining(["fact_binding_required"]),
     });
     expect(

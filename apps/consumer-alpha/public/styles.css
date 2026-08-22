@@ -414,6 +414,21 @@ svg {
   min-width: 0;
 }
 
+.merchant-row .merchant-copy {
+  gap: 3px;
+  margin: 0;
+}
+
+.merchant-copy select {
+  min-height: 36px;
+  padding: 4px 34px 4px 0;
+  border: 0;
+  background-color: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .merchant-copy small,
 .choice-copy small,
 .wallet-item small,

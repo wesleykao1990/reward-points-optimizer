@@ -68,6 +68,7 @@ import {
   NanacoCreditChargeRecommendationError,
 } from "./nanaco-credit-charge-recommendation.js";
 import {
+  calculateSelectedProductPurchases,
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   MAX_POINT_SPEND_BODY_BYTES,
@@ -1360,10 +1361,8 @@ async function unifiedNanacoPurchaseRoute(
           )
         : Object.freeze({});
     if (facts.issue) issues.push(facts.issue);
-    const bindingFailed = facts.issue === "fact_binding_required";
-    const status = bindingFailed
-      ? "blocked"
-      : catalogue.state === "scheduled" || catalogue.state === "expired"
+    const status =
+      catalogue.state === "scheduled" || catalogue.state === "expired"
         ? "blocked"
         : statusFromExperimentalOutcome(recommendation.outcome);
     const displayable = status === "eligible";
@@ -1374,12 +1373,12 @@ async function unifiedNanacoPurchaseRoute(
     return Object.freeze({
       route_id: "nanaco_purchase",
       label: "セブン‐イレブン・nanaco購入",
-      kind: "information_only",
+      kind: "calculation",
       status,
       validity_state: catalogue.state,
       issues: uniqueIssues(issues),
       ...(recommendationId ? { recommendation_id: recommendationId } : {}),
-      ...(bindingFailed || status === "blocked"
+      ...(status === "blocked"
         ? {}
         : {
             recommendation: recommendation as unknown as Readonly<
@@ -1400,7 +1399,7 @@ async function unifiedNanacoPurchaseRoute(
     return Object.freeze({
       route_id: "nanaco_purchase",
       label: "セブン‐イレブン・nanaco購入",
-      kind: "information_only",
+      kind: "calculation",
       status,
       validity_state: catalogue.state,
       issues: uniqueIssues(issues),
@@ -1455,10 +1454,8 @@ async function unifiedNanacoCreditChargeRoute(
           )
         : Object.freeze({});
     if (facts.issue) issues.push(facts.issue);
-    const bindingFailed = facts.issue === "fact_binding_required";
-    const status = bindingFailed
-      ? "blocked"
-      : catalogue.state === "scheduled" || catalogue.state === "expired"
+    const status =
+      catalogue.state === "scheduled" || catalogue.state === "expired"
         ? "blocked"
         : statusFromCreditOutcome(recommendation.outcome);
     const displayable = status === "eligible";
@@ -1469,12 +1466,12 @@ async function unifiedNanacoCreditChargeRoute(
     return Object.freeze({
       route_id: "nanaco_credit_charge",
       label: "セブンカード・プラス→nanacoチャージ",
-      kind: "information_only",
+      kind: "calculation",
       status,
       validity_state: catalogue.state,
       issues: uniqueIssues(issues),
       ...(recommendationId ? { recommendation_id: recommendationId } : {}),
-      ...(bindingFailed || status === "blocked"
+      ...(status === "blocked"
         ? {}
         : {
             recommendation: recommendation as unknown as Readonly<
@@ -1495,7 +1492,7 @@ async function unifiedNanacoCreditChargeRoute(
     return Object.freeze({
       route_id: "nanaco_credit_charge",
       label: "セブンカード・プラス→nanacoチャージ",
-      kind: "information_only",
+      kind: "calculation",
       status,
       validity_state: catalogue.state,
       issues: uniqueIssues(issues),
@@ -1510,13 +1507,57 @@ async function unifiedRecommendations(
   // Keep each route isolated: an invalid top-up must not remove a valid
   // purchase neighbour, and an explanation outage must remain visible only on
   // the affected route.
-  const p0Routes = [
-    unifiedNanacoPurchaseRoute(input, dependency),
-    unifiedNanacoCreditChargeRoute(input, dependency),
-  ];
-  return input.merchant_id === "merchant.seveneleven"
-    ? Promise.all(p0Routes)
-    : Promise.all([unifiedSyntheticRoute(input, dependency), ...p0Routes]);
+  const calculations = await calculateSelectedProductPurchases(
+    input.selected_p0_products,
+    input.amount_jpy,
+  );
+  const selectedRoutes = calculations.map((calculation) => {
+    const routeId = `selected_product_${calculation.family_id}`;
+    const recommendationId = unifiedRecommendationId(routeId, input);
+    rememberRecommendationId(recommendationId);
+    return Object.freeze({
+      route_id: routeId,
+      label:
+        input.merchant_id === "merchant.seveneleven"
+          ? `セブン‐イレブン・${calculation.label}`
+          : `通常のお買い物・${calculation.label}`,
+      kind: "calculation" as const,
+      status: "eligible" as const,
+      validity_state: "active" as const,
+      issues: Object.freeze([]),
+      recommendation_id: recommendationId,
+      recommendation: Object.freeze({
+        outcome: "definite",
+        winner: Object.freeze({
+          plan_id: `plan_${calculation.family_id.replaceAll(".", "_")}`,
+          display_name: `${calculation.label}で支払う`,
+          reward_points: calculation.reward_points,
+          reward_label: calculation.reward_label,
+          reward_rate_percent: calculation.rate_percent,
+          objective_score_jpy: null,
+          conditions: Object.freeze([calculation.calculation_note]),
+        }),
+      }),
+    });
+  });
+  const includeLegacyRoutes =
+    input.merchant_id === SYNTHETIC_MERCHANT_ID && selectedRoutes.length === 0;
+  const nanacoRoutes =
+    input.merchant_id === "merchant.seveneleven" || includeLegacyRoutes
+      ? [
+          unifiedNanacoPurchaseRoute(input, dependency),
+          unifiedNanacoCreditChargeRoute(input, dependency),
+        ]
+      : [];
+  const resolvedNanacoRoutes = await Promise.all(nanacoRoutes);
+  if (input.merchant_id === "merchant.seveneleven")
+    return Object.freeze([...selectedRoutes, ...resolvedNanacoRoutes]);
+  if (selectedRoutes.length > 0) return Object.freeze(selectedRoutes);
+  return Object.freeze([
+    await unifiedSyntheticRoute(input, dependency),
+    ...selectedRoutes,
+    ...resolvedNanacoRoutes,
+  ]);
 }
 
 function contentTypeIsJson(

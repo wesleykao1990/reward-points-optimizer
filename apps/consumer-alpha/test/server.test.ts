@@ -566,9 +566,9 @@ describe("M6 localhost consumer shell", () => {
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
-    expect(html).toContain("ルート・ポイントカタログを見る");
+    expect(html).toContain("サービス・ポイント情報を見る");
     expect(html).toContain("ルート・ポイント情報");
-    expect(html).toContain("ファミリー、支払い方法、還元ルート、ポイント情報");
+    expect(html).toContain("支払い方法、還元率、ポイントの使い方");
     expect(html.indexOf('id="tab-information"')).toBeLessThan(
       html.indexOf('id="experimental-section"'),
     );
@@ -577,16 +577,27 @@ describe("M6 localhost consumer shell", () => {
     expect(html).not.toContain("最終確認前");
     expect(html).not.toContain("未検証");
     expect(html).not.toContain("現在のおすすめには使わない");
+    expect(html).not.toContain("ファミリー");
+    expect(source).not.toContain("交換計算対応");
+    expect(source).not.toContain("情報掲載");
     expect(html).toContain("対応サービス一覧");
     expect(html).toContain("抽選・スクラッチ情報");
     expect(html).toContain('id="p0-card-picker"');
     expect(html).toContain('id="p0-mobile-pay-picker"');
     expect(html).toContain('id="p0-point-picker"');
-    expect(html).toContain("P0の7系列から選択");
-    expect(html).toContain("P0の6系列から選択");
-    expect(html).toContain("P0の8系列から選択");
+    expect(html).toContain("持っているカードを7種類から選択");
+    expect(html).toContain("利用中のサービスを6種類から選択");
+    expect(html).toContain("保有するポイントを8種類から選択");
+    expect(html).toContain('id="merchant-selector"');
+    expect(html).toContain("一般のお買い物");
+    expect(html).toContain("選択したカードとモバイル決済の通常還元率");
+    expect(html).not.toMatch(/P0の|P0で|P0先行版/u);
+    expect(html).not.toContain("条件キー");
+    expect(html).not.toContain("上限キー");
+    expect(html).not.toContain('id="add-fact"');
+    expect(html).not.toContain('id="add-cap"');
     expect(html).toContain("セブン‐イレブン");
-    expect(html).toContain("東京エリア");
+    expect(html).toContain("通常の店舗");
     expect(html).not.toContain("サンプルストア");
     expect(html).not.toContain("東京サンプル店");
     expect(html).not.toContain("サンプルカード");
@@ -596,7 +607,13 @@ describe("M6 localhost consumer shell", () => {
     expect(source).toContain("/api/experimental/rules");
     expect(source).toContain("/api/experimental/corrections");
     expect(source).toContain("誤りを報告する");
+    expect(source).toContain("情報の誤りを報告");
+    expect(html).not.toContain('id="correction-form"');
+    expect(source).not.toContain("送信・保存されません");
     expect(source).toContain("renderGroupedPaymentAcceptance");
+    expect(source).not.toContain('"P0情報');
+    expect(source).not.toContain('"条件キー"');
+    expect(source).not.toContain('"上限キー"');
     expect(source).not.toContain('"先行公開"');
     expect(source).not.toContain("先行実験");
     expect(source).toContain("textContent");
