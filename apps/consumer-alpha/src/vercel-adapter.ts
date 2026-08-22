@@ -205,10 +205,7 @@ function isAppResponse(value: unknown): value is AppResponse {
 
 function deploymentPathname(parsed: URL): string {
   if (parsed.hash !== "") throw deploymentError(400, "query_not_allowed");
-  if (parsed.pathname !== "/api/handler") {
-    if (parsed.search !== "") throw deploymentError(400, "query_not_allowed");
-    return parsed.pathname;
-  }
+  if (parsed.search === "") return parsed.pathname;
 
   const entries = [...parsed.searchParams.entries()];
   if (entries.length !== 1 || entries[0]?.[0] !== "path")
@@ -222,7 +219,13 @@ function deploymentPathname(parsed: URL): string {
     path.includes("//")
   )
     throw deploymentError(400, "query_not_allowed");
-  return `/api/${path}`;
+  const rewrittenPathname = `/api/${path}`;
+  if (
+    parsed.pathname !== "/api/handler" &&
+    parsed.pathname !== rewrittenPathname
+  )
+    throw deploymentError(400, "query_not_allowed");
+  return rewrittenPathname;
 }
 
 /**
