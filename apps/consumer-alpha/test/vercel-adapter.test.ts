@@ -212,7 +212,7 @@ describe("consumer-alpha Vercel adapter", () => {
     });
   });
 
-  it("prefers the Supabase session-pooler URL for the bound runtime role", async () => {
+  it("prefers the Supabase transaction-pooler URL for the bound runtime role", async () => {
     let connectionString: string | undefined;
     const handler = createVercelRequestHandler({
       environment: {
@@ -254,7 +254,7 @@ describe("consumer-alpha Vercel adapter", () => {
       response,
     );
     expect(connectionString).toBe(
-      "postgresql://session-pooler.example/postgres",
+      "postgresql://transaction-pooler.example/postgres",
     );
   });
 });
