@@ -1128,13 +1128,6 @@ button.remove {
   min-height: 42px;
 }
 
-.information-count {
-  margin: 13px 0 0;
-  color: var(--lime-soft);
-  font-size: 0.66rem;
-  font-weight: 700;
-}
-
 .information-list-section {
   margin-top: 32px;
 }
@@ -1154,6 +1147,188 @@ button.remove {
   border-radius: 14px;
   background: var(--surface-raised);
   box-shadow: var(--shadow);
+}
+
+.service-information-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.service-information-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.service-highlight-list {
+  display: grid;
+  gap: 8px;
+}
+
+.service-highlight-item {
+  padding: 11px;
+  border-left: 3px solid var(--lime);
+  border-radius: 0 11px 11px 0;
+  background: #1b241b;
+}
+
+.service-highlight-item strong {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.service-highlight-item p {
+  margin: 5px 0 0;
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.service-campaign-section,
+.service-rule-section {
+  display: grid;
+  gap: 9px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.service-campaign-section > h4,
+.service-rule-section > h4,
+.service-fact-group > h4 {
+  margin: 0;
+  color: var(--lime-soft);
+  font-size: 0.72rem;
+}
+
+.service-campaign-list {
+  display: grid;
+  gap: 8px;
+}
+
+.service-campaign-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px;
+  border: 1px solid #52633f;
+  border-radius: 12px;
+  background: #1c281d;
+}
+
+.service-campaign-item > div {
+  display: grid;
+  gap: 3px;
+}
+
+.service-campaign-item strong {
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.service-campaign-item span {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.service-official-link {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--lime);
+  color: #152216;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.service-payment-methods,
+.service-rule-item {
+  padding: 11px;
+  border-radius: 12px;
+  background: #181d18;
+}
+
+.service-payment-methods > strong,
+.service-rule-item > strong {
+  color: var(--text);
+  font-size: 0.74rem;
+}
+
+.service-payment-methods ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.service-payment-methods li {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #293029;
+  color: var(--text-soft);
+  font-size: 0.61rem;
+}
+
+.service-rule-item p {
+  margin: 6px 0 0;
+  color: var(--text-soft);
+  font-size: 0.69rem;
+  line-height: 1.55;
+}
+
+.service-fact-details,
+.service-report-details {
+  border-top: 1px solid var(--line);
+}
+
+.service-fact-details > summary,
+.service-report-details > summary {
+  padding: 14px 0 0;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.service-fact-group {
+  margin-top: 14px;
+}
+
+.service-fact-group ul {
+  display: grid;
+  gap: 10px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.service-fact-group li {
+  padding: 11px;
+  border-radius: 11px;
+  background: #181d18;
+}
+
+.service-fact-group li strong {
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+.service-fact-group li p {
+  margin: 6px 0 0;
+  color: var(--text-soft);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.service-report-details .information-card-actions {
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .information-card-header {
@@ -2198,7 +2373,6 @@ button.remove {
 
 .p0-wallet-family-icon {
   display: grid;
-  grid-row: span 2;
   width: 38px;
   height: 38px;
   place-items: center;
@@ -2302,6 +2476,15 @@ button.remove {
   }
 
   .lottery-official-link {
+    text-align: center;
+  }
+
+  .service-campaign-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .service-official-link {
     text-align: center;
   }
 }

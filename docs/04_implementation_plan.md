@@ -807,10 +807,11 @@ result as an experimental estimate. See `docs/27_point_spend_optimizer.md`.
 
 The Wallet catalogue now replaces its three sample rows with all 21 P0
 consumer families: eight point programmes, six mobile-payment services, and
-seven credit-card families. Lottery/draw/scratch facts stay outside every
-calculation route and are deduplicated into nine bounded official HTTPS links;
-expired entries lead to the official announcement rather than an application
-claim.
+seven credit-card families. The customer Catalogue groups facts, routes, and
+current lottery/draw/scratch links into one block per service family. Exact
+duplicates, internal predicates, record counts, and expired campaigns are
+omitted from the customer view; campaign links stay outside every calculation
+route.
 
 The Home payment selector expands those same service families when the user
 enables credit cards, mobile payments, or point programmes. The canonical

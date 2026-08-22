@@ -74,11 +74,11 @@ browser starts from neutral general shopping. Seven-Eleven is an explicit
 merchant selection and only that selection adds the Nanaco-specific routes.
 
 Lottery, draw, game, and scratch claims remain information-only regardless of
-their advertised maximum prize. The Information tab deduplicates these claims
-by checked-in official source and displays a bounded HTTPS link. A current
-campaign is labelled `公式ページで応募・詳細を確認`; an explicitly ended or
-date-expired campaign is labelled `公式告知を確認`. These links are never added
-to the calculation graph and no expected value is inferred.
+their advertised maximum prize. The Catalogue tab deduplicates current claims
+by checked-in official source and places each bounded HTTPS link inside the
+matching service-family block. Explicitly ended or date-expired campaigns are
+omitted from the customer catalogue. These links are never added to the
+calculation graph and no expected value is inferred.
 
 Balances are session input only. This milestone does not log in to loyalty
 programs, store credentials, perform an exchange, or claim that a redemption
