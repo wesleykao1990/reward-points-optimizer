@@ -684,7 +684,7 @@ language sql
 immutable
 as $$
     select 'sha256:' || encode(
-        public.digest(
+        extensions.digest(
             convert_to(
                 jsonb_build_object(
                     'source_ids', p_source_ids,

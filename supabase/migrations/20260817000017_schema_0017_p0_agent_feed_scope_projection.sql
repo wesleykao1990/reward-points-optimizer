@@ -277,7 +277,7 @@ begin
     if v_expected_count = 0 then
         raise exception 'P0 work unit is absent from the manifest' using errcode = '22023';
     end if;
-    select 'sha256:' || encode(public.digest(convert_to(
+    select 'sha256:' || encode(extensions.digest(convert_to(
         '{"family_id":' || to_jsonb(p_payload->>'family_id')::text ||
         ',"manifest_sha256":' || to_jsonb(v_manifest.manifest_sha256)::text ||
         ',"plan_sha256":' || to_jsonb(v_manifest.plan_sha256)::text ||
