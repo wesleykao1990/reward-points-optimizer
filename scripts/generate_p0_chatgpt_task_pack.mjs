@@ -21,6 +21,10 @@ const locatorOverridesPath = path.join(
   root,
   "registry/planning/p0-agent-feed-locator-overrides.2026-08-21.v0.1.json",
 );
+const liveRecoveryPath = path.join(
+  root,
+  "registry/planning/p0-live-recovery-alternatives.2026-08-22.v0.1.json",
+);
 
 const PACKAGE_BY_CATEGORY = new Map([
   ["point_program", ["p0.1-core-point-ecosystems", "Core point ecosystems"]],
@@ -71,13 +75,19 @@ function sha256(value) {
   return `sha256:${createHash("sha256").update(canonical(value)).digest("hex")}`;
 }
 
-const [rawPlan, trustedSourceRegistry, directRecovery, locatorOverrides] =
-  await Promise.all([
-    fs.readFile(planPath, "utf8").then(JSON.parse),
-    fs.readFile(trustedSourcesPath, "utf8").then(JSON.parse),
-    fs.readFile(recoveryPath, "utf8").then(JSON.parse),
-    fs.readFile(locatorOverridesPath, "utf8").then(JSON.parse),
-  ]);
+const [
+  rawPlan,
+  trustedSourceRegistry,
+  directRecovery,
+  locatorOverrides,
+  liveRecovery,
+] = await Promise.all([
+  fs.readFile(planPath, "utf8").then(JSON.parse),
+  fs.readFile(trustedSourcesPath, "utf8").then(JSON.parse),
+  fs.readFile(recoveryPath, "utf8").then(JSON.parse),
+  fs.readFile(locatorOverridesPath, "utf8").then(JSON.parse),
+  fs.readFile(liveRecoveryPath, "utf8").then(JSON.parse),
+]);
 
 const registeredHintsByFamily = new Map();
 for (const [familyId, selectors] of P0_1_SOURCE_SELECTORS) {
@@ -100,21 +110,141 @@ for (const [familyId, selectors] of P0_1_SOURCE_SELECTORS) {
   registeredHintsByFamily.set(familyId, hints);
 }
 
-const recoveredHintsByFamily = new Map();
-for (const target of [...directRecovery.targets, ...locatorOverrides.targets]) {
-  const hints = recoveredHintsByFamily.get(target.family_id) ?? [];
-  hints.push({
+const planFamiliesById = new Map(
+  rawPlan.families.map((family) => [family.family_id, family]),
+);
+const recoveryCandidatesByFamily = new Map();
+
+function addRecoveryCandidate(target, alternative, sourceOrder) {
+  const family = planFamiliesById.get(target.family_id);
+  if (!family)
+    throw new Error(`recovery target family is not in the source plan: ${target.family_id}`);
+  if (family.stream_id !== target.stream_id)
+    throw new Error(`recovery target stream mismatch: ${target.family_id}`);
+  if (!family.required_source_roles.includes(target.source_role_id))
+    throw new Error(
+      `recovery target role is not in the source plan: ${target.family_id}/${target.source_role_id}`,
+    );
+  if (
+    typeof alternative.source_url !== "string" ||
+    !alternative.source_url.startsWith("https://") ||
+    typeof alternative.publisher !== "string" ||
+    alternative.publisher.length === 0 ||
+    typeof alternative.role_marker !== "string" ||
+    alternative.role_marker.length === 0
+  )
+    throw new Error(
+      `recovery target locator is invalid: ${target.family_id}/${target.source_role_id}`,
+    );
+
+  const candidates = recoveryCandidatesByFamily.get(target.family_id) ?? [];
+  const candidate = {
+    family_id: target.family_id,
     source_role_id: target.source_role_id,
-    source_url: target.source_url,
-    publisher: target.publisher,
-    role_marker: target.role_marker,
-    exact_registered_source_id: target.exact_registered_source_id ?? null,
+    source_url: alternative.source_url,
+    publisher: alternative.publisher,
+    role_marker: alternative.role_marker,
+    exact_registered_source_id: alternative.exact_registered_source_id ?? null,
     related_registered_source_ids: [
-      ...(target.related_registered_source_ids ?? []),
+      ...(alternative.related_registered_source_ids ?? []),
     ].sort(),
-    hint_status: "direct_locator_lead_only_not_canonical_evidence",
-  });
-  recoveredHintsByFamily.set(target.family_id, hints);
+    priority:
+      Number.isSafeInteger(alternative.priority) && alternative.priority > 0
+        ? alternative.priority
+        : 1,
+    source_order: sourceOrder,
+  };
+  const duplicateIndex = candidates.findIndex(
+    (item) =>
+      item.family_id === candidate.family_id &&
+      item.source_role_id === candidate.source_role_id &&
+      item.source_url === candidate.source_url,
+  );
+  if (duplicateIndex === -1) {
+    candidates.push(candidate);
+  } else {
+    const existing = candidates[duplicateIndex];
+    const existingRank = [existing.source_order, -existing.priority];
+    const candidateRank = [candidate.source_order, -candidate.priority];
+    if (
+      candidateRank[0] > existingRank[0] ||
+      (candidateRank[0] === existingRank[0] && candidateRank[1] > existingRank[1])
+    )
+      candidates[duplicateIndex] = candidate;
+  }
+  recoveryCandidatesByFamily.set(target.family_id, candidates);
+}
+
+function addHistoricalRecoveryTarget(target, sourceOrder) {
+  addRecoveryCandidate(
+    target,
+    {
+      source_url: target.source_url,
+      publisher: target.publisher,
+      role_marker: target.role_marker,
+      exact_registered_source_id: target.exact_registered_source_id ?? null,
+      related_registered_source_ids: target.related_registered_source_ids ?? [],
+      priority: 1,
+    },
+    sourceOrder,
+  );
+}
+
+for (const target of directRecovery.targets) addHistoricalRecoveryTarget(target, 1);
+for (const target of locatorOverrides.targets)
+  addHistoricalRecoveryTarget(target, 2);
+
+if (!Array.isArray(liveRecovery.targets) || liveRecovery.targets.length !== 11)
+  throw new Error("current live recovery must contain exactly 11 targets");
+const liveRecoveryKeys = new Set();
+for (const target of liveRecovery.targets) {
+  const key = `${target.family_id}\u0000${target.source_role_id}`;
+  if (liveRecoveryKeys.has(key))
+    throw new Error(`duplicate current live recovery target: ${key}`);
+  liveRecoveryKeys.add(key);
+  if (!Array.isArray(target.alternatives) || target.alternatives.length === 0)
+    throw new Error(`current live recovery has no alternatives: ${key}`);
+  for (const alternative of target.alternatives)
+    addRecoveryCandidate(target, alternative, 3);
+}
+
+// The task-pack contract carries one recovered locator hint per family-role.
+// Keep every alternative in the dated planning manifest, then select the
+// current manifest's highest-precedence alternative deterministically. This
+// avoids duplicate role rows while keeping older recovery artifacts immutable.
+const recoveredHintsByFamily = new Map();
+for (const [familyId, candidates] of recoveryCandidatesByFamily) {
+  const candidatesByRole = new Map();
+  for (const candidate of candidates) {
+    const roleCandidates = candidatesByRole.get(candidate.source_role_id) ?? [];
+    roleCandidates.push(candidate);
+    candidatesByRole.set(candidate.source_role_id, roleCandidates);
+  }
+  const selected = [...candidatesByRole.values()].map((roleCandidates) =>
+    [...roleCandidates].sort(
+      (left, right) =>
+        right.source_order - left.source_order ||
+        left.priority - right.priority ||
+        left.source_url.localeCompare(right.source_url),
+    )[0],
+  );
+  recoveredHintsByFamily.set(
+    familyId,
+    selected
+      .map((candidate) => ({
+        source_role_id: candidate.source_role_id,
+        source_url: candidate.source_url,
+        publisher: candidate.publisher,
+        role_marker: candidate.role_marker,
+        exact_registered_source_id: candidate.exact_registered_source_id,
+        related_registered_source_ids: candidate.related_registered_source_ids,
+        hint_status: "direct_locator_lead_only_not_canonical_evidence",
+      }))
+      .sort((a, b) =>
+        a.source_role_id.localeCompare(b.source_role_id) ||
+        a.source_url.localeCompare(b.source_url),
+      ),
+  );
 }
 const tasks = new Map();
 for (const family of rawPlan.families) {
@@ -185,7 +315,7 @@ const projection = {
   version: "p0-chatgpt-agent-feed-task-pack.v0.1",
   source_plan_sha256:
     "sha256:a59447525cb207838439a3cdb8b9cc22d19d875a650a64f50354137a78892003",
-  generated_at: "2026-08-21T19:30:00+09:00",
+  generated_at: "2026-08-22T00:00:00+09:00",
   protocol_version: "0.1",
   producer_id: "chatgpt-scheduled-task",
   lifecycle_tools: ["begin_run", "submit_batch", "complete_run"],

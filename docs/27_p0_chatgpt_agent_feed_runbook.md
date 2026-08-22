@@ -228,3 +228,24 @@ The finding states `publication_authority: none`, the evidence has no asserted
 content hash, and neither object is canonical economic truth. The run therefore
 proves the repaired live submission shape and terminal accounting without
 overstating P0 completion.
+
+### Current live recovery alternatives (2026-08-22)
+
+The current live retry inputs are recorded in
+`registry/planning/p0-live-recovery-alternatives.2026-08-22.v0.1.json`. They
+cover exactly eleven roles in the five partial families `merchant.amazon-jp`,
+`point.d`, `point.jre`, `point.nanaco`, and `reg.jp.meti.cashless`. The record
+contains only first-party locator leads: it asserts no economic fact, retains
+no source body, performs no source registration, and creates no canonical
+evidence. Browser-rendered pages are preferred where listed, with the supplied
+official static HTML/CDN and PDF alternatives used only as bounded fallbacks;
+credentials, personal data, and WAF bypasses are prohibited.
+
+The planning record keeps every alternative, while the generated task pack
+selects one deterministic lead per family-role because the task-pack contract
+admits one recovered hint per role. Current leads are Amazon's points CDN alias;
+d POINT's rendered exchange directory; the `app.jrepoint.jp` campaign,
+merchant, and agreement paths; nanaco's registered ANA exchange page; and the
+METI guideline, data index, ratio release, promotion report, and policy hub.
+Identical family-role-URL rows from the historical recovery manifests are
+deduplicated without modifying those historical files.

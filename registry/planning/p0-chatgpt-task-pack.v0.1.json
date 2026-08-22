@@ -1,7 +1,7 @@
 {
   "version": "p0-chatgpt-agent-feed-task-pack.v0.1",
   "source_plan_sha256": "sha256:a59447525cb207838439a3cdb8b9cc22d19d875a650a64f50354137a78892003",
-  "generated_at": "2026-08-21T19:30:00+09:00",
+  "generated_at": "2026-08-22T00:00:00+09:00",
   "protocol_version": "0.1",
   "producer_id": "chatgpt-scheduled-task",
   "lifecycle_tools": [
@@ -207,7 +207,17 @@
               "hint_status": "registered_locator_not_canonical_evidence"
             }
           ],
-          "recovered_role_locator_hints": []
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "transfer_partner_directory",
+              "source_url": "https://dpoint.docomo.ne.jp/store/exchange/index.html",
+              "publisher": "NTT DOCOMO",
+              "role_marker": "d POINT exchange directory (verify role marker at fetch)",
+              "exact_registered_source_id": "jp.dpoint.transfer",
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
         },
         {
           "family_id": "point.jre",
@@ -342,11 +352,13 @@
           "recovered_role_locator_hints": [
             {
               "source_role_id": "campaign_directory",
-              "source_url": "https://www.jrepoint.jp/campaign/list/",
+              "source_url": "https://app.jrepoint.jp/campaign/list/",
               "publisher": "JR East",
-              "role_marker": "キャンペーン",
-              "exact_registered_source_id": "jp.jrepoint.campaigns",
-              "related_registered_source_ids": [],
+              "role_marker": "JRE POINT campaign directory (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.jrepoint.home"
+              ],
               "hint_status": "direct_locator_lead_only_not_canonical_evidence"
             },
             {
@@ -362,9 +374,20 @@
             },
             {
               "source_role_id": "partner_merchant_directory",
-              "source_url": "https://www.jrepoint.jp/point/append/jrepoint-card/",
+              "source_url": "https://app.jrepoint.jp/point/append/jrepoint-card/",
               "publisher": "JR East",
-              "role_marker": "JRE POINT加盟店",
+              "role_marker": "JRE POINT merchant directory (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [
+                "jp.jrepoint.home"
+              ],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "program_terms",
+              "source_url": "https://app.jrepoint.jp/agreement/jrepoint/",
+              "publisher": "JR East",
+              "role_marker": "JRE POINT agreement (verify role marker at fetch)",
               "exact_registered_source_id": null,
               "related_registered_source_ids": [
                 "jp.jrepoint.home"
@@ -373,9 +396,9 @@
             },
             {
               "source_role_id": "transfer_partner_directory",
-              "source_url": "https://www.jrepoint.jp/agreement/jrepoint/",
+              "source_url": "https://app.jrepoint.jp/agreement/jrepoint/",
               "publisher": "JR East",
-              "role_marker": "ポイント交換に関する特約",
+              "role_marker": "JRE POINT exchange agreement (verify role marker at fetch)",
               "exact_registered_source_id": null,
               "related_registered_source_ids": [
                 "jp.jrepoint.home"
@@ -581,8 +604,8 @@
               "source_role_id": "transfer_partner_directory",
               "source_url": "https://www.nanaco-net.jp/how-to/use_point/ana.html",
               "publisher": "Seven Card Service",
-              "role_marker": "提携先ごとのポイント交換",
-              "exact_registered_source_id": null,
+              "role_marker": "nanaco partner exchange directory (verify role marker at fetch)",
+              "exact_registered_source_id": "jp.nanaco.transfer-ana",
               "related_registered_source_ids": [],
               "hint_status": "direct_locator_lead_only_not_canonical_evidence"
             }
@@ -1406,7 +1429,17 @@
             "store_locator_and_branch_overrides"
           ],
           "registered_source_hints": [],
-          "recovered_role_locator_hints": []
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "loyalty_program_rules",
+              "source_url": "https://www.cdn.amazon.co.jp/b?node=8123221051",
+              "publisher": "Amazon Japan",
+              "role_marker": "Amazon Points page (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
         },
         {
           "family_id": "merchant.biccamera",
@@ -1736,7 +1769,44 @@
             "statistics_or_methodology"
           ],
           "registered_source_hints": [],
-          "recovered_role_locator_hints": []
+          "recovered_role_locator_hints": [
+            {
+              "source_role_id": "change_notices",
+              "source_url": "https://www.meti.go.jp/press/2025/03/20260331006/20260331006.html",
+              "publisher": "Ministry of Economy, Trade and Industry (METI)",
+              "role_marker": "cashless ratio release (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "registered_provider_lists",
+              "source_url": "https://www.meti.go.jp/policy/mono_info_service/cashless_data/index.html",
+              "publisher": "Ministry of Economy, Trade and Industry (METI)",
+              "role_marker": "cashless official data index (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "rules_and_guidance",
+              "source_url": "https://www.meti.go.jp/policy/mono_info_service/cashless/chusho-guideline.pdf",
+              "publisher": "Ministry of Economy, Trade and Industry (METI)",
+              "role_marker": "cashless guideline PDF (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            },
+            {
+              "source_role_id": "statistics_or_methodology",
+              "source_url": "https://www.meti.go.jp/press/2025/03/20260331006/20260331006.html",
+              "publisher": "Ministry of Economy, Trade and Industry (METI)",
+              "role_marker": "cashless ratio release (verify role marker at fetch)",
+              "exact_registered_source_id": null,
+              "related_registered_source_ids": [],
+              "hint_status": "direct_locator_lead_only_not_canonical_evidence"
+            }
+          ]
         },
         {
           "family_id": "reg.jp.ppc.privacy",
@@ -1761,5 +1831,5 @@
       ]
     }
   ],
-  "pack_sha256": "sha256:08f0734b9055894ca47b2506d8c46c2013cc5d135c3cd38c401e82cc64a7ab83"
+  "pack_sha256": "sha256:ec5478d2fd82a0cc281640bbd10370748c576f7b29507e03f35b31911c0d3152"
 }
