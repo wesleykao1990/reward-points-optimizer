@@ -78,7 +78,7 @@ describe("consumer-alpha Vercel adapter", () => {
     await handler(
       {
         method: "POST",
-        url: "/api/handler?path=synthetic/evaluate",
+        url: "/api/synthetic/evaluate?path=synthetic/evaluate",
         headers: {
           host: "rewards.example",
           "x-forwarded-proto": "https",
@@ -103,7 +103,7 @@ describe("consumer-alpha Vercel adapter", () => {
     await handler(
       {
         method: "GET",
-        url: "/api/handler?path=experimental/rules&leak=true",
+        url: "/api/experimental/rules?path=experimental/rules&leak=true",
         headers: {
           host: "rewards.example",
           "x-forwarded-proto": "https",
@@ -113,6 +113,23 @@ describe("consumer-alpha Vercel adapter", () => {
     );
     expect(extraQuery.statusCode).toBe(400);
     expect(JSON.parse(extraQuery.body)).toMatchObject({
+      error: { code: "query_not_allowed" },
+    });
+
+    const mismatchedPath = responseCapture();
+    await handler(
+      {
+        method: "GET",
+        url: "/api/experimental/rules?path=experimental/facts",
+        headers: {
+          host: "rewards.example",
+          "x-forwarded-proto": "https",
+        },
+      },
+      mismatchedPath,
+    );
+    expect(mismatchedPath.statusCode).toBe(400);
+    expect(JSON.parse(mismatchedPath.body)).toMatchObject({
       error: { code: "query_not_allowed" },
     });
   });
