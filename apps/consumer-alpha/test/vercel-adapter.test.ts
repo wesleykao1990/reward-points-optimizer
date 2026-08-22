@@ -212,12 +212,14 @@ describe("consumer-alpha Vercel adapter", () => {
     });
   });
 
-  it("accepts the server-only database URL synchronized by Supabase", async () => {
+  it("prefers the Supabase session-pooler URL for the bound runtime role", async () => {
     let connectionString: string | undefined;
     const handler = createVercelRequestHandler({
       environment: {
         ...environment,
-        POSTGRES_URL: "postgresql://server-only.example/postgres",
+        POSTGRES_URL_NON_POOLING:
+          "postgresql://session-pooler.example/postgres",
+        POSTGRES_URL: "postgresql://transaction-pooler.example/postgres",
       },
       requireDatabase: true,
       runtimeFactory(value) {
@@ -251,6 +253,8 @@ describe("consumer-alpha Vercel adapter", () => {
       },
       response,
     );
-    expect(connectionString).toBe("postgresql://server-only.example/postgres");
+    expect(connectionString).toBe(
+      "postgresql://session-pooler.example/postgres",
+    );
   });
 });

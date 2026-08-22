@@ -245,7 +245,9 @@ export function createVercelRequestHandler(
     if (options.dependency !== undefined) return options.dependency;
     if (runtime !== undefined) return runtime.dependencies;
     const connectionString =
-      environment.JRO_DATABASE_URL ?? environment.POSTGRES_URL;
+      environment.JRO_DATABASE_URL ??
+      environment.POSTGRES_URL_NON_POOLING ??
+      environment.POSTGRES_URL;
     if (connectionString === undefined) {
       if (options.requireDatabase === true)
         throw new DeploymentConfigurationError("jro_database_url_required");
