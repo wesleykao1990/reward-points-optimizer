@@ -56,24 +56,22 @@ remain unavailable until prior-period usage is supplied.
 The Wallet tab exposes only Japanese labels, quantities, route steps, timing
 and a recommendation hash. It does not expose claim IDs, source IDs, evidence
 locators, raw source text or economic payloads. The only public URLs are the
-bounded official lottery/campaign links described below. The result is labelled
-as an experimental P0 estimate and tells the user to verify execution
-conditions with the provider.
+bounded official lottery/campaign links described below. Customer-facing copy
+does not expose internal milestone names or implementation vocabulary and
+tells the user to verify execution conditions with the provider.
 
-The Wallet catalogue also lists every P0 point family (8), mobile-payment
-family (6), and credit-card family (7), replacing the sample-only Wallet list.
-Each family is labelled either `交換計算対応` or `情報掲載`; appearing in the
-Wallet does not falsely make an informational family executable.
+The Wallet catalogue also lists every point family (8), mobile-payment family
+(6), and credit-card family (7), replacing the sample-only Wallet list.
+Customer-facing cards describe the available use without exposing internal
+execution classifications.
 
-The Home payment selector uses the same exact 21-family allowlist. Enabling
-credit cards, mobile payments, or point programmes expands the corresponding
-P0 list and requires at least one concrete family selection. The sorted family
-IDs are included in the recommendation and correction hash, remain
-session-only, and are displayed back to the user. The primary browser journey
-uses the real P0 Seven-Eleven/Nanaco lanes; the old sample merchant and sample
-instrument labels are no longer shown. A family selection records ownership
-context only—it does not turn an information-only fact into an arithmetic
-route or pretend that an issuer family is a specific unresearched card SKU.
+The Home payment selector uses the same exact 21-family allowlist. The sorted
+family IDs remain session-only and are included in the recommendation and
+correction hash. Selected cards and mobile payments are also compiled into
+real purchase candidates using the structured base-rate claims; selected
+point programmes are available to the fixed-ratio spending optimizer. The
+browser starts from neutral general shopping. Seven-Eleven is an explicit
+merchant selection and only that selection adds the Nanaco-specific routes.
 
 Lottery, draw, game, and scratch claims remain information-only regardless of
 their advertised maximum prize. The Information tab deduplicates these claims

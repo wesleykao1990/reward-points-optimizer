@@ -242,12 +242,15 @@ interface P0ResearchSource {
 }
 
 interface P0ResearchClaim {
+  readonly claim_id: string;
   readonly family_id: string;
+  readonly claim_type: string;
   readonly predicate: string;
   readonly subject: string;
   readonly short_paraphrase: string;
   readonly source_ids: readonly string[];
   readonly applicability: JsonRecord;
+  readonly value: unknown;
 }
 
 interface P0ResearchArtifact {
@@ -294,6 +297,158 @@ async function loadBundle(): Promise<PointSpendBundle> {
 
 async function loadRuleSet(): Promise<P0SpendRuleSet> {
   return (await loadBundle()).ruleSet;
+}
+
+export interface SelectedProductPurchaseCalculation {
+  readonly family_id: P0ProductFamilyId;
+  readonly label: string;
+  readonly reward_label: string;
+  readonly reward_points: string;
+  readonly rate_percent: string;
+  readonly calculation_note: string;
+}
+
+const PURCHASE_RATE_CLAIMS: Readonly<Record<string, string>> = Object.freeze({
+  "card.aeon": "claim.card.aeon.base.general-200.001",
+  "card.aupay": "claim.card.aupay.base.general-100.001",
+  "card.d": "claim.card.d.base.general-100.001",
+  "card.paypay": "claim.point.paypay.earn.base-rates.002",
+  "card.rakuten": "claim.card.rakuten.base.general-100.001",
+  "card.smbc": "claim.card.smbc.base.general-200.001",
+  "card.view": "claim.card.view.base.general-1000.001",
+  "wallet.aeonpay": "claim.wallet.aeonpay.base.general-200.001",
+  "wallet.aupay": "claim.wallet.aupay.base.general-200.001",
+  "wallet.dbarai": "claim.wallet.dbarai.base.general-200.001",
+  "wallet.famipay": "claim.wallet.famipay.base.general-200.001",
+  "wallet.paypay": "claim.wallet.paypay.base.rates.001",
+  "wallet.rakutenpay": "claim.wallet.rakutenpay.base.routes.001",
+});
+
+function jsonRecord(value: unknown): JsonRecord {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new TypeError("p0_purchase_rate_invalid");
+  return value as JsonRecord;
+}
+
+function positiveNumber(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0)
+    throw new TypeError("p0_purchase_rate_invalid");
+  return value;
+}
+
+function rateParts(
+  familyId: string,
+  claim: P0ResearchClaim,
+): {
+  readonly unit: number;
+  readonly points: number;
+  readonly rewardLabel: string;
+  readonly note: string;
+} {
+  const value = jsonRecord(claim.value);
+  if (familyId === "card.paypay") {
+    if (!Array.isArray(value.tiers))
+      throw new TypeError("p0_purchase_rate_invalid");
+    const tier = value.tiers
+      .map(jsonRecord)
+      .find((item) => String(item.method).includes("PayPay Card"));
+    if (!tier) throw new TypeError("p0_purchase_rate_invalid");
+    const unit = positiveNumber(value.basis_amount);
+    const ratePercent = positiveNumber(tier.rate_percent);
+    return {
+      unit,
+      points: (unit * ratePercent) / 100,
+      rewardLabel: "PayPayポイント",
+      note: `${unit}円単位・基本還元率${ratePercent}%で計算`,
+    };
+  }
+  if (familyId === "wallet.paypay") {
+    const unit = positiveNumber(value.calculation_unit_yen);
+    const rate = positiveNumber(value.balance_rate);
+    return {
+      unit,
+      points: unit * rate,
+      rewardLabel: String(value.point || "PayPayポイント"),
+      note: `${unit}円単位・残高払いの基本還元率${rate * 100}%で計算`,
+    };
+  }
+  if (familyId === "wallet.rakutenpay") {
+    if (!Array.isArray(value.balance_payment_rate_range))
+      throw new TypeError("p0_purchase_rate_invalid");
+    const rate = Math.min(
+      ...value.balance_payment_rate_range.map(positiveNumber),
+    );
+    return {
+      unit: 100,
+      points: 100 * rate,
+      rewardLabel: String(value.point || "楽天ポイント"),
+      note: `通常還元率の下限${rate * 100}%で計算`,
+    };
+  }
+  const unit = positiveNumber(value.spend_yen);
+  const points = positiveNumber(value.points);
+  return {
+    unit,
+    points,
+    rewardLabel: String(value.point || "ポイント"),
+    note: `${unit}円ごとに${points}ポイントで計算`,
+  };
+}
+
+/** Calculate every selected card/mobile-payment base route from the checked-in
+ * structured research. Selection affects the actual candidates, not only the
+ * recommendation hash. */
+export async function calculateSelectedProductPurchases(
+  selectedProductIds: readonly P0ProductFamilyId[],
+  amountJpy: number,
+): Promise<readonly SelectedProductPurchaseCalculation[]> {
+  if (
+    !Number.isSafeInteger(amountJpy) ||
+    amountJpy < 1 ||
+    amountJpy > 1_000_000
+  )
+    throw new TypeError("p0_purchase_amount_invalid");
+  const selected = new Set(selectedProductIds);
+  const { artifacts } = await loadBundle();
+  const claims = new Map(
+    artifacts
+      .flatMap((artifact) => artifact.claims)
+      .map((claim) => [claim.claim_id, claim]),
+  );
+  const calculations: SelectedProductPurchaseCalculation[] = [];
+  for (const familyId of [...selected].sort()) {
+    const claimId = PURCHASE_RATE_CLAIMS[familyId];
+    if (!claimId) continue;
+    let effectiveClaimId = claimId;
+    if (familyId === "wallet.dbarai" && selected.has("card.d"))
+      effectiveClaimId = "claim.wallet.dbarai.base.dcard-200.002";
+    const claim = claims.get(effectiveClaimId);
+    const definition = P0_WALLET_FAMILIES[familyId];
+    if (!claim || !definition) throw new TypeError("p0_purchase_rate_missing");
+    const rate = rateParts(familyId, claim);
+    const rewardPoints = Math.floor(amountJpy / rate.unit) * rate.points;
+    const ratePercent = (rate.points / rate.unit) * 100;
+    calculations.push(
+      Object.freeze({
+        family_id: familyId,
+        label: definition.label,
+        reward_label: rate.rewardLabel,
+        reward_points: String(rewardPoints),
+        rate_percent: String(ratePercent),
+        calculation_note:
+          familyId === "wallet.dbarai" && selected.has("card.d")
+            ? `${rate.note}（dカード設定を含む）`
+            : rate.note,
+      }),
+    );
+  }
+  return Object.freeze(
+    calculations.sort(
+      (left, right) =>
+        Number(right.reward_points) - Number(left.reward_points) ||
+        left.label.localeCompare(right.label, "ja"),
+    ),
+  );
 }
 
 function engineAsset(asset: P0SpendAsset): PointSpendEdge["source_asset"] {
@@ -646,8 +801,8 @@ export async function recommendPointSpend(
     alternatives: routes.slice(1),
     message:
       routes.length > 0
-        ? "P0の明示レートだけで計算した交換候補です。実行前に提供元で条件を確認してください。"
-        : "この残高・交換先で、安全に計算できるP0ルートは見つかりませんでした。",
+        ? "収録されている交換レートで計算した候補です。実行前に提供元で条件を確認してください。"
+        : "この残高・交換先で計算できるルートは見つかりませんでした。",
     rule_count: ruleSet.rule_count,
   };
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  calculateSelectedProductPurchases,
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   parsePointSpendBrowserInput,
@@ -18,6 +19,56 @@ const input = {
 };
 
 describe("P0 point spending browser route", () => {
+  it("calculates every selected card and mobile-payment route from structured rates", async () => {
+    const result = await calculateSelectedProductPurchases(
+      [
+        "card.rakuten",
+        "card.d",
+        "wallet.dbarai",
+        "wallet.paypay",
+        "point.rakuten",
+      ],
+      640,
+    );
+    expect(result).toHaveLength(4);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        {
+          family_id: "wallet.dbarai",
+          label: "d払い",
+          reward_label: "dポイント",
+          reward_points: "6",
+          rate_percent: "1",
+          calculation_note: "200円ごとに2ポイントで計算（dカード設定を含む）",
+        },
+        {
+          family_id: "card.rakuten",
+          label: "楽天カード",
+          reward_label: "楽天ポイント",
+          reward_points: "6",
+          rate_percent: "1",
+          calculation_note: "100円ごとに1ポイントで計算",
+        },
+        {
+          family_id: "card.d",
+          label: "dカード",
+          reward_label: "dポイント",
+          reward_points: "6",
+          rate_percent: "1",
+          calculation_note: "100円ごとに1ポイントで計算",
+        },
+        {
+          family_id: "wallet.paypay",
+          label: "PayPay",
+          reward_label: "PayPayポイント",
+          reward_points: "3",
+          rate_percent: "0.5",
+          calculation_note: "200円単位・残高払いの基本還元率0.5%で計算",
+        },
+      ]),
+    );
+  });
+
   it("lists the bounded P0 asset graph without evidence internals", async () => {
     const result = await listPointSpendBrowserOptions();
     expect(result.rule_count).toBe(23);

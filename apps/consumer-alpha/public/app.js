@@ -1,5 +1,4 @@
 (() => {
-  let currentRecommendationId = null;
   let sessionHistoryCount = 0;
   let informationFacts = [];
   let informationLoaded = false;
@@ -52,23 +51,6 @@
     }
   };
 
-  const addLabel = (parent, labelText, input) => {
-    const label = node("label");
-    label.appendChild(text("span", labelText));
-    label.appendChild(input);
-    parent.appendChild(label);
-    return label;
-  };
-
-  const inputField = (type, value, maxLength) => {
-    const input = node("input");
-    input.type = type;
-    input.value = value || "";
-    input.maxLength = maxLength || 48;
-    input.autocomplete = "off";
-    return input;
-  };
-
   const selectField = (options) => {
     const select = node("select");
     options.forEach((option) => {
@@ -78,90 +60,6 @@
       select.appendChild(choice);
     });
     return select;
-  };
-
-  const addFactRow = () => {
-    const list = document.getElementById("facts-list");
-    const row = node("div", "entry-row");
-    const key = inputField("text", "", 48);
-    key.placeholder = "例：campaign.enrolled";
-    const status = selectField([
-      { value: "unknown", label: "不明" },
-      { value: "known", label: "わかっている" },
-    ]);
-    const value = inputField("text", "", 160);
-    value.placeholder = "内容";
-    value.disabled = true;
-    status.addEventListener("change", () => {
-      value.disabled = status.value !== "known";
-    });
-    addLabel(row, "条件キー", key);
-    addLabel(row, "状態", status);
-    addLabel(row, "内容", value);
-    const remove = node("button", "remove");
-    remove.type = "button";
-    remove.textContent = "削除";
-    remove.addEventListener("click", () => {
-      row.remove();
-    });
-    row.appendChild(remove);
-    list.appendChild(row);
-  };
-
-  const addCapRow = () => {
-    const list = document.getElementById("caps-list");
-    const row = node("div", "entry-row");
-    const key = inputField("text", "", 48);
-    key.placeholder = "例：monthly.cap";
-    const status = selectField([
-      { value: "unknown", label: "不明" },
-      { value: "known", label: "わかっている" },
-    ]);
-    const spend = inputField("number", "", 16);
-    spend.min = "0";
-    spend.max = "10000000";
-    spend.step = "1";
-    spend.placeholder = "利用済み金額";
-    spend.disabled = true;
-    status.addEventListener("change", () => {
-      spend.disabled = status.value !== "known";
-    });
-    addLabel(row, "上限キー", key);
-    addLabel(row, "状態", status);
-    addLabel(row, "利用済み（円）", spend);
-    const remove = node("button", "remove");
-    remove.type = "button";
-    remove.textContent = "削除";
-    remove.addEventListener("click", () => {
-      row.remove();
-    });
-    row.appendChild(remove);
-    list.appendChild(row);
-  };
-
-  const collectEntries = (listId, type) => {
-    const rows = document.getElementById(listId).children;
-    const result = [];
-    for (let index = 0; index < rows.length; index += 1) {
-      const fields = rows[index].querySelectorAll("input, select");
-      const key = fields[0].value.trim();
-      const status = fields[1].value;
-      if (!key) continue;
-      if (type === "fact") {
-        result.push({
-          key,
-          status,
-          ...(status === "known" ? { value: fields[2].value.trim() } : {}),
-        });
-      } else {
-        result.push({
-          key,
-          status,
-          ...(status === "known" ? { spend_jpy: Number(fields[2].value) } : {}),
-        });
-      }
-    }
-    return result;
   };
 
   const collectManualState = () => {
@@ -193,22 +91,26 @@
               : {}),
           }
         : {}),
-      facts: collectEntries("facts-list", "fact"),
-      caps: collectEntries("caps-list", "cap"),
+      facts: [],
+      caps: [],
     };
   };
 
   const collectUnifiedState = () => {
     const manual = collectManualState();
     const amount = Number(document.getElementById("amount-jpy").value);
+    const merchantId = document.getElementById("merchant-selector").value;
     const numericValueOr = (id, fallback) => {
       const value = Number(document.getElementById(id)?.value);
       return Number.isFinite(value) ? value : fallback;
     };
     return {
       ...manual,
-      merchant_id: "merchant.seveneleven",
-      branch_id: "location.seveneleven.representative",
+      merchant_id: merchantId,
+      branch_id:
+        merchantId === "merchant.seveneleven"
+          ? "location.seveneleven.representative"
+          : "location.synthetic",
       amount_jpy: amount,
       tax_exclusive_amount_jpy: numericValueOr("nanaco-tax-exclusive", amount),
       nanaco_balance_jpy: numericValueOr("nanaco-balance", amount),
@@ -275,139 +177,12 @@
   };
 
   const planName = (plan) => {
+    if (typeof plan.display_name === "string") return plan.display_name;
     if (plan.plan_id === "plan_synthetic_direct_card")
       return "カードでそのまま支払う";
     if (plan.plan_id === "plan_synthetic_topup_then_pay")
       return "電子マネーにチャージして支払う";
     return "比較で選ばれた支払い方";
-  };
-
-  const renderFactInfluence = (parent, influence) => {
-    if (
-      !influence ||
-      influence.version !== "p0-fact-influence-graph.v1" ||
-      influence.fact_count !== 364 ||
-      !Array.isArray(influence.factors)
-    )
-      return;
-    const graphRoleLabels = Object.freeze({
-      applied: "適用候補",
-      constraint: "条件候補・要確認",
-      question: "確認が必要",
-      warning: "注意",
-      information: "参考情報",
-    });
-    const section = node("section", "result-section fact-influence");
-    section.appendChild(text("h3", "判定に使った情報"));
-    const factors = influence.factors.filter(
-      (factor) =>
-        factor &&
-        typeof factor === "object" &&
-        typeof factor.factor_id === "string" &&
-        typeof factor.family === "string" &&
-        typeof factor.claim === "string" &&
-        typeof factor.influence_kind === "string" &&
-        typeof factor.graph_role === "string" &&
-        Object.hasOwn(graphRoleLabels, factor.graph_role) &&
-        typeof factor.summary === "string" &&
-        typeof factor.active === "boolean" &&
-        typeof factor.applied === "boolean" &&
-        (factor.information === null || typeof factor.information === "string"),
-    );
-    const appliedCount = factors.filter(
-      (factor) => factor.applied === true,
-    ).length;
-    section.appendChild(
-      text(
-        "p",
-        `登録情報 ${influence.fact_count}件・今回の条件に関連 ${Number(influence.relevant_count) || 0}件・判定に反映 ${appliedCount}件`,
-      ),
-    );
-    if (factors.length) {
-      const roleSummary = node("div", "fact-role-summary");
-      Object.entries(graphRoleLabels).forEach(([role, label]) => {
-        const count = factors.filter(
-          (factor) =>
-            factor.graph_role === role &&
-            (role !== "applied" || factor.applied === true),
-        ).length;
-        if (!count) return;
-        roleSummary.appendChild(
-          text("span", `${label} ${count}件`, `fact-role-badge role-${role}`),
-        );
-      });
-      section.appendChild(roleSummary);
-    }
-    const applied = factors.filter((factor) => factor.applied === true);
-    if (applied.length) {
-      const appliedSection = node("div", "fact-influence-group");
-      appliedSection.appendChild(text("h4", "判定に反映した情報"));
-      const list = node("ul");
-      applied.slice(0, 24).forEach((factor) => {
-        const item = node("li");
-        item.appendChild(text("strong", `${factor.family}・${factor.claim}`));
-        item.appendChild(text("span", `：${factor.summary}`));
-        list.appendChild(item);
-      });
-      appliedSection.appendChild(list);
-      section.appendChild(appliedSection);
-    } else {
-      section.appendChild(
-        text(
-          "p",
-          "今回の候補に直接使える計算ルールはありません。数値の特典は推定していません。",
-          "helper",
-        ),
-      );
-    }
-    const unresolved = Array.isArray(influence.unresolved_conditions)
-      ? influence.unresolved_conditions.filter(
-          (value) => typeof value === "string" && value.length > 0,
-        )
-      : [];
-    if (unresolved.length) {
-      const unresolvedSection = node("div", "fact-influence-group");
-      unresolvedSection.appendChild(text("h4", "未解決の条件"));
-      const list = node("ul");
-      unresolved.slice(0, 24).forEach((value) => {
-        list.appendChild(text("li", value));
-      });
-      unresolvedSection.appendChild(list);
-      section.appendChild(unresolvedSection);
-    }
-    if (factors.length) {
-      const details = node("details", "fact-influence-details");
-      details.appendChild(text("summary", "関連情報の内訳"));
-      const list = node("ul");
-      factors.slice(0, 96).forEach((factor) => {
-        const item = node("li");
-        const itemHeader = node("div", "fact-item-header");
-        const roleLabel =
-          factor.graph_role === "applied" && factor.applied === true
-            ? "判定に反映"
-            : graphRoleLabels[factor.graph_role];
-        itemHeader.appendChild(
-          text("span", roleLabel, `fact-role-badge role-${factor.graph_role}`),
-        );
-        itemHeader.appendChild(
-          text("strong", `${factor.family}・${factor.claim}`),
-        );
-        item.appendChild(itemHeader);
-        item.appendChild(
-          text(
-            "span",
-            `：${factor.summary}${factor.active ? "" : "（現在は対象外）"}`,
-          ),
-        );
-        const roleMessage =
-          factor.question || factor.warning || factor.information;
-        if (roleMessage) item.appendChild(text("small", roleMessage));
-        list.appendChild(item);
-      });
-      details.appendChild(list);
-      section.appendChild(details);
-    }
-    parent.appendChild(section);
   };
 
   const unifiedStatusLabels = Object.freeze({
@@ -475,10 +250,24 @@
       if (route.kind === "calculation") {
         const planBox = node("div", "unified-route-plan");
         planBox.appendChild(text("strong", planName(plan)));
-        const score = plan.objective_score_jpy
-          ? `${plan.objective_score_jpy} 円相当`
-          : "金額換算なし";
-        planBox.appendChild(text("span", score));
+        if (typeof plan.reward_points === "string") {
+          const rewardLabel =
+            typeof plan.reward_label === "string"
+              ? plan.reward_label
+              : "nanacoポイント";
+          const rate =
+            typeof plan.reward_rate_percent === "string"
+              ? `（還元率 ${plan.reward_rate_percent}%）`
+              : "";
+          planBox.appendChild(
+            text("span", `${rewardLabel} ${plan.reward_points}ポイント${rate}`),
+          );
+        } else {
+          const score = plan.objective_score_jpy
+            ? `${plan.objective_score_jpy} 円相当`
+            : "金額換算なし";
+          planBox.appendChild(text("span", score));
+        }
         card.appendChild(planBox);
       } else {
         const planBox = node("div", "unified-route-plan");
@@ -510,7 +299,6 @@
       });
       card.appendChild(issueSection);
     }
-    if (route.fact_influence) renderFactInfluence(card, route.fact_influence);
     if (
       typeof route.recommendation_id === "string" &&
       /^sha256:[0-9a-f]{64}$/u.test(route.recommendation_id)
@@ -518,28 +306,21 @@
       const actions = node("div", "route-actions");
       const correction = node("button", "secondary");
       correction.type = "button";
-      correction.textContent = "このルートを訂正する";
-      const status = text("p", "", "route-correction-status");
-      correction.addEventListener("click", async () => {
-        correction.disabled = true;
-        status.textContent = "訂正メモを作成しています…";
-        try {
-          const body = await postJson("/api/recommendations/corrections", {
-            category: "wrong_plan",
-            note_code: "plan_not_available",
-            recommendation_id: route.recommendation_id,
-          });
-          if (body?.correction?.status !== "not_submitted")
-            throw new Error("correction_failed");
-          status.textContent =
-            "訂正メモを作成しました（送信・保存されません）。";
-        } catch {
-          correction.disabled = false;
-          status.textContent = "訂正メモを作成できませんでした。";
-        }
+      correction.textContent = "情報の誤りを報告";
+      correction.addEventListener("click", () => {
+        const routeLabel = String(route.label || "");
+        const searchValue = routeLabel
+          .replace(/^(?:通常のお買い物|セブン‐イレブン)・/u, "")
+          .split("→")[0]
+          .replace("購入", "")
+          .trim();
+        const search = document.getElementById("information-search");
+        search.value = searchValue;
+        document.getElementById("information-family-filter").value = "";
+        document.getElementById("information-claim-filter").value = "";
+        activateTab("information");
       });
       actions.appendChild(correction);
-      actions.appendChild(status);
       card.appendChild(actions);
     }
     parent.appendChild(card);
@@ -586,9 +367,6 @@
       throw new Error("selected_p0_products_invalid");
     const routes = Array.isArray(body?.routes) ? body.routes : [];
     if (!routes.length) throw new Error("routes_invalid");
-    currentRecommendationId =
-      routes.find((route) => typeof route?.recommendation_id === "string")
-        ?.recommendation_id || null;
     const result = document.getElementById("result");
     clear(result);
     const hero = node("div", "result-hero");
@@ -599,7 +377,9 @@
     hero.appendChild(
       text(
         "p",
-        "収録されているファミリーとルートをまとめて比較しています。",
+        body.merchant_id === "merchant.seveneleven"
+          ? "セブン‐イレブンで、選択したサービスの収録レートと店舗固有ルートを使って比較しています。"
+          : "選択したカードとモバイル決済の通常還元率を使って比較しています。",
         "result-summary",
       ),
     );
@@ -1543,17 +1323,8 @@
         card.appendChild(text("span", icon, "p0-wallet-family-icon"));
         const copy = node("span", "p0-wallet-family-copy");
         copy.appendChild(text("strong", item.label));
-        copy.appendChild(text("small", `P0情報 ${item.fact_count}件`));
+        copy.appendChild(text("small", `関連情報 ${item.fact_count}件`));
         card.appendChild(copy);
-        card.appendChild(
-          text(
-            "em",
-            item.calculation_status === "spend_route"
-              ? "交換計算対応"
-              : "情報掲載",
-            item.calculation_status === "spend_route" ? "is-route" : "",
-          ),
-        );
         list.appendChild(card);
       });
       section.appendChild(list);
@@ -1562,11 +1333,8 @@
     document.getElementById("wallet-count").textContent = String(
       pointSpendOptions.walletCatalogue.length,
     );
-    const routeCount = pointSpendOptions.walletCatalogue.filter(
-      (item) => item.calculation_status === "spend_route",
-    ).length;
     document.getElementById("wallet-route-summary").textContent =
-      `${routeCount}系列はポイント利用・交換計算に対応、その他は情報掲載です`;
+      "選んだサービスの比較とポイント交換の試算に使います";
   };
 
   const p0PickerDefinitions = Object.freeze([
@@ -1669,14 +1437,7 @@
           checkbox.addEventListener("change", syncP0ProductPickers);
           const copy = node("span");
           copy.appendChild(text("strong", item.label));
-          copy.appendChild(
-            text(
-              "small",
-              item.calculation_status === "spend_route"
-                ? "ポイント利用・交換計算対応"
-                : `P0情報 ${item.fact_count}件`,
-            ),
-          );
+          copy.appendChild(text("small", `関連情報 ${item.fact_count}件`));
           label.appendChild(checkbox);
           label.appendChild(copy);
           container.appendChild(label);
@@ -1861,8 +1622,6 @@
       }
     });
 
-  document.getElementById("add-fact").addEventListener("click", addFactRow);
-  document.getElementById("add-cap").addEventListener("click", addCapRow);
   const storedValueUse = document.getElementById("stored-value-use");
   const storedValueUsage = document.getElementById("stored-value-usage");
   const storedValueValue = document.getElementById("stored-value-value");
@@ -1870,6 +1629,17 @@
     'input[name="instrument"]',
   );
   const amountInput = document.getElementById("amount-jpy");
+  const merchantSelector = document.getElementById("merchant-selector");
+  const syncMerchantContext = () => {
+    const sevenEleven = merchantSelector.value === "merchant.seveneleven";
+    document.getElementById("nanaco-route-fields").hidden = !sevenEleven;
+    document.getElementById("branch-name").textContent = sevenEleven
+      ? "東京エリア"
+      : "通常の店舗";
+    document.getElementById("merchant-support-note").textContent = sevenEleven
+      ? "選択したサービスの通常還元率に、セブン‐イレブン固有のnanacoルートを加えて比較します。"
+      : "選択したカードとモバイル決済の通常還元率で比較します。";
+  };
   const updateStoredValueControls = () => {
     const optedIn = storedValueUse.value === "yes";
     storedValueUsage.disabled = !optedIn;
@@ -1990,12 +1760,12 @@
     });
   });
   amountInput.addEventListener("input", syncAmountSummary);
+  merchantSelector.addEventListener("change", syncMerchantContext);
   updateStoredValueControls();
   syncInstrumentViews();
   syncAmountSummary();
+  syncMerchantContext();
   activateTab("home");
-  addFactRow();
-  addCapRow();
 
   document
     .getElementById("recommendation-form")
@@ -2034,30 +1804,6 @@
             "error",
           ),
         );
-      }
-    });
-
-  document
-    .getElementById("correction-form")
-    .addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const status = document.getElementById("correction-status");
-      if (!currentRecommendationId) {
-        status.textContent =
-          "先にデモ結果を表示してから、一時メモを作成してください。";
-        return;
-      }
-      status.textContent = "一時メモを作成しています…";
-      try {
-        const body = await postJson("/api/corrections/draft", {
-          category: document.getElementById("correction-category").value,
-          note_code: document.getElementById("correction-note-code").value,
-          recommendation_id: currentRecommendationId,
-        });
-        const draft = body.correction;
-        status.textContent = `一時メモ ${draft.correction_id} を作成しました。送信されず、このページを閉じると消えます。`;
-      } catch {
-        status.textContent = "一時メモを作成できませんでした。";
       }
     });
 
