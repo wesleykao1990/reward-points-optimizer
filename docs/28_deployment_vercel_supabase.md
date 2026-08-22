@@ -10,7 +10,7 @@ all existing synthetic and experimental labels remain in force.
 browser
   -> Vercel static UI
   -> same-origin Vercel Node adapter
-  -> Supabase transaction pooler (TLS, server-only URL)
+  -> Supabase session pooler (TLS, server-only URL)
   -> SET ROLE jro_runtime
   -> bounded app_api views / SECURITY DEFINER correction routines
 ```
@@ -31,8 +31,8 @@ alpha must not be described as a production consumer release.
 
 - `vercel.json` pins the Node 22 monorepo build, Tokyo function region, static
   output directory, security headers, fixture inclusion, and API duration.
-- `api/[...path].mjs` requires the database binding and delegates to the
-  checked Vercel adapter.
+- `api/handler.mjs` requires the database binding; the explicit Vercel rewrite
+  sends every nested `/api/*` path to that checked adapter.
 - `supabase/config.toml` keeps internal schemas out of the Data API and disables
   production-style seed handling.
 - `scripts/stage_supabase_migrations.mjs` converts the canonical `db/*.sql`
@@ -92,12 +92,15 @@ the Root Directory and `main` as the Production Branch. The committed
 `vercel.json` supplies the remaining build settings.
 
 Connect the Vercel project to the existing Supabase project through the
-Supabase Vercel integration. It synchronizes the server-only `POSTGRES_URL`
-used by the adapter. `JRO_DATABASE_URL` remains an explicit override for local
-or independently managed deployments. Enable Vercel's automatic system
-environment variables so generated preview and deployment hosts can be
-admitted exactly through `VERCEL_URL` and related values. Never copy either
-database URL into a client-prefixed variable or commit it to `.env`.
+Supabase Vercel integration. The adapter prefers the synchronized server-only
+`POSTGRES_URL_NON_POOLING`, which is Supabase's IPv4-compatible session pooler,
+because the connection selects the `jro_runtime` role at session startup. It
+falls back to `POSTGRES_URL` only for integrations that omit the session URL.
+`JRO_DATABASE_URL` remains an explicit override for local or independently
+managed deployments. Enable Vercel's automatic system environment variables so
+generated preview and deployment hosts can be admitted exactly through
+`VERCEL_URL` and related values. Never copy any database URL into a
+client-prefixed variable or commit it to `.env`.
 
 Connect the Vercel project to the GitHub repository. Vercel then creates a
 production deployment for every merge to `main`. Preview builds intentionally
