@@ -547,7 +547,7 @@ describe("M6 localhost consumer shell", () => {
     });
   });
 
-  it("keeps the Japanese experimental card and synthetic links DOM-safe", () => {
+  it("keeps the unified Japanese catalogue and synthetic links DOM-safe", () => {
     const html = readFileSync(
       new URL("../public/index.html", import.meta.url),
       "utf8",
@@ -556,14 +556,23 @@ describe("M6 localhost consumer shell", () => {
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
-    expect(html).toContain("先行公開データ");
-    expect(html).toContain("先行公開");
-    expect(html).toContain("公式情報をもとに自動収集した先行公開データです");
+    expect(html).toContain("ルート・ポイントカタログを見る");
+    expect(html).toContain("ルート・ポイント情報");
+    expect(html).toContain("ファミリー、支払い方法、還元ルート、ポイント情報");
+    expect(html.indexOf('id="tab-information"')).toBeLessThan(
+      html.indexOf('id="experimental-section"'),
+    );
+    expect(html).not.toContain("先行公開");
+    expect(html).not.toContain("実験");
     expect(html).not.toContain("最終確認前");
     expect(html).not.toContain("未検証");
     expect(html).not.toContain("現在のおすすめには使わない");
     expect(source).toContain("/api/experimental/rules");
     expect(source).toContain("/api/experimental/corrections");
+    expect(source).toContain("誤りを報告する");
+    expect(source).toContain("renderGroupedPaymentAcceptance");
+    expect(source).not.toContain('"先行公開"');
+    expect(source).not.toContain("先行実験");
     expect(source).toContain("textContent");
     expect(source).not.toContain("innerHTML");
     expect(source).not.toContain("localStorage");

@@ -26,7 +26,7 @@
 
         <aside class="demo-notice" aria-label="デモ版について">
           <span class="notice-icon" aria-hidden="true">i</span>
-          <div><strong>合成計算と先行情報の確認デモです</strong><p>計算結果と実験的な情報表示を分けて確認できます。本番のおすすめではありません。</p></div>
+          <div><strong>支払いルートとポイント情報の確認デモです</strong><p>収録されているファミリーとルートを同じカタログで確認できます。誤りは各カードから報告できます。</p></div>
         </aside>
 
         <section class="overview-panel" aria-labelledby="overview-title">
@@ -54,7 +54,7 @@
             </label>
 
             <fieldset class="route-fieldset" aria-labelledby="route-input-title">
-              <legend id="route-input-title"><span>先行ルートの確認条件</span><small>入力できる範囲だけを使います</small></legend>
+              <legend id="route-input-title"><span>ルートの確認条件</span><small>入力できる範囲だけを使います</small></legend>
               <div class="route-input-grid">
                 <label for="nanaco-tax-exclusive">nanaco購入・税抜対象額（円）<input id="nanaco-tax-exclusive" type="number" min="0" max="1000000" step="1" value="640"></label>
                 <label for="nanaco-balance">nanaco残高（円）<input id="nanaco-balance" type="number" min="0" max="10000000" step="1" value="10000"></label>
@@ -63,7 +63,7 @@
               </div>
               <label class="check-row" for="seven-card-owned"><input id="seven-card-owned" type="checkbox"><span>セブンカード・プラスを所有している</span></label>
               <label class="check-row" for="credit-preregistered"><input id="credit-preregistered" type="checkbox"><span>nanacoクレジットチャージを事前登録している</span></label>
-              <p class="helper">所有と事前登録は未確認のため未選択です。明示的に選んだ場合だけ先行ルートを確認します。</p>
+              <p class="helper">所有と事前登録は未確認のため未選択です。明示的に選んだ場合だけ対象ルートを確認します。</p>
             </fieldset>
 
             <fieldset class="instrument-fieldset">
@@ -133,19 +133,10 @@
           <div class="empty-result"><span aria-hidden="true">↗</span><strong>条件を入力して比較してみましょう</strong><p>安全な候補と確認すべき質問を表示します。</p><small>比較後に「判定に使った情報」と未解決の条件を確認できます。</small></div>
         </section>
 
-        <section id="experimental-section" class="content-section experimental-section" aria-labelledby="experimental-title">
-          <div class="section-title-row">
-            <div><p class="section-kicker">EXPERIMENTAL DATA</p><h2 id="experimental-title">先行公開データ</h2></div>
-            <span class="step-label">自動収集</span>
-          </div>
-          <aside class="experimental-disclosure" aria-label="先行公開データの説明">
-            <span class="experimental-badge">先行公開</span>
-            <p>公式情報をもとに自動収集した先行公開データです。内容が異なる場合はお知らせください。</p>
-          </aside>
-          <div id="experimental-rules" class="experimental-list" aria-live="polite">
-            <p class="helper">先行公開データを読み込んでいます…</p>
-          </div>
-        </section>
+        <button type="button" class="catalogue-link-card" data-tab-target="information">
+          <span><strong>ルート・ポイントカタログを見る</strong><small>すべてのファミリー、支払い方法、還元情報をまとめて検索</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
 
         <details class="correction-panel">
           <summary><span>表示内容についてフィードバックする</span><span aria-hidden="true">⌄</span></summary>
@@ -202,22 +193,32 @@
 
         <section class="settings-group" aria-labelledby="privacy-title">
           <h2 id="privacy-title">プライバシーとセキュリティ</h2>
-          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>データモード</strong><small>現在の比較に使用する情報</small></span><em class="safe-state">合成＋先行情報</em></div><div class="settings-row"><span><strong>先行情報の扱い</strong><small>nanacoルートの表示</small></span><em>先行情報・情報表示</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
+          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>データモード</strong><small>現在の比較に使用する情報</small></span><em class="safe-state">合成＋収録情報</em></div><div class="settings-row"><span><strong>カタログ表示</strong><small>ファミリーとルート</small></span><em>まとめて表示</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
         </section>
       </section>
 
       <section id="tab-information" class="tab-panel" data-tab-panel="information" role="tabpanel" aria-labelledby="tab-button-information" tabindex="-1" hidden>
         <header class="app-header">
-          <div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>POINT INFORMATION</small><h1>ポイント情報</h1></div></div>
+          <div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>ROUTE &amp; POINT CATALOGUE</small><h1>カタログ</h1></div></div>
           <button type="button" class="home-link" data-tab-target="home">ホーム</button>
         </header>
 
         <section class="information-intro" aria-labelledby="information-title">
           <div class="section-title-row">
-            <div><p class="section-kicker">INFORMATION CATALOGUE</p><h2 id="information-title">ポイント情報</h2></div>
+            <div><p class="section-kicker">ALL CATALOGUE ENTRIES</p><h2 id="information-title">ルート・ポイント情報</h2></div>
             <span class="step-label">収録分</span>
           </div>
-          <p>364件のポイント情報を検索・絞り込みできます。カードごとに計算・参考・適用期間外の状態と、比較への使用状況を明示します。</p>
+          <p>ファミリー、支払い方法、還元ルート、ポイント情報を同じ画面で確認できます。内容が違う場合は、どのカードからでも報告できます。</p>
+        </section>
+
+        <section id="experimental-section" class="information-list-section catalogue-route-section" aria-labelledby="experimental-title">
+          <div class="group-heading">
+            <h2 id="experimental-title">ルート・支払い方法</h2>
+            <span>収録ルート</span>
+          </div>
+          <div id="experimental-rules" class="experimental-list" aria-live="polite">
+            <p class="helper">ルート情報を読み込んでいます…</p>
+          </div>
         </section>
 
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
@@ -233,7 +234,7 @@
         </section>
 
         <section class="information-list-section" aria-labelledby="information-list-title">
-          <div class="group-heading"><h2 id="information-list-title">登録されている情報</h2><button type="button" id="information-reload">更新</button></div>
+          <div class="group-heading"><h2 id="information-list-title">ファミリー・ポイント情報</h2><button type="button" id="information-reload">更新</button></div>
           <div id="information-facts" class="information-list" aria-live="polite"><p class="helper">情報を読み込んでいます…</p></div>
         </section>
       </section>
@@ -242,7 +243,7 @@
         <button id="tab-button-home" type="button" role="tab" class="is-active" data-tab-target="home" aria-controls="tab-home" aria-selected="true" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
         <button id="tab-button-wallet" type="button" role="tab" data-tab-target="wallet" aria-controls="tab-wallet" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
         <button id="tab-button-history" type="button" role="tab" data-tab-target="history" aria-controls="tab-history" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
-        <button id="tab-button-information" type="button" role="tab" data-tab-target="information" aria-controls="tab-information" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>情報</span></button>
+        <button id="tab-button-information" type="button" role="tab" data-tab-target="information" aria-controls="tab-information" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>カタログ</span></button>
         <button id="tab-button-settings" type="button" role="tab" data-tab-target="settings" aria-controls="tab-settings" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7-1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
       </nav>
     </main>
