@@ -10,8 +10,8 @@ all existing synthetic and experimental labels remain in force.
 browser
   -> Vercel static UI
   -> same-origin Vercel Node adapter
-  -> Supabase session pooler (TLS, server-only URL)
-  -> SET ROLE jro_runtime
+  -> Supabase transaction pooler (TLS, server-only URL)
+  -> transaction-scoped SET LOCAL ROLE jro_runtime
   -> bounded app_api views / SECURITY DEFINER correction routines
 ```
 
@@ -93,9 +93,10 @@ the Root Directory and `main` as the Production Branch. The committed
 
 Connect the Vercel project to the existing Supabase project through the
 Supabase Vercel integration. The adapter prefers the synchronized server-only
-`POSTGRES_URL_NON_POOLING`, which is Supabase's IPv4-compatible session pooler,
-because the connection selects the `jro_runtime` role at session startup. It
-falls back to `POSTGRES_URL` only for integrations that omit the session URL.
+`POSTGRES_URL`, which is Supabase's serverless transaction pooler, and falls
+back to `POSTGRES_URL_NON_POOLING` only for integrations that omit it. The
+runtime selects `jro_runtime` with `SET LOCAL ROLE` inside every checked-out
+transaction so no session state can leak through the shared pooler.
 `JRO_DATABASE_URL` remains an explicit override for local or independently
 managed deployments. Enable Vercel's automatic system environment variables so
 generated preview and deployment hosts can be admitted exactly through

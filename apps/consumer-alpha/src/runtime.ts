@@ -2,6 +2,9 @@ import {
   createPostgresP0FactInfluenceGraphStore,
   createPostgresP0ImplementationCatalogueStore,
   type P0ImplementationCatalogueOptions,
+  type PoolClient,
+  type QueryPool,
+  type QueryResult,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
 import { Pool, type PoolConfig } from "pg";
@@ -39,7 +42,7 @@ export interface PostgresAppRuntimeOptions
   readonly agentFeedIngress?: Omit<P0AgentFeedIngressOptions, "target">;
 }
 
-type CloseableQueryTarget = QueryTarget & {
+type CloseableQueryPool = QueryPool & {
   readonly end: () => Promise<void>;
 };
 
@@ -63,19 +66,129 @@ function poolMaximum(value: number | undefined): number {
   return value;
 }
 
+function transactionCommand(
+  text: string,
+): "begin" | "commit" | "rollback" | null {
+  const command = text
+    .trim()
+    .replaceAll(/\s+/gu, " ")
+    .toLocaleUpperCase("en-US");
+  if (command === "BEGIN" || command === "START TRANSACTION") return "begin";
+  if (command === "COMMIT") return "commit";
+  if (command === "ROLLBACK") return "rollback";
+  return null;
+}
+
+function roleScopedClient(client: PoolClient, role: string): PoolClient {
+  const setRole = `SET LOCAL ROLE ${role}`;
+  let transactionActive = false;
+
+  const oneQueryTransaction = async <Row>(
+    text: string,
+    values?: readonly unknown[],
+  ): Promise<QueryResult<Row>> => {
+    await client.query("BEGIN");
+    try {
+      await client.query(setRole);
+      const result = await client.query<Row>(text, values);
+      await client.query("COMMIT");
+      return result;
+    } catch (error) {
+      try {
+        await client.query("ROLLBACK");
+      } catch {
+        // Preserve the original role or application query failure.
+      }
+      throw error;
+    }
+  };
+
+  return {
+    async query<Row = unknown>(
+      text: string,
+      values?: readonly unknown[],
+    ): Promise<QueryResult<Row>> {
+      const command = transactionCommand(text);
+      if (command === "begin") {
+        const result = await client.query<Row>(text, values);
+        try {
+          await client.query(setRole);
+          transactionActive = true;
+          return result;
+        } catch (error) {
+          try {
+            await client.query("ROLLBACK");
+          } catch {
+            // Preserve the role-selection failure.
+          }
+          throw error;
+        }
+      }
+      if (command === "commit" || command === "rollback") {
+        try {
+          return await client.query<Row>(text, values);
+        } finally {
+          transactionActive = false;
+        }
+      }
+      if (transactionActive) return client.query<Row>(text, values);
+      return oneQueryTransaction<Row>(text, values);
+    },
+    release(error?: Error) {
+      const releaseError =
+        error ??
+        (transactionActive
+          ? new Error("jro_database_role_transaction_unfinished")
+          : undefined);
+      client.release?.(releaseError);
+    },
+  };
+}
+
+/** Bind every pool checkout to the restricted role within a transaction. */
+export function createRoleScopedQueryPool(
+  pool: QueryPool,
+  databaseRole: string,
+): QueryPool {
+  const role = optionalDatabaseRole(databaseRole);
+  if (role === undefined) throw new TypeError("jro_database_role_required");
+  return {
+    async query<Row = unknown>(
+      text: string,
+      values?: readonly unknown[],
+    ): Promise<QueryResult<Row>> {
+      const client = roleScopedClient(await pool.connect(), role);
+      let failure: Error | undefined;
+      try {
+        return await client.query<Row>(text, values);
+      } catch (error) {
+        failure =
+          error instanceof Error
+            ? error
+            : new Error("jro_database_query_failed");
+        throw error;
+      } finally {
+        client.release?.(failure);
+      }
+    },
+    async connect(): Promise<PoolClient> {
+      return roleScopedClient(await pool.connect(), role);
+    },
+  };
+}
+
 /** Build a bounded pool config without exposing or logging the URL. */
 export function createPostgresPoolConfig(
   connectionString: string,
   options: Pick<PostgresAppRuntimeOptions, "databaseRole" | "poolMax"> = {},
 ): PoolConfig {
-  const role = optionalDatabaseRole(options.databaseRole);
+  optionalDatabaseRole(options.databaseRole);
   return {
     connectionString: requireDatabaseUrl(connectionString),
     max: poolMaximum(options.poolMax),
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
     allowExitOnIdle: true,
-    ...(role === undefined ? {} : { options: `-c role=${role}` }),
   };
 }
 
@@ -131,10 +244,13 @@ export function createPostgresAppRuntime(
       : { ...options, agentFeedIngress: environmentIngress };
   const pool = new Pool(
     createPostgresPoolConfig(connectionString, options),
-  ) as unknown as CloseableQueryTarget;
+  ) as unknown as CloseableQueryPool;
+  const role = optionalDatabaseRole(options.databaseRole);
+  const target =
+    role === undefined ? pool : createRoleScopedQueryPool(pool, role);
   let closed = false;
   return Object.freeze({
-    dependencies: createPostgresAppDependencies(pool, runtimeOptions),
+    dependencies: createPostgresAppDependencies(target, runtimeOptions),
     async close() {
       if (closed) return;
       closed = true;
