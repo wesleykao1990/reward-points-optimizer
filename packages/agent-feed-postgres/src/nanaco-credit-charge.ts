@@ -28,7 +28,8 @@ export const NANACO_CREDIT_CHARGE_ROUTE_AT_FUNCTION =
 
 export const NANACO_CREDIT_CHARGE_ROUTE_QUERY = `
 select candidate_hash, definition_hash, candidate_id, candidate_payload,
-       source_observation_key, observation_fingerprint, source_ids,
+       source_observation_id, source_observation_key, observation_fingerprint,
+       source_ids,
        p0_family_id, source_role_id, source_authority_role, status,
        to_char(machine_checked_at at time zone 'UTC',
                'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as machine_checked_at,
@@ -44,8 +45,16 @@ select candidate_hash, definition_hash, candidate_id, candidate_payload,
 export interface NanacoCreditChargeRouteRecord {
   readonly route_id: string;
   readonly candidate_id: string;
+  /** The complete DB candidate payload used to compile the Rule IR. */
+  readonly candidate_payload: ProvisionalRuleCandidate;
   readonly candidate_hash: Sha256;
   readonly definition_hash: Sha256;
+  readonly source_observation_id: string;
+  readonly source_observation_key: string;
+  readonly observation_fingerprint: Sha256;
+  readonly p0_family_id: "point.nanaco";
+  readonly source_role_id: "earn_rules";
+  readonly source_authority_role: "primary";
   readonly finding_id: typeof NANACO_CREDIT_CHARGE_FINDING_ID;
   readonly claim_ids: readonly string[];
   readonly evidence_ids: readonly string[];
@@ -69,6 +78,7 @@ const ROUTE_ROW_KEYS = Object.freeze([
   "definition_hash",
   "candidate_id",
   "candidate_payload",
+  "source_observation_id",
   "source_observation_key",
   "observation_fingerprint",
   "source_ids",
@@ -121,6 +131,17 @@ function strictString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.length === 0 || value.length > 160)
     throw new TypeError(`nanaco_credit_charge_${field}_invalid`);
   return value;
+}
+
+function strictUuid(value: unknown, field: string): string {
+  const text = strictString(value, field);
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(
+      text,
+    )
+  )
+    throw new TypeError(`nanaco_credit_charge_${field}_invalid`);
+  return text;
 }
 
 function strictDate(value: unknown, field: string): string {
@@ -190,10 +211,22 @@ function rowToRecord(row: JsonRecord): NanacoCreditChargeRouteRecord {
   if (definitionHash !== NANACO_CREDIT_CHARGE_DEFINITION_HASH)
     throw new TypeError("nanaco_credit_charge_definition_hash_invalid");
   const candidate = candidatePayload(row.candidate_payload);
+  const sourceObservationId = strictUuid(
+    row.source_observation_id,
+    "source_observation_id",
+  );
+  const sourceObservationKey = strictString(
+    row.source_observation_key,
+    "source_observation_key",
+  );
+  const observationFingerprint = strictHash(
+    row.observation_fingerprint,
+    "observation_fingerprint",
+  );
   if (
     row.candidate_id !== candidate.candidate_id ||
-    row.source_observation_key !== candidate.observation_id ||
-    row.observation_fingerprint !== candidate.observation_fingerprint ||
+    sourceObservationKey !== candidate.observation_id ||
+    observationFingerprint !== candidate.observation_fingerprint ||
     row.p0_family_id !== "point.nanaco" ||
     row.source_role_id !== "earn_rules" ||
     row.source_authority_role !== "primary" ||
@@ -219,6 +252,9 @@ function rowToRecord(row: JsonRecord): NanacoCreditChargeRouteRecord {
   const findingId = strictString(row.finding_id, "finding_id");
   if (findingId !== NANACO_CREDIT_CHARGE_FINDING_ID)
     throw new TypeError("nanaco_credit_charge_finding_id_invalid");
+  const routeId = strictString(row.route_id, "route_id");
+  if (routeId !== NANACO_CREDIT_CHARGE_CANDIDATE.candidate_id)
+    throw new TypeError("nanaco_credit_charge_route_id_invalid");
   const checkedAt = strictDate(row.machine_checked_at, "checked_at");
   const admittedAt = strictDate(row.admitted_at, "admitted_at");
   const validity = candidate.rule.validity;
@@ -227,10 +263,17 @@ function rowToRecord(row: JsonRecord): NanacoCreditChargeRouteRecord {
   if (candidate.rule.rule_id !== NANACO_CREDIT_CHARGE_RULE_ID)
     throw new TypeError("nanaco_credit_charge_rule_id_invalid");
   return Object.freeze({
-    route_id: strictString(row.route_id, "route_id"),
+    route_id: routeId,
     candidate_id: strictString(row.candidate_id, "candidate_id"),
+    candidate_payload: structuredClone(candidate),
     candidate_hash: candidateHash,
     definition_hash: definitionHash,
+    source_observation_id: sourceObservationId,
+    source_observation_key: sourceObservationKey,
+    observation_fingerprint: observationFingerprint,
+    p0_family_id: "point.nanaco",
+    source_role_id: "earn_rules",
+    source_authority_role: "primary",
     finding_id: findingId,
     claim_ids: claimIds,
     evidence_ids: evidenceIds,

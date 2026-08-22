@@ -1,9 +1,11 @@
 import {
+  createPostgresP0FactInfluenceGraphStore,
   createPostgresP0ImplementationCatalogueStore,
   type P0ImplementationCatalogueOptions,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
 import { Pool } from "pg";
+import { createFactInfluenceGraphPort } from "./fact-influence-graph.js";
 import { createPostgresImplementationFactCataloguePort } from "./implementation-catalog.js";
 import {
   createPostgresExperimentalCataloguePort,
@@ -52,6 +54,9 @@ export function createPostgresAppDependencies(
     implementationFacts: createPostgresImplementationFactCataloguePort(
       implementationStore,
       options,
+    ),
+    factInfluenceGraph: createFactInfluenceGraphPort(
+      createPostgresP0FactInfluenceGraphStore(target, options),
     ),
   });
 }

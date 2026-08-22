@@ -273,6 +273,92 @@
     parent.appendChild(box);
   };
 
+  const renderFactInfluence = (parent, influence) => {
+    if (
+      !influence ||
+      influence.version !== "p0-fact-influence-graph.v1" ||
+      influence.fact_count !== 364 ||
+      !Array.isArray(influence.factors)
+    )
+      return;
+    const section = node("section", "result-section fact-influence");
+    section.appendChild(text("h3", "判定に使った情報"));
+    section.appendChild(
+      text(
+        "p",
+        `登録情報 ${influence.fact_count}件・今回の条件に関連 ${Number(influence.relevant_count) || 0}件・判定に反映 ${Number(influence.applied_count) || 0}件`,
+      ),
+    );
+    const factors = influence.factors.filter(
+      (factor) =>
+        factor &&
+        typeof factor === "object" &&
+        typeof factor.factor_id === "string" &&
+        typeof factor.family === "string" &&
+        typeof factor.claim === "string" &&
+        typeof factor.influence_kind === "string" &&
+        typeof factor.summary === "string" &&
+        typeof factor.active === "boolean" &&
+        typeof factor.applied === "boolean",
+    );
+    const applied = factors.filter((factor) => factor.applied && factor.active);
+    if (applied.length) {
+      const appliedSection = node("div", "fact-influence-group");
+      appliedSection.appendChild(text("h4", "判定に反映した情報"));
+      const list = node("ul");
+      applied.slice(0, 24).forEach((factor) => {
+        const item = node("li");
+        item.appendChild(text("strong", `${factor.family}・${factor.claim}`));
+        item.appendChild(text("span", `：${factor.summary}`));
+        list.appendChild(item);
+      });
+      appliedSection.appendChild(list);
+      section.appendChild(appliedSection);
+    } else {
+      section.appendChild(
+        text(
+          "p",
+          "今回の候補に直接使える計算ルールはありません。数値の特典は推定していません。",
+          "helper",
+        ),
+      );
+    }
+    const unresolved = Array.isArray(influence.unresolved_conditions)
+      ? influence.unresolved_conditions.filter(
+          (value) => typeof value === "string" && value.length > 0,
+        )
+      : [];
+    if (unresolved.length) {
+      const unresolvedSection = node("div", "fact-influence-group");
+      unresolvedSection.appendChild(text("h4", "未解決の条件"));
+      const list = node("ul");
+      unresolved.slice(0, 24).forEach((value) => {
+        list.appendChild(text("li", value));
+      });
+      unresolvedSection.appendChild(list);
+      section.appendChild(unresolvedSection);
+    }
+    if (factors.length) {
+      const details = node("details", "fact-influence-details");
+      details.appendChild(text("summary", "関連情報の内訳"));
+      const list = node("ul");
+      factors.slice(0, 96).forEach((factor) => {
+        const item = node("li");
+        item.appendChild(text("strong", `${factor.family}・${factor.claim}`));
+        item.appendChild(
+          text(
+            "span",
+            `：${factor.summary}${factor.active ? "" : "（現在は対象外）"}`,
+          ),
+        );
+        list.appendChild(item);
+      });
+      details.appendChild(list);
+      section.appendChild(details);
+    }
+    parent.appendChild(section);
+  };
+
   const renderLinks = (parent, ids) => {
     if (!ids || !ids.length) return;
     const section = node("div", "result-section");
@@ -366,6 +452,7 @@
     }
     appendList(result, "確認するともっと正確になります", view.questions);
     appendList(result, "今回の前提", view.assumptions);
+    renderFactInfluence(result, view.fact_influence);
     if (view.sensitivities?.length) {
       const section = node("div", "result-section");
       section.appendChild(text("h3", "価値の変化による影響"));

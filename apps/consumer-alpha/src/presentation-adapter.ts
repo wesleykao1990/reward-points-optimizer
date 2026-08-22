@@ -10,6 +10,7 @@ import type {
   VerificationStatus,
 } from "@jro/recommendation-api";
 import type { CorrectionDraftInput } from "./contracts.js";
+import type { FactInfluenceBrowserView } from "./fact-influence-graph.js";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -51,6 +52,8 @@ export interface BrowserRecommendationView {
   };
   /** Evidence/source identifiers and raw freshness notes are host-only. */
   readonly deep_link_ids: readonly string[];
+  /** Bounded safe projection of the host fact graph, when attached. */
+  readonly fact_influence?: FactInfluenceBrowserView;
 }
 
 export interface BrowserCorrectionDraft {
@@ -270,6 +273,7 @@ function presentationToBrowser(
  */
 export function mapRecommendationForBrowser(
   response: RecommendationResponse,
+  factInfluence?: FactInfluenceBrowserView,
 ): BrowserRecommendationView {
   try {
     if (!isRecord(response)) return blockedView(response);
@@ -283,7 +287,10 @@ export function mapRecommendationForBrowser(
       return blockedView(response, verificationStatus);
     const presentation = presentRecommendation(response);
     if (presentation.state === "blocked") return blockedView(response);
-    return presentationToBrowser(response, presentation);
+    const view = presentationToBrowser(response, presentation);
+    return factInfluence === undefined
+      ? view
+      : Object.freeze({ ...view, fact_influence: factInfluence });
   } catch {
     // A malformed synthetic envelope is still untrusted at this boundary.
     return blockedView(response);

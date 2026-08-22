@@ -3,12 +3,17 @@ import {
   createPostgresNanacoCreditChargeRouteStore,
   loadCurrentP0EconomicRuleIRs,
   type NanacoCreditChargeRouteRecord,
+  P0_EXPERIMENTAL_CATALOGUE_QUERY,
   type P0ExperimentalCatalogueRecord,
   type P0ExperimentalPaymentAcceptanceRecord,
   type P0ExperimentalRewardRateRecord,
   type P0TrustedRuleIRBindings,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
+import {
+  NANACO_CREDIT_CHARGE_CLAIM_IDS,
+  NANACO_CREDIT_CHARGE_EVIDENCE_IDS,
+} from "@jro/provisional-rules";
 import type {
   ExperimentalCatalogueCard,
   ExperimentalCataloguePort,
@@ -17,6 +22,7 @@ import type {
 } from "./contracts.js";
 import {
   createNanacoCreditChargeRecommendationPort,
+  getNanacoCreditChargeRuleIRMaterial,
   NANACO_CREDIT_CHARGE_PUBLICATION_ID,
   type NanacoCreditChargeRuleSource,
 } from "./nanaco-credit-charge-recommendation.js";
@@ -37,6 +43,12 @@ const NANACO_RULE_IR_BINDINGS: P0TrustedRuleIRBindings = Object.freeze({
   evidence_ids: Object.freeze(["ev_m3_nanaco_shopping_earning_20260820"]),
   ...getNanacoExperimentalRuleIRMaterial(),
 });
+const NANACO_CREDIT_CHARGE_RULE_IR_BINDINGS: P0TrustedRuleIRBindings =
+  Object.freeze({
+    claim_id: NANACO_CREDIT_CHARGE_CLAIM_IDS[0],
+    evidence_ids: Object.freeze([...NANACO_CREDIT_CHARGE_EVIDENCE_IDS]),
+    ...getNanacoCreditChargeRuleIRMaterial(),
+  });
 
 /**
  * Reduce the database adapter's private record to the exact browser card.
@@ -221,6 +233,47 @@ export function createPostgresNanacoExperimentalRecommendationPort(
 export const createPostgresExperimentalRecommendationPort =
   createPostgresNanacoExperimentalRecommendationPort;
 
+/**
+ * Adapt the credit-charge route's complete candidate projection to the exact
+ * row shape consumed by the generic P0 Rule IR loader. The route store has
+ * already validated the DB row; this projection deliberately carries no
+ * checked-in replacement candidate.
+ */
+function nanacoCreditChargeRuleIRRow(
+  record: NanacoCreditChargeRouteRecord,
+): Record<string, unknown> {
+  return {
+    admitted_at: record.admitted_at,
+    candidate_hash: record.candidate_hash,
+    candidate_id: record.candidate_id,
+    candidate_payload: structuredClone(record.candidate_payload),
+    definition_hash: record.definition_hash,
+    machine_checked_at: record.checked_at,
+    observation_fingerprint: record.observation_fingerprint,
+    p0_family_id: record.p0_family_id,
+    source_authority_role: record.source_authority_role,
+    source_ids: [...record.source_ids],
+    source_observation_id: record.source_observation_id,
+    source_observation_key: record.source_observation_key,
+    source_role_id: record.source_role_id,
+    status: record.status,
+  };
+}
+
+function creditChargeRuleIRTarget(
+  target: QueryTarget,
+  record: NanacoCreditChargeRouteRecord,
+): QueryTarget {
+  const row = nanacoCreditChargeRuleIRRow(record);
+  return Object.freeze({
+    async query<Row = unknown>(text: string, values?: readonly unknown[]) {
+      if (text === P0_EXPERIMENTAL_CATALOGUE_QUERY)
+        return { rows: [row as Row] };
+      return target.query<Row>(text, values);
+    },
+  });
+}
+
 /** Bind the separate top-up lane to its own evidence-bound DB route. */
 export function createPostgresNanacoCreditChargeRecommendationPort(
   target: QueryTarget,
@@ -231,6 +284,21 @@ export function createPostgresNanacoCreditChargeRecommendationPort(
       const record = await store.current(effectiveAt);
       if (record.route_id !== NANACO_CREDIT_CHARGE_PUBLICATION_ID)
         throw new Error("nanaco_credit_charge_route_not_current");
+      const compiled = await loadCurrentP0EconomicRuleIRs(
+        creditChargeRuleIRTarget(target, record),
+        {
+          effective_at: effectiveAt,
+          rule_ids: [record.reward_rule.rule_id],
+          bindings: {
+            [record.candidate_id]: NANACO_CREDIT_CHARGE_RULE_IR_BINDINGS,
+          },
+        },
+      );
+      const ruleIR = compiled.rule_irs.find(
+        (item) => item.rule.rule_id === record.reward_rule.rule_id,
+      );
+      if (!ruleIR || compiled.issues.length > 0)
+        throw new Error("nanaco_credit_charge_rule_ir_not_current");
       return {
         route_id: record.route_id,
         candidate_id: record.candidate_id,
@@ -240,7 +308,8 @@ export function createPostgresNanacoCreditChargeRecommendationPort(
         claim_ids: record.claim_ids,
         evidence_ids: record.evidence_ids,
         source_ids: record.source_ids,
-        reward_rule: record.reward_rule,
+        reward_rule: ruleIR.rule,
+        rule_ir: ruleIR,
       };
     },
   });

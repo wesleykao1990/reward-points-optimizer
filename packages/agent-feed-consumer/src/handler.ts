@@ -34,6 +34,7 @@ import {
   prefixedSha256,
   redactedRecord,
 } from "./util.js";
+import { markVerifiedAtomicPersistenceInput } from "./verified-input.js";
 
 function supportedEventType(
   value: unknown,
@@ -154,6 +155,14 @@ async function recordReplayAttempt(
   } catch {
     // Replay telemetry is intentionally best effort and can never affect ACK.
   }
+}
+
+async function persistVerifiedInput(
+  options: ConsumerHandlerOptions,
+  input: AtomicPersistenceInput,
+): Promise<PersistenceOutcome> {
+  markVerifiedAtomicPersistenceInput(input);
+  return options.persistence.persist(input);
 }
 
 function receiptFor(
@@ -406,7 +415,7 @@ export function createAgentFeedConsumerHandler(
             quarantine_reason: "delivery_event_schema_invalid",
           };
           try {
-            const outcome = await options.persistence.persist(input);
+            const outcome = await persistVerifiedInput(options, input);
             await recordReplayAttempt(options, event, outcome, receivedAt);
             return {
               status_code: 202,
@@ -478,7 +487,7 @@ export function createAgentFeedConsumerHandler(
               quarantine_reason: reason,
             };
             try {
-              const outcome = await options.persistence.persist(input);
+              const outcome = await persistVerifiedInput(options, input);
               await recordReplayAttempt(options, event, outcome, receivedAt);
               return {
                 status_code: 202,
@@ -526,7 +535,7 @@ export function createAgentFeedConsumerHandler(
               quarantine_reason: "unsupported_finding_type",
             };
             try {
-              const outcome = await options.persistence.persist(input);
+              const outcome = await persistVerifiedInput(options, input);
               await recordReplayAttempt(options, event, outcome, receivedAt);
               return {
                 status_code: 202,
@@ -572,7 +581,7 @@ export function createAgentFeedConsumerHandler(
             ...(hostile ? { quarantine_reason: "hostile_security_flags" } : {}),
           };
           try {
-            const outcome = await options.persistence.persist(input);
+            const outcome = await persistVerifiedInput(options, input);
             await recordReplayAttempt(options, event, outcome, receivedAt);
             const statusCode = outcome.status === "quarantined" ? 202 : 200;
             return { status_code: statusCode, acknowledged: true, outcome };
@@ -641,7 +650,7 @@ export function createAgentFeedConsumerHandler(
             quarantine_reason: lifecycleErrorCode,
           };
           try {
-            const outcome = await options.persistence.persist(input);
+            const outcome = await persistVerifiedInput(options, input);
             await recordReplayAttempt(options, event, outcome, receivedAt);
             return {
               status_code: 202,
@@ -688,7 +697,7 @@ export function createAgentFeedConsumerHandler(
             quarantine_reason: diag.code,
           };
           try {
-            const outcome = await options.persistence.persist(input);
+            const outcome = await persistVerifiedInput(options, input);
             await recordReplayAttempt(options, event, outcome, receivedAt);
             return {
               status_code: 202,
@@ -724,7 +733,7 @@ export function createAgentFeedConsumerHandler(
           run_lifecycle: lifecycle,
         };
         try {
-          const outcome = await options.persistence.persist(input);
+          const outcome = await persistVerifiedInput(options, input);
           await recordReplayAttempt(options, event, outcome, receivedAt);
           return {
             status_code: outcome.status === "quarantined" ? 202 : 200,

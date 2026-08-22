@@ -8,6 +8,7 @@ import {
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { types as nodeTypes } from "node:util";
+import { SYNTHETIC_REPLAY_KNOWLEDGE_TIME } from "@jro/test-fixtures";
 import type {
   ExperimentalCataloguePort,
   ExperimentalCorrectionInput,
@@ -33,6 +34,14 @@ import {
   parseManualAlphaState,
   parseNanacoCreditChargeRecommendation,
 } from "./contracts.js";
+import {
+  FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS,
+  type FactInfluenceBrowserView,
+  type FactInfluenceGraphContext,
+  type FactInfluenceGraphPort,
+  getDefaultFactInfluenceGraphPort,
+  projectFactInfluenceForRecommendation,
+} from "./fact-influence-graph.js";
 import {
   adaptImplementationFactBackend,
   getDefaultImplementationFactCataloguePort,
@@ -89,6 +98,10 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = Object.freeze({
 
 const MAX_ISSUED_RECOMMENDATIONS = 128;
 const issuedRecommendationIds = new Set<string>();
+const NANACO_PURCHASE_APPLIED_PARENT_CLAIM_ID =
+  FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS.nanaco_purchase;
+const NANACO_CREDIT_CHARGE_APPLIED_PARENT_CLAIM_ID =
+  FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS.nanaco_credit_charge;
 
 /** Descriptor-first admission for trusted-port output; never invokes accessors. */
 function isPlainDataOutput(
@@ -189,6 +202,11 @@ export interface AppDependencies {
   readonly implementationCatalogue?: ImplementationFactBackend;
   /** Explicit alias for callers that prefer the full feature name. */
   readonly implementationFactCatalogue?: ImplementationFactBackend;
+  /** Server-only complete P0 fact graph used for bounded result explanations. */
+  readonly factInfluenceGraph?: FactInfluenceGraphPort;
+  /** Descriptive aliases accepted for host composition. */
+  readonly implementationFactInfluenceGraph?: FactInfluenceGraphPort;
+  readonly factInfluence?: FactInfluenceGraphPort;
 }
 
 export type AppCatalogueDependency =
@@ -196,6 +214,7 @@ export type AppCatalogueDependency =
   | ExperimentalRecommendationPort
   | NanacoCreditChargeRecommendationPort
   | ImplementationFactBackend
+  | FactInfluenceGraphPort
   | AppDependencies;
 
 function resolveExperimentalRecommendation(
@@ -327,6 +346,81 @@ function resolveImplementationCatalogue(
       dependency as ImplementationFactBackend,
     );
   throw requestError(500, "implementation_fact_catalogue_dependency_invalid");
+}
+
+function resolveFactInfluenceGraph(
+  dependency: AppCatalogueDependency | undefined,
+): FactInfluenceGraphPort {
+  if (dependency === undefined) return getDefaultFactInfluenceGraphPort();
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "factInfluenceGraph" in dependency
+  ) {
+    const port = dependency.factInfluenceGraph;
+    if (port !== undefined && port !== null && typeof port.load === "function")
+      return port;
+    throw requestError(500, "fact_influence_graph_dependency_invalid");
+  }
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "implementationFactInfluenceGraph" in dependency
+  ) {
+    const port = dependency.implementationFactInfluenceGraph;
+    if (port !== undefined && port !== null && typeof port.load === "function")
+      return port;
+    throw requestError(500, "fact_influence_graph_dependency_invalid");
+  }
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "factInfluence" in dependency
+  ) {
+    const port = dependency.factInfluence;
+    if (port !== undefined && port !== null && typeof port.load === "function")
+      return port;
+    throw requestError(500, "fact_influence_graph_dependency_invalid");
+  }
+  if (
+    typeof dependency === "object" &&
+    dependency !== null &&
+    "load" in dependency &&
+    typeof dependency.load === "function"
+  )
+    return dependency as FactInfluenceGraphPort;
+  throw requestError(500, "fact_influence_graph_dependency_invalid");
+}
+
+async function factInfluenceForRecommendation(
+  dependency: AppCatalogueDependency | undefined,
+  effectiveAt: string,
+  context: FactInfluenceGraphContext,
+  appliedParentClaimIds: readonly string[],
+): Promise<FactInfluenceBrowserView> {
+  try {
+    const graph = await resolveFactInfluenceGraph(dependency).load(effectiveAt);
+    if (
+      graph.fact_count !== 364 ||
+      graph.nodes.length !== graph.fact_count ||
+      graph.version !== "p0-fact-influence-graph.v1"
+    )
+      throw new Error("fact_influence_graph_incomplete");
+    return projectFactInfluenceForRecommendation(
+      graph,
+      context,
+      appliedParentClaimIds,
+    );
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "status" in error &&
+      "code" in error
+    )
+      throw error;
+    throw requestError(503, "fact_influence_graph_unavailable");
+  }
 }
 
 function requestError(status: number, code: string): RequestError {
@@ -1108,7 +1202,20 @@ export async function handleRequest(
       const input = parseManualAlphaState(
         parseJsonBody(request, MAX_EVALUATE_BODY_BYTES),
       );
-      const result = mapRecommendationForBrowser(evaluateSynthetic(input));
+      const factInfluence = await factInfluenceForRecommendation(
+        dependency,
+        SYNTHETIC_REPLAY_KNOWLEDGE_TIME,
+        {
+          merchant_id: input.merchant_id,
+          payment_method: "synthetic_card",
+          family_ids: ["merchant.synthetic"],
+        },
+        [],
+      );
+      const result = mapRecommendationForBrowser(
+        evaluateSynthetic(input),
+        factInfluence,
+      );
       if (
         result.synthetic_only &&
         result.primary !== null &&
@@ -1147,8 +1254,19 @@ export async function handleRequest(
         }
         throw requestError(503, "experimental_recommendation_unavailable");
       }
+      const recommendation = safeExperimentalRecommendation(result, input);
+      const factInfluence = await factInfluenceForRecommendation(
+        dependency,
+        input.effective_at,
+        {
+          merchant_id: "merchant.seveneleven",
+          payment_method: "nanaco",
+          family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
+        },
+        [NANACO_PURCHASE_APPLIED_PARENT_CLAIM_ID],
+      );
       return jsonResponse(200, {
-        recommendation: safeExperimentalRecommendation(result, input),
+        recommendation: { ...recommendation, fact_influence: factInfluence },
       });
     }
     if (pathname === "/api/experimental/nanaco-credit-charge") {
@@ -1190,8 +1308,22 @@ export async function handleRequest(
           "nanaco_credit_charge_recommendation_unavailable",
         );
       }
+      const recommendation = safeNanacoCreditChargeRecommendation(
+        result,
+        input,
+      );
+      const factInfluence = await factInfluenceForRecommendation(
+        dependency,
+        input.effective_at,
+        {
+          merchant_id: "merchant.seveneleven",
+          payment_method: "seven_card_plus",
+          family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
+        },
+        [NANACO_CREDIT_CHARGE_APPLIED_PARENT_CLAIM_ID],
+      );
       return jsonResponse(200, {
-        recommendation: safeNanacoCreditChargeRecommendation(result, input),
+        recommendation: { ...recommendation, fact_influence: factInfluence },
       });
     }
     if (pathname === "/api/corrections/draft") {

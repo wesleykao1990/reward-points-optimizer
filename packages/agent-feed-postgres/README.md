@@ -17,6 +17,21 @@ The wrapper requires exact event/lifecycle pairing and exact set equality
 between observation evidence references and submitted lead identities; JSON
 nulls and mismatched terminal states fail before writes.
 
+`createPostgresP0TerminalAtomicPersistence(target, manifest, resolver)` is a
+narrow terminal-only bridge for a signature/schema-verified Agent Feed
+`AtomicPersistenceInput`. The host-owned resolver returns one exact admitted
+`P0ReceiptReconciliation` template (its receipt ID may be a valid placeholder);
+the consumer's process-local verification capability is required on the
+original input, and the bridge rejects structural/unsigned, non-terminal, or
+identity-mismatched inputs before checkout,
+persists the receipt/lifecycle, binds the returned receipt UUID into the root
+and every checkpoint, then calls `reconcile_p0_agent_feed_work_unit` on the
+same client and transaction. A checkpoint or reconciliation failure rolls the
+receipt and lifecycle back together. The resolver must provide target outcomes
+and locators explicitly; this adapter never queries Agent Feed state or infers
+missing checkpoints. Use the ordinary `createPostgresAtomicPersistence` for
+non-P0 and non-terminal events.
+
 `createPostgresNanacoEconomicPilotHost(target)` is the trusted-host adapter for
 the sealed Nanaco economic pilot. It retains a private provisional-rule store
 and supplies the route's verifier from one Rewards-owned `EXISTS` query over
@@ -35,6 +50,16 @@ inside the database's fixed-search-path SECURITY DEFINER routine and commits
 the exact correction transactionally. The generic implementation lane stores
 the current 364 catalogue facts (zero derived rules) without creating canonical
 reward rules, evidence, publication requests, or human-approval records.
+
+`createPostgresP0FactInfluenceGraphStore(target)` is the separate host-only
+explanation boundary. It reads the private
+`p0_implementation_fact_influence_graph_rows(timestamptz)` function with a
+364-row bound, retains inactive and corrected history, validates the complete
+server-side JSON material, and sorts by the deterministic implementation-hash
+and claim identity order. The adapter returns no browser DTO; the consumer
+host reduces these rows to opaque factor IDs, localized labels, and bounded
+questions/warnings. A correction therefore remains addressable in the graph
+but is never rankable.
 
 `loadCurrentP0EconomicRuleIRs(target, options)` is the separate executable-rule
 boundary. It reads the complete current candidate document from the private

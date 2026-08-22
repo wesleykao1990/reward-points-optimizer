@@ -1,6 +1,7 @@
 import { getNanacoEconomicPilotRule } from "@jro/provisional-rules";
 import { describe, expect, it } from "vitest";
 import type { ExperimentalRecommendationInput } from "../src/contracts.js";
+import { getDefaultFactInfluenceGraphPort } from "../src/fact-influence-graph.js";
 import {
   createNanacoExperimentalRecommendationPort,
   ExperimentalRecommendationError,
@@ -9,6 +10,7 @@ import {
   NANACO_EXPERIMENTAL_PUBLICATION_ID,
   type NanacoExperimentalRuleSource,
 } from "../src/real-experimental-recommendation.js";
+import { handleRequest } from "../src/server.js";
 
 const effectiveAt = "2026-08-21T00:00:00+09:00";
 
@@ -98,5 +100,61 @@ describe("real experimental Nanaco recommendation", () => {
     const first = await port.evaluate(input(200));
     const second = await port.evaluate(input(200));
     expect(first).toEqual(second);
+  });
+
+  it("attaches only the verified purchase claim as an opaque applied factor", async () => {
+    const body = JSON.stringify(input(200));
+    const response = await handleRequest(
+      {
+        method: "POST",
+        pathname: "/api/experimental/recommendation",
+        headers: {
+          "content-type": "application/json",
+          "content-length": String(Buffer.byteLength(body, "utf8")),
+        },
+        body,
+      },
+      {
+        experimentalRecommendation: createNanacoExperimentalRecommendationPort(
+          source(),
+        ),
+        factInfluenceGraph: getDefaultFactInfluenceGraphPort(),
+      },
+    );
+    expect(response.status).toBe(200);
+    const recommendation = JSON.parse(response.body).recommendation as Record<
+      string,
+      unknown
+    >;
+    expect(recommendation.fact_influence).toMatchObject({
+      fact_count: 364,
+      applied_count: 1,
+      applied_factor_ids: [expect.stringMatching(/^factor_[0-9a-f]{32}$/u)],
+    });
+    expect(response.body).not.toMatch(
+      /parent_claim_id|implementation_hash|source_ids|https?:\/\//iu,
+    );
+  });
+
+  it("fails closed when an injected recommendation dependency omits the graph", async () => {
+    const body = JSON.stringify(input(200));
+    const response = await handleRequest(
+      {
+        method: "POST",
+        pathname: "/api/experimental/recommendation",
+        headers: {
+          "content-type": "application/json",
+          "content-length": String(Buffer.byteLength(body, "utf8")),
+        },
+        body,
+      },
+      {
+        experimentalRecommendation: createNanacoExperimentalRecommendationPort(
+          source(),
+        ),
+      },
+    );
+    expect(response.status).toBe(500);
+    expect(response.body).toContain("fact_influence_graph_dependency_invalid");
   });
 });

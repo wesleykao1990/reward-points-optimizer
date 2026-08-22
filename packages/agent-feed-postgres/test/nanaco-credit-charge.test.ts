@@ -19,6 +19,7 @@ const row = () => ({
   definition_hash: NANACO_CREDIT_CHARGE_DEFINITION_HASH,
   candidate_id: NANACO_CREDIT_CHARGE_CANDIDATE.candidate_id,
   candidate_payload: structuredClone(NANACO_CREDIT_CHARGE_CANDIDATE),
+  source_observation_id: "00000000-0000-0000-0000-000000000001",
   source_observation_key: NANACO_CREDIT_CHARGE_CANDIDATE.observation_id,
   observation_fingerprint:
     NANACO_CREDIT_CHARGE_CANDIDATE.observation_fingerprint,

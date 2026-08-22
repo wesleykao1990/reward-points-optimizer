@@ -18,6 +18,7 @@ import {
   createInMemoryReplayDiagnostics,
   EvidencePromotionService,
   evaluateMonitorLiveness,
+  isVerifiedAtomicPersistenceInput,
   loadPublishedSchemaValidator,
   mapFindingToObservation,
   normalizeRewardDomainFields,
@@ -262,6 +263,7 @@ describe("signed Agent Feed consumer boundary", () => {
     assert.equal(response.acknowledged, true);
     assert.equal(response.status_code, 200);
     assert.equal(fixture.calls.length, 1);
+    assert.equal(isVerifiedAtomicPersistenceInput(fixture.calls[0]), true);
     const { attempt: _attempt, ...withoutAttempt } = input;
     assert.equal(
       fixture.calls[0]?.receipt.payload_hash,

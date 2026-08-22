@@ -1,22 +1,50 @@
 import {
+  compileRuleIR,
   getNanacoCreditChargeRule,
+  NANACO_CREDIT_CHARGE_CANDIDATE,
   NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
   NANACO_CREDIT_CHARGE_CLAIM_IDS,
   NANACO_CREDIT_CHARGE_DEFINITION_HASH,
   NANACO_CREDIT_CHARGE_EVIDENCE_IDS,
   NANACO_CREDIT_CHARGE_FINDING_ID,
   NANACO_CREDIT_CHARGE_SOURCE_IDS,
+  RULE_IR_VERSION,
 } from "@jro/provisional-rules";
 import { describe, expect, it } from "vitest";
 
 import { parseNanacoCreditChargeRecommendation } from "../src/contracts.js";
+import { getDefaultFactInfluenceGraphPort } from "../src/fact-influence-graph.js";
 import {
   evaluateNanacoCreditChargeRecommendation,
+  getNanacoCreditChargeRuleIRMaterial,
   NANACO_CREDIT_CHARGE_PUBLICATION_ID,
   type NanacoCreditChargeAvailability,
   NanacoCreditChargeRecommendationError,
 } from "../src/nanaco-credit-charge-recommendation.js";
 import { handleRequest } from "../src/server.js";
+
+const ruleIR = (() => {
+  const compiled = compileRuleIR({
+    version: RULE_IR_VERSION,
+    rule: getNanacoCreditChargeRule(),
+    source_binding: {
+      claim_id: NANACO_CREDIT_CHARGE_CLAIM_IDS[0],
+      family_id: NANACO_CREDIT_CHARGE_CANDIDATE.p0_family_id,
+      source_role_id: NANACO_CREDIT_CHARGE_CANDIDATE.source_role_id,
+      source_ids: [...NANACO_CREDIT_CHARGE_CANDIDATE.source_ids],
+      observation_id: NANACO_CREDIT_CHARGE_CANDIDATE.observation_id,
+      observation_fingerprint:
+        NANACO_CREDIT_CHARGE_CANDIDATE.observation_fingerprint,
+      evidence_ids: [...NANACO_CREDIT_CHARGE_EVIDENCE_IDS],
+      candidate_id: NANACO_CREDIT_CHARGE_CANDIDATE.candidate_id,
+      candidate_hash: NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
+      definition_hash: NANACO_CREDIT_CHARGE_DEFINITION_HASH,
+    },
+    ...getNanacoCreditChargeRuleIRMaterial(),
+  });
+  if (!compiled.ok) throw new Error("credit-charge-test-rule-ir-invalid");
+  return compiled.value;
+})();
 
 const availability = (): NanacoCreditChargeAvailability => ({
   route_id: NANACO_CREDIT_CHARGE_PUBLICATION_ID,
@@ -28,6 +56,7 @@ const availability = (): NanacoCreditChargeAvailability => ({
   evidence_ids: [...NANACO_CREDIT_CHARGE_EVIDENCE_IDS],
   source_ids: [...NANACO_CREDIT_CHARGE_SOURCE_IDS],
   reward_rule: getNanacoCreditChargeRule(),
+  rule_ir: ruleIR,
 });
 
 const input = (amount = 5_000, balance = 0) => ({
@@ -54,6 +83,17 @@ describe("Seven Card Plus Nanaco credit-charge recommendation", () => {
     });
     expect(result.nanaco_balance_after_jpy).toBe(5_000);
     expect(result.verification_status).toBe("experimental_unverified");
+  });
+
+  it("fails closed when source availability omits Rule IR", async () => {
+    const withoutRuleIR = { ...availability() } as Record<string, unknown>;
+    delete withoutRuleIR.rule_ir;
+    await expect(
+      evaluateNanacoCreditChargeRecommendation(input(), {
+        current: async () =>
+          withoutRuleIR as unknown as NanacoCreditChargeAvailability,
+      }),
+    ).rejects.toMatchObject({ code: "rule_not_current" });
   });
 
   it("enforces the reviewed amount, increment, balance, and user boundaries", async () => {
@@ -141,6 +181,7 @@ describe("Seven Card Plus Nanaco credit-charge recommendation", () => {
               current: async () => availability(),
             }),
         },
+        factInfluenceGraph: getDefaultFactInfluenceGraphPort(),
       },
     );
 
@@ -153,6 +194,11 @@ describe("Seven Card Plus Nanaco credit-charge recommendation", () => {
       charge_amount_jpy: 5_000,
       nanaco_balance_after_jpy: 5_000,
       winner: { reward_points: "25", operation_count: 1 },
+    });
+    expect(recommendation.fact_influence).toMatchObject({
+      fact_count: 364,
+      applied_count: 1,
+      applied_factor_ids: [expect.stringMatching(/^factor_[0-9a-f]{32}$/u)],
     });
     expect(response.body).not.toContain("evidence_ids");
     expect(response.body).not.toContain("source_ids");

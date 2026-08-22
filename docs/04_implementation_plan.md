@@ -746,6 +746,41 @@ them as Rewards-owned `p0-receipt-reconciliation.v1` checkpoints requires a
 configured durable Rewards database/consumer and is a separate deployment
 operation; this checkpoint does not pretend that cross-project import occurred.
 
+### Interim Milestone 7P.12 — Verified receipt bridge and P0 fact influence graph
+
+Implementation checkpoint (2026-08-22): the Agent Feed consumer now marks an
+atomic persistence input with a process-local capability only after the
+existing signature and schema checks succeed. The P0 terminal bridge accepts
+only that verified input, writes the receipt and lifecycle, binds the returned
+receipt identity into the exact 301-target reconciliation format, and commits
+both operations in one transaction. Structural or unsigned lookalikes fail
+before database checkout. The bridge deliberately does not infer target
+outcomes or query Agent Feed state; a host-owned resolver must supply the exact
+checkpoint material.
+
+The Seven Card Plus Nanaco top-up route now loads and validates the same
+hash-bound Rule IR used by the PostgreSQL recommendation path. Missing,
+corrected, inactive, drifted, or asset/edge-mismatched IR fails closed. The
+native engine remains the sole calculator and conserves the charged Nanaco
+principal separately from the earned Nanaco points.
+
+All 364 generic P0 facts now form a deterministic, correction-aware influence
+graph. Every fact is retained as a node, including inactive and corrected
+history. Incomplete economic facts become explicit Japanese questions or
+warnings instead of inferred rewards. The two executable Nanaco routes mark
+only their exact server-owned, verified parent claim as applied; the catalogue
+fact itself never performs arithmetic or becomes an engine rule. Browser
+responses expose only opaque factor IDs, localized labels and bounded
+questions/warnings—never raw values, source identities, evidence locators,
+hashes, claim IDs, or URLs. An injected database runtime without the complete
+364-node graph fails closed and cannot substitute checked-in fixtures.
+
+This finishes the in-repository bridge and explanation path, not the live
+cross-database delivery. The remaining operational step is to deliver a signed
+terminal event through a configured Rewards consumer, resolve its exact target
+checkpoint outcomes, and verify the resulting receipt in the deployment
+database.
+
 ## Later milestones
 
 - full data-operations console;

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import {
   EXPERIMENTAL_CATALOGUE_QUERY,
   EXPERIMENTAL_CORRECTION_QUERY,
+  NANACO_CREDIT_CHARGE_ROUTE_QUERY,
   NANACO_P0_DEFINITION_HASH,
   P0_EXPERIMENTAL_CATALOGUE_LOOKUP_QUERY,
   P0_EXPERIMENTAL_CATALOGUE_QUERY,
@@ -10,12 +11,20 @@ import {
 import {
   hashCandidate,
   hashDefinition,
+  NANACO_CREDIT_CHARGE_CANDIDATE,
+  NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
+  NANACO_CREDIT_CHARGE_CLAIM_IDS,
+  NANACO_CREDIT_CHARGE_DEFINITION_HASH,
+  NANACO_CREDIT_CHARGE_EVIDENCE_IDS,
+  NANACO_CREDIT_CHARGE_FINDING_ID,
+  NANACO_CREDIT_CHARGE_SOURCE_IDS,
   type ProvisionalRuleCandidate,
 } from "@jro/provisional-rules";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { ExperimentalRecommendationInput } from "../src/contracts.js";
 import {
   createPostgresExperimentalCataloguePort,
+  createPostgresNanacoCreditChargeRecommendationPort,
   createPostgresNanacoExperimentalRecommendationPort,
   mapPostgresNanacoRecordToCard,
 } from "../src/postgres-catalogue.js";
@@ -99,6 +108,32 @@ function acceptanceRow(overrides: JsonRecord = {}): JsonRecord {
     status: "active_experimental",
     machine_checked_at: acceptanceCandidate.machine_check.checked_at,
     admitted_at: acceptanceCandidate.machine_check.checked_at,
+    ...overrides,
+  };
+}
+
+function creditChargeRouteRow(overrides: JsonRecord = {}): JsonRecord {
+  return {
+    candidate_hash: NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
+    definition_hash: NANACO_CREDIT_CHARGE_DEFINITION_HASH,
+    candidate_id: NANACO_CREDIT_CHARGE_CANDIDATE.candidate_id,
+    candidate_payload: structuredClone(NANACO_CREDIT_CHARGE_CANDIDATE),
+    source_observation_id: "00000000-0000-0000-0000-000000000003",
+    source_observation_key: NANACO_CREDIT_CHARGE_CANDIDATE.observation_id,
+    observation_fingerprint:
+      NANACO_CREDIT_CHARGE_CANDIDATE.observation_fingerprint,
+    source_ids: [...NANACO_CREDIT_CHARGE_SOURCE_IDS],
+    p0_family_id: "point.nanaco",
+    source_role_id: "earn_rules",
+    source_authority_role: "primary",
+    status: "active_experimental",
+    machine_checked_at: "2026-08-22T00:06:00Z",
+    admitted_at: "2026-08-22T00:06:30Z",
+    route_id: NANACO_CREDIT_CHARGE_CANDIDATE.candidate_id,
+    claim_ids: [...NANACO_CREDIT_CHARGE_CLAIM_IDS],
+    evidence_ids: [...NANACO_CREDIT_CHARGE_EVIDENCE_IDS],
+    bound_source_ids: [...NANACO_CREDIT_CHARGE_SOURCE_IDS],
+    finding_id: NANACO_CREDIT_CHARGE_FINDING_ID,
     ...overrides,
   };
 }
@@ -277,5 +312,56 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
     await expect(drifted.evaluate(input)).rejects.toMatchObject({
       code: "recommendation_unavailable",
     });
+  });
+
+  it("compiles the exact DB credit-charge candidate into Rule IR before evaluation", async () => {
+    const calls: string[] = [];
+    const port = createPostgresNanacoCreditChargeRecommendationPort({
+      async query(text) {
+        calls.push(text);
+        if (text === NANACO_CREDIT_CHARGE_ROUTE_QUERY)
+          return { rows: [creditChargeRouteRow()] };
+        return { rows: [] };
+      },
+    });
+    await expect(
+      port.evaluate({
+        selection_id:
+          "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
+        charge_amount_jpy: 5_000,
+        nanaco_balance_jpy: 0,
+        seven_card_plus_owned: true,
+        nanaco_credit_charge_preregistered: true,
+        effective_at: "2026-08-22T00:00:00+09:00",
+      }),
+    ).resolves.toMatchObject({
+      outcome: "definite",
+      winner: { reward_points: "25", operation_count: 1 },
+    });
+    expect(calls).toEqual([NANACO_CREDIT_CHARGE_ROUTE_QUERY]);
+  });
+
+  it("fails closed when the DB candidate, Rule IR binding, or graph drifts", async () => {
+    const drifted = creditChargeRouteRow();
+    const driftedCandidate =
+      drifted.candidate_payload as ProvisionalRuleCandidate;
+    if (driftedCandidate.rule.calculation?.model === "points_per_unit")
+      driftedCandidate.rule.calculation.spend_jpy = 201;
+    await expect(
+      createPostgresNanacoCreditChargeRecommendationPort({
+        query: async (text) =>
+          text === NANACO_CREDIT_CHARGE_ROUTE_QUERY
+            ? { rows: [drifted] }
+            : { rows: [] },
+      }).evaluate({
+        selection_id:
+          "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
+        charge_amount_jpy: 5_000,
+        nanaco_balance_jpy: 0,
+        seven_card_plus_owned: true,
+        nanaco_credit_charge_preregistered: true,
+        effective_at: "2026-08-22T00:00:00+09:00",
+      }),
+    ).rejects.toMatchObject({ code: "recommendation_unavailable" });
   });
 });

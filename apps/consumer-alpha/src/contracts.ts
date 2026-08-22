@@ -4,6 +4,9 @@ import {
   type CorrectionCategory as ProvisionalCorrectionCategory,
 } from "@jro/provisional-rules";
 import { assertAdmitted } from "@jro/recommendation-api";
+import type { FactInfluenceBrowserView } from "./fact-influence-graph.js";
+
+export type { FactInfluenceBrowserView } from "./fact-influence-graph.js";
 
 /**
  * The only state that may cross from the browser into the M6 host.
@@ -270,6 +273,8 @@ export interface ExperimentalRecommendationResult {
   readonly plans: readonly ExperimentalRecommendationPlan[];
   readonly assumptions: readonly string[];
   readonly blockers: readonly string[];
+  /** Optional host projection; raw fact material never enters this DTO. */
+  readonly fact_influence?: FactInfluenceBrowserView;
 }
 
 /** Trusted host boundary for the one executable Nanaco recommendation lane. */
@@ -321,6 +326,8 @@ export interface NanacoCreditChargeRecommendationResult {
   readonly plans: readonly NanacoCreditChargeRecommendationPlan[];
   readonly assumptions: readonly string[];
   readonly blockers: readonly string[];
+  /** Optional host projection; raw fact material never enters this DTO. */
+  readonly fact_influence?: FactInfluenceBrowserView;
 }
 
 export interface NanacoCreditChargeRecommendationPort {

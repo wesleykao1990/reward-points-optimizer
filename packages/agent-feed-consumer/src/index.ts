@@ -71,3 +71,4 @@ export {
   redactForDiagnostics,
   sha256Hex,
 } from "./util.js";
+export { isVerifiedAtomicPersistenceInput } from "./verified-input.js";

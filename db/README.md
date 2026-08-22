@@ -36,6 +36,16 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     candidate, evidence, reward-rule, publication, or human-approval rows;
     PostgreSQL validates hash shape but does not recompute the TypeScript
     canonical hash.
+13. `0013_p0_agent_feed_operations.sql` adds the private, append-only P0
+    work-unit and target-attempt checkpoint ledger, with exact terminal receipt
+    reconciliation and idempotent replay comparison.
+14. `0014_p0_nanaco_credit_charge_recommendation.sql` binds the bounded Seven
+    Card Plus credit-charge experiment to its current provisional rule and
+    correction-sensitive availability projection.
+15. `0015_p0_fact_influence_graph.sql` exposes all 364 immutable implementation
+    facts through a private, correction-aware host projection. Inactive and
+    corrected facts remain addressable, while only separately verified rule
+    bindings may be reported as applied to a recommendation.
 
 It separates:
 

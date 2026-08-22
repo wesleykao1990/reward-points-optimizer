@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto";
 import {
+  deepFreeze,
+  hashCanonical,
   hashDefinition,
   isActiveProvisionalRule,
   isCanonicalProvisionalDateTime,
+  NANACO_CREDIT_CHARGE_CANDIDATE,
   NANACO_CREDIT_CHARGE_CANDIDATE_ARTIFACT_HASH,
   NANACO_CREDIT_CHARGE_CLAIM_IDS,
   NANACO_CREDIT_CHARGE_DEFINITION_HASH,
@@ -10,8 +13,10 @@ import {
   NANACO_CREDIT_CHARGE_FINDING_ID,
   NANACO_CREDIT_CHARGE_RULE_ID,
   NANACO_CREDIT_CHARGE_SOURCE_IDS,
+  type RuleIRV1,
   type Sha256,
   scanPublicValue,
+  validateRuleIR,
 } from "@jro/provisional-rules";
 import {
   type AssetDefinition,
@@ -75,6 +80,8 @@ export interface NanacoCreditChargeAvailability {
   readonly evidence_ids: readonly string[];
   readonly source_ids: readonly string[];
   readonly reward_rule: RewardRule;
+  /** Every source must provide the exact source-bound Rule IR. */
+  readonly rule_ir: RuleIRV1;
 }
 
 export interface NanacoCreditChargeRuleSource {
@@ -118,6 +125,18 @@ function exactArray(
   return (
     actual.length === expected.length &&
     actual.every((item, index) => item === expected[index])
+  );
+}
+
+function sameStringSet(
+  actual: readonly string[],
+  expected: readonly string[],
+): boolean {
+  return (
+    actual.length === expected.length &&
+    [...actual]
+      .sort()
+      .every((item, index) => item === [...expected].sort()[index])
   );
 }
 
@@ -195,9 +214,85 @@ function assertCurrentAvailability(
     rule.scope.operation_types[0] !== "stored_value_top_up"
   )
     throw new NanacoCreditChargeRecommendationError("rule_not_current");
+
+  if (current.rule_ir === undefined)
+    throw new NanacoCreditChargeRecommendationError("rule_not_current");
+  const validated = validateRuleIR(current.rule_ir);
+  if (!validated.ok)
+    throw new NanacoCreditChargeRecommendationError("rule_not_current");
+  const ruleIR = validated.value;
+  const candidate = NANACO_CREDIT_CHARGE_CANDIDATE;
+  const binding = validated.value.source_binding;
+  const expectedMaterial = getNanacoCreditChargeRuleIRMaterial();
+  const expectedAssets = new Map(
+    expectedMaterial.assets.map((asset) => [asset.asset_id, asset]),
+  );
+  const assetsMatch =
+    validated.value.assets.length === expectedAssets.size &&
+    validated.value.assets.every((asset) => {
+      const expected = expectedAssets.get(asset.asset_id);
+      return (
+        expected !== undefined &&
+        hashCanonical(asset) === hashCanonical(expected)
+      );
+    });
+  const sameRef = (actual: AssetRef, expected: AssetRef): boolean =>
+    actual.asset_id === expected.asset_id &&
+    actual.asset_kind === expected.asset_kind &&
+    actual.program_id === expected.program_id &&
+    actual.reward_class === expected.reward_class &&
+    actual.scale === expected.scale;
+  const fundingAsset: AssetRef = {
+    asset_id: NANACO_CREDIT_CHARGE_FUNDING_ASSET_ID,
+    asset_kind: "credit_limit",
+    program_id: "program.jp.seven-card-plus",
+    reward_class: null,
+    scale: 0,
+  };
+  const principalAsset = nanacoAsset();
+  const edges = validated.value.principal_edges;
+  const graphMatch =
+    edges.length === 2 &&
+    edges.some(
+      (edge) =>
+        edge.operation_type === "stored_value_top_up" &&
+        edge.direction === "consume" &&
+        edge.role === "external_funding" &&
+        edge.conservation === "engine_enforced" &&
+        sameRef(edge.asset, fundingAsset),
+    ) &&
+    edges.some(
+      (edge) =>
+        edge.operation_type === "stored_value_top_up" &&
+        edge.direction === "create" &&
+        edge.role === "principal_output" &&
+        edge.conservation === "engine_enforced" &&
+        sameRef(edge.asset, principalAsset),
+    );
+  if (
+    validated.value.rule.rule_id !== NANACO_CREDIT_CHARGE_RULE_ID ||
+    hashDefinition(validated.value.rule) !==
+      NANACO_CREDIT_CHARGE_DEFINITION_HASH ||
+    hashDefinition(validated.value.rule) !== current.definition_hash ||
+    hashDefinition(validated.value.rule) !== hashDefinition(rule) ||
+    binding.claim_id !== NANACO_CREDIT_CHARGE_CLAIM_IDS[0] ||
+    !sameStringSet(binding.evidence_ids, NANACO_CREDIT_CHARGE_EVIDENCE_IDS) ||
+    binding.family_id !== "point.nanaco" ||
+    binding.source_role_id !== "earn_rules" ||
+    !sameStringSet(binding.source_ids, NANACO_CREDIT_CHARGE_SOURCE_IDS) ||
+    binding.observation_id !== candidate.observation_id ||
+    binding.observation_fingerprint !== candidate.observation_fingerprint ||
+    binding.candidate_id !== current.candidate_id ||
+    binding.candidate_hash !== current.candidate_hash ||
+    binding.definition_hash !== current.definition_hash ||
+    !assetsMatch ||
+    !graphMatch
+  )
+    throw new NanacoCreditChargeRecommendationError("rule_not_current");
   return Object.freeze({
     ...current,
-    reward_rule: structuredClone(rule),
+    reward_rule: structuredClone(ruleIR.rule),
+    rule_ir: ruleIR,
   });
 }
 
@@ -270,6 +365,43 @@ function assets(): readonly AssetDefinition[] {
       notes: "Reward points are not merged into the stored-value principal.",
     },
   ]);
+}
+
+/**
+ * Host-owned definitions and principal graph for the DB candidate compiler.
+ * The generic execution-bundle compiler intentionally does not synthesize a
+ * stored-value top-up graph; these exact edges are supplied only to the
+ * narrow native top-up lane.
+ */
+export function getNanacoCreditChargeRuleIRMaterial(): {
+  readonly assets: readonly AssetDefinition[];
+  readonly principal_edges: RuleIRV1["principal_edges"];
+} {
+  return deepFreeze({
+    assets: assets(),
+    principal_edges: [
+      {
+        operation_type: "stored_value_top_up" as const,
+        direction: "consume" as const,
+        role: "external_funding" as const,
+        asset: {
+          asset_id: NANACO_CREDIT_CHARGE_FUNDING_ASSET_ID,
+          asset_kind: "credit_limit" as const,
+          program_id: "program.jp.seven-card-plus",
+          reward_class: null,
+          scale: 0,
+        },
+        conservation: "engine_enforced" as const,
+      },
+      {
+        operation_type: "stored_value_top_up" as const,
+        direction: "create" as const,
+        role: "principal_output" as const,
+        asset: nanacoAsset(),
+        conservation: "engine_enforced" as const,
+      },
+    ],
+  });
 }
 
 function openingLot(input: NanacoCreditChargeRecommendationInput): AssetLot[] {
