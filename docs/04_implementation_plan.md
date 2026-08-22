@@ -710,6 +710,42 @@ economic validity, publish a rule, or write trusted database state. Disabling
 the model must leave rule/bundle hashes, generated plans, engine results, and
 winner IDs unchanged.
 
+### Interim Milestone 7P.11 — Full P0 Agent Feed run and database Rule IR loader
+
+Implementation checkpoint (2026-08-22): the exact prepared P0 operations set
+has now run through the live Agent Feed application. One usable terminal run
+exists for each of the 44 deterministic work-unit hashes and all 301 required
+family-role targets are represented in terminal actual-scope metadata. The
+selected set contains 39 completed and five honest partial runs, 196 accepted
+findings, 187 lead-only evidence records, and 47 accepted batches. It attempted
+226 distinct per-run source references and recorded 221 as fetched. Every
+selected run carries `publication_authority: none`; none creates canonical
+evidence or a `RewardRuleVersion`.
+
+The partial runs preserve the actual unresolved boundary: Amazon points
+returned HTTP 503; one d Point transfer directory remained partially checked;
+JRE POINT had two HTTP-403 roles and two partially checked roles; all four METI
+cashless roles returned HTTP 403; and the exact nanaco transfer-role payload
+was rejected by Agent Feed's secret-field scanner because one source claim
+describes a required authentication `credential`. The nanaco claim was not
+renamed or silently omitted. Extra zero-content duplicate attempts were
+cancelled or excluded during exact-hash reconciliation and do not substitute
+for the selected terminal runs.
+
+The PostgreSQL host can now compile a complete current economic candidate row
+into the same Rule IR used by the execution-bundle generator. It binds the DB
+row to the embedded candidate, primary source authority, observation,
+machine-check time, definition and candidate hashes, evidence IDs, economic
+validity, and explicit host-owned asset/principal edges. Incomplete,
+unsupported, corrected, inactive, drifted, or hostile rows produce issues and
+are skipped. The database-backed Nanaco recommendation uses this loader; it no
+longer injects the checked-in Nanaco rule on the PostgreSQL route.
+
+Agent Feed terminal envelopes remain in the Agent Feed database. Importing
+them as Rewards-owned `p0-receipt-reconciliation.v1` checkpoints requires a
+configured durable Rewards database/consumer and is a separate deployment
+operation; this checkpoint does not pretend that cross-project import occurred.
+
 ## Later milestones
 
 - full data-operations console;

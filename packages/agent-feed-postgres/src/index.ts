@@ -106,4 +106,21 @@ export {
   P0_ECONOMIC_CANDIDATE_QUERY,
   processP0NanacoEconomicBatch,
 } from "./provisional-bulk.js";
+export type {
+  P0EconomicCandidateRowParseResult,
+  P0RuleIRCompilationResult,
+  P0RuleIRIssue,
+  P0RuleIRIssueCode,
+  P0RuleIRLoadOptions,
+  P0RuleIRLoadResult,
+  P0TrustedRuleIRBindings,
+} from "./rule-ir.js";
+export {
+  compileEconomicCandidateToRuleIR,
+  compileP0EconomicCandidateRow,
+  loadCurrentEconomicRuleIRs,
+  loadCurrentP0EconomicRuleIRs,
+  P0_RULE_IR_ROW_KEYS,
+  parseP0EconomicCandidateRow,
+} from "./rule-ir.js";
 export type * from "./types.js";

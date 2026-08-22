@@ -122,6 +122,22 @@ The endpoint records `event_id` idempotently before acknowledging. Agent Feed re
 
 Unknown types are stored or rejected according to policy; they never trigger generic rule creation.
 
+## 2026-08-22 P0 live-run checkpoint
+
+The sealed 44-work-unit / 301-target P0 operations set has been submitted to
+the live Agent Feed application. Exact-hash reconciliation selected 39
+completed and five partial terminal runs containing 196 findings and 187
+lead-only evidence records. Every selected run has publication authority
+`none`. The detailed counts and partial outcomes are recorded in
+`docs/reviews/p0-live-agent-feed-execution-2026-08-22.md`.
+
+This checkpoint proves Agent Feed ingestion and terminal run accounting. It
+does not prove Rewards receipt import, canonical evidence acquisition, rule
+publication, or recommendation coverage. Agent Feed's safety scanner also
+currently rejects a structured Nanaco transfer claim whose benign eligibility
+description uses a field named `credential`; the source claim remains partial
+rather than being rewritten to bypass that boundary.
+
 ## ChatGPT monitoring
 
 ChatGPT monitoring tasks remain useful as independent sentinels. Current Scheduled Tasks do not provide webhooks, so they are not assumed to submit automatically. A tool-capable runtime may use Agent Feed MCP/REST; otherwise a protocol-valid run bundle can be imported manually.

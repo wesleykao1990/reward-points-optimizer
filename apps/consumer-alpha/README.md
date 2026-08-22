@@ -32,6 +32,10 @@ The real-data route accepts gross amount, tax-exclusive eligible amount,
 Nanaco balance, and an explicit effective time. It requires the exact active
 payment-acceptance and earning candidates, applies the source-stated floor of
 one Nanaco point per tax-exclusive ¥200, and leaves JPY valuation empty. Its
+PostgreSQL composition compiles the current reward candidate into a
+source/evidence/hash-bound Rule IR record with explicit host-owned assets and
+principal edges before generating the request-specific purchase plan; it does
+not inject the checked-in Nanaco rule when the database route is active. Its
 response is always labeled `experimental_real_data` and
 `experimental_unverified`; it is neither a canonical publication nor current
 production advice.

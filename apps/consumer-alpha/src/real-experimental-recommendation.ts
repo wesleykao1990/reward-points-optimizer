@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   compileRuleIR,
+  deepFreeze,
   getNanacoEconomicPilotCandidate,
   getNanacoEconomicPilotRule,
   hashCandidate,
@@ -9,6 +10,8 @@ import {
   isCanonicalProvisionalDateTime,
   NANACO_PILOT_MERCHANT_ID,
   RULE_IR_VERSION,
+  type RuleIRV1,
+  validateRuleIR,
 } from "@jro/provisional-rules";
 import {
   compileExecutionBundle,
@@ -62,6 +65,8 @@ export const REAL_EXPERIMENTAL_RECOMMENDATION_VERSION =
 export interface NanacoExperimentalAvailability {
   readonly reward_candidate_id: string;
   readonly reward_rule: RewardRule;
+  /** DB-backed sources supply the already compiled, source-bound IR. */
+  readonly rule_ir?: RuleIRV1;
   readonly acceptance_candidate_id: string;
   readonly acceptance_rule_id: string;
 }
@@ -131,14 +136,33 @@ function assertCurrentAvailability(
   )
     throw new ExperimentalRecommendationError("source_unavailable");
   const rewardRule = availability.reward_rule;
-  const sealedCandidate = getNanacoEconomicPilotCandidate();
   if (
     !isRecord(rewardRule) ||
     rewardRule.rule_id !== "rr_jp_cvs_006_nanaco_purchase_reward" ||
     !ruleIsExperimentalCandidate(rewardRule) ||
-    !isActiveProvisionalRule(rewardRule, effectiveAt) ||
-    hashDefinition(rewardRule) !== hashDefinition(sealedCandidate.rule)
+    !isActiveProvisionalRule(rewardRule, effectiveAt)
   )
+    throw new ExperimentalRecommendationError("rule_not_current");
+  if (availability.rule_ir !== undefined) {
+    const validated = validateRuleIR(availability.rule_ir);
+    if (
+      !validated.ok ||
+      validated.value.rule.rule_id !== rewardRule.rule_id ||
+      hashDefinition(validated.value.rule) !== hashDefinition(rewardRule) ||
+      validated.value.source_binding.candidate_id !==
+        availability.reward_candidate_id
+    )
+      throw new ExperimentalRecommendationError("rule_not_current");
+    return Object.freeze({
+      reward_candidate_id: availability.reward_candidate_id,
+      reward_rule: structuredClone(rewardRule),
+      rule_ir: validated.value,
+      acceptance_candidate_id: availability.acceptance_candidate_id,
+      acceptance_rule_id: availability.acceptance_rule_id,
+    });
+  }
+  const sealedCandidate = getNanacoEconomicPilotCandidate();
+  if (hashDefinition(rewardRule) !== hashDefinition(sealedCandidate.rule))
     throw new ExperimentalRecommendationError("rule_not_current");
   return Object.freeze({
     reward_candidate_id: availability.reward_candidate_id,
@@ -206,6 +230,25 @@ function assets(): readonly AssetDefinition[] {
       notes: "Sealed experimental Nanaco reward asset.",
     },
   ]);
+}
+
+/** Host-owned graph material used by the DB candidate compiler. */
+export function getNanacoExperimentalRuleIRMaterial(): {
+  readonly assets: readonly AssetDefinition[];
+  readonly principal_edges: RuleIRV1["principal_edges"];
+} {
+  return deepFreeze({
+    assets: assets(),
+    principal_edges: [
+      {
+        operation_type: "merchant_purchase" as const,
+        direction: "consume" as const,
+        role: "principal_tender" as const,
+        asset: nanacoAsset(),
+        conservation: "engine_enforced" as const,
+      },
+    ],
+  });
 }
 
 function openingLot(input: ExperimentalRecommendationInput): AssetLot {
@@ -332,40 +375,37 @@ function merchantCatalog() {
 }
 
 function executionBundle(availability: NanacoExperimentalAvailability) {
-  const candidate = getNanacoEconomicPilotCandidate();
-  const definitionHash = hashDefinition(availability.reward_rule);
-  const compiledRule = compileRuleIR({
-    version: RULE_IR_VERSION,
-    rule: availability.reward_rule,
-    source_binding: {
-      claim_id: "claim.point.nanaco.earn.shopping-immediate.004",
-      family_id: candidate.p0_family_id,
-      source_role_id: candidate.source_role_id,
-      source_ids: [...candidate.source_ids],
-      observation_id: candidate.observation_id,
-      observation_fingerprint: candidate.observation_fingerprint,
-      evidence_ids: [...availability.reward_rule.provenance.evidence_ids],
-      candidate_id: candidate.candidate_id,
-      candidate_hash: hashCandidate(candidate, definitionHash),
-      definition_hash: definitionHash,
-    },
-    assets: assets(),
-    principal_edges: [
-      {
-        operation_type: "merchant_purchase",
-        direction: "consume",
-        role: "principal_tender",
-        asset: nanacoAsset(),
-        conservation: "engine_enforced",
+  let ruleIr: RuleIRV1;
+  if (availability.rule_ir !== undefined) {
+    ruleIr = availability.rule_ir;
+  } else {
+    const candidate = getNanacoEconomicPilotCandidate();
+    const definitionHash = hashDefinition(availability.reward_rule);
+    const compiledRule = compileRuleIR({
+      version: RULE_IR_VERSION,
+      rule: availability.reward_rule,
+      source_binding: {
+        claim_id: "claim.point.nanaco.earn.shopping-immediate.004",
+        family_id: candidate.p0_family_id,
+        source_role_id: candidate.source_role_id,
+        source_ids: [...candidate.source_ids],
+        observation_id: candidate.observation_id,
+        observation_fingerprint: candidate.observation_fingerprint,
+        evidence_ids: [...availability.reward_rule.provenance.evidence_ids],
+        candidate_id: candidate.candidate_id,
+        candidate_hash: hashCandidate(candidate, definitionHash),
+        definition_hash: definitionHash,
       },
-    ],
-  });
-  if (!compiledRule.ok)
-    throw new ExperimentalRecommendationError("recommendation_unavailable");
+      ...getNanacoExperimentalRuleIRMaterial(),
+    });
+    if (!compiledRule.ok)
+      throw new ExperimentalRecommendationError("recommendation_unavailable");
+    ruleIr = compiledRule.value;
+  }
   const compiledBundle = compileExecutionBundle({
     version: EXECUTABLE_RULE_BUNDLE_VERSION,
     bundle_id: "bundle.experimental.seveneleven.nanaco.v1",
-    rule_irs: [compiledRule.value],
+    rule_irs: [ruleIr],
     merchant_catalog: merchantCatalog(),
   });
   if (!compiledBundle.ok)

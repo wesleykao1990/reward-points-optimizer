@@ -1,13 +1,14 @@
 import {
   createPostgresExperimentalCatalogueStore,
   createPostgresNanacoCreditChargeRouteStore,
+  loadCurrentP0EconomicRuleIRs,
   type NanacoCreditChargeRouteRecord,
   type P0ExperimentalCatalogueRecord,
   type P0ExperimentalPaymentAcceptanceRecord,
   type P0ExperimentalRewardRateRecord,
+  type P0TrustedRuleIRBindings,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
-import { getNanacoEconomicPilotRule } from "@jro/provisional-rules";
 import type {
   ExperimentalCatalogueCard,
   ExperimentalCataloguePort,
@@ -22,6 +23,7 @@ import {
 import { normalizeExperimentalCatalogueSnapshot } from "./provisional-catalog.js";
 import {
   createNanacoExperimentalRecommendationPort,
+  getNanacoExperimentalRuleIRMaterial,
   NANACO_EXPERIMENTAL_ACCEPTANCE_PUBLICATION_ID,
   NANACO_EXPERIMENTAL_ACCEPTANCE_RULE_ID,
   NANACO_EXPERIMENTAL_PUBLICATION_ID,
@@ -30,6 +32,11 @@ import {
 
 const NANACO_TITLE = "nanacoの買い物ポイント";
 const NANACO_CONFIDENCE = "high" as const;
+const NANACO_RULE_IR_BINDINGS: P0TrustedRuleIRBindings = Object.freeze({
+  claim_id: "claim.point.nanaco.earn.shopping-immediate.004",
+  evidence_ids: Object.freeze(["ev_m3_nanaco_shopping_earning_20260820"]),
+  ...getNanacoExperimentalRuleIRMaterial(),
+});
 
 /**
  * Reduce the database adapter's private record to the exact browser card.
@@ -187,9 +194,22 @@ export function createPostgresNanacoExperimentalRecommendationPort(
       );
       if (!reward || !acceptance)
         throw new Error("nanaco_experimental_route_not_current");
+      const compiled = await loadCurrentP0EconomicRuleIRs(target, {
+        effective_at: effectiveAt,
+        rule_ids: ["rr_jp_cvs_006_nanaco_purchase_reward"],
+        bindings: {
+          [reward.publication_id]: NANACO_RULE_IR_BINDINGS,
+        },
+      });
+      const rewardRuleIR = compiled.rule_irs.find(
+        (item) => item.rule.rule_id === "rr_jp_cvs_006_nanaco_purchase_reward",
+      );
+      if (!rewardRuleIR || compiled.issues.length > 0)
+        throw new Error("nanaco_experimental_rule_ir_not_current");
       return {
         reward_candidate_id: reward.publication_id,
-        reward_rule: getNanacoEconomicPilotRule(),
+        reward_rule: rewardRuleIR.rule,
+        rule_ir: rewardRuleIR,
         acceptance_candidate_id: acceptance.publication_id,
         acceptance_rule_id: NANACO_EXPERIMENTAL_ACCEPTANCE_RULE_ID,
       };

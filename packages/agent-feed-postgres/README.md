@@ -33,5 +33,14 @@ correction plus safe fact text; hashes, URLs, evidence locators, raw values,
 and parent claim IDs are not returned. `reportCorrection` resolves that key
 inside the database's fixed-search-path SECURITY DEFINER routine and commits
 the exact correction transactionally. The generic implementation lane stores
-the current 87 catalogue facts (zero derived rules) without creating canonical
+the current 364 catalogue facts (zero derived rules) without creating canonical
 reward rules, evidence, publication requests, or human-approval records.
+
+`loadCurrentP0EconomicRuleIRs(target, options)` is the separate executable-rule
+boundary. It reads the complete current candidate document from the private
+experimental projection, verifies its row/candidate/source/authority/time/hash
+bindings, and compiles only supported economic rules. Because the projection
+does not contain claim identity, full asset definitions, or principal graph
+edges, the trusted host must provide those immutable bindings explicitly.
+Missing, inactive, corrected, drifted, hostile, unsupported, or incomplete
+rows are returned as deterministic issues and never become Rule IR records.
