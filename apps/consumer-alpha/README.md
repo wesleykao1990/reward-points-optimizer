@@ -79,29 +79,33 @@ Selected point programmes feed the deterministic point-spending graph.
 
 The Wallet tab exposes the same 21 service families plus the deterministic
 fixed-ratio point-spending graph. Only complete transfer/redemption claims are
-calculated. Official lottery, draw, game and scratch links appear in the
-Information tab and never enter recommendation arithmetic.
+calculated. Current official lottery, draw, game and scratch links appear in
+the matching service block in the Catalogue tab and never enter recommendation
+arithmetic.
 
-The `カタログ` tab presents host-owned routes and point families together. The
-local demo port builds its 11 Seven-Eleven payment-family records from the
+The `カタログ` tab presents one block per customer-facing service family. Each
+block combines its useful fact summaries, host-owned routes, and current
+official campaign links instead of exposing separate records by claim type.
+The local demo port builds its Seven-Eleven payment-family records from the
 checked-in Agent Feed run bundle, coverage index, and generated candidate set;
-the browser groups those methods into one card instead of repeating the same
-merchant card 11 times. A database-backed host may be injected without changing
-the browser or HTTP contract. Cards show only bounded display fields and an
-exact wrong-information reporting control. Hashes, rule payloads, evidence,
-source identifiers, and URLs stay on the trusted host.
+the browser groups those methods into one merchant block. Exact duplicate facts
+are collapsed, internal predicates and record counts are hidden, and one
+service-level wrong-information control identifies the exact fact on the
+trusted host. Hashes, rule payloads, evidence, source identifiers, and raw URLs
+stay on the trusted host.
 
 The five mobile tabs are ordered Home, Wallet, History, Catalogue, and
 Settings. Wallet and History are session-only views of the unified selection;
-they do not claim persistent account state. The `カタログ` tab exposes routes
-and the generic P0 implementation-fact catalogue on one surface. Its default localhost port
-reads all 364 checked-in implementation facts; a host may inject either the
-browser-safe fact port or the bounded `@jro/agent-feed-postgres` implementation
-store. `GET
+they do not claim persistent account state. The `カタログ` tab exposes the
+customer-facing projection of routes and implementation facts on one surface.
+Its default localhost port reads all 364 checked-in implementation facts; a
+host may inject either the browser-safe fact port or the bounded
+`@jro/agent-feed-postgres` implementation store. `GET
 /api/experimental/facts` returns `{ "status", "updated_at", "facts" }` with an
 opaque UUID, Japanese family/claim labels, subject, predicate, summary, and
-`use_in_comparison` for each card. Search and filters run over the returned
-bounded list in the browser. The checked-in fixture is labeled `partial` for
+`use_in_comparison` for each fact. Search and the service-family filter run over
+the returned bounded list in the browser before facts are grouped into service
+blocks. The checked-in fixture is labeled `partial` for
 provenance even though it contains all 364 facts in this wave; a database-
 backed port pages through the full bounded catalogue before returning `ready`.
 `POST

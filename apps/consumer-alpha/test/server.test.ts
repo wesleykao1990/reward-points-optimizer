@@ -567,11 +567,12 @@ describe("M6 localhost consumer shell", () => {
       "utf8",
     );
     expect(html).toContain("サービス・ポイント情報を見る");
-    expect(html).toContain("ルート・ポイント情報");
-    expect(html).toContain("支払い方法、還元率、ポイントの使い方");
-    expect(html.indexOf('id="tab-information"')).toBeLessThan(
-      html.indexOf('id="experimental-section"'),
-    );
+    expect(html).toContain("サービス・ポイント情報");
+    expect(html).toContain("還元率、使い方、対象条件");
+    expect(html).not.toContain('id="experimental-section"');
+    expect(html).not.toContain('id="lottery-links"');
+    expect(html).not.toContain('id="information-claim-filter"');
+    expect(html).not.toContain('id="information-count"');
     expect(html).not.toContain("先行公開");
     expect(html).not.toContain("実験");
     expect(html).not.toContain("最終確認前");
@@ -581,7 +582,7 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("交換計算対応");
     expect(source).not.toContain("情報掲載");
     expect(html).toContain("対応サービス一覧");
-    expect(html).toContain("抽選・スクラッチ情報");
+    expect(source).toContain("実施中のキャンペーン");
     expect(html).toContain('id="p0-card-picker"');
     expect(html).toContain('id="p0-mobile-pay-picker"');
     expect(html).toContain('id="p0-point-picker"');
@@ -610,7 +611,11 @@ describe("M6 localhost consumer shell", () => {
     expect(source).toContain("情報の誤りを報告");
     expect(html).not.toContain('id="correction-form"');
     expect(source).not.toContain("送信・保存されません");
-    expect(source).toContain("renderGroupedPaymentAcceptance");
+    expect(source).toContain("catalogueGroups");
+    expect(source).toContain("appendServiceReportControls");
+    expect(source).not.toContain(
+      ["関連情報 ", "$", "{item.fact_count}件"].join(""),
+    );
     expect(source).not.toContain('"P0情報');
     expect(source).not.toContain('"条件キー"');
     expect(source).not.toContain('"上限キー"');

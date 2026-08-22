@@ -2,7 +2,10 @@
   let sessionHistoryCount = 0;
   let informationFacts = [];
   let informationLoaded = false;
-  let lotteryLinksLoaded = false;
+  let catalogueRules = [];
+  let catalogueRulesLoaded = false;
+  let campaignLinks = [];
+  let campaignLinksLoaded = false;
 
   const node = (tag, className) => {
     const value = document.createElement(tag);
@@ -317,7 +320,6 @@
         const search = document.getElementById("information-search");
         search.value = searchValue;
         document.getElementById("information-family-filter").value = "";
-        document.getElementById("information-claim-filter").value = "";
         activateTab("information");
       });
       actions.appendChild(correction);
@@ -858,7 +860,7 @@
     list.appendChild(card);
   };
 
-  const renderExperimentalSnapshot = (snapshot) => {
+  const _renderExperimentalSnapshot = (snapshot) => {
     const list = document.getElementById("experimental-rules");
     clear(list);
     const rules =
@@ -904,7 +906,22 @@
       );
   };
 
-  const loadExperimentalRules = async () => {
+  const safeCatalogueRules = (snapshot) => {
+    if (!snapshot || !Array.isArray(snapshot.rules)) return [];
+    return snapshot.rules.filter(
+      (rule) =>
+        rule &&
+        typeof rule === "object" &&
+        typeof rule.publication_id === "string" &&
+        rule.publication_id.length > 0 &&
+        typeof rule.title === "string" &&
+        typeof rule.summary === "string" &&
+        typeof rule.kind === "string",
+    );
+  };
+
+  const loadExperimentalRules = async (force = false) => {
+    if (catalogueRulesLoaded && !force) return;
     try {
       const response = await fetch("/api/experimental/rules", {
         method: "GET",
@@ -912,9 +929,14 @@
       });
       const body = await response.json();
       if (!response.ok) throw new Error("request_failed");
-      renderExperimentalSnapshot(body);
+      catalogueRules = safeCatalogueRules(body);
+      catalogueRulesLoaded = true;
+      appendInformationFilterOptions();
+      renderInformationFacts();
     } catch {
-      experimentalRulesMessage("ルート情報を読み込めませんでした。", "helper");
+      catalogueRules = [];
+      catalogueRulesLoaded = false;
+      renderInformationFacts();
     }
   };
 
@@ -951,20 +973,13 @@
 
   const appendInformationFilterOptions = () => {
     const family = document.getElementById("information-family-filter");
-    const claim = document.getElementById("information-claim-filter");
     const previousFamily = family.value;
-    const previousClaim = claim.value;
     clear(family);
-    clear(claim);
     const allFamily = node("option");
     allFamily.value = "";
     allFamily.textContent = "すべて";
     family.appendChild(allFamily);
-    const allClaim = node("option");
-    allClaim.value = "";
-    allClaim.textContent = "すべて";
-    claim.appendChild(allClaim);
-    [...new Set(informationFacts.map((fact) => fact.family))]
+    allCatalogueFamilies()
       .sort((left, right) => left.localeCompare(right, "ja"))
       .forEach((value) => {
         const option = node("option");
@@ -972,24 +987,287 @@
         option.textContent = value;
         family.appendChild(option);
       });
-    [...new Set(informationFacts.map((fact) => fact.claim))]
-      .sort((left, right) => left.localeCompare(right, "ja"))
-      .forEach((value) => {
-        const option = node("option");
-        option.value = value;
-        option.textContent = value;
-        claim.appendChild(option);
-      });
     family.value = [...family.options].some(
       (option) => option.value === previousFamily,
     )
       ? previousFamily
       : "";
-    claim.value = [...claim.options].some(
-      (option) => option.value === previousClaim,
+  };
+
+  const catalogueRuleFamily = (rule) => {
+    if (rule.publication_id.includes("nanaco_shopping_earning"))
+      return "nanacoポイント";
+    if (rule.publication_id.includes("nanaco_sevencard_credit_charge"))
+      return "nanaco電子マネー";
+    if (
+      rule.publication_id.includes("seveneleven") ||
+      rule.title.includes("セブン‐イレブン")
     )
-      ? previousClaim
-      : "";
+      return "セブン‐イレブン";
+    return rule.title;
+  };
+
+  const hiddenCatalogueFamilies = new Set([
+    "金融庁（決済）",
+    "個人情報保護委員会",
+    "消費者庁（広告）",
+  ]);
+
+  function allCatalogueFamilies() {
+    return [
+      ...new Set([
+        ...informationFacts.map((fact) => fact.family),
+        ...catalogueRules.map(catalogueRuleFamily),
+        ...campaignLinks.map((item) => item.family),
+      ]),
+    ].filter((family) => !hiddenCatalogueFamilies.has(family));
+  }
+
+  const catalogueGroups = () => {
+    const groups = new Map();
+    const factFingerprints = new Map();
+    const groupFor = (family) => {
+      if (!groups.has(family))
+        groups.set(family, {
+          family,
+          facts: [],
+          rules: [],
+          campaigns: [],
+        });
+      return groups.get(family);
+    };
+    informationFacts.forEach((fact) => {
+      if (hiddenCatalogueFamilies.has(fact.family)) return;
+      if (!factFingerprints.has(fact.family))
+        factFingerprints.set(fact.family, new Set());
+      const fingerprint = `${fact.claim}\u0000${fact.subject}\u0000${fact.summary}`;
+      if (factFingerprints.get(fact.family).has(fingerprint)) return;
+      factFingerprints.get(fact.family).add(fingerprint);
+      groupFor(fact.family).facts.push(fact);
+    });
+    catalogueRules.forEach((rule) => {
+      groupFor(catalogueRuleFamily(rule)).rules.push(rule);
+    });
+    campaignLinks.forEach((item) => {
+      groupFor(item.family).campaigns.push(item);
+    });
+    return [...groups.values()].sort((left, right) =>
+      left.family.localeCompare(right.family, "ja"),
+    );
+  };
+
+  const groupMatchesSearch = (group, search) => {
+    if (!search) return true;
+    return [
+      group.family,
+      ...group.facts.flatMap((fact) => [
+        fact.claim,
+        fact.subject,
+        fact.summary,
+      ]),
+      ...group.rules.flatMap((rule) => [rule.title, rule.summary]),
+      ...group.campaigns.flatMap((item) => [item.title, item.period_label]),
+    ].some((value) =>
+      String(value).toLocaleLowerCase("ja-JP").includes(search),
+    );
+  };
+
+  const customerRuleSummary = (summary) =>
+    String(summary)
+      .replace(/という先行公開情報です。/gu, "という情報です。")
+      .replace(/先行公開/gu, "");
+
+  const appendCampaignSection = (card, campaigns) => {
+    if (!campaigns.length) return;
+    const section = node("section", "service-campaign-section");
+    section.appendChild(text("h4", "実施中のキャンペーン"));
+    const list = node("div", "service-campaign-list");
+    campaigns.forEach((item) => {
+      const campaign = node("article", "service-campaign-item");
+      const copy = node("div");
+      copy.appendChild(text("strong", item.title));
+      copy.appendChild(text("span", item.period_label));
+      campaign.appendChild(copy);
+      const link = node("a", "service-official-link");
+      link.href = item.official_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "公式ページを見る";
+      campaign.appendChild(link);
+      list.appendChild(campaign);
+    });
+    section.appendChild(list);
+    card.appendChild(section);
+  };
+
+  const appendRuleSection = (card, rules) => {
+    if (!rules.length) return;
+    const section = node("section", "service-rule-section");
+    section.appendChild(text("h4", "支払い・還元の情報"));
+    const paymentRules = rules.filter(
+      (rule) => rule.kind === "payment_acceptance",
+    );
+    if (paymentRules.length) {
+      const methods = node("div", "service-payment-methods");
+      methods.appendChild(text("strong", "利用できる支払い方法"));
+      const list = node("ul");
+      paymentRules.forEach((rule) => {
+        list.appendChild(text("li", paymentAcceptanceLabel(rule)));
+      });
+      methods.appendChild(list);
+      section.appendChild(methods);
+    }
+    rules
+      .filter((rule) => rule.kind !== "payment_acceptance")
+      .forEach((rule) => {
+        const item = node("article", "service-rule-item");
+        item.appendChild(text("strong", rule.title));
+        item.appendChild(text("p", customerRuleSummary(rule.summary)));
+        section.appendChild(item);
+      });
+    card.appendChild(section);
+  };
+
+  const claimPriority = Object.freeze([
+    "利用時の価値",
+    "貯まる条件",
+    "使い方",
+    "利用できる条件",
+    "利用できるお店",
+    "付与時期",
+    "有効期限",
+    "対象外条件",
+  ]);
+
+  const highlightedFacts = (facts) => {
+    const selected = [];
+    for (const claim of claimPriority) {
+      const fact = facts.find(
+        (candidate) =>
+          candidate.claim === claim &&
+          !selected.some(
+            (item) =>
+              item.subject === candidate.subject &&
+              item.summary === candidate.summary,
+          ),
+      );
+      if (fact) selected.push(fact);
+      if (selected.length === 2) break;
+    }
+    return selected;
+  };
+
+  const appendServiceHighlights = (card, facts) => {
+    const highlights = highlightedFacts(facts);
+    if (!highlights.length) return [];
+    const list = node("div", "service-highlight-list");
+    highlights.forEach((fact) => {
+      const item = node("article", "service-highlight-item");
+      item.appendChild(text("strong", fact.subject));
+      item.appendChild(text("p", fact.summary));
+      list.appendChild(item);
+    });
+    card.appendChild(list);
+    return highlights.map((fact) => fact.fact_key);
+  };
+
+  const appendFactSection = (card, facts, expanded, highlightedFactKeys) => {
+    const remainingFacts = facts.filter(
+      (fact) => !highlightedFactKeys.includes(fact.fact_key),
+    );
+    if (!remainingFacts.length) return;
+    const details = node("details", "service-fact-details");
+    details.open = expanded;
+    details.appendChild(text("summary", "その他のサービス情報を見る"));
+    const claims = new Map();
+    remainingFacts.forEach((fact) => {
+      if (!claims.has(fact.claim)) claims.set(fact.claim, []);
+      claims.get(fact.claim).push(fact);
+    });
+    [...claims.entries()]
+      .sort(([left], [right]) => {
+        const leftIndex = claimPriority.indexOf(left);
+        const rightIndex = claimPriority.indexOf(right);
+        return (
+          (leftIndex < 0 ? claimPriority.length : leftIndex) -
+            (rightIndex < 0 ? claimPriority.length : rightIndex) ||
+          left.localeCompare(right, "ja")
+        );
+      })
+      .forEach(([claim, items]) => {
+        const section = node("section", "service-fact-group");
+        section.appendChild(text("h4", claim));
+        const list = node("ul");
+        items.forEach((fact) => {
+          const item = node("li");
+          item.appendChild(text("strong", fact.subject));
+          item.appendChild(text("p", fact.summary));
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+        details.appendChild(section);
+      });
+    card.appendChild(details);
+  };
+
+  const appendServiceReportControls = (card, facts) => {
+    if (!facts.length) return;
+    const details = node("details", "service-report-details");
+    details.appendChild(text("summary", "情報の誤りを報告"));
+    const actions = node("div", "information-card-actions");
+    const factLabel = node("label");
+    factLabel.appendChild(text("span", "該当する情報"));
+    const factSelect = selectField(
+      facts.map((fact) => ({
+        value: fact.fact_key,
+        label: `${fact.claim}・${fact.subject}`,
+      })),
+    );
+    factLabel.appendChild(factSelect);
+    actions.appendChild(factLabel);
+    const categoryLabel = node("label");
+    categoryLabel.appendChild(text("span", "誤っている内容"));
+    const categorySelect = selectField(
+      Object.entries(informationCategoryLabels).map(([value, labelText]) => ({
+        value,
+        label: labelText,
+      })),
+    );
+    categoryLabel.appendChild(categorySelect);
+    actions.appendChild(categoryLabel);
+    const button = node("button", "secondary");
+    button.type = "button";
+    button.textContent = "誤りを報告する";
+    actions.appendChild(button);
+    const status = text("p", "", "information-status");
+    actions.appendChild(status);
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      factSelect.disabled = true;
+      categorySelect.disabled = true;
+      status.classList.remove("is-error");
+      status.textContent = "報告を受け付けています…";
+      try {
+        const body = await postJson("/api/experimental/fact-corrections", {
+          fact_key: factSelect.value,
+          category: categorySelect.value,
+        });
+        if (body?.correction?.accepted !== true) throw new Error("status");
+        informationFacts = informationFacts.filter(
+          (candidate) => candidate.fact_key !== factSelect.value,
+        );
+        appendInformationFilterOptions();
+        renderInformationFacts();
+      } catch {
+        button.disabled = false;
+        factSelect.disabled = false;
+        categorySelect.disabled = false;
+        status.classList.add("is-error");
+        status.textContent = "報告を送れませんでした。もう一度お試しください。";
+      }
+    });
+    details.appendChild(actions);
+    card.appendChild(details);
   };
 
   const renderInformationFacts = () => {
@@ -999,80 +1277,37 @@
       .value.trim()
       .toLocaleLowerCase("ja-JP");
     const family = document.getElementById("information-family-filter").value;
-    const claim = document.getElementById("information-claim-filter").value;
-    const visible = informationFacts.filter((fact) => {
-      if (family && fact.family !== family) return false;
-      if (claim && fact.claim !== claim) return false;
-      if (!search) return true;
-      return [
-        fact.family,
-        fact.claim,
-        fact.subject,
-        fact.predicate,
-        fact.summary,
-      ].some((value) => value.toLocaleLowerCase("ja-JP").includes(search));
-    });
-    document.getElementById("information-count").textContent =
-      `${visible.length}件を表示（全${informationFacts.length}件）`;
+    const visible = catalogueGroups().filter(
+      (group) =>
+        (!family || group.family === family) &&
+        groupMatchesSearch(group, search),
+    );
     clear(list);
     if (visible.length === 0) {
       list.appendChild(
-        text("p", "条件に合うポイント情報はありません。", "helper"),
+        text(
+          "p",
+          informationLoaded || catalogueRulesLoaded || campaignLinksLoaded
+            ? "該当するサービスはありません。"
+            : "サービス情報を読み込んでいます…",
+          "helper",
+        ),
       );
       return;
     }
-    visible.forEach((fact) => {
-      const card = node("article", "information-card");
-      const header = node("div", "information-card-header");
-      header.appendChild(text("span", fact.family, "information-family"));
-      header.appendChild(text("span", fact.claim, "information-claim"));
-      card.appendChild(header);
-      card.appendChild(text("h3", fact.subject, "information-subject"));
-      card.appendChild(text("p", fact.predicate, "information-predicate"));
-      card.appendChild(text("p", fact.summary, "information-summary"));
-
-      const actions = node("div", "information-card-actions");
-      const label = node("label");
-      label.appendChild(text("span", "誤っている内容"));
-      const select = selectField(
-        Object.entries(informationCategoryLabels).map(([value, labelText]) => ({
-          value,
-          label: labelText,
-        })),
+    visible.forEach((group) => {
+      const card = node("article", "information-card service-information-card");
+      card.appendChild(text("h3", group.family, "service-information-title"));
+      appendCampaignSection(card, group.campaigns);
+      appendRuleSection(card, group.rules);
+      const highlightedFactKeys = appendServiceHighlights(card, group.facts);
+      appendFactSection(
+        card,
+        group.facts,
+        Boolean(search || family),
+        highlightedFactKeys,
       );
-      label.appendChild(select);
-      actions.appendChild(label);
-      const button = node("button", "secondary");
-      button.type = "button";
-      button.textContent = "誤りを報告する";
-      actions.appendChild(button);
-      card.appendChild(actions);
-      const status = text("p", "", "information-status");
-      card.appendChild(status);
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        select.disabled = true;
-        status.classList.remove("is-error");
-        status.textContent = "報告を受け付けています…";
-        try {
-          const body = await postJson("/api/experimental/fact-corrections", {
-            fact_key: fact.fact_key,
-            category: select.value,
-          });
-          if (body?.correction?.accepted !== true) throw new Error("status");
-          informationFacts = informationFacts.filter(
-            (candidate) => candidate.fact_key !== fact.fact_key,
-          );
-          appendInformationFilterOptions();
-          renderInformationFacts();
-        } catch {
-          button.disabled = false;
-          select.disabled = false;
-          status.classList.add("is-error");
-          status.textContent =
-            "報告を送れませんでした。もう一度お試しください。";
-        }
-      });
+      appendServiceReportControls(card, group.facts);
       list.appendChild(card);
     });
   };
@@ -1099,7 +1334,6 @@
       renderInformationFacts();
     } catch {
       informationLoaded = false;
-      document.getElementById("information-count").textContent = "";
       informationMessage("ポイント情報を読み込めませんでした。", "helper");
     }
   };
@@ -1150,45 +1384,24 @@
     });
   };
 
-  const loadLotteryLinks = async () => {
-    if (lotteryLinksLoaded) return;
-    const container = document.getElementById("lottery-links");
+  const loadLotteryLinks = async (force = false) => {
+    if (campaignLinksLoaded && !force) return;
     try {
       const response = await fetch("/api/experimental/lotteries", {
         method: "GET",
         headers: { Accept: "application/json" },
       });
       if (!response.ok) throw new Error("request_failed");
-      const links = safeLotteryLinks(await response.json());
-      clear(container);
-      links.forEach((item) => {
-        const card = node("article", "lottery-link-card");
-        const copy = node("div");
-        copy.appendChild(text("small", item.family));
-        copy.appendChild(text("strong", item.title));
-        copy.appendChild(text("span", item.period_label));
-        card.appendChild(copy);
-        const link = node("a", "lottery-official-link");
-        link.href = item.official_url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent =
-          item.status === "official_announcement"
-            ? "公式告知を確認"
-            : "公式ページで応募・詳細を確認";
-        card.appendChild(link);
-        container.appendChild(card);
-      });
-      if (links.length === 0)
-        container.appendChild(
-          text("p", "現在案内できる抽選情報はありません。", "helper"),
-        );
-      lotteryLinksLoaded = true;
-    } catch {
-      clear(container);
-      container.appendChild(
-        text("p", "公式キャンペーン情報を読み込めませんでした。", "helper"),
+      campaignLinks = safeLotteryLinks(await response.json()).filter(
+        (item) => item.status === "application_or_details",
       );
+      campaignLinksLoaded = true;
+      appendInformationFilterOptions();
+      renderInformationFacts();
+    } catch {
+      campaignLinks = [];
+      campaignLinksLoaded = false;
+      renderInformationFacts();
     }
   };
 
@@ -1323,7 +1536,6 @@
         card.appendChild(text("span", icon, "p0-wallet-family-icon"));
         const copy = node("span", "p0-wallet-family-copy");
         copy.appendChild(text("strong", item.label));
-        copy.appendChild(text("small", `関連情報 ${item.fact_count}件`));
         card.appendChild(copy);
         list.appendChild(card);
       });
@@ -1437,7 +1649,14 @@
           checkbox.addEventListener("change", syncP0ProductPickers);
           const copy = node("span");
           copy.appendChild(text("strong", item.label));
-          copy.appendChild(text("small", `関連情報 ${item.fact_count}件`));
+          copy.appendChild(
+            text(
+              "small",
+              item.kind === "point"
+                ? "使い方と交換先を確認"
+                : "通常還元率で比較",
+            ),
+          );
           label.appendChild(checkbox);
           label.appendChild(copy);
           container.appendChild(label);
@@ -1717,13 +1936,11 @@
     .getElementById("information-family-filter")
     .addEventListener("change", renderInformationFacts);
   document
-    .getElementById("information-claim-filter")
-    .addEventListener("change", renderInformationFacts);
-  document
     .getElementById("information-reload")
     .addEventListener("click", () => {
-      void loadExperimentalRules();
+      void loadExperimentalRules(true);
       void loadInformationFacts(true);
+      void loadLotteryLinks(true);
     });
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
