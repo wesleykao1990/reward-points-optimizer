@@ -501,6 +501,29 @@ function errorResponse(error: RequestError): AppResponse {
   });
 }
 
+function boundedDiagnosticLabel(value: unknown): string {
+  return typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,80}$/u.test(value)
+    ? value
+    : "unclassified";
+}
+
+/** Log only bounded error metadata in Vercel; never SQL, inputs, or messages. */
+function reportDeploymentFailure(scope: string, error: unknown): void {
+  if (process.env.VERCEL !== "1") return;
+  const record =
+    error !== null && typeof error === "object"
+      ? (error as { readonly code?: unknown; readonly name?: unknown })
+      : undefined;
+  console.error(
+    JSON.stringify({
+      event: "jro_runtime_failure",
+      scope,
+      code: boundedDiagnosticLabel(record?.code),
+      name: boundedDiagnosticLabel(record?.name),
+    }),
+  );
+}
+
 const EXPERIMENTAL_CORRECTION_FAILURE_CODES = new Set<
   "publication_not_found" | "publication_not_active" | "correction_not_applied"
 >([
@@ -1752,6 +1775,7 @@ export async function handleRequest(
             ) as unknown as Readonly<Record<string, unknown>>,
           );
         } catch (error) {
+          reportDeploymentFailure("implementation_facts_list", error);
           if (
             error &&
             typeof error === "object" &&
@@ -1774,6 +1798,7 @@ export async function handleRequest(
             snapshot as unknown as Readonly<Record<string, unknown>>,
           );
         } catch (error) {
+          reportDeploymentFailure("experimental_rules_list", error);
           if (
             error &&
             typeof error === "object" &&
