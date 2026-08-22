@@ -67,6 +67,9 @@ jobs:
       - name: Verify generated M3 database seed
         run: pnpm seed:m3:check
 
+      - name: Verify Supabase production migration staging
+        run: pnpm deploy:supabase:check
+
       - name: Verify M3 publication checkpoint
         run: |
           pnpm publication:m3:check

@@ -36,6 +36,7 @@ def package_files() -> list[Path]:
         if path.is_file()
         and path.name not in EXCLUDED_NAMES
         and path.suffix != ".tsbuildinfo"
+        and (BASE / "supabase" / "migrations") not in path.parents
         and not any(part in EXCLUDED_PARTS for part in path.parts)
     )
 

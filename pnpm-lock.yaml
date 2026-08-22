@@ -57,6 +57,9 @@ importers:
       '@jro/consumer-alpha':
         specifier: workspace:*
         version: link:../../packages/consumer-alpha
+      '@jro/p0-source-operations':
+        specifier: workspace:*
+        version: link:../../packages/p0-source-operations
       '@jro/provisional-rules':
         specifier: workspace:*
         version: link:../../packages/provisional-rules
@@ -113,6 +116,9 @@ importers:
       '@jro/agent-feed-consumer':
         specifier: workspace:*
         version: link:../agent-feed-consumer
+      '@jro/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@jro/p0-source-operations':
         specifier: workspace:*
         version: link:../p0-source-operations

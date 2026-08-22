@@ -13,6 +13,7 @@
     "@jro/agent-feed-consumer": "workspace:*",
     "@jro/agent-feed-postgres": "workspace:*",
     "@jro/consumer-alpha": "workspace:*",
+    "@jro/p0-source-operations": "workspace:*",
     "@jro/provisional-rules": "workspace:*",
     "@jro/recommendation-api": "workspace:*",
     "@jro/rule-engine": "workspace:*",

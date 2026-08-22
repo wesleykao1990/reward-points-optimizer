@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@jro/agent-feed-consumer": "workspace:*",
+    "@jro/contracts": "workspace:*",
     "@jro/p0-source-operations": "workspace:*",
     "@jro/provisional-rules": "workspace:*"
   },

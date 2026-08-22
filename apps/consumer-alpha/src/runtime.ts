@@ -4,7 +4,7 @@ import {
   type P0ImplementationCatalogueOptions,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
-import { Pool } from "pg";
+import { Pool, type PoolConfig } from "pg";
 import {
   createP0AgentFeedIngress,
   loadP0AgentFeedIngressFromEnvironment,
@@ -27,6 +27,10 @@ export interface PostgresAppRuntime {
 /** Host-owned time source for all effective-at current catalogue reads. */
 export interface PostgresAppRuntimeOptions
   extends P0ImplementationCatalogueOptions {
+  /** Bound application role selected at connection startup. */
+  readonly databaseRole?: string;
+  /** Keep serverless instances to one client connection by default. */
+  readonly poolMax?: number;
   /**
    * Optional host-owned Agent Feed delivery composition. The runtime supplies
    * its own PostgreSQL pool as `target`; the manifest and exact reconciliation
@@ -43,6 +47,36 @@ function requireDatabaseUrl(value: string): string {
   if (value.length === 0 || value.trim() !== value)
     throw new TypeError("jro_database_url_invalid");
   return value;
+}
+
+function optionalDatabaseRole(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  if (!/^[a-z][a-z0-9_]{0,62}$/u.test(value))
+    throw new TypeError("jro_database_role_invalid");
+  return value;
+}
+
+function poolMaximum(value: number | undefined): number {
+  if (value === undefined) return 4;
+  if (!Number.isSafeInteger(value) || value < 1 || value > 4)
+    throw new TypeError("jro_database_pool_max_invalid");
+  return value;
+}
+
+/** Build a bounded pool config without exposing or logging the URL. */
+export function createPostgresPoolConfig(
+  connectionString: string,
+  options: Pick<PostgresAppRuntimeOptions, "databaseRole" | "poolMax"> = {},
+): PoolConfig {
+  const role = optionalDatabaseRole(options.databaseRole);
+  return {
+    connectionString: requireDatabaseUrl(connectionString),
+    max: poolMaximum(options.poolMax),
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: true,
+    ...(role === undefined ? {} : { options: `-c role=${role}` }),
+  };
 }
 
 /**
@@ -95,10 +129,9 @@ export function createPostgresAppRuntime(
     options.agentFeedIngress !== undefined || environmentIngress === undefined
       ? options
       : { ...options, agentFeedIngress: environmentIngress };
-  const pool = new Pool({
-    connectionString: requireDatabaseUrl(connectionString),
-    max: 4,
-  }) as unknown as CloseableQueryTarget;
+  const pool = new Pool(
+    createPostgresPoolConfig(connectionString, options),
+  ) as unknown as CloseableQueryTarget;
   let closed = false;
   return Object.freeze({
     dependencies: createPostgresAppDependencies(pool, runtimeOptions),

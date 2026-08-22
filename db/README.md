@@ -57,6 +57,11 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     receipt redaction, and makes completed recovery-subset reconciliation use
     that projection. It retains no raw payload and fails closed on missing,
     forged, or drifted scope bindings.
+18. `0018_deployment_runtime_role.sql` creates the NOLOGIN `jro_runtime` role
+    used by the Vercel adapter. It grants only the bounded catalogue reads and
+    two correction routines needed by the hosted alpha; it receives no broad
+    table writes, canonical-rule access, user-data access, or future-object
+    privileges.
 
 It separates:
 
