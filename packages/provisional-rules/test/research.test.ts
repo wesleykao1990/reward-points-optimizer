@@ -354,6 +354,134 @@ describe("generic P0 research implementation ledger", () => {
     }
   });
 
+  it("uses claim-level validity and lifecycle status without retiring nested sub-periods", () => {
+    const pointRules = artifact("p0-point-rules-b");
+    const pointResult = compileP0ResearchImplementation(pointRules);
+    const pointEntry = (claimId: string) =>
+      pointResult.entries.find((entry) => entry.parent_claim_id === claimId);
+
+    expect(
+      pointEntry("claim.point.waon.campaign.charge-period.001")?.reason,
+    ).toBe("non_calculable_fact");
+    expect(pointEntry("claim.point.v.campaign.app-entry.001")?.reason).toBe(
+      "ended_or_future_inactive",
+    );
+    expect(pointEntry("claim.point.v.campaign.app-expiry.001")?.reason).toBe(
+      "ended_or_future_inactive",
+    );
+    expect(pointEntry("claim.point.v.campaign.app-prizes.001")?.reason).toBe(
+      "ended_or_future_inactive",
+    );
+
+    const walletRules = artifact("p0-wallet-card-rules");
+    const walletResult = compileP0ResearchImplementation(walletRules);
+    expect(
+      walletResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.wallet.rakutenpay.campaign.scratch.001",
+      )?.reason,
+    ).toBe("ended_or_future_inactive");
+    expect(
+      walletResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.wallet.rakutenpay.campaign.scratch-expiry.002",
+      )?.reason,
+    ).toBe("ended_or_future_inactive");
+
+    const regulatoryRules = artifact("p0-merchant-transit-regulatory-rules");
+    const regulatoryResult = compileP0ResearchImplementation(regulatoryRules);
+    expect(
+      regulatoryResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.merchant.yahoo-shopping.campaign.001",
+      )?.reason,
+    ).toBe("ended_or_future_inactive");
+  });
+
+  it("fails closed for malformed or reversed claim-level windows", () => {
+    const malformed = artifact("p0-point-rules-b");
+    const malformedClaim = (malformed.claims as JsonRecord[]).find(
+      (claim) =>
+        claim.claim_id === "claim.point.waon.campaign.charge-period.001",
+    );
+    malformedClaim.applicability.effective_to = "not-a-date";
+    const malformedResult = compileP0ResearchImplementation(malformed);
+    expect(
+      malformedResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.point.waon.campaign.charge-period.001",
+      )?.reason,
+    ).toBe("invalid_applicability_window");
+
+    const reversed = artifact("p0-point-rules-b");
+    const reversedClaim = (reversed.claims as JsonRecord[]).find(
+      (claim) =>
+        claim.claim_id === "claim.point.ponta.campaign.summer-period.001",
+    );
+    reversedClaim.applicability.effective_from = "2026-08-31";
+    reversedClaim.applicability.effective_to = "2026-07-01";
+    const reversedResult = compileP0ResearchImplementation(reversed);
+    expect(
+      reversedResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.point.ponta.campaign.summer-period.001",
+      )?.reason,
+    ).toBe("invalid_applicability_window");
+
+    const dateOnly = artifact("p0-point-rules-b");
+    const dateOnlyClaim = (dateOnly.claims as JsonRecord[]).find(
+      (claim) =>
+        claim.claim_id === "claim.point.ponta.campaign.summer-period.001",
+    );
+    dateOnlyClaim.applicability.effective_to = "2026-08-21";
+    const dateOnlyResult = compileP0ResearchImplementation(dateOnly);
+    expect(
+      dateOnlyResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.point.ponta.campaign.summer-period.001",
+      )?.reason,
+    ).toBe("ended_or_future_inactive");
+  });
+
+  it("honors an explicit direct status without treating nested status-like data as lifecycle", () => {
+    const ended = artifact("p0-point-rules-b");
+    const endedClaim = (ended.claims as JsonRecord[]).find(
+      (claim) =>
+        claim.claim_id === "claim.point.waon.campaign.charge-period.001",
+    );
+    endedClaim.value = { ...(endedClaim.value as JsonRecord), status: "ended" };
+    endedClaim.applicability.effective_to = null;
+    const endedResult = compileP0ResearchImplementation(ended);
+    expect(
+      endedResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.point.waon.campaign.charge-period.001",
+      )?.reason,
+    ).toBe("ended_or_future_inactive");
+
+    const current = artifact("p0-point-rules-b");
+    const currentClaim = (current.claims as JsonRecord[]).find(
+      (claim) =>
+        claim.claim_id === "claim.point.waon.campaign.charge-period.001",
+    );
+    currentClaim.applicability.status = "partly_ended_and_current";
+    const currentResult = compileP0ResearchImplementation(current);
+    expect(
+      currentResult.entries.find(
+        (entry) =>
+          entry.parent_claim_id ===
+          "claim.point.waon.campaign.charge-period.001",
+      )?.reason,
+    ).toBe("non_calculable_fact");
+  });
+
   it("rejects a source-role mismatch after normalization", () => {
     const input = structuredClone(artifact("p0-point-rules-b")) as JsonRecord;
     const source = (input.sources as JsonRecord[]).find(

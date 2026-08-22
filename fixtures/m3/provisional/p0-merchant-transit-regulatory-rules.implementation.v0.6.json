@@ -2335,8 +2335,8 @@
       "short_paraphrase": "The ended campaign required ¥1,500 and capped bonus at ¥1,000 per transaction/¥20,000 per period.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "non_calculable_fact",
-      "reason_detail": "The claim is a searchable fact rather than a calculation rule."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.merchant.welcia.loyalty.001",
@@ -2445,8 +2445,8 @@
       "short_paraphrase": "The future sale shows +4% from ¥5,000, +7% from ¥20,000 and 21% maximum total.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "insufficient_operation_mapping",
-      "reason_detail": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.merchant.yahoo-shopping.loyalty.001",
@@ -3462,9 +3462,9 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.merchant.welcia.campaign.001",
-      "message": "The claim is a searchable fact rather than a calculation rule.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.merchant.welcia.campaign.001",
-      "reason": "non_calculable_fact"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
@@ -3476,9 +3476,9 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.merchant.yahoo-shopping.campaign.001",
-      "message": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.merchant.yahoo-shopping.campaign.001",
-      "reason": "insufficient_operation_mapping"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
@@ -3579,5 +3579,5 @@
       "reason": "non_calculable_fact"
     }
   ],
-  "implementation_hash": "sha256:f355904eae18e560fe62dc873e80f47c77c8cd71e982fcb32421cfd6c3a9e9b5"
+  "implementation_hash": "sha256:9ededf70a343a0ed3c655929ce5cc6e48371a489a10d5d5ddf8484d300acac5e"
 }

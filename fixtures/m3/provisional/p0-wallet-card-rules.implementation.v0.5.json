@@ -4469,8 +4469,8 @@
       "short_paraphrase": "Scratch rewards are limited points expiring at the end of the second month, with a stated 10,000-yen daily cap.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "non_calculable_fact",
-      "reason_detail": "The claim is a searchable fact rather than a calculation rule."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.wallet.rakutenpay.campaign.scratch.001",
@@ -4529,8 +4529,8 @@
       "short_paraphrase": "The scratch campaign gives 100%, 5%, or 1-point outcomes based on eligible prior-day payments of at least 200 yen.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "insufficient_operation_mapping",
-      "reason_detail": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.wallet.rakutenpay.change.postponed.001",
@@ -5425,16 +5425,16 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.wallet.rakutenpay.campaign.scratch-expiry.002",
-      "message": "The claim is a searchable fact rather than a calculation rule.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.wallet.rakutenpay.campaign.scratch-expiry.002",
-      "reason": "non_calculable_fact"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.wallet.rakutenpay.campaign.scratch.001",
-      "message": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.wallet.rakutenpay.campaign.scratch.001",
-      "reason": "insufficient_operation_mapping"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
@@ -5472,5 +5472,5 @@
       "reason": "non_calculable_fact"
     }
   ],
-  "implementation_hash": "sha256:91bc20f0c8e22d36bbdc1eb6f4cb727a0c3e886ad6933cb5f07bb4fb0768c6e9"
+  "implementation_hash": "sha256:9a1ee58456859a7c1da268e8236e40c814f930c8770a867d2a85d7753a1931eb"
 }

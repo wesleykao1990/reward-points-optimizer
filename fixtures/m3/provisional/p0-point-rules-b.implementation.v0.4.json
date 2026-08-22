@@ -2329,8 +2329,8 @@
       "short_paraphrase": "The campaign required a first app login, needed no entry, and limited participation to one account/person.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "non_calculable_fact",
-      "reason_detail": "The claim is a searchable fact rather than a calculation rule."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.point.v.campaign.app-expiry.001",
@@ -2368,8 +2368,8 @@
       "short_paraphrase": "Campaign rewards had a fixed expiry of October 31, 2026.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "non_calculable_fact",
-      "reason_detail": "The claim is a searchable fact rather than a calculation rule."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.point.v.campaign.app-period.001",
@@ -2461,8 +2461,8 @@
       "short_paraphrase": "The draw awards 10,000 points to 10 people, 100 to 10,000 people, and 1 to everyone else.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "insufficient_operation_mapping",
-      "reason_detail": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields."
+      "reason": "ended_or_future_inactive",
+      "reason_detail": "The source states an ended or future-bounded applicability window."
     },
     {
       "parent_claim_id": "claim.point.v.change.imamura.001",
@@ -3543,8 +3543,8 @@
       "short_paraphrase": "The campaign runs August 14–31, 2026, with an early period August 14–16.",
       "disposition": "catalogue_fact",
       "derived_rule_ids": [],
-      "reason": "ended_or_future_inactive",
-      "reason_detail": "The source states an ended or future-bounded applicability window."
+      "reason": "non_calculable_fact",
+      "reason_detail": "The claim is a searchable fact rather than a calculation rule."
     },
     {
       "parent_claim_id": "claim.point.waon.campaign.charge-prizes.001",
@@ -5274,16 +5274,16 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.point.v.campaign.app-entry.001",
-      "message": "The claim is a searchable fact rather than a calculation rule.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.point.v.campaign.app-entry.001",
-      "reason": "non_calculable_fact"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.point.v.campaign.app-expiry.001",
-      "message": "The claim is a searchable fact rather than a calculation rule.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.point.v.campaign.app-expiry.001",
-      "reason": "non_calculable_fact"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
@@ -5295,9 +5295,9 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.point.v.campaign.app-prizes.001",
-      "message": "The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields.",
+      "message": "The source states an ended or future-bounded applicability window.",
       "claim_id": "claim.point.v.campaign.app-prizes.001",
-      "reason": "insufficient_operation_mapping"
+      "reason": "ended_or_future_inactive"
     },
     {
       "code": "catalogue_fact",
@@ -5470,9 +5470,9 @@
     {
       "code": "catalogue_fact",
       "path": "/claims/claim.point.waon.campaign.charge-period.001",
-      "message": "The source states an ended or future-bounded applicability window.",
+      "message": "The claim is a searchable fact rather than a calculation rule.",
       "claim_id": "claim.point.waon.campaign.charge-period.001",
-      "reason": "ended_or_future_inactive"
+      "reason": "non_calculable_fact"
     },
     {
       "code": "catalogue_fact",
@@ -5685,5 +5685,5 @@
       "reason": "non_calculable_fact"
     }
   ],
-  "implementation_hash": "sha256:911ec089e249aa3f54556718bf8967fd9d35abafb05a7a21ab92c99b35a99195"
+  "implementation_hash": "sha256:e957c49796703cd86b7ef2a5ea7d65ba15d275d3accddc1d3d5437a86a791384"
 }

@@ -58,6 +58,7 @@ export const RESEARCH_FACT_REASONS = Object.freeze([
   "insufficient_operation_mapping",
   "unsupported_calculation_model",
   "ended_or_future_inactive",
+  "invalid_applicability_window",
   "explicit_no_rate",
 ] as const);
 
@@ -1203,41 +1204,114 @@ function explicitNoRate(claim: UnknownRecord): boolean {
   );
 }
 
-function hasPastOrFutureBoundary(claim: UnknownRecord, asOf: number): boolean {
-  if (
-    claim.claim_type !== "change_notice" &&
-    claim.claim_type !== "campaign_period"
-  )
-    return false;
+type ParsedBoundaryDate = number | null | undefined;
+
+/**
+ * Parse the bounded-run date representation without turning malformed input
+ * into an active fact. Date-only values intentionally retain Date.parse's
+ * existing UTC-midnight semantics after strict calendar validation.
+ */
+function parseBoundaryDate(value: unknown): ParsedBoundaryDate {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value);
+  if (dateOnly) {
+    const year = Number(dateOnly[1]);
+    const month = Number(dateOnly[2]);
+    const day = Number(dateOnly[3]);
+    const timestamp = Date.UTC(year, month - 1, day);
+    const parsed = new Date(timestamp);
+    if (
+      parsed.getUTCFullYear() !== year ||
+      parsed.getUTCMonth() !== month - 1 ||
+      parsed.getUTCDate() !== day
+    )
+      return undefined;
+    return timestamp;
+  }
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : undefined;
+}
+
+function hasInvalidApplicabilityWindow(
+  claim: UnknownRecord,
+  asOf: number,
+): boolean {
+  if (!Number.isFinite(asOf)) return true;
   const applicability = claim.applicability as UnknownRecord;
-  if (
-    typeof applicability.effective_to === "string" &&
-    Date.parse(applicability.effective_to) < asOf
-  )
-    return true;
-  if (
-    typeof applicability.effective_from === "string" &&
-    Date.parse(applicability.effective_from) > asOf
-  )
-    return true;
-  const visit = (value: unknown): boolean => {
-    if (Array.isArray(value)) return value.some(visit);
-    if (!isRecord(value)) return false;
-    for (const [key, child] of Object.entries(value)) {
+  const effectiveFrom = parseBoundaryDate(applicability.effective_from);
+  const effectiveTo = parseBoundaryDate(applicability.effective_to);
+  if (effectiveFrom === undefined || effectiveTo === undefined) return true;
+  return (
+    effectiveFrom !== null &&
+    effectiveTo !== null &&
+    effectiveFrom > effectiveTo
+  );
+}
+
+function hasExplicitInactiveStatus(claim: UnknownRecord): boolean {
+  const applicability = claim.applicability as UnknownRecord;
+  const value = isRecord(claim.value) ? claim.value : null;
+  const statuses = [applicability.status, value?.status];
+  return statuses.some(
+    (status) =>
+      typeof status === "string" &&
+      ["ended", "future", "inactive", "future at access date"].includes(
+        status.trim().toLowerCase(),
+      ),
+  );
+}
+
+/**
+ * These names are established whole-claim lifecycle fields in the Nanaco
+ * Research-A envelope. Generic nested `end`/`end_date` fields are deliberately
+ * ignored: a tier or sub-period ending must not retire its parent claim.
+ */
+const AUTHORITATIVE_NESTED_END_KEYS = new Set(["nanaco_end", "seven_mile_end"]);
+
+function hasAuthoritativeWholeClaimEnd(value: unknown, asOf: number): boolean {
+  if (!isRecord(value)) return false;
+  for (const key of ["end_date", "end_datetime"]) {
+    const child = value[key];
+    if (typeof child !== "string" || !/^\d{4}-\d{2}-\d{2}/u.test(child))
+      continue;
+    const parsed = parseBoundaryDate(child);
+    if (parsed !== undefined && parsed !== null && parsed < asOf) return true;
+  }
+  const visitNamedEnds = (current: unknown): boolean => {
+    if (Array.isArray(current)) return current.some(visitNamedEnds);
+    if (!isRecord(current)) return false;
+    for (const [key, child] of Object.entries(current)) {
       if (
-        /^(?:end|end_date|end_datetime|nanaco_end|seven_mile_end)$/u.test(
-          key,
-        ) &&
+        AUTHORITATIVE_NESTED_END_KEYS.has(key) &&
         typeof child === "string" &&
-        /^\d{4}-\d{2}-\d{2}/u.test(child) &&
-        Date.parse(child) < asOf
-      )
-        return true;
-      if (visit(child)) return true;
+        /^\d{4}-\d{2}-\d{2}/u.test(child)
+      ) {
+        const parsed = parseBoundaryDate(child);
+        if (parsed !== undefined && parsed !== null && parsed < asOf)
+          return true;
+      }
+      if (visitNamedEnds(child)) return true;
     }
     return false;
   };
-  return visit(claim.value);
+  return visitNamedEnds(value);
+}
+
+function hasPastOrFutureBoundary(claim: UnknownRecord, asOf: number): boolean {
+  const applicability = claim.applicability as UnknownRecord;
+  const effectiveFrom = parseBoundaryDate(applicability.effective_from);
+  const effectiveTo = parseBoundaryDate(applicability.effective_to);
+  if (effectiveTo !== null && effectiveTo !== undefined && effectiveTo < asOf)
+    return true;
+  if (
+    effectiveFrom !== null &&
+    effectiveFrom !== undefined &&
+    effectiveFrom > asOf
+  )
+    return true;
+  if (hasExplicitInactiveStatus(claim)) return true;
+  return hasAuthoritativeWholeClaimEnd(claim.value, asOf);
 }
 
 function hasEconomicShape(value: unknown): boolean {
@@ -1261,6 +1335,8 @@ function hasEconomicShape(value: unknown): boolean {
 }
 
 function factReason(claim: UnknownRecord, asOf: number): ResearchFactReason {
+  if (hasInvalidApplicabilityWindow(claim, asOf))
+    return "invalid_applicability_window";
   if (hasPastOrFutureBoundary(claim, asOf)) return "ended_or_future_inactive";
   if (explicitNoRate(claim)) return "explicit_no_rate";
   if (
@@ -1288,6 +1364,8 @@ function reasonDetail(reason: ResearchFactReason): string {
   switch (reason) {
     case "ended_or_future_inactive":
       return "The source states an ended or future-bounded applicability window.";
+    case "invalid_applicability_window":
+      return "Applicability contains an invalid or reversed date window; the fact is non-rankable.";
     case "explicit_no_rate":
       return "The source explicitly says that no numeric rate is stated.";
     case "unsupported_calculation_model":
