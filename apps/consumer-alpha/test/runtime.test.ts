@@ -24,6 +24,20 @@ describe("consumer-alpha PostgreSQL runtime configuration", () => {
     expect(config).not.toHaveProperty("options");
   });
 
+  it("verifies TLS with an explicit root without allowing URL SSL options to replace it", () => {
+    const config = createPostgresPoolConfig(
+      "postgresql://postgres.example:secret@pooler.example:6543/postgres?sslmode=require&supa=base-pooler.example",
+      { sslRootCertificate: "trusted-root" },
+    );
+    expect(config.connectionString).toBe(
+      "postgresql://postgres.example:secret@pooler.example:6543/postgres?supa=base-pooler.example",
+    );
+    expect(config.ssl).toEqual({
+      ca: "trusted-root",
+      rejectUnauthorized: true,
+    });
+  });
+
   it("selects the restricted role inside standalone and caller-owned transactions", async () => {
     const traces: string[][] = [];
     const releases: (Error | undefined)[] = [];
