@@ -59,8 +59,9 @@ and effective time. The host enforces the reviewed JPY 5,000 minimum, JPY 1,000
 increment, JPY 30,000 per-charge maximum, JPY 50,000 post-charge balance cap,
 and one Nanaco point per JPY 200. This is one stored-value top-up operation;
 the created principal balance and the reward points remain separate, and no
-JPY valuation is invented. The UI labels the output as an unverified advance
-experiment and exposes none of its evidence, source, rule, or hash bindings.
+JPY valuation is invented. The internal response retains its audit status; the
+customer UI presents the route neutrally and exposes none of its evidence,
+source, rule, or hash bindings.
 
 The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
@@ -72,18 +73,19 @@ shown as conditional. QR ownership can be recorded, but no QR purchase route
 is evaluated; a supported card is required. All outbound links use the fixed
 synthetic `.test` catalog and are not real official-app links.
 
-The home page also shows host-owned Japanese `先行公開データ` cards. The local
-demo port builds its 11 payment-family cards from the checked-in Agent Feed run
-bundle, coverage index, and generated candidate set; a database-backed host
-may be injected without changing the browser or HTTP contract. Cards show only
-an opaque publication identity, kind, bounded Japanese title/summary, coarse
-confidence, source label, and dates. Hashes, rule payloads, evidence, source
-identifiers, and URLs stay on the trusted host.
+The `カタログ` tab presents host-owned routes and point families together. The
+local demo port builds its 11 Seven-Eleven payment-family records from the
+checked-in Agent Feed run bundle, coverage index, and generated candidate set;
+the browser groups those methods into one card instead of repeating the same
+merchant card 11 times. A database-backed host may be injected without changing
+the browser or HTTP contract. Cards show only bounded display fields and an
+exact wrong-information reporting control. Hashes, rule payloads, evidence,
+source identifiers, and URLs stay on the trusted host.
 
-The five mobile tabs are ordered Home, Wallet, History, Information, and
+The five mobile tabs are ordered Home, Wallet, History, Catalogue, and
 Settings. Wallet and History are session-only views of the unified selection;
-they do not claim persistent account state. The `情報` tab exposes the
-separate generic P0 implementation-fact catalogue. Its default localhost port
+they do not claim persistent account state. The `カタログ` tab exposes routes
+and the generic P0 implementation-fact catalogue on one surface. Its default localhost port
 reads all 364 checked-in implementation facts; a host may inject either the
 browser-safe fact port or the bounded `@jro/agent-feed-postgres` implementation
 store. `GET
@@ -144,8 +146,9 @@ checkpoint identities.
 `GET /api/experimental/rules` returns exactly
 `{ "status", "updated_at", "rules" }`. The status is `ready` or `partial`, and
 each rule is a browser-safe card with `display_status:
-"experimental_unverified"` for audit separation. The Japanese UI presents
-these cards as `先行公開` and invites corrections without an approval gate.
+"experimental_unverified"` for internal audit separation. The Japanese UI does
+not render that implementation status; it groups related routes with the point
+families and provides a wrong-information report action on every card.
 A correction is the exact two-field JSON DTO `{ "publication_id", "category" }`.
 The host resolves that publication version and owns all hashes, credibility,
 severity, timestamps, and persistence details; the response is only a safe
@@ -170,8 +173,8 @@ contains a bounded Vercel Node adapter at `src/vercel-adapter.ts`; it rechecks
 the forwarded HTTPS host and same-origin browser authority before passing the
 request to the existing application contract. The adapter requires a
 server-only `JRO_DATABASE_URL`, selects the NOLOGIN `jro_runtime` database role
-at connection startup, and keeps the client pool at one connection per warm
-serverless instance.
+inside each transaction, verifies Supabase pooler TLS with the published CA,
+and keeps the client pool at one connection per warm serverless instance.
 
 The hosted route is still an experimental alpha, not current reward advice.
 It does not enable Supabase Auth, public Data API access, Agent Feed ingress,

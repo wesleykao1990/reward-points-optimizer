@@ -1,8 +1,9 @@
 # Vercel frontend and Supabase backend deployment
 
 This runbook deploys the current consumer alpha without widening its trust
-boundary. It is a deployment mechanism, not a production-publication decision:
-all existing synthetic and experimental labels remain in force.
+boundary. Internal API audit labels remain in force. The customer UI presents
+families and routes together in one neutral catalogue and retains the exact
+wrong-information reporting controls.
 
 ## Topology
 
@@ -131,13 +132,14 @@ After both projects are live:
 
 1. Confirm the Vercel production deployment is built from the expected `main`
    commit.
-2. Load `/` and verify the Content Security Policy, no-store policy, and the
-   Japanese alpha disclosure.
+2. Load `/` and verify the Content Security Policy, no-store policy, neutral
+   Japanese catalogue copy, grouped payment-method card, and report controls.
 3. Verify `GET /api/experimental/rules` and
    `GET /api/experimental/facts` return bounded JSON without source URLs,
    hashes, evidence payloads, or database identifiers.
 4. Submit one synthetic comparison through the UI and confirm the unified
-   route response remains labeled synthetic/experimental as applicable.
+   route response retains its internal synthetic/experimental audit fields
+   without rendering those implementation labels as customer-facing badges.
 5. In Supabase, verify all staged migration versions are present and that
    `jro_runtime` is `NOLOGIN`, non-superuser, and has no direct table writes.
 6. Merge a harmless follow-up through a pull request and confirm Vercel deploys

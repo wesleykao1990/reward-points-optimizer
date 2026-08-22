@@ -44,7 +44,10 @@
     if (activePanel && activePanel.id !== "tab-home")
       activePanel.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
-    if (tabName === "information") void loadInformationFacts();
+    if (tabName === "information") {
+      void loadExperimentalRules();
+      void loadInformationFacts();
+    }
   };
 
   const addLabel = (parent, labelText, input) => {
@@ -480,7 +483,7 @@
           typeof plan.reward_points === "string" ? plan.reward_points : "0";
         planBox.appendChild(text("strong", `nanacoポイント ${reward}ポイント`));
         planBox.appendChild(
-          text("span", "実データ・未検証の情報表示。金額換算はしません。"),
+          text("span", "収録情報にもとづくルートです。金額換算はしません。"),
         );
         card.appendChild(planBox);
       }
@@ -580,7 +583,7 @@
     hero.appendChild(
       text(
         "p",
-        "計算結果と、実データ・未検証の情報表示を分けて表示しています。",
+        "収録されているファミリーとルートをまとめて比較しています。",
         "result-summary",
       ),
     );
@@ -682,7 +685,7 @@
     if (publicationId !== "candidate_p0_nanaco_shopping_earning_20260821_v0_1")
       return;
     const section = node("section", "nanaco-experimental");
-    section.appendChild(text("h4", "nanaco先行実験を試す"));
+    section.appendChild(text("h4", "nanacoルートを確認する"));
     section.appendChild(
       text(
         "p",
@@ -718,7 +721,7 @@
     const balance = field("nanaco残高（円）", 10_000, 10_000_000);
     const submit = node("button", "secondary");
     submit.type = "submit";
-    submit.textContent = "先行実験を計算する";
+    submit.textContent = "ポイントを計算する";
     form.appendChild(submit);
     const output = text("p", "", "nanaco-experimental-output");
     form.appendChild(output);
@@ -726,7 +729,7 @@
       event.preventDefault();
       submit.disabled = true;
       output.classList.remove("is-error");
-      output.textContent = "先行実験を計算しています…";
+      output.textContent = "ポイントを計算しています…";
       try {
         const body = await postJson("/api/experimental/recommendation", {
           selection_id: publicationId,
@@ -742,16 +745,15 @@
         )
           throw new Error("response_invalid");
         if (recommendation.outcome === "no_valid_plan") {
-          output.textContent =
-            "先行実験：現在の条件では有効な計画がありません。";
+          output.textContent = "現在の条件では有効な計画がありません。";
         } else {
           const winner = recommendation.winner;
-          output.textContent = `先行実験（未検証）：nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
+          output.textContent = `nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
         }
       } catch {
         output.classList.add("is-error");
         output.textContent =
-          "先行実験を実行できませんでした。現在の情報が有効か確認してください。";
+          "ルートを確認できませんでした。現在の情報が有効か確認してください。";
       } finally {
         submit.disabled = false;
       }
@@ -816,7 +818,7 @@
       event.preventDefault();
       submit.disabled = true;
       output.classList.remove("is-error");
-      output.textContent = "先行実験を計算しています…";
+      output.textContent = "チャージ条件を確認しています…";
       try {
         const body = await postJson("/api/experimental/nanaco-credit-charge", {
           selection_id: publicationId,
@@ -833,16 +835,15 @@
         )
           throw new Error("response_invalid");
         if (recommendation.outcome === "no_valid_plan") {
-          output.textContent =
-            "先行実験：現在の条件では有効な計画がありません。";
+          output.textContent = "現在の条件では有効な計画がありません。";
         } else {
           const winner = recommendation.winner;
-          output.textContent = `先行実験（未検証）：チャージ後残高 ¥${recommendation.nanaco_balance_after_jpy.toLocaleString("ja-JP")}, nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
+          output.textContent = `チャージ後残高 ¥${recommendation.nanaco_balance_after_jpy.toLocaleString("ja-JP")}, nanacoポイント ${winner?.reward_points || "0"}ポイント。金額換算は表示しません。`;
         }
       } catch {
         output.classList.add("is-error");
         output.textContent =
-          "先行実験を実行できませんでした。チャージ条件と現在の情報が有効か確認してください。";
+          "ルートを確認できませんでした。チャージ条件と現在の情報が有効か確認してください。";
       } finally {
         submit.disabled = false;
       }
@@ -851,19 +852,223 @@
     card.appendChild(section);
   };
 
+  const appendCatalogueRuleMeta = (card, rule, groupedCount = 1) => {
+    const meta = node("div", "experimental-card-meta");
+    meta.appendChild(
+      text("span", `種類：${experimentalKindLabels[rule.kind] || "その他"}`),
+    );
+    if (groupedCount > 1)
+      meta.appendChild(text("span", `収録：${groupedCount}種類`));
+    meta.appendChild(
+      text(
+        "span",
+        `確度：${experimentalConfidenceLabels[rule.confidence] || "参考"}`,
+      ),
+    );
+    meta.appendChild(
+      text(
+        "span",
+        `確認元：${typeof rule.source_label === "string" ? rule.source_label : "情報提供元"}`,
+      ),
+    );
+    meta.appendChild(
+      text("span", `更新日：${formatExperimentalDate(rule.checked_at)}`),
+    );
+    meta.appendChild(
+      text("span", `有効開始：${formatExperimentalDate(rule.valid_from)}`),
+    );
+    meta.appendChild(
+      text(
+        "span",
+        rule.valid_to
+          ? `有効終了：${formatExperimentalDate(rule.valid_to)}`
+          : "有効終了：継続中",
+      ),
+    );
+    const validityState = [
+      "active",
+      "scheduled",
+      "expired",
+      "unknown",
+    ].includes(rule.validity_state)
+      ? rule.validity_state
+      : classifyExperimentalValidity(rule.valid_from, rule.valid_to);
+    meta.appendChild(
+      text(
+        "span",
+        experimentalValidityLabels[validityState] ||
+          experimentalValidityLabels.unknown,
+        `experimental-validity validity-${validityState}`,
+      ),
+    );
+    card.appendChild(meta);
+  };
+
+  const catalogueCorrectionControls = (
+    card,
+    publicationOptions,
+    onAccepted,
+  ) => {
+    const actions = node("div", "experimental-card-actions");
+    let publicationSelect;
+    if (publicationOptions.length > 1) {
+      const publicationLabel = node("label");
+      publicationLabel.appendChild(text("span", "報告する支払い方法"));
+      publicationSelect = selectField(publicationOptions);
+      publicationLabel.appendChild(publicationSelect);
+      actions.appendChild(publicationLabel);
+    }
+    const categoryLabel = node("label");
+    categoryLabel.appendChild(text("span", "誤っている内容"));
+    const categorySelect = selectField(
+      Object.entries(experimentalCategoryLabels).map(([value, labelText]) => ({
+        value,
+        label: labelText,
+      })),
+    );
+    categoryLabel.appendChild(categorySelect);
+    actions.appendChild(categoryLabel);
+    const button = node("button", "secondary");
+    button.type = "button";
+    button.textContent = "誤りを報告する";
+    actions.appendChild(button);
+    card.appendChild(actions);
+    const status = text("p", "", "experimental-status");
+    card.appendChild(status);
+
+    button.addEventListener("click", async () => {
+      const publicationId =
+        publicationSelect?.value || publicationOptions[0]?.value || "";
+      if (!publicationId) return;
+      button.disabled = true;
+      categorySelect.disabled = true;
+      if (publicationSelect) publicationSelect.disabled = true;
+      status.classList.remove("is-error");
+      status.textContent = "報告を受け付けています…";
+      try {
+        const body = await postJson("/api/experimental/corrections", {
+          publication_id: publicationId,
+          category: categorySelect.value,
+        });
+        if (body?.correction?.accepted !== true) throw new Error("status");
+        onAccepted(publicationId);
+        status.textContent = "報告を受け付けました。ありがとうございます。";
+        if (card.isConnected) {
+          button.disabled = false;
+          categorySelect.disabled = false;
+          if (publicationSelect) publicationSelect.disabled = false;
+        }
+      } catch {
+        button.disabled = false;
+        categorySelect.disabled = false;
+        if (publicationSelect) publicationSelect.disabled = false;
+        status.classList.add("is-error");
+        status.textContent = "報告を送れませんでした。もう一度お試しください。";
+      }
+    });
+  };
+
+  const paymentAcceptanceLabel = (rule) => {
+    if (typeof rule.summary !== "string") return "支払い方法";
+    const match = rule.summary.match(/「([^」]{1,80})」/u);
+    return match?.[1] || rule.summary;
+  };
+
+  const renderGroupedPaymentAcceptance = (list, rules) => {
+    if (rules.length === 0) return;
+    const first = rules[0];
+    const card = node("article", "experimental-card");
+    const header = node("div", "experimental-card-header");
+    header.appendChild(
+      text(
+        "h3",
+        typeof first.title === "string" ? first.title : "利用できる支払い方法",
+      ),
+    );
+    card.appendChild(header);
+    card.appendChild(
+      text(
+        "p",
+        "利用できる支払い方法を一つのカードにまとめています。",
+        "experimental-card-claim",
+      ),
+    );
+    const methods = node("ul", "catalogue-route-options");
+    rules.forEach((rule) => {
+      const item = node("li");
+      item.dataset.publicationId = rule.publication_id;
+      item.appendChild(text("span", paymentAcceptanceLabel(rule)));
+      methods.appendChild(item);
+    });
+    card.appendChild(methods);
+    appendCatalogueRuleMeta(card, first, rules.length);
+    const publicationOptions = rules.map((rule) => ({
+      value: rule.publication_id,
+      label: paymentAcceptanceLabel(rule),
+    }));
+    catalogueCorrectionControls(card, publicationOptions, (publicationId) => {
+      [...methods.children]
+        .find((item) => item.dataset.publicationId === publicationId)
+        ?.remove();
+      const option = [...publicationOptions].find(
+        (candidate) => candidate.value === publicationId,
+      );
+      const select = card.querySelector(".experimental-card-actions select");
+      [...(select?.options || [])]
+        .find((candidate) => candidate.value === option?.value)
+        ?.remove();
+      if (!methods.children.length) card.remove();
+    });
+    list.appendChild(card);
+  };
+
+  const renderCatalogueRule = (list, rule) => {
+    const publicationId = rule.publication_id;
+    const card = node("article", "experimental-card");
+    const header = node("div", "experimental-card-header");
+    header.appendChild(
+      text("h3", typeof rule.title === "string" ? rule.title : "ルート情報"),
+    );
+    card.appendChild(header);
+    card.appendChild(
+      text(
+        "p",
+        typeof rule.summary === "string" ? rule.summary : "ルート情報です。",
+        "experimental-card-claim",
+      ),
+    );
+    appendCatalogueRuleMeta(card, rule);
+    renderNanacoExperimentalInteraction(card, publicationId);
+    renderNanacoCreditChargeInteraction(card, publicationId);
+    catalogueCorrectionControls(
+      card,
+      [{ value: publicationId, label: rule.title || "ルート情報" }],
+      () => card.remove(),
+    );
+    list.appendChild(card);
+  };
+
   const renderExperimentalSnapshot = (snapshot) => {
     const list = document.getElementById("experimental-rules");
     clear(list);
     const rules =
-      snapshot && Array.isArray(snapshot.rules) ? snapshot.rules : [];
+      snapshot && Array.isArray(snapshot.rules)
+        ? snapshot.rules.filter(
+            (rule) =>
+              rule &&
+              typeof rule === "object" &&
+              typeof rule.publication_id === "string" &&
+              rule.publication_id.length > 0,
+          )
+        : [];
     const partial = snapshot?.status === "partial";
-    if (!Array.isArray(rules) || rules.length === 0) {
+    if (rules.length === 0) {
       list.appendChild(
         text(
           "p",
           partial
-            ? "一部のデータを読み込めませんでした。表示できる先行公開データはありません。"
-            : "現在、表示できる先行公開データはありません。",
+            ? "一部のルート情報を読み込めませんでした。"
+            : "現在、表示できるルート情報はありません。",
           "helper",
         ),
       );
@@ -871,131 +1076,20 @@
     }
     if (partial)
       list.appendChild(
-        text("p", "一部の先行公開データを表示しています。", "helper"),
+        text("p", "読み込めたルート情報を表示しています。", "helper"),
       );
-    rules.forEach((rule) => {
-      if (!rule || typeof rule !== "object") return;
-      const publicationId =
-        typeof rule.publication_id === "string" ? rule.publication_id : "";
-      if (!publicationId) return;
-      const card = node("article", "experimental-card");
-      const header = node("div", "experimental-card-header");
-      const title = text(
-        "h3",
-        typeof rule.title === "string" ? rule.title : "先行公開データ",
-      );
-      header.appendChild(title);
-      header.appendChild(text("span", "先行公開", "experimental-badge"));
-      card.appendChild(header);
-
-      const claim =
-        typeof rule.summary === "string"
-          ? rule.summary
-          : "先行公開データです。";
-      card.appendChild(text("p", claim, "experimental-card-claim"));
-
-      const meta = node("div", "experimental-card-meta");
-      meta.appendChild(
-        text("span", `種類：${experimentalKindLabels[rule.kind] || "その他"}`),
-      );
-      meta.appendChild(
-        text(
-          "span",
-          `確度：${experimentalConfidenceLabels[rule.confidence] || "参考"}`,
-        ),
-      );
-      meta.appendChild(
-        text(
-          "span",
-          `確認元：${typeof rule.source_label === "string" ? rule.source_label : "情報提供元"}`,
-        ),
-      );
-      meta.appendChild(
-        text("span", `更新日：${formatExperimentalDate(rule.checked_at)}`),
-      );
-      meta.appendChild(
-        text("span", `有効開始：${formatExperimentalDate(rule.valid_from)}`),
-      );
-      meta.appendChild(
-        text(
-          "span",
-          rule.valid_to
-            ? `有効終了：${formatExperimentalDate(rule.valid_to)}`
-            : "有効終了：継続中",
-        ),
-      );
-      const validityState = [
-        "active",
-        "scheduled",
-        "expired",
-        "unknown",
-      ].includes(rule.validity_state)
-        ? rule.validity_state
-        : classifyExperimentalValidity(rule.valid_from, rule.valid_to);
-      meta.appendChild(
-        text(
-          "span",
-          experimentalValidityLabels[validityState] ||
-            experimentalValidityLabels.unknown,
-          `experimental-validity validity-${validityState}`,
-        ),
-      );
-      card.appendChild(meta);
-      renderNanacoExperimentalInteraction(card, publicationId);
-      renderNanacoCreditChargeInteraction(card, publicationId);
-
-      const actions = node("div", "experimental-card-actions");
-      const label = node("label");
-      label.appendChild(text("span", "内容を訂正する"));
-      const select = selectField(
-        Object.entries(experimentalCategoryLabels).map(
-          ([value, labelText]) => ({
-            value,
-            label: labelText,
-          }),
-        ),
-      );
-      label.appendChild(select);
-      actions.appendChild(label);
-      const button = node("button", "secondary");
-      button.type = "button";
-      button.textContent = "この情報を訂正する";
-      actions.appendChild(button);
-      card.appendChild(actions);
-      const status = text("p", "", "experimental-status");
-      card.appendChild(status);
-
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        select.disabled = true;
-        status.classList.remove("is-error");
-        status.textContent = "お知らせを受け付けています…";
-        try {
-          const body = await postJson("/api/experimental/corrections", {
-            publication_id: publicationId,
-            category: select.value,
-          });
-          if (body?.correction?.accepted !== true) throw new Error("status");
-          card.remove();
-          if (!list.querySelector(".experimental-card")) {
-            experimentalRulesMessage(
-              "お知らせを受け付けました。このカードを非表示にしました。",
-              "experimental-status",
-            );
-          }
-        } catch {
-          button.disabled = false;
-          select.disabled = false;
-          status.classList.add("is-error");
-          status.textContent =
-            "訂正を反映できませんでした。もう一度お試しください。";
-        }
+    const paymentAcceptance = rules.filter(
+      (rule) => rule.kind === "payment_acceptance",
+    );
+    renderGroupedPaymentAcceptance(list, paymentAcceptance);
+    rules
+      .filter((rule) => rule.kind !== "payment_acceptance")
+      .forEach((rule) => {
+        renderCatalogueRule(list, rule);
       });
-      list.appendChild(card);
-    });
     if (!list.querySelector(".experimental-card"))
       experimentalRulesMessage(
-        "現在、表示できる先行公開データはありません。",
+        "現在、表示できるルート情報はありません。",
         "helper",
       );
   };
@@ -1010,10 +1104,7 @@
       if (!response.ok) throw new Error("request_failed");
       renderExperimentalSnapshot(body);
     } catch {
-      experimentalRulesMessage(
-        "先行公開データを読み込めませんでした。",
-        "helper",
-      );
+      experimentalRulesMessage("ルート情報を読み込めませんでした。", "helper");
     }
   };
 
@@ -1129,39 +1220,10 @@
       card.appendChild(text("h3", fact.subject, "information-subject"));
       card.appendChild(text("p", fact.predicate, "information-predicate"));
       card.appendChild(text("p", fact.summary, "information-summary"));
-      card.appendChild(
-        text(
-          "p",
-          fact.use_in_comparison
-            ? "この情報は比較に使用しています。"
-            : "この情報は比較には使用していません。",
-          fact.use_in_comparison
-            ? "information-usage is-active"
-            : "information-usage",
-        ),
-      );
-      const statusText = fact.use_in_comparison
-        ? "状態：計算に使用"
-        : /終了|過去|現在は対象外|適用期間外/iu.test(
-              `${fact.claim} ${fact.summary}`,
-            )
-          ? "状態：適用期間外"
-          : "状態：参考情報（計算には不使用）";
-      card.appendChild(
-        text(
-          "p",
-          statusText,
-          fact.use_in_comparison
-            ? "information-fact-status is-calculation"
-            : statusText.includes("期間外")
-              ? "information-fact-status is-inactive"
-              : "information-fact-status is-advisory",
-        ),
-      );
 
       const actions = node("div", "information-card-actions");
       const label = node("label");
-      label.appendChild(text("span", "内容を訂正する"));
+      label.appendChild(text("span", "誤っている内容"));
       const select = selectField(
         Object.entries(informationCategoryLabels).map(([value, labelText]) => ({
           value,
@@ -1172,7 +1234,7 @@
       actions.appendChild(label);
       const button = node("button", "secondary");
       button.type = "button";
-      button.textContent = "この情報を訂正する";
+      button.textContent = "誤りを報告する";
       actions.appendChild(button);
       card.appendChild(actions);
       const status = text("p", "", "information-status");
@@ -1181,7 +1243,7 @@
         button.disabled = true;
         select.disabled = true;
         status.classList.remove("is-error");
-        status.textContent = "訂正を受け付けています…";
+        status.textContent = "報告を受け付けています…";
         try {
           const body = await postJson("/api/experimental/fact-corrections", {
             fact_key: fact.fact_key,
@@ -1198,7 +1260,7 @@
           select.disabled = false;
           status.classList.add("is-error");
           status.textContent =
-            "訂正を反映できませんでした。もう一度お試しください。";
+            "報告を送れませんでした。もう一度お試しください。";
         }
       });
       list.appendChild(card);
@@ -1350,7 +1412,10 @@
     .addEventListener("change", renderInformationFacts);
   document
     .getElementById("information-reload")
-    .addEventListener("click", () => void loadInformationFacts(true));
+    .addEventListener("click", () => {
+      void loadExperimentalRules();
+      void loadInformationFacts(true);
+    });
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
       activateTab("home");
