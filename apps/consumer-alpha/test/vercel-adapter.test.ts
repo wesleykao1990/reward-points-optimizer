@@ -72,6 +72,51 @@ describe("consumer-alpha Vercel adapter", () => {
     expect(response.headers["Access-Control-Allow-Origin"]).toBeUndefined();
   });
 
+  it("resolves the explicit Vercel API rewrite without admitting extra query parameters", async () => {
+    const handler = createVercelRequestHandler({ environment });
+    const response = responseCapture();
+    await handler(
+      {
+        method: "POST",
+        url: "/api/handler?path=synthetic/evaluate",
+        headers: {
+          host: "rewards.example",
+          "x-forwarded-proto": "https",
+          origin: "https://rewards.example",
+          "content-type": "application/json",
+        },
+        body: {
+          merchant_id: "merchant.synthetic",
+          branch_id: "location.synthetic",
+          amount_jpy: 640,
+          owned_instruments: ["synthetic_card"],
+          stored_value_use: "unknown",
+          facts: [],
+          caps: [],
+        },
+      },
+      response,
+    );
+    expect(response.statusCode).toBe(200);
+
+    const extraQuery = responseCapture();
+    await handler(
+      {
+        method: "GET",
+        url: "/api/handler?path=experimental/rules&leak=true",
+        headers: {
+          host: "rewards.example",
+          "x-forwarded-proto": "https",
+        },
+      },
+      extraQuery,
+    );
+    expect(extraQuery.statusCode).toBe(400);
+    expect(JSON.parse(extraQuery.body)).toMatchObject({
+      error: { code: "query_not_allowed" },
+    });
+  });
+
   it("rejects unconfigured hosts, cross-origin requests, and query strings", async () => {
     const handler = createVercelRequestHandler({ environment });
     const hostileHost = responseCapture();
