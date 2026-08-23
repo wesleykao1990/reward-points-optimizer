@@ -605,6 +605,14 @@ fieldset {
   border-top: 1px solid var(--line);
 }
 
+.p0-picker-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 66px;
+  padding: 12px 0 8px;
+}
+
 .choice-row {
   position: relative;
   min-height: 72px;
@@ -2227,7 +2235,7 @@ button.remove {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin: -2px 0 6px 48px;
+  margin: 0 0 8px;
 }
 
 .p0-product-picker[hidden] {
@@ -2236,13 +2244,21 @@ button.remove {
 
 .p0-product-option {
   position: relative;
-  display: grid;
+  display: flex;
   min-height: 60px;
-  padding: 8px 10px 8px 38px;
+  align-items: center;
+  padding: 8px 42px 8px 10px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: #171b17;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 140ms ease, background 140ms ease,
+    transform 100ms ease;
+}
+
+.p0-product-option:active {
+  transform: scale(0.985);
 }
 
 .p0-product-option:has(input:checked) {
@@ -2253,11 +2269,37 @@ button.remove {
 
 .p0-product-option input {
   position: absolute;
-  top: 16px;
-  left: 13px;
-  width: 17px;
-  height: 17px;
-  accent-color: var(--lime);
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.p0-product-option:has(input:focus-visible) {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.p0-product-check {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--lime);
+  color: #16301c;
+  font-size: 0.72rem;
+  font-weight: 900;
+  opacity: 0;
+  transform: translateY(-50%) scale(0.72);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.p0-product-option:has(input:checked) .p0-product-check {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .p0-product-identity {

@@ -1579,20 +1579,16 @@
     {
       kind: "credit_card",
       containerId: "p0-card-picker",
-      toggleId: "p0-card-toggle",
-      requiredMessage: "クレジットカードを1つ以上選んでください。",
+      instrumentId: "p0-card-instrument",
     },
     {
       kind: "mobile_pay",
       containerId: "p0-mobile-pay-picker",
-      toggleId: "p0-mobile-pay-toggle",
-      requiredMessage: "利用中のモバイル決済を1つ以上選んでください。",
+      instrumentId: "p0-mobile-pay-instrument",
     },
     {
       kind: "point",
       containerId: "p0-point-picker",
-      toggleId: "p0-point-toggle",
-      requiredMessage: "保有するポイントプログラムを1つ以上選んでください。",
     },
   ]);
 
@@ -1601,62 +1597,48 @@
       .filter((input) => !input.disabled)
       .map((input) => input.value)
       .sort();
-    if (required) {
-      for (const definition of p0PickerDefinitions) {
-        const toggle = document.getElementById(definition.toggleId);
-        if (
-          toggle.checked &&
-          !selected.some(
-            (value) =>
-              pointSpendOptions?.walletCatalogue.find(
-                (item) => item.family_id === value,
-              )?.kind === definition.kind,
-          )
-        ) {
-          const status = document.getElementById("p0-selection-status");
-          status.textContent = definition.requiredMessage;
-          status.classList.add("is-error");
-          document.getElementById(definition.containerId).scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-          throw new Error("p0_product_selection_required");
-        }
-      }
+    const hasPaymentMethod = selected.some((value) => {
+      const kind = pointSpendOptions?.walletCatalogue.find(
+        (item) => item.family_id === value,
+      )?.kind;
+      return kind === "credit_card" || kind === "mobile_pay";
+    });
+    if (required && !hasPaymentMethod) {
+      const status = document.getElementById("p0-selection-status");
+      status.textContent =
+        "カードまたはモバイル決済を1つ以上タップして選んでください。";
+      status.classList.add("is-error");
+      status.scrollIntoView({ behavior: "smooth", block: "center" });
+      throw new Error("p0_payment_selection_required");
     }
     return selected;
   };
 
   const syncP0ProductPickers = () => {
-    p0PickerDefinitions.forEach((definition) => {
-      const toggle = document.getElementById(definition.toggleId);
-      const container = document.getElementById(definition.containerId);
-      container.hidden = !toggle.checked;
-      container.querySelectorAll("[data-p0-product]").forEach((input) => {
-        input.disabled = !toggle.checked;
-        if (!toggle.checked) input.checked = false;
-      });
-    });
     const selected = selectedP0Products();
-    const status = document.getElementById("p0-selection-status");
-    status.classList.remove("is-error");
-    const missing = p0PickerDefinitions.find((definition) => {
-      const toggle = document.getElementById(definition.toggleId);
-      return (
-        toggle.checked &&
-        !selected.some(
-          (value) =>
-            pointSpendOptions?.walletCatalogue.find(
-              (item) => item.family_id === value,
-            )?.kind === definition.kind,
-        )
+    p0PickerDefinitions.forEach((definition) => {
+      if (!definition.instrumentId) return;
+      document.getElementById(definition.instrumentId).checked = selected.some(
+        (value) =>
+          pointSpendOptions?.walletCatalogue.find(
+            (item) => item.family_id === value,
+          )?.kind === definition.kind,
       );
     });
-    status.textContent = missing
-      ? missing.requiredMessage
-      : selected.length
-        ? `${selected.length}サービスを選択しています。選択内容は保存されません。`
-        : "比較するサービスを選んでください。";
+    syncInstrumentViews();
+    const status = document.getElementById("p0-selection-status");
+    status.classList.remove("is-error");
+    const hasPaymentMethod = selected.some((value) => {
+      const kind = pointSpendOptions?.walletCatalogue.find(
+        (item) => item.family_id === value,
+      )?.kind;
+      return kind === "credit_card" || kind === "mobile_pay";
+    });
+    status.textContent = !selected.length
+      ? "支払い方法をタップして選んでください。"
+      : !hasPaymentMethod
+        ? "ポイントに加えて、カードまたはモバイル決済も選んでください。"
+        : `${selected.length}サービスを選択中。もう一度タップすると解除できます。`;
   };
 
   const renderP0ProductPickers = () => {
@@ -1678,6 +1660,7 @@
           copy.appendChild(text("strong", item.label));
           label.appendChild(checkbox);
           label.appendChild(copy);
+          label.appendChild(text("span", "✓", "p0-product-check"));
           container.appendChild(label);
         });
     });
@@ -1877,8 +1860,16 @@
   };
   const syncInstrumentViews = () => {
     const checked = [...instrumentInputs].filter((input) => input.checked);
+    const selectedPayments = [
+      ...document.querySelectorAll("[data-p0-product]:checked"),
+    ].filter((input) => {
+      const kind = pointSpendOptions?.walletCatalogue.find(
+        (item) => item.family_id === input.value,
+      )?.kind;
+      return kind === "credit_card" || kind === "mobile_pay";
+    });
     document.getElementById("summary-instruments").textContent =
-      `支払い方法 ${checked.length}つ`;
+      `支払い方法 ${selectedPayments.length}つ`;
     document.getElementById("summary-meter").dataset.count = String(
       checked.length,
     );
@@ -1958,15 +1949,6 @@
         .scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
-  instrumentInputs.forEach((input) => {
-    input.addEventListener("change", () => {
-      syncInstrumentViews();
-      syncP0ProductPickers();
-    });
-  });
-  document
-    .getElementById("p0-point-toggle")
-    .addEventListener("change", syncP0ProductPickers);
   amountInput.addEventListener("input", syncAmountSummary);
   merchantSelector.addEventListener("change", syncMerchantContext);
   syncInstrumentViews();
