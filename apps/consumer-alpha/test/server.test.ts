@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { resetExperimentalCatalogue } from "../src/provisional-catalog.js";
 import {
@@ -583,6 +583,9 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("情報掲載");
     expect(html).toContain("対応サービス一覧");
     expect(source).toContain("実施中のキャンペーン");
+    expect(source).toContain("paymentLogoSources");
+    expect(source).toContain('node("img")');
+    expect(source).not.toContain("使い方と交換先を確認");
     expect(html).toContain('id="p0-card-picker"');
     expect(html).toContain('id="p0-mobile-pay-picker"');
     expect(html).toContain('id="p0-point-picker"');
@@ -629,5 +632,35 @@ describe("M6 localhost consumer shell", () => {
     expect(source).toContain("textContent");
     expect(source).not.toContain("innerHTML");
     expect(source).not.toContain("localStorage");
+    for (const filename of [
+      "dpoint.png",
+      "dbarai.png",
+      "dcard.png",
+      "jrepoint.webp",
+      "viewcard.gif",
+      "nanaco.png",
+      "paypay.svg",
+      "paypaycard.png",
+      "ponta.png",
+      "rakutenpoint.svg",
+      "rakutenpay.svg",
+      "rakutencard.svg",
+      "vpoint.svg",
+      "waon.png",
+      "aeonpay.png",
+      "aeoncard.png",
+      "aupay.png",
+      "aupaycard.png",
+      "famipay.svg",
+      "smbccard.png",
+    ])
+      expect(
+        existsSync(
+          new URL(
+            `../public/assets/payment-logos/${filename}`,
+            import.meta.url,
+          ),
+        ),
+      ).toBe(true);
   });
 });

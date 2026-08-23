@@ -2237,8 +2237,8 @@ button.remove {
 .p0-product-option {
   position: relative;
   display: grid;
-  min-height: 52px;
-  padding: 10px 12px 10px 38px;
+  min-height: 60px;
+  padding: 8px 10px 8px 38px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: #171b17;
@@ -2260,19 +2260,37 @@ button.remove {
   accent-color: var(--lime);
 }
 
-.p0-product-option span {
-  display: grid;
-  gap: 2px;
+.p0-product-identity {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
 }
 
 .p0-product-option strong {
   color: var(--text);
   font-size: 0.72rem;
+  line-height: 1.35;
 }
 
-.p0-product-option small {
-  color: var(--muted);
-  font-size: 0.57rem;
+.payment-logo {
+  display: grid;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 38px;
+  padding: 5px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 72%);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.payment-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 #p0-selection-status.is-error {
@@ -2306,24 +2324,13 @@ button.remove {
 
 .p0-wallet-family-card {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr);
   gap: 4px 10px;
   align-items: center;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface-raised);
-}
-
-.p0-wallet-family-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 12px;
-  background: #263327;
-  color: var(--lime);
-  font-weight: 800;
 }
 
 .p0-wallet-family-copy {

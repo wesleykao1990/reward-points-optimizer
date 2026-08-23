@@ -100,7 +100,7 @@ export {
 
 export const LOCALHOST_BIND_HOST = "127.0.0.1" as const;
 export const CSP_HEADER =
-  "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 const PUBLIC_ROOT = fileURLToPath(new URL("../public/", import.meta.url));
 const STATIC_FILES: Readonly<Record<string, string>> = Object.freeze({
@@ -114,6 +114,36 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = Object.freeze({
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
 });
+const PAYMENT_LOGO_FILES = new Set([
+  "dpoint.png",
+  "dbarai.png",
+  "dcard.png",
+  "jrepoint.webp",
+  "viewcard.gif",
+  "nanaco.png",
+  "paypay.svg",
+  "paypaycard.png",
+  "ponta.png",
+  "rakutenpoint.svg",
+  "rakutenpay.svg",
+  "rakutencard.svg",
+  "vpoint.svg",
+  "waon.png",
+  "aeonpay.png",
+  "aeoncard.png",
+  "aupay.png",
+  "aupaycard.png",
+  "famipay.svg",
+  "smbccard.png",
+]);
+const PAYMENT_LOGO_CONTENT_TYPES: Readonly<Record<string, string>> =
+  Object.freeze({
+    ".gif": "image/gif",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+  });
 
 const MAX_ISSUED_RECOMMENDATIONS = 128;
 const issuedRecommendationIds = new Set<string>();
@@ -2229,6 +2259,46 @@ function sendAppResponse(response: ServerResponse, result: AppResponse): void {
   response.end(result.body);
 }
 
+async function sendPaymentLogo(
+  response: ServerResponse,
+  pathname: string,
+): Promise<boolean> {
+  const prefix = "/assets/payment-logos/";
+  if (!pathname.startsWith(prefix)) return false;
+  const filename = pathname.slice(prefix.length);
+  if (!PAYMENT_LOGO_FILES.has(filename)) {
+    sendAppResponse(response, errorResponse(requestError(404, "not_found")));
+    return true;
+  }
+  const filePath = normalize(
+    join(PUBLIC_ROOT, "assets/payment-logos", filename),
+  );
+  const logoRoot = normalize(join(PUBLIC_ROOT, "assets/payment-logos") + sep);
+  if (!filePath.startsWith(logoRoot)) {
+    sendAppResponse(response, errorResponse(requestError(404, "not_found")));
+    return true;
+  }
+  try {
+    const body = await fs.readFile(filePath);
+    if (body.byteLength > 256 * 1024) throw new Error("static_file_invalid");
+    response.statusCode = 200;
+    for (const [name, value] of Object.entries(securityHeaders()))
+      response.setHeader(name, value);
+    response.setHeader(
+      "Content-Type",
+      PAYMENT_LOGO_CONTENT_TYPES[extname(filePath)] ??
+        "application/octet-stream",
+    );
+    response.end(body);
+  } catch {
+    sendAppResponse(
+      response,
+      errorResponse(requestError(500, "static_asset_unavailable")),
+    );
+  }
+  return true;
+}
+
 async function route(
   request: IncomingMessage,
   response: ServerResponse,
@@ -2243,6 +2313,7 @@ async function route(
   }
   try {
     const method = request.method ?? "";
+    if (method === "GET" && (await sendPaymentLogo(response, pathname))) return;
     const headers: Record<string, string | undefined> = {};
     const contentType = request.headers["content-type"];
     const contentLength = request.headers["content-length"];
