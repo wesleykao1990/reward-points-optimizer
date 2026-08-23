@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased — 2026-08-23
+
+- Replaced the consumer shell's visual system with a printed-ledger design:
+  paper ground, indigo ink structure, one vermilion accent, hairline rules
+  instead of shadows and blur, one 24x24 outline icon set, Mincho display
+  type, and a token-only dark variant. No component defines a colour outside
+  the token layer.
+- Reworked the bottom bar to four peer destinations (`home`, `expiry`,
+  `wallet`, `information`). The session log and the handling/privacy notes
+  became header-reached sub-pages exposed as ARIA regions, and the duplicate
+  jump control above the comparison form was removed.
+- Added an expiry advisor panel that reports, per point programme, the
+  remaining runway, whether the deadline can be moved, the single action that
+  moves it, and the chains where that action is available, plus a
+  merchant-first board over the same data. It runs on a checked-in demo
+  dataset because no balance or expiry backend exists yet, and says so in the
+  markup.
+
 ## Unreleased — 2026-08-19
 
 - Added a PostgreSQL-backed `AtomicPersistencePort` for verified Agent Feed

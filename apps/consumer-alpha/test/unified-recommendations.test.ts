@@ -182,7 +182,7 @@ function responseJson(response: { readonly body: string }) {
 }
 
 describe("unified merchant recommendation journey", () => {
-  it("keeps the five-tab mobile walkthrough keyboard-addressable", () => {
+  it("keeps the four-tab mobile walkthrough keyboard-addressable", () => {
     const html = readFileSync(
       new URL("../public/index.html", import.meta.url),
       "utf8",
@@ -190,22 +190,31 @@ describe("unified merchant recommendation journey", () => {
     const navStart = html.indexOf('<nav class="bottom-nav"');
     const navEnd = html.indexOf("</nav>", navStart);
     const nav = html.slice(navStart, navEnd);
+    // The bottom bar carries peer destinations only. The session log and the
+    // handling notes are sub-pages reached from a header control, so they are
+    // regions rather than tab panels.
     expect(
       [...nav.matchAll(/data-tab-target="([^"]+)"/gu)].map((match) => match[1]),
-    ).toEqual(["home", "wallet", "history", "information", "settings"]);
-    for (const tab of ["home", "wallet", "history", "information", "settings"])
+    ).toEqual(["home", "expiry", "wallet", "information"]);
+    for (const tab of ["home", "expiry", "wallet", "information"])
       expect(html).toMatch(
         new RegExp(
           `id="tab-${tab}"[^>]*role="tabpanel"[^>]*aria-labelledby="tab-button-${tab}"`,
           "u",
         ),
       );
+    for (const page of ["history", "settings"]) {
+      expect(html).toMatch(
+        new RegExp(`id="tab-${page}"[^>]*role="region"[^>]*aria-label="`, "u"),
+      );
+      expect(html).toMatch(new RegExp(`data-tab-target="${page}"`, "u"));
+    }
     const app = readFileSync(
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
     expect(app).toContain(
-      'const tabOrder = ["home", "wallet", "history", "information", "settings"]',
+      'const tabOrder = ["home", "expiry", "wallet", "information"]',
     );
     const styles = readFileSync(
       new URL("../public/styles.css", import.meta.url),

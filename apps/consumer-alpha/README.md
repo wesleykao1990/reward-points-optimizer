@@ -213,3 +213,39 @@ localhost build does not open a database connection or grant client access;
 an app-server adapter may query that view with an explicitly privileged
 server role and map only its bounded projection. Raw Agent Feed observations,
 approved-rule status, and browser database credentials are never implied.
+
+## Front-end presentation
+
+The browser shell uses a printed-ledger visual system: a warm off-white paper
+ground, indigo ink for structure and the primary action, and a single
+vermilion accent reserved for the seal and for peak moments (the urgent
+expiry, the best-route kicker). Depth comes from hairline rules and recessed
+paper wells rather than shadows, blur, or gradients, and every glyph comes
+from one 24x24 outline set at a 1.6px stroke. A `prefers-color-scheme: dark`
+block re-tints the same tokens onto warm charcoal stock; no component defines
+a colour outside the token layer.
+
+Typography is a system stack by design. The strict same-origin CSP and the
+"nothing leaves the browser" stance rule out a webfont CDN, so display
+headings and figures use the platform Mincho families with Gothic for body
+and UI, and figures carry `tabular-nums`.
+
+The bottom bar carries four peer destinations - `home`, `expiry`, `wallet`,
+`information`. The session log and the handling/privacy notes are sub-pages
+reached from a header control; they are ARIA regions, not tab panels.
+
+## Expiry advisor (demo data)
+
+The `expiry` panel answers "which points am I about to lose, and where do I
+shop to stop that?" for each recorded point programme: the remaining runway,
+whether the deadline can be moved at all, the single concrete action that
+moves it, and the chains where that action is available. A merchant-first
+board inverts the same dataset so one errand can be planned against several
+deadlines at once.
+
+No balance, expiry, or account backend exists yet. The panel therefore runs
+entirely on a checked-in demo dataset in `public/app.js`, stores days relative
+to "today" so a deadline is never rendered in the past, and labels itself as
+demo data in the markup. Nothing there is a published rule, nothing is sent
+anywhere, and each card links back into the catalogue for the recorded source
+information.

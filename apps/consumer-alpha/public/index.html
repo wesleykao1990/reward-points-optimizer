@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0d100d">
+    <meta name="theme-color" content="#f4efe4" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)">
     <title>ポイミチ — 支払いルート比較デモ</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -12,40 +13,50 @@
       <section id="tab-home" class="tab-panel is-active" data-tab-panel="home" role="tabpanel" aria-labelledby="tab-button-home" tabindex="-1">
         <header class="app-header">
           <div class="app-title">
-            <span class="brand-mark" aria-hidden="true">P</span>
-            <div><small>POINT ROUTE</small><h1>ホーム</h1></div>
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>今日の会計</h1></div>
           </div>
-          <span class="demo-chip"><i></i> デモ版</span>
+          <div class="header-tools">
+            <span class="demo-chip">デモ版</span>
+            <button type="button" class="icon-button" data-tab-target="settings" aria-label="履歴と設定を開く">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="1.6"></circle></svg>
+            </button>
+          </div>
         </header>
 
-        <button type="button" class="search-control" data-scroll-to="purchase-form">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-          <span>お店と支払い条件を確認</span>
-          <span class="search-arrow" aria-hidden="true">→</span>
-        </button>
-
-        <aside class="demo-notice" aria-label="デモ版について">
-          <span class="notice-icon" aria-hidden="true">i</span>
-          <div><strong>支払い方とポイント情報の確認デモです</strong><p>収録したサービス、還元率、ポイントの使い方をまとめて確認できます。内容の誤りは各カードから報告できます。</p></div>
-        </aside>
-
-        <section class="overview-panel" aria-labelledby="overview-title">
-          <div class="overview-topline"><span id="overview-title">現在の比較条件</span><span>保存されません</span></div>
-          <div class="overview-value"><strong id="summary-amount">¥640</strong><span>のお買い物</span></div>
-          <div class="overview-meter"><span><i id="summary-meter"></i></span><small id="summary-instruments">支払い方法 0つ</small></div>
+        <section class="slip" aria-labelledby="slip-title">
+          <div class="slip-head">
+            <h2 id="slip-title">比較の条件</h2>
+            <span class="slip-stamp">端末に残しません</span>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">お支払い金額</span>
+            <strong class="slip-figure" id="summary-amount">¥640</strong>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">選んだ支払い方法</span>
+            <span class="slip-value" id="summary-instruments">支払い方法 0つ</span>
+          </div>
+          <div class="slip-gauge" aria-hidden="true"><i id="summary-meter"></i></div>
         </section>
+
+        <div id="home-expiry-callout" class="callout-slot" aria-live="polite"></div>
 
         <section id="purchase-form" class="content-section" aria-labelledby="onboarding-title">
           <div class="section-title-row">
-            <div><p class="section-kicker">PAYMENT CHECK</p><h2 id="onboarding-title">支払い方を比較</h2></div>
-            <span class="step-label">STEP 1</span>
+            <div><p class="section-kicker">STEP 1</p><h2 id="onboarding-title">支払い方を比べる</h2></div>
           </div>
 
           <form id="recommendation-form">
-            <div class="merchant-row">
-              <span class="merchant-icon" aria-hidden="true">店</span>
-              <label class="merchant-copy" for="merchant-selector"><small>比較するお店</small><select id="merchant-selector"><option value="merchant.synthetic" selected>一般のお買い物</option><option value="merchant.seveneleven">セブン‐イレブン</option></select><span><output id="branch-name">通常の店舗</output></span></label>
-              <span class="state-label">変更できます</span>
+            <div class="ledger-row merchant-row">
+              <span class="row-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 9.5 5.5 5h13L20 9.5"></path><path d="M4.5 9.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z"></path><path d="M9.5 20v-5.5h5V20"></path></svg>
+              </span>
+              <label class="merchant-copy" for="merchant-selector">
+                <small>比較するお店</small>
+                <select id="merchant-selector"><option value="merchant.synthetic" selected>一般のお買い物</option><option value="merchant.seveneleven">セブン‐イレブン</option></select>
+                <span><output id="branch-name">通常の店舗</output></span>
+              </label>
             </div>
             <p id="merchant-support-note" class="helper">選択したカードとモバイル決済の通常還元率で比較します。</p>
 
@@ -55,16 +66,16 @@
             </label>
 
             <fieldset id="nanaco-route-fields" class="route-fieldset" aria-labelledby="route-input-title" hidden>
-              <legend id="route-input-title"><span>ルートの確認条件</span><small>入力できる範囲だけを使います</small></legend>
+              <legend id="route-input-title"><span>セブン‐イレブンの追加条件</span><small>入力できる範囲だけを使います</small></legend>
               <div class="route-input-grid">
                 <label for="nanaco-tax-exclusive">nanaco購入・税抜対象額（円）<input id="nanaco-tax-exclusive" type="number" min="0" max="1000000" step="1" value="640"></label>
                 <label for="nanaco-balance">nanaco残高（円）<input id="nanaco-balance" type="number" min="0" max="10000000" step="1" value="10000"></label>
                 <label for="credit-charge-amount">チャージ額（円）<input id="credit-charge-amount" type="number" min="0" max="30000" step="1000" value="5000"></label>
                 <label for="credit-balance">チャージ前nanaco残高（円）<input id="credit-balance" type="number" min="0" max="50000" step="1" value="0"></label>
               </div>
-              <label class="check-row" for="seven-card-owned"><input id="seven-card-owned" type="checkbox"><span>セブンカード・プラスを所有している</span></label>
-              <label class="check-row" for="credit-preregistered"><input id="credit-preregistered" type="checkbox"><span>nanacoクレジットチャージを事前登録している</span></label>
-              <p class="helper">所有と事前登録は未確認のため未選択です。明示的に選んだ場合だけ対象ルートを確認します。</p>
+              <label class="check-row" for="seven-card-owned"><input id="seven-card-owned" type="checkbox"><span>セブンカード・プラスを持っている</span></label>
+              <label class="check-row" for="credit-preregistered"><input id="credit-preregistered" type="checkbox"><span>nanacoクレジットチャージを登録済み</span></label>
+              <p class="helper">持っているかどうかは分からないため、初期値は未選択です。選んだときだけ対象ルートを確認します。</p>
             </fieldset>
 
             <fieldset class="instrument-fieldset">
@@ -72,18 +83,24 @@
               <div class="choice-list">
                 <input id="p0-card-instrument" type="checkbox" name="instrument" value="synthetic_card" hidden>
                 <div class="p0-picker-heading">
-                  <span class="choice-icon card-icon" aria-hidden="true">▰</span>
+                  <span class="row-mark card-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="1.5"></rect><path d="M3 10h18"></path><path d="M6.5 14.5h4"></path></svg>
+                  </span>
                   <span class="choice-copy"><strong>クレジットカード</strong><small>カードをタップして選択</small></span>
                 </div>
                 <div id="p0-card-picker" class="p0-product-picker"><p class="helper">カード一覧を読み込んでいます…</p></div>
                 <input id="p0-mobile-pay-instrument" type="checkbox" name="instrument" value="synthetic_qr_wallet" hidden>
                 <div class="p0-picker-heading">
-                  <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
+                  <span class="row-mark wallet-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"></rect><path d="M10 6.5h4"></path><circle cx="12" cy="17" r="1.2"></circle></svg>
+                  </span>
                   <span class="choice-copy"><strong>モバイル決済</strong><small>サービスをタップして選択</small></span>
                 </div>
                 <div id="p0-mobile-pay-picker" class="p0-product-picker"><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
                 <div class="p0-picker-heading">
-                  <span class="choice-icon value-icon" aria-hidden="true">P</span>
+                  <span class="row-mark point-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M10 16V8.5h2.6a2.4 2.4 0 0 1 0 4.8H10"></path></svg>
+                  </span>
                   <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントをタップして選択</small></span>
                 </div>
                 <div id="p0-point-picker" class="p0-product-picker"><p class="helper">ポイント一覧を読み込んでいます…</p></div>
@@ -91,37 +108,121 @@
               <p id="p0-selection-status" class="helper" aria-live="polite">支払い方法をタップして選んでください。</p>
             </fieldset>
 
-            <button type="submit" class="primary"><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>
+            <button type="submit" class="primary">
+              <span>この条件で比べる</span>
+              <svg class="btn-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"></path><path d="m13 6.5 6 5.5-6 5.5"></path></svg>
+            </button>
             <p class="privacy-note">入力内容はブラウザに保存されません</p>
           </form>
         </section>
 
         <section id="result" class="content-section result-section-shell" aria-live="polite" aria-labelledby="result-title">
-          <div class="section-title-row"><div><p class="section-kicker">RESULT</p><h2 id="result-title">比較結果</h2></div><span class="step-label">STEP 2</span></div>
-          <div class="empty-result"><span aria-hidden="true">↗</span><strong>条件を入力して比較してみましょう</strong><p>選んだカードやモバイル決済の還元率を比較します。</p><small>表示内容が違う場合は、結果から報告できます。</small></div>
+          <div class="section-title-row"><div><p class="section-kicker">STEP 2</p><h2 id="result-title">比較結果</h2></div></div>
+          <div class="empty-result">
+            <span class="empty-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 19V6.5A1.5 1.5 0 0 1 5.5 5H14l6 5.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"></path><path d="M13.5 5v6H20"></path><path d="M8 15.5h7"></path></svg>
+            </span>
+            <strong>まだ伝票は出ていません</strong>
+            <p>金額と支払い方法を選ぶと、還元率を並べた比較表をここに出します。</p>
+            <small>数字が実際と違うときは、結果から報告できます。</small>
+          </div>
         </section>
 
         <button type="button" class="catalogue-link-card" data-tab-target="information">
           <span><strong>サービス・ポイント情報を見る</strong><small>支払い方法、還元率、ポイントの使い方をまとめて検索</small></span>
-          <span aria-hidden="true">→</span>
+          <svg class="link-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"></path><path d="m13 6.5 6 5.5-6 5.5"></path></svg>
         </button>
 
       </section>
 
-      <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" role="tabpanel" aria-labelledby="tab-button-wallet" tabindex="-1" hidden>
-        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> デモ版</span></header>
-        <aside class="inline-disclosure"><strong>このウォレットは端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
+      <section id="tab-expiry" class="tab-panel" data-tab-panel="expiry" role="tabpanel" aria-labelledby="tab-button-expiry" tabindex="-1" hidden>
+        <header class="app-header">
+          <div class="app-title">
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>期限</h1></div>
+          </div>
+          <div class="header-tools">
+            <span class="demo-chip">デモ版</span>
+            <button type="button" class="icon-button" data-tab-target="settings" aria-label="履歴と設定を開く">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="1.6"></circle></svg>
+            </button>
+          </div>
+        </header>
 
-        <section class="wallet-overview"><small>情報を収録しているサービス</small><strong id="wallet-count">—</strong><span>種類</span><p id="wallet-route-summary" class="helper">サービス情報を読み込んでいます</p></section>
+        <aside class="inline-disclosure">
+          <strong>残高と失効日はデモ用の仮の数字です</strong>
+          <span>実際の残高と期限は各サービスの公式アプリでご確認ください。期限の考え方だけを先に試せる画面です。</span>
+        </aside>
+
+        <section class="slip" aria-labelledby="expiry-slip-title">
+          <div class="slip-head">
+            <h2 id="expiry-slip-title">失効の見通し</h2>
+            <span class="slip-stamp" id="expiry-asof">—</span>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">いちばん近い失効</span>
+            <strong class="slip-figure" id="expiry-soonest">—</strong>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">60日以内に失効する分</span>
+            <span class="slip-value" id="expiry-at-risk">—</span>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">うち、延ばせる分</span>
+            <span class="slip-value is-accent" id="expiry-savable">—</span>
+          </div>
+          <p class="helper" id="expiry-detail"></p>
+        </section>
+
+        <div id="expiry-action" class="callout-slot" aria-live="polite"></div>
+
+        <section class="wallet-group" aria-labelledby="expiry-list-title">
+          <div class="group-heading"><h2 id="expiry-list-title">失効が近い順</h2><span>8サービス</span></div>
+          <div id="expiry-list" class="expiry-list" aria-live="polite"><p class="helper">期限の情報を読み込んでいます…</p></div>
+        </section>
+
+        <section class="wallet-group" aria-labelledby="expiry-shop-title">
+          <div class="group-heading"><h2 id="expiry-shop-title">期限が延びるお店</h2><span>寄り道の目安</span></div>
+          <p class="helper">1ポイントでも動かせば期限が延びるサービスは、行きやすいお店にまとめられます。同じ店で「使い切るだけ」のポイントも一緒に出しています。</p>
+          <div id="expiry-shops" class="shop-board" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" role="tabpanel" aria-labelledby="tab-button-wallet" tabindex="-1" hidden>
+        <header class="app-header">
+          <div class="app-title">
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>手持ち</h1></div>
+          </div>
+          <div class="header-tools">
+            <span class="demo-chip">デモ版</span>
+            <button type="button" class="icon-button" data-tab-target="settings" aria-label="履歴と設定を開く">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="1.6"></circle></svg>
+            </button>
+          </div>
+        </header>
+        <aside class="inline-disclosure"><strong>この一覧は端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
+
+        <section class="slip" aria-labelledby="wallet-slip-title">
+          <div class="slip-head">
+            <h2 id="wallet-slip-title">収録しているサービス</h2>
+            <span class="slip-stamp">比較と試算に使用</span>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">ポイント・決済・カード</span>
+            <strong class="slip-figure" id="wallet-count">—</strong>
+          </div>
+          <p id="wallet-route-summary" class="helper">サービス情報を読み込んでいます</p>
+        </section>
 
         <section class="wallet-group" aria-labelledby="wallet-payment-title">
           <div class="group-heading"><h2 id="wallet-payment-title">対応サービス一覧</h2><button type="button" data-tab-target="information">詳しい情報</button></div>
-          <p class="helper">収録済みのポイント、モバイル決済、クレジットカードを表示します。現在の保有状況は保存しません。</p>
+          <p class="helper">収録済みのポイント、モバイル決済、クレジットカードです。現在の保有状況は保存しません。</p>
           <div id="p0-wallet-catalogue" class="p0-wallet-catalogue" aria-live="polite"><p class="helper">サービス一覧を読み込んでいます…</p></div>
         </section>
 
         <section class="wallet-group" aria-labelledby="wallet-program-title">
-          <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイルの使い方</h2><span>使い方を試算</span></div>
+          <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイルの使い方</h2><span>交換の試算</span></div>
           <form id="point-spend-form" class="point-spend-card">
             <p>保有ポイントから、明示された固定比率だけを使って交換ルートを比較します。残高は保存されません。</p>
             <div class="point-spend-grid">
@@ -131,37 +232,89 @@
               <label>優先すること<select id="point-spend-objective"><option value="maximize_target">受取数を最大化</option><option value="fastest">所要日数を優先</option><option value="preserve_expiring">期限がある残高を優先</option></select></label>
             </div>
             <div id="point-spend-conditions" class="point-spend-conditions"></div>
-            <button id="point-spend-submit" type="submit" class="primary wide">おすすめの使い方を計算</button>
-            <p class="helper">収録した交換レートによる試算です。交換実行前に提供元の条件を確認してください。</p>
+            <button id="point-spend-submit" type="submit" class="primary wide">交換ルートを試算する</button>
+            <p class="helper">収録した交換レートによる試算です。交換する前に提供元の条件を確認してください。</p>
           </form>
           <div id="point-spend-result" class="point-spend-result" aria-live="polite"><p class="helper">ポイント情報を読み込んでいます…</p></div>
         </section>
       </section>
 
-      <section id="tab-history" class="tab-panel" data-tab-panel="history" role="tabpanel" aria-labelledby="tab-button-history" tabindex="-1" hidden>
-        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>SESSION ACTIVITY</small><h1>履歴</h1></div></div><span class="demo-chip"><i></i> セッションのみ</span></header>
-        <section class="history-summary"><div><small>このセッションの比較</small><strong id="history-count">0</strong></div><span>ページを閉じると消えます</span></section>
-        <section class="wallet-group"><div class="group-heading"><h2>比較履歴</h2><span>新しい順</span></div><div id="session-history" class="history-list"><div class="empty-state"><span aria-hidden="true">↗</span><strong>まだ比較履歴はありません</strong><p>ホームで支払い方を比較すると、ここに一時表示されます。</p><button type="button" class="secondary" data-tab-target="home">比較をはじめる</button></div></div></section>
+      <section id="tab-history" class="tab-panel" data-tab-panel="history" role="region" aria-label="このセッションの比較の控え" tabindex="-1" hidden>
+        <header class="app-header">
+          <div class="app-title">
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>控え</h1></div>
+          </div>
+          <div class="header-tools">
+            <span class="demo-chip">セッションのみ</span>
+            <button type="button" class="home-link" data-tab-target="settings">戻る</button>
+          </div>
+        </header>
+        <section class="slip" aria-labelledby="history-slip-title">
+          <div class="slip-head">
+            <h2 id="history-slip-title">このセッションの比較</h2>
+            <span class="slip-stamp">閉じると消えます</span>
+          </div>
+          <div class="slip-row">
+            <span class="slip-key">残っている控え</span>
+            <strong class="slip-figure" id="history-count">0</strong>
+          </div>
+        </section>
+        <section class="wallet-group">
+          <div class="group-heading"><h2>比較の控え</h2><span>新しい順</span></div>
+          <div id="session-history" class="history-list">
+            <div class="empty-state">
+              <span class="empty-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 19V6.5A1.5 1.5 0 0 1 5.5 5H14l6 5.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"></path><path d="M13.5 5v6H20"></path><path d="M8 15.5h7"></path></svg>
+              </span>
+              <strong>控えはまだありません</strong>
+              <p>ホームで支払い方を比べると、この画面に控えが一時的に積まれます。</p>
+              <button type="button" class="secondary" data-tab-target="home">比較をはじめる</button>
+            </div>
+          </div>
+        </section>
       </section>
 
-      <section id="tab-settings" class="tab-panel" data-tab-panel="settings" role="tabpanel" aria-labelledby="tab-button-settings" tabindex="-1" hidden>
-        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 保存なし</span></header>
-        <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>通知やプライバシーに関する設定を確認できます。</p></section>
+      <section id="tab-settings" class="tab-panel" data-tab-panel="settings" role="region" aria-label="取り扱いとプライバシー" tabindex="-1" hidden>
+        <header class="app-header">
+          <div class="app-title">
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>取り扱い</h1></div>
+          </div>
+          <span class="demo-chip">保存なし</span>
+        </header>
 
-        <section class="settings-group" aria-labelledby="notifications-title">
-          <h2 id="notifications-title">通知設定</h2>
-          <div class="settings-card disabled-settings"><div class="settings-row"><span><strong>キャンペーン速報</strong><small>還元率アップなどのお得な情報</small></span><em>未提供</em></div><div class="settings-row"><span><strong>有効期限アラート</strong><small>失効が近づいたポイントの通知</small></span><em>未提供</em></div></div>
-        </section>
+        <button type="button" class="catalogue-link-card" data-tab-target="history">
+          <span><strong>このセッションの比較の控え</strong><small>ページを閉じるまでの比較履歴を確認します</small></span>
+          <svg class="link-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13"></path><path d="m13 6.5 6 5.5-6 5.5"></path></svg>
+        </button>
 
         <section class="settings-group" aria-labelledby="privacy-title">
-          <h2 id="privacy-title">プライバシーとセキュリティ</h2>
-          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>比較に使う情報</strong><small>現在収録しているサービス</small></span><em class="safe-state">収録情報</em></div><div class="settings-row"><span><strong>カタログ表示</strong><small>支払い方法とポイント</small></span><em>まとめて表示</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
+          <h2 id="privacy-title">プライバシー</h2>
+          <div class="settings-card">
+            <div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・控え・設定</small></span><em class="safe-state">使用しない</em></div>
+            <div class="settings-row"><span><strong>比較に使う情報</strong><small>現在収録しているサービス</small></span><em class="safe-state">収録情報</em></div>
+            <div class="settings-row"><span><strong>カタログ表示</strong><small>支払い方法とポイント</small></span><em>まとめて表示</em></div>
+          </div>
+        </section>
+
+        <section class="settings-group" aria-labelledby="notifications-title">
+          <h2 id="notifications-title">これから作るもの</h2>
+          <div class="settings-card disabled-settings">
+            <div class="settings-row"><span><strong>失効アラート</strong><small>期限が近いポイントの通知</small></span><em>準備中</em></div>
+            <div class="settings-row"><span><strong>還元率アップの速報</strong><small>キャンペーン開始のお知らせ</small></span><em>準備中</em></div>
+            <div class="settings-row"><span><strong>残高の自動取り込み</strong><small>各サービスとの連携</small></span><em>準備中</em></div>
+            <div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>準備中</em></div>
+          </div>
         </section>
       </section>
 
       <section id="tab-information" class="tab-panel" data-tab-panel="information" role="tabpanel" aria-labelledby="tab-button-information" tabindex="-1" hidden>
         <header class="app-header">
-          <div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>ROUTE &amp; POINT CATALOGUE</small><h1>カタログ</h1></div></div>
+          <div class="app-title">
+            <span class="brand-seal" aria-hidden="true">道</span>
+            <div><small>ポイミチ</small><h1>カタログ</h1></div>
+          </div>
           <button type="button" class="home-link" data-tab-target="home">ホーム</button>
         </header>
 
@@ -169,7 +322,7 @@
           <div class="section-title-row">
             <div><p class="section-kicker">SERVICE GUIDE</p><h2 id="information-title">サービス・ポイント情報</h2></div>
           </div>
-          <p>各サービスの還元率、使い方、対象条件、実施中のキャンペーンを一つにまとめて表示します。</p>
+          <p>各サービスの還元率、使い方、対象条件、実施中の企画を一つにまとめて表示します。</p>
         </section>
 
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
@@ -182,17 +335,28 @@
         </section>
 
         <section class="information-list-section" aria-labelledby="information-list-title">
-          <div class="group-heading"><h2 id="information-list-title">サービス一覧</h2><button type="button" id="information-reload">更新</button></div>
+          <div class="group-heading"><h2 id="information-list-title">サービス一覧</h2><button type="button" id="information-reload">読み直す</button></div>
           <div id="information-facts" class="information-list" aria-live="polite"><p class="helper">情報を読み込んでいます…</p></div>
         </section>
       </section>
 
       <nav class="bottom-nav" aria-label="メインナビゲーション" role="tablist">
-        <button id="tab-button-home" type="button" role="tab" class="is-active" data-tab-target="home" aria-controls="tab-home" aria-selected="true" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8"></path><path d="M5.5 10v10h13V10M9 20v-6h6v6"></path></svg><span>ホーム</span></button>
-        <button id="tab-button-wallet" type="button" role="tab" data-tab-target="wallet" aria-controls="tab-wallet" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h15v13H4z"></path><path d="M7 6.5V4h10v2.5M14 11h7v5h-7z"></path><circle cx="16.5" cy="13.5" r=".7"></circle></svg><span>ウォレット</span></button>
-        <button id="tab-button-history" type="button" role="tab" data-tab-target="history" aria-controls="tab-history" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg><span>履歴</span></button>
-        <button id="tab-button-information" type="button" role="tab" data-tab-target="information" aria-controls="tab-information" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7.5v.1"></path></svg><span>カタログ</span></button>
-        <button id="tab-button-settings" type="button" role="tab" data-tab-target="settings" aria-controls="tab-settings" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 13.5V10.5l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7-.7-2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7-1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7z"></path></svg><span>設定</span></button>
+        <button id="tab-button-home" type="button" role="tab" class="is-active" data-tab-target="home" aria-controls="tab-home" aria-selected="true" tabindex="0">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12v15.8l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z"></path><path d="M9 8h6M9 11.5h6"></path></svg>
+          <span>会計</span>
+        </button>
+        <button id="tab-button-expiry" type="button" role="tab" data-tab-target="expiry" aria-controls="tab-expiry" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10M7 20.5h10"></path><path d="M7.5 3.5c0 4 4.5 5.5 4.5 8.5s-4.5 4.5-4.5 8.5"></path><path d="M16.5 3.5c0 4-4.5 5.5-4.5 8.5s4.5 4.5 4.5 8.5"></path></svg>
+          <span>期限</span>
+        </button>
+        <button id="tab-button-wallet" type="button" role="tab" data-tab-target="wallet" aria-controls="tab-wallet" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7.5" width="14" height="10" rx="1.5"></rect><path d="M7 7.5V5.5h14v10h-4"></path><path d="M6.5 12h4"></path></svg>
+          <span>手持ち</span>
+        </button>
+        <button id="tab-button-information" type="button" role="tab" data-tab-target="information" aria-controls="tab-information" aria-selected="false" tabindex="-1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 4.5h9a2 2 0 0 1 2 2v13H6.5a2 2 0 0 1-2-2z"></path><path d="M15.5 6.5H19v13H8"></path><path d="M8 9h4M8 12.5h4"></path></svg>
+          <span>カタログ</span>
+        </button>
       </nav>
     </main>
     <script src="/app.js" defer></script>

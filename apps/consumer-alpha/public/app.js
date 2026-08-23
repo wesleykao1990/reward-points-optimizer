@@ -54,12 +54,57 @@
     return frame;
   };
 
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+  // One outline set, 24x24 grid, 1.6px stroke, round caps. Stroke colour and
+  // width live in the stylesheet so every glyph stays on the same system.
+  const iconPaths = Object.freeze({
+    arrow: ["M5 12h13", "m13 6.5 6 5.5-6 5.5"],
+    check: ["m5.5 12.4 4.2 4.2 8.8-9.2"],
+    slip: [
+      "M6 3.5h12v15.8l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z",
+      "M9 8h6",
+      "M9 11.5h6",
+    ],
+    hourglass: [
+      "M7 3.5h10",
+      "M7 20.5h10",
+      "M7.5 3.5c0 4 4.5 5.5 4.5 8.5s-4.5 4.5-4.5 8.5",
+      "M16.5 3.5c0 4-4.5 5.5-4.5 8.5s4.5 4.5 4.5 8.5",
+    ],
+    storefront: [
+      "M4 9.5 5.5 5h13L20 9.5",
+      "M4.5 9.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z",
+      "M9.5 20v-5.5h5V20",
+    ],
+  });
+
+  const icon = (name, className) => {
+    const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("class", className ? `glyph ${className}` : "glyph");
+    (iconPaths[name] || []).forEach((definition) => {
+      const path = document.createElementNS(SVG_NAMESPACE, "path");
+      path.setAttribute("d", definition);
+      svg.appendChild(path);
+    });
+    return svg;
+  };
+
   const clear = (element) => {
     while (element.firstChild) element.removeChild(element.firstChild);
   };
 
   const activateTab = (tabName) => {
-    const validTabs = ["home", "wallet", "history", "information", "settings"];
+    const validTabs = [
+      "home",
+      "expiry",
+      "wallet",
+      "history",
+      "information",
+      "settings",
+    ];
     if (!validTabs.includes(tabName)) return;
     document.querySelectorAll("[data-tab-panel]").forEach((panel) => {
       const active = panel.dataset.tabPanel === tabName;
@@ -364,7 +409,9 @@
     const history = document.getElementById("session-history");
     if (sessionHistoryCount === 0) clear(history);
     const item = node("div", "history-item");
-    item.appendChild(text("span", "↗", "history-icon"));
+    const marker = node("span", "history-icon");
+    marker.appendChild(icon("slip"));
+    item.appendChild(marker);
     const copy = node("div");
     copy.appendChild(text("strong", String(shown[0].label || "比較ルート")));
     copy.appendChild(
@@ -1660,7 +1707,9 @@
           copy.appendChild(text("strong", item.label));
           label.appendChild(checkbox);
           label.appendChild(copy);
-          label.appendChild(text("span", "✓", "p0-product-check"));
+          const tick = node("span", "p0-product-check");
+          tick.appendChild(icon("check"));
+          label.appendChild(tick);
           container.appendChild(label);
         });
     });
@@ -1843,6 +1892,419 @@
       }
     });
 
+  // ---------------------------------------------------------------------
+  // Expiry advisor.
+  //
+  // No balance, expiry, or account backend exists yet, so this screen runs on
+  // a checked-in demo dataset. Days are stored relative to "today" rather than
+  // as absolute dates so the screen never renders a deadline in the past. The
+  // panel labels itself as demo data in the markup; nothing here is a
+  // published rule and nothing is sent anywhere.
+  // ---------------------------------------------------------------------
+  const expiryDemoPrograms = Object.freeze([
+    Object.freeze({
+      family_id: "point.ponta",
+      label: "Pontaポイント",
+      balance: 2184,
+      days_remaining: 18,
+      policy: "extendable",
+      rule: "最後に貯めた日か使った日から1年間。1ポイントでも動かせば、その日からまた1年になります。",
+      action: "ローソンで1ポイント使う",
+      outcome: "残り2,184ポイントの期限が、その日から1年先に動きます",
+      shops: Object.freeze([
+        "ローソン",
+        "ゲオ",
+        "ケンタッキーフライドチキン",
+        "シェルパワー",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.d",
+      label: "dポイント（通常）",
+      balance: 3268,
+      days_remaining: 42,
+      policy: "fixed",
+      rule: "貯めた月から48か月後の月末で失効します。使っても貯めても期限は動きません。",
+      action: "マクドナルドで使い切る",
+      outcome: "期限は延ばせないので、失効前に使い切るのが唯一の手です",
+      shops: Object.freeze([
+        "ローソン",
+        "マクドナルド",
+        "マツモトキヨシ",
+        "ドトールコーヒーショップ",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.v",
+      label: "Vポイント",
+      balance: 860,
+      days_remaining: 57,
+      policy: "extendable",
+      rule: "最後に残高が動いた日から1年間。貯めても使っても、その日を起点に1年になります。",
+      action: "ファミリーマートで1ポイント使う",
+      outcome: "残り860ポイントの期限が、その日から1年先に動きます",
+      shops: Object.freeze([
+        "ファミリーマート",
+        "ウエルシア薬局",
+        "ドトールコーヒーショップ",
+        "蔦屋書店",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.rakuten",
+      label: "楽天ポイント（通常）",
+      balance: 5730,
+      days_remaining: 94,
+      policy: "extendable",
+      rule: "最後に貯めた月を起点に約1年。新しく貯めるたびに、そこから1年先まで延びます。",
+      action: "楽天ペイで支払って1ポイント貯める",
+      outcome: "残り5,730ポイントの期限が、その月から1年先に動きます",
+      shops: Object.freeze([
+        "楽天市場",
+        "ミスタードーナツ",
+        "大丸松坂屋",
+        "楽天ペイの加盟店",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.jre",
+      label: "JRE POINT",
+      balance: 1405,
+      days_remaining: 126,
+      policy: "extendable",
+      rule: "最後に貯めた日か使った日から2年間。残高が動くたびに、そこから2年になります。",
+      action: "NewDaysでSuica払いにして貯める",
+      outcome: "残り1,405ポイントの期限が、その日から2年先に動きます",
+      shops: Object.freeze(["NewDays", "アトレ", "ルミネ", "JR東日本の駅ビル"]),
+    }),
+    Object.freeze({
+      family_id: "point.waon",
+      label: "WAON POINT",
+      balance: 940,
+      days_remaining: 220,
+      policy: "fixed",
+      rule: "貯めた年度の翌年度末までが期限です。使っても貯めても、その締め切りは動きません。",
+      action: "お客さま感謝デーにまとめて使う",
+      outcome: "期限は延ばせないので、締め切り前に使い切る計画にします",
+      shops: Object.freeze([
+        "イオン",
+        "まいばすけっと",
+        "ミニストップ",
+        "イオンモールの専門店",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.nanaco",
+      label: "nanacoポイント",
+      balance: 612,
+      days_remaining: 251,
+      policy: "fixed",
+      rule: "前の年度に貯めた分は、今の年度の終わりで失効します。期限そのものは延ばせません。",
+      action: "電子マネーに交換してセブン‐イレブンで使う",
+      outcome: "期限は延ばせないので、交換して使い切るのが確実です",
+      shops: Object.freeze([
+        "セブン‐イレブン",
+        "イトーヨーカドー",
+        "デニーズ",
+        "そごう・西武",
+      ]),
+    }),
+    Object.freeze({
+      family_id: "point.paypay",
+      label: "PayPayポイント",
+      balance: 1076,
+      days_remaining: null,
+      policy: "none",
+      rule: "有効期限はありません。急いで使う必要はないので、還元率の高い場面まで置いておけます。",
+      action: "",
+      outcome: "",
+      shops: Object.freeze([]),
+    }),
+  ]);
+
+  const expiryPolicyLabels = Object.freeze({
+    extendable: "延ばせます",
+    fixed: "延長できません",
+    none: "期限なし",
+  });
+
+  const expiryMoveLabels = Object.freeze({
+    extendable: "期限を延ばす一手",
+    fixed: "使い切る一手",
+  });
+
+  const AT_RISK_DAYS = 60;
+
+  const formatPoints = (value) => `${value.toLocaleString("ja-JP")}ポイント`;
+
+  const expiryDateLabel = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const runwayBand = (days) => {
+    if (days === null) return "5";
+    if (days <= 30) return "1";
+    if (days <= AT_RISK_DAYS) return "2";
+    if (days <= 120) return "3";
+    return "4";
+  };
+
+  const atRiskPrograms = () =>
+    expiryDemoPrograms.filter(
+      (program) =>
+        program.days_remaining !== null &&
+        program.days_remaining <= AT_RISK_DAYS,
+    );
+
+  const renderExpirySummary = () => {
+    const dated = expiryDemoPrograms.filter(
+      (program) => program.days_remaining !== null,
+    );
+    const soonest = dated.reduce((best, program) =>
+      program.days_remaining < best.days_remaining ? program : best,
+    );
+    const atRisk = atRiskPrograms();
+    const atRiskTotal = atRisk.reduce(
+      (total, program) => total + program.balance,
+      0,
+    );
+    const savableTotal = atRisk
+      .filter((program) => program.policy === "extendable")
+      .reduce((total, program) => total + program.balance, 0);
+    document.getElementById("expiry-asof").textContent =
+      `${expiryDateLabel(0)}時点`;
+    document.getElementById("expiry-soonest").textContent =
+      `あと${soonest.days_remaining}日`;
+    document.getElementById("expiry-at-risk").textContent =
+      formatPoints(atRiskTotal);
+    document.getElementById("expiry-savable").textContent =
+      formatPoints(savableTotal);
+    const extendable = atRisk
+      .filter((program) => program.policy === "extendable")
+      .map((program) => program.label);
+    document.getElementById("expiry-detail").textContent = extendable.length
+      ? `対象は${atRisk.length}サービス。${extendable.join("と")}は、お店で1ポイント動かすだけで期限が延びます。`
+      : `対象は${atRisk.length}サービス。いずれも期限は延ばせないため、失効前に使い切る計画にします。`;
+  };
+
+  const expiryActionCallout = (program, target) => {
+    const callout = node("button", "action-callout");
+    callout.type = "button";
+    callout.dataset.tabTarget = target;
+    const mark = node("span", "callout-mark");
+    mark.appendChild(icon("hourglass"));
+    callout.appendChild(mark);
+    const copy = node("span", "callout-copy");
+    copy.appendChild(text("small", "いま効く一手"));
+    copy.appendChild(text("strong", program.action));
+    copy.appendChild(
+      text(
+        "span",
+        `${program.label} ${formatPoints(program.balance)}が、あと${program.days_remaining}日で失効します。${program.outcome}。`,
+      ),
+    );
+    callout.appendChild(copy);
+    const go = node("span", "callout-go");
+    go.appendChild(icon("arrow"));
+    callout.appendChild(go);
+    callout.addEventListener("click", () => {
+      activateTab(target);
+    });
+    return callout;
+  };
+
+  const renderExpiryCallouts = () => {
+    const urgent = atRiskPrograms()
+      .filter((program) => program.policy === "extendable")
+      .sort((left, right) => left.days_remaining - right.days_remaining)[0];
+    const home = document.getElementById("home-expiry-callout");
+    const panel = document.getElementById("expiry-action");
+    clear(home);
+    clear(panel);
+    if (!urgent) return;
+    home.appendChild(expiryActionCallout(urgent, "expiry"));
+    panel.appendChild(expiryActionCallout(urgent, "expiry"));
+  };
+
+  const catalogueLookup = (label) => {
+    const search = document.getElementById("information-search");
+    search.value = label.replace(/（.*）$/u, "").replace("ポイント", "");
+    document.getElementById("information-family-filter").value = "";
+    activateTab("information");
+  };
+
+  const renderExpiryCard = (list, program) => {
+    const card = node("article", "expiry-card");
+    card.dataset.policy = program.policy;
+
+    const head = node("div", "expiry-card-head");
+    head.appendChild(paymentLogo(program.family_id));
+    const identity = node("div", "expiry-identity");
+    identity.appendChild(text("strong", program.label));
+    identity.appendChild(
+      text("small", `残高 ${formatPoints(program.balance)}`),
+    );
+    head.appendChild(identity);
+    const countdown = node("div", "expiry-countdown");
+    if (program.days_remaining === null) {
+      countdown.appendChild(text("strong", "—"));
+      countdown.appendChild(text("small", "期限なし"));
+    } else {
+      countdown.appendChild(text("strong", String(program.days_remaining)));
+      countdown.appendChild(text("small", "日"));
+    }
+    head.appendChild(countdown);
+    card.appendChild(head);
+
+    const runway = node("div", "expiry-runway");
+    runway.dataset.band = runwayBand(program.days_remaining);
+    runway.appendChild(node("i"));
+    card.appendChild(runway);
+
+    const meta = node("div", "expiry-meta");
+    meta.appendChild(
+      text(
+        "span",
+        program.days_remaining === null
+          ? "失効日なし"
+          : `${expiryDateLabel(program.days_remaining)}まで`,
+      ),
+    );
+    meta.appendChild(
+      text("em", expiryPolicyLabels[program.policy], "expiry-verdict"),
+    );
+    card.appendChild(meta);
+
+    if (program.policy !== "none") {
+      const move = node("div", "expiry-move");
+      move.appendChild(text("h4", expiryMoveLabels[program.policy]));
+      move.appendChild(text("strong", program.action));
+      move.appendChild(text("p", program.outcome));
+      const shops = node("ul", "expiry-shops");
+      program.shops.forEach((shop) => {
+        const entry = node("li");
+        entry.appendChild(icon("storefront"));
+        entry.appendChild(text("span", shop));
+        shops.appendChild(entry);
+      });
+      move.appendChild(shops);
+      card.appendChild(move);
+    }
+
+    card.appendChild(text("p", program.rule, "expiry-rule"));
+
+    const actions = node("div", "route-actions");
+    const lookup = node("button", "secondary");
+    lookup.type = "button";
+    lookup.textContent = "カタログで収録情報を見る";
+    lookup.addEventListener("click", () => {
+      catalogueLookup(program.label);
+    });
+    actions.appendChild(lookup);
+    card.appendChild(actions);
+
+    list.appendChild(card);
+  };
+
+  const renderExpiryList = () => {
+    const list = document.getElementById("expiry-list");
+    clear(list);
+    [...expiryDemoPrograms]
+      .sort((left, right) => {
+        if (left.days_remaining === null) return 1;
+        if (right.days_remaining === null) return -1;
+        return left.days_remaining - right.days_remaining;
+      })
+      .forEach((program) => {
+        renderExpiryCard(list, program);
+      });
+  };
+
+  const shopBoardEntries = () => {
+    const board = new Map();
+    expiryDemoPrograms.forEach((program) => {
+      if (program.policy === "none") return;
+      program.shops.forEach((shop) => {
+        if (!board.has(shop)) board.set(shop, []);
+        board.get(shop).push(program);
+      });
+    });
+    return [...board.entries()]
+      .map(([shop, programs]) => ({
+        shop,
+        programs: programs.sort(
+          (left, right) => left.days_remaining - right.days_remaining,
+        ),
+        extendable: programs.filter(
+          (program) => program.policy === "extendable",
+        ).length,
+        soonest: Math.min(...programs.map((program) => program.days_remaining)),
+      }))
+      .sort((left, right) => {
+        if (left.programs.length !== right.programs.length)
+          return right.programs.length - left.programs.length;
+        if (left.extendable !== right.extendable)
+          return right.extendable - left.extendable;
+        return left.soonest - right.soonest;
+      })
+      .slice(0, 6);
+  };
+
+  const renderExpiryShops = () => {
+    const container = document.getElementById("expiry-shops");
+    clear(container);
+    shopBoardEntries().forEach((entry) => {
+      const card = node("article", "shop-card");
+      const head = node("div", "shop-head");
+      const name = node("span", "shop-name");
+      name.appendChild(icon("storefront"));
+      name.appendChild(text("strong", entry.shop));
+      head.appendChild(name);
+      head.appendChild(
+        text(
+          "span",
+          entry.extendable
+            ? `${entry.extendable}件の期限が延びます`
+            : "使い切りに向くお店",
+          "shop-count",
+        ),
+      );
+      card.appendChild(head);
+      const effects = node("ul", "shop-effects");
+      entry.programs.forEach((program) => {
+        const item = node("li");
+        item.dataset.policy = program.policy;
+        item.appendChild(
+          text(
+            "span",
+            program.policy === "extendable" ? "延長" : "使い切り",
+            "effect-tag",
+          ),
+        );
+        item.appendChild(text("span", program.label, "effect-name"));
+        item.appendChild(
+          text("small", `あと${program.days_remaining}日`, "effect-days"),
+        );
+        effects.appendChild(item);
+      });
+      card.appendChild(effects);
+      container.appendChild(card);
+    });
+  };
+
+  const renderExpiryAdvisor = () => {
+    renderExpirySummary();
+    renderExpiryCallouts();
+    renderExpiryList();
+    renderExpiryShops();
+  };
+
   const instrumentInputs = document.querySelectorAll(
     'input[name="instrument"]',
   );
@@ -1869,7 +2331,7 @@
       return kind === "credit_card" || kind === "mobile_pay";
     });
     document.getElementById("summary-instruments").textContent =
-      `支払い方法 ${selectedPayments.length}つ`;
+      `${selectedPayments.length}件を選択中`;
     document.getElementById("summary-meter").dataset.count = String(
       checked.length,
     );
@@ -1888,7 +2350,7 @@
       activateTab(button.dataset.tabTarget);
     });
   });
-  const tabOrder = ["home", "wallet", "history", "information", "settings"];
+  const tabOrder = ["home", "expiry", "wallet", "information"];
   const tabButtons = tabOrder
     .map((tab) =>
       document.querySelector(`.bottom-nav [data-tab-target="${tab}"]`),
@@ -1996,6 +2458,7 @@
       }
     });
 
+  renderExpiryAdvisor();
   void loadExperimentalRules();
   void loadPointSpendOptions();
 })();
