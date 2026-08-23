@@ -97,6 +97,65 @@
     return svg;
   };
 
+  // ---------------------------------------------------------------------
+  // Motion helpers.
+  //
+  // Every reveal here is opt-in: the resting DOM is already the finished
+  // state, and these functions only add the class that plays the arrival.
+  // If script fails, or the visitor asked for reduced motion, the content
+  // is simply there.
+  // ---------------------------------------------------------------------
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Stagger index travels as a custom property so the cascade order lives
+  // in the markup rather than in a pile of nth-child rules.
+  const stagger = (elements, className = "reveal") => {
+    if (reducedMotion()) return;
+    [...elements].forEach((element, index) => {
+      element.style.setProperty("--i", String(index));
+      element.classList.remove(className);
+      // Force a reflow so re-rendered lists replay rather than sit still.
+      void element.offsetWidth;
+      element.classList.add(className);
+    });
+  };
+
+  // Figures count rather than appear. The same easing as the wipes, so the
+  // number settles on the beat the panel does.
+  const snapEase = (t) => {
+    const u = 1 - t;
+    return 3 * u * u * t * 0.05 + 3 * u * t * t * 0.97 + t * t * t;
+  };
+
+  const countTo = (element, target, format, duration = 900) => {
+    if (reducedMotion() || target <= 0) {
+      element.textContent = format(target);
+      return;
+    }
+    const started = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - started) / duration);
+      element.textContent = format(Math.round(target * snapEase(progress)));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const dropCurtain = () => {
+    if (reducedMotion()) return;
+    const curtain = node("div", "curtain");
+    curtain.setAttribute("aria-hidden", "true");
+    curtain.appendChild(node("i"));
+    curtain.appendChild(node("i"));
+    document.body.appendChild(curtain);
+    const remove = () => curtain.remove();
+    curtain.addEventListener("animationend", remove, { once: true });
+    // Belt and braces: never let a stalled animation leave a sheet over
+    // the interface.
+    window.setTimeout(remove, 1400);
+  };
+
   const clear = (element) => {
     while (element.firstChild) element.removeChild(element.firstChild);
   };
@@ -109,6 +168,11 @@
       panel.hidden = !active;
       panel.classList.toggle("is-active", active);
       panel.setAttribute("aria-hidden", String(!active));
+      panel.classList.remove("is-entering");
+      if (active && !reducedMotion()) {
+        void panel.offsetWidth;
+        panel.classList.add("is-entering");
+      }
     });
     document
       .querySelectorAll(".bottom-nav [data-tab-target]")
@@ -470,6 +534,7 @@
           "selected-products-summary",
         ),
       );
+    if (!reducedMotion()) hero.classList.add("is-revealing");
     result.appendChild(hero);
     const intro = node("p", "", "unified-disclosure");
     intro.textContent =
@@ -479,6 +544,7 @@
     routes.forEach((route) => {
       renderUnifiedRoute(list, route);
     });
+    stagger(list.children);
     result.appendChild(list);
     recordUnifiedHistory(routes);
     const shownRoutes = routes.filter(
@@ -2159,8 +2225,8 @@
     );
 
     document.getElementById("balance-asof").textContent = `${dateLabel(0)}時点`;
-    document.getElementById("balance-total").textContent = yen(total);
-    document.getElementById("balance-at-risk").textContent = yen(atRiskValue);
+    countTo(document.getElementById("balance-total"), total, yen);
+    countTo(document.getElementById("balance-at-risk"), atRiskValue, yen, 700);
 
     const chips = document.getElementById("balance-chips");
     clear(chips);
@@ -2173,6 +2239,7 @@
     if (savableValue)
       addChip("ok", `${yen(savableValue)} は行動すれば延長できます`);
     if (estimated.length) addChip("warn", `${estimated.length}件が推定値`);
+    stagger(chips.children);
 
     document.getElementById("lot-list-count").textContent =
       `${walletDemo.programs.length}プログラム・${entries.length}ロット`;
@@ -2244,6 +2311,14 @@
       });
       container.appendChild(bar);
     });
+    if (!reducedMotion()) {
+      [...container.children].forEach((bar, index) => {
+        bar.style.setProperty("--i", String(index));
+      });
+      container.classList.remove("is-drawing");
+      void container.offsetWidth;
+      container.classList.add("is-drawing");
+    }
   };
 
   // Tapping a runway bar or a lot's action jumps to 使う with that lot loaded.
@@ -2341,8 +2416,9 @@
     card.appendChild(head);
 
     const body = node("div", "lot-body");
+    const inner = node("div", "lot-body-inner");
     program.lots.forEach((lot) => {
-      renderLotRow(body, lot);
+      renderLotRow(inner, lot);
     });
 
     if (program.move.policy !== "none") {
@@ -2362,8 +2438,8 @@
         focusLotForSpending(program, target);
       });
       move.appendChild(go);
-      body.appendChild(move);
-      body.appendChild(text("p", program.move.detail, "lot-note"));
+      inner.appendChild(move);
+      inner.appendChild(text("p", program.move.detail, "lot-note"));
     }
 
     const source = node("div", "lot-source");
@@ -2383,8 +2459,9 @@
       activateTab("information");
     });
     source.appendChild(lookup);
-    body.appendChild(source);
+    inner.appendChild(source);
 
+    body.appendChild(inner);
     card.appendChild(body);
     list.appendChild(card);
   };
@@ -2405,6 +2482,7 @@
       .forEach((program) => {
         renderLotCard(list, program);
       });
+    stagger(list.children);
   };
 
   const renderBalanceCallout = () => {
@@ -2616,6 +2694,7 @@
       }
     });
 
+  dropCurtain();
   renderWallet();
   void loadExperimentalRules();
   void loadPointSpendOptions();

@@ -261,3 +261,36 @@ on a checked-in demo dataset in `public/app.js`, stores days relative to
 markup. Balance capture is deliberately credential-free - screenshot, paste,
 CSV and manual entry are presented as the intended routes, all marked
 準備中 - and the settings screen states what the product does not collect.
+
+## Motion
+
+The motion vocabulary is adapted from yui540's public CSS studies
+(https://github.com/yui540/css-animations): a diagonal `clip-path` wipe
+driven by a `--skew-x` variable, paired sheets offset by roughly 0.2s, and
+one signature easing - `cubic-bezier(0.87, 0.05, 0.02, 0.97)` - that
+loiters at both ends and snaps through the middle. Every reveal in the app
+uses that curve, so the whole surface reads as one system.
+
+What is deliberately not adapted is the amplitude. Those studies are
+0.8-1.0s showpieces for a page you visit once; this is a wallet somebody
+opens at a till. The same shapes therefore run at about a third of the
+length for anything frequent - a 340ms panel wipe on tab change, a 320ms
+lot expand - and the full-length treatment is spent only on moments that
+happen once per visit: the 620ms opening sheet and the 720ms comparison
+result reveal. Balance figures count up on the same curve so the number
+settles on the beat the panel does, and the runway bars grow from the axis
+in a 38ms stagger, which puts the eye on the tallest column while it is
+still the only thing moving.
+
+Two invariants hold throughout:
+
+- **Nothing is visible only because an animation ran.** The resting DOM is
+  the finished state; reveals are opt-in classes added by script. A failed
+  script, a blocked stylesheet, or a disabled animation still leaves
+  readable content. The opening sheet additionally removes itself on
+  `animationend` and on a timeout, so a stalled animation can never strand
+  a panel over the interface.
+- **`prefers-reduced-motion: reduce` clears the reveal states outright**
+  rather than merely shortening them, since a reveal held at its `from`
+  keyframe would be invisible. Under that setting the curtain never
+  renders, figures print their final value, and every panel is static.

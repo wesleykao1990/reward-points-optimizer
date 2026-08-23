@@ -23,6 +23,16 @@
 - Self-hosted the Latin subsets of Archivo and JetBrains Mono under
   `public/assets/fonts` (66 KB) and added `font-src 'self'` to the loopback
   and hosted CSP. No font CDN is contacted, so the same-origin stance holds.
+- Added a motion layer adapted from yui540's public CSS studies: a diagonal
+  clip-path wipe on a `--skew-x` variable, paired offset sheets, and one
+  signature easing shared by every reveal. Frequent transitions run at about
+  a third of the reference amplitude; the full length is spent only on the
+  opening sheet and the comparison result. Balance figures count on the same
+  curve and runway bars grow from the axis in a stagger.
+- Guaranteed motion is never load-bearing: reveal classes are opt-in so the
+  resting DOM is the finished state, the opening sheet self-removes on both
+  `animationend` and a timeout, and `prefers-reduced-motion` clears reveal
+  states outright instead of shortening them.
 - Presented balance capture as credential-free by design (screenshot, paste,
   CSV, manual entry) and stated in settings what the product does not
   collect: no service logins, no bank or card statements, no browser storage.

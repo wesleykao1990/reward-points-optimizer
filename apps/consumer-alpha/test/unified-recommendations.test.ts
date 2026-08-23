@@ -263,6 +263,36 @@ describe("unified merchant recommendation journey", () => {
       ).toBe(true);
   });
 
+  it("keeps motion optional and never hides content behind it", () => {
+    const styles = readFileSync(
+      new URL("../public/styles.css", import.meta.url),
+      "utf8",
+    );
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    // One signature easing, shared by every reveal in the system.
+    expect(styles).toContain("--ease-snap");
+    expect(styles).toContain("cubic-bezier(0.87, 0.05, 0.02, 0.97)");
+    // The reveal classes are opt-in, so the resting DOM is the finished
+    // state and a failed script leaves readable content behind.
+    expect(app).toContain("reducedMotion");
+    expect(app).toContain('className = "reveal"');
+    expect(app).toContain("classList.add(className)");
+    // Reduced motion must clear the reveal states outright, not merely
+    // shorten them: a reveal held at its `from` keyframe is invisible.
+    const reduced = styles.slice(
+      styles.lastIndexOf("@media (prefers-reduced-motion: reduce)"),
+    );
+    expect(reduced).toContain(".curtain");
+    expect(reduced).toContain("animation: none !important");
+    expect(reduced).toContain("opacity: 1 !important");
+    // The opening sheet must never be able to strand itself over the UI.
+    expect(app).toContain("window.setTimeout(remove");
+    expect(app).toContain('curtain.addEventListener("animationend"');
+  });
+
   it("does not assume Nanaco ownership or preregistration when omitted", async () => {
     const body = requestBody();
     delete (body as Record<string, unknown>).seven_card_plus_owned;

@@ -700,10 +700,6 @@ input[inputmode="numeric"] {
   transform: rotate(180deg);
 }
 
-.lot-card[data-open="false"] .lot-body {
-  display: none;
-}
-
 /* One row per lot: class chip, quantity, and the countdown that matters. */
 .lot-row {
   display: flex;
@@ -2790,5 +2786,273 @@ fieldset {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================================
+   Motion
+   ---------------------------------------------------------------------
+   Vocabulary borrowed from yui540's CSS studies: a diagonal clip-path
+   wipe driven by a --skew-x variable, paired sheets offset by ~0.2s, and
+   one signature easing that loiters at both ends and snaps through the
+   middle. What is NOT borrowed is the amplitude — those are 0.8-1s
+   showpieces for a portfolio you visit once. This is a wallet somebody
+   opens while paying at a till, so the same shapes run at roughly a
+   third the duration, and the full-length version is spent only on
+   moments that happen once: the opening curtain and the result reveal.
+
+   Two rules hold everywhere:
+   - Nothing is only visible because an animation ran. Resting state is
+     the finished state; reveals are opt-in classes added by script, so
+     a failed script or a disabled animation leaves readable content.
+   - Everything collapses under prefers-reduced-motion (block below).
+   ===================================================================== */
+
+:root {
+  /* Loiter, snap, loiter. The character of the whole system. */
+  --ease-snap: cubic-bezier(0.87, 0.05, 0.02, 0.97);
+  --skew-x: 42px;
+}
+
+/* ── Opening curtain ──────────────────────────────────────────────── */
+
+.curtain {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  pointer-events: none;
+}
+
+.curtain i {
+  /* The full-screen moment can carry a real diagonal; panel wipes keep the
+     smaller default so they stay legible at 340ms. */
+  --skew-x: 96px;
+
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--pri);
+  clip-path: polygon(
+    0 0,
+    calc(100% + var(--skew-x)) 0,
+    100% 100%,
+    calc(var(--skew-x) * -1) 100%
+  );
+  animation: curtain-out 620ms var(--ease-snap) forwards;
+}
+
+/* The second sheet trails the first, so the exit reads as two layers of
+   paper rather than one flat rectangle. */
+.curtain i:nth-child(2) {
+  background: var(--pri-deep);
+  animation-delay: 90ms;
+}
+
+@keyframes curtain-out {
+  to {
+    transform: translateX(-101%);
+  }
+}
+
+/* ── Panel entry ──────────────────────────────────────────────────── */
+
+/* The same diagonal geometry as the curtain, at a third of the length,
+   so moving between tabs feels like part of one system. */
+.tab-panel.is-entering {
+  animation: panel-wipe 340ms var(--ease-snap) both;
+}
+
+@keyframes panel-wipe {
+  from {
+    clip-path: polygon(
+      0 0,
+      calc(var(--skew-x) * 1.4) 0,
+      0 100%,
+      calc(var(--skew-x) * -1) 100%
+    );
+    opacity: 0.4;
+  }
+
+  to {
+    clip-path: polygon(
+      0 0,
+      calc(100% + var(--skew-x) * 2) 0,
+      100% 100%,
+      calc(var(--skew-x) * -1) 100%
+    );
+    opacity: 1;
+  }
+}
+
+/* ── Staggered reveals ────────────────────────────────────────────── */
+
+/* --i carries the element's place in the cascade; the class is added by
+   script, so the un-animated resting state stays visible. */
+.reveal {
+  animation: reveal-rise 460ms var(--ease-snap) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chips arrive after the figure they qualify, not with it. */
+.chip-row .chip.reveal {
+  animation-name: reveal-chip;
+  animation-duration: 380ms;
+  animation-delay: calc(220ms + var(--i, 0) * 70ms);
+}
+
+@keyframes reveal-chip {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Runway bars ──────────────────────────────────────────────────── */
+
+/* Bars grow from the axis. Guidance, not decoration: the eye lands on the
+   tallest column while it is still the only one moving. */
+.runway-bars.is-drawing button {
+  animation: bar-grow 520ms var(--ease-snap) both;
+  animation-delay: calc(var(--i, 0) * 38ms);
+  transform-origin: 50% 100%;
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ── Lot expand / collapse ────────────────────────────────────────── */
+
+/* Height animates through grid-template-rows so the row heights stay
+   content-driven and nothing is measured in script. */
+.lot-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 320ms var(--ease-snap);
+}
+
+.lot-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lot-card[data-open="false"] .lot-body {
+  grid-template-rows: 0fr;
+}
+
+.lot-chevron {
+  transition: transform 320ms var(--ease-snap);
+}
+
+/* ── Selection and press ──────────────────────────────────────────── */
+
+.p0-product-check {
+  transition: opacity 160ms var(--ease-snap),
+    transform 320ms var(--ease-snap);
+}
+
+.p0-product-option:has(input:checked) .p0-product-check {
+  transform: translateY(-50%) scale(1);
+}
+
+/* The nav pill grows from the icon rather than cross-fading, so the
+   active destination reads as having moved there. */
+.bottom-nav button span:first-child {
+  transition: background 200ms var(--ease-snap),
+    transform 260ms var(--ease-snap);
+}
+
+.bottom-nav button.is-active span:first-child {
+  animation: pill-in 300ms var(--ease-snap);
+}
+
+@keyframes pill-in {
+  from {
+    transform: scale(0.7);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ── Result reveal ────────────────────────────────────────────────── */
+
+/* The payoff of the earn flow gets the full-length treatment, because it
+   happens once per comparison and it is the thing the user waited for. */
+.result-hero.is-revealing {
+  animation: hero-wipe 720ms var(--ease-snap) both;
+}
+
+@keyframes hero-wipe {
+  from {
+    clip-path: polygon(
+      0 0,
+      var(--skew-x) 0,
+      0 100%,
+      calc(var(--skew-x) * -1) 100%
+    );
+  }
+
+  to {
+    clip-path: polygon(
+      0 0,
+      calc(100% + var(--skew-x)) 0,
+      100% 100%,
+      calc(var(--skew-x) * -1) 100%
+    );
+  }
+}
+
+.unified-route-card.reveal {
+  animation-delay: calc(160ms + var(--i, 0) * 80ms);
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────── */
+
+/* The global block near the top of this file already flattens durations.
+   These rules additionally guarantee the finished state, since a reveal
+   held at its `from` keyframe would otherwise leave content invisible. */
+@media (prefers-reduced-motion: reduce) {
+  .curtain {
+    display: none;
+  }
+
+  .reveal,
+  .tab-panel.is-entering,
+  .runway-bars.is-drawing button,
+  .result-hero.is-revealing,
+  .bottom-nav button.is-active span:first-child {
+    animation: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .lot-body {
+    transition: none !important;
   }
 }
