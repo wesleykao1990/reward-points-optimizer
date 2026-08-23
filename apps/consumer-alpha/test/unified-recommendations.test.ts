@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { getNanacoEconomicPilotRule } from "@jro/provisional-rules";
 import { describe, expect, it } from "vitest";
 import type { ExperimentalRecommendationInput } from "../src/contracts.js";
@@ -182,7 +182,7 @@ function responseJson(response: { readonly body: string }) {
 }
 
 describe("unified merchant recommendation journey", () => {
-  it("keeps the four-tab mobile walkthrough keyboard-addressable", () => {
+  it("keeps the five-tab award-wallet walkthrough keyboard-addressable", () => {
     const html = readFileSync(
       new URL("../public/index.html", import.meta.url),
       "utf8",
@@ -190,41 +190,77 @@ describe("unified merchant recommendation journey", () => {
     const navStart = html.indexOf('<nav class="bottom-nav"');
     const navEnd = html.indexOf("</nav>", navStart);
     const nav = html.slice(navStart, navEnd);
-    // The bottom bar carries peer destinations only. The session log and the
-    // handling notes are sub-pages reached from a header control, so they are
-    // regions rather than tab panels.
+    // Balance is the daily glance and therefore the landing tab; the earn
+    // comparison is a peer destination rather than the entry point.
     expect(
       [...nav.matchAll(/data-tab-target="([^"]+)"/gu)].map((match) => match[1]),
-    ).toEqual(["home", "expiry", "wallet", "information"]);
-    for (const tab of ["home", "expiry", "wallet", "information"])
+    ).toEqual(["balance", "spend", "earn", "information", "settings"]);
+    for (const tab of ["balance", "spend", "earn", "information", "settings"])
       expect(html).toMatch(
         new RegExp(
           `id="tab-${tab}"[^>]*role="tabpanel"[^>]*aria-labelledby="tab-button-${tab}"`,
           "u",
         ),
       );
-    for (const page of ["history", "settings"]) {
-      expect(html).toMatch(
-        new RegExp(`id="tab-${page}"[^>]*role="region"[^>]*aria-label="`, "u"),
-      );
-      expect(html).toMatch(new RegExp(`data-tab-target="${page}"`, "u"));
-    }
+    expect(html).toMatch(
+      /<section id="tab-balance"[^>]*class="tab-panel is-active"/u,
+    );
     const app = readFileSync(
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
     expect(app).toContain(
-      'const tabOrder = ["home", "expiry", "wallet", "information"]',
+      'const tabOrder = ["balance", "spend", "earn", "information", "settings"]',
     );
+    expect(app).toContain('activateTab("balance")');
     const styles = readFileSync(
       new URL("../public/styles.css", import.meta.url),
       "utf8",
     );
-    expect(styles).toContain("@media (max-width: 380px)");
+    expect(styles).toContain("@media (max-width: 360px)");
     expect(styles).toContain(".route-input-grid");
     expect(html).not.toMatch(
       /id="(?:seven-card-owned|credit-preregistered)"[^>]*checked/iu,
     );
+  });
+
+  it("keeps the lot ledger source-attributed and self-hosted", () => {
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    // Lots, not one scalar per programme: a limited-time grant and a normal
+    // balance are different assets with different deadlines.
+    expect(app).toContain("walletDemo");
+    expect(app).toContain("lot_class");
+    expect(app).toContain("days_remaining");
+    expect(app).toContain("extendable");
+    // Every rule carries its source and check date, and every lot its
+    // confidence, so estimated figures never read as confirmed ones.
+    expect(app).toContain("checked_days_ago");
+    expect(app).toContain("confidence");
+    expect(app).toContain("confirmed");
+    expect(app).toContain("estimated");
+    // Balances stay local: no storage, no network write of user figures.
+    expect(app).not.toContain("localStorage");
+    expect(app).not.toContain("sessionStorage");
+
+    const styles = readFileSync(
+      new URL("../public/styles.css", import.meta.url),
+      "utf8",
+    );
+    // Faces are served from this origin so the strict CSP holds and no
+    // third-party sees a request.
+    expect(styles).toContain('url("/assets/fonts/archivo-var.woff2")');
+    expect(styles).toContain('url("/assets/fonts/jetbrainsmono-var.woff2")');
+    expect(styles).not.toContain("fonts.googleapis.com");
+    expect(styles).not.toContain("fonts.gstatic.com");
+    for (const filename of ["archivo-var.woff2", "jetbrainsmono-var.woff2"])
+      expect(
+        existsSync(
+          new URL(`../public/assets/fonts/${filename}`, import.meta.url),
+        ),
+      ).toBe(true);
   });
 
   it("does not assume Nanaco ownership or preregistration when omitted", async () => {

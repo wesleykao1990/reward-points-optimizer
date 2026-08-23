@@ -100,7 +100,7 @@ export {
 
 export const LOCALHOST_BIND_HOST = "127.0.0.1" as const;
 export const CSP_HEADER =
-  "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 const PUBLIC_ROOT = fileURLToPath(new URL("../public/", import.meta.url));
 const STATIC_FILES: Readonly<Record<string, string>> = Object.freeze({
@@ -136,6 +136,7 @@ const PAYMENT_LOGO_FILES = new Set([
   "famipay.svg",
   "smbccard.png",
 ]);
+const FONT_FILES = new Set(["archivo-var.woff2", "jetbrainsmono-var.woff2"]);
 const PAYMENT_LOGO_CONTENT_TYPES: Readonly<Record<string, string>> =
   Object.freeze({
     ".gif": "image/gif",
@@ -2259,6 +2260,40 @@ function sendAppResponse(response: ServerResponse, result: AppResponse): void {
   response.end(result.body);
 }
 
+async function sendFontAsset(
+  response: ServerResponse,
+  pathname: string,
+): Promise<boolean> {
+  const prefix = "/assets/fonts/";
+  if (!pathname.startsWith(prefix)) return false;
+  const filename = pathname.slice(prefix.length);
+  if (!FONT_FILES.has(filename)) {
+    sendAppResponse(response, errorResponse(requestError(404, "not_found")));
+    return true;
+  }
+  const filePath = normalize(join(PUBLIC_ROOT, "assets/fonts", filename));
+  const fontRoot = normalize(join(PUBLIC_ROOT, "assets/fonts") + sep);
+  if (!filePath.startsWith(fontRoot)) {
+    sendAppResponse(response, errorResponse(requestError(404, "not_found")));
+    return true;
+  }
+  try {
+    const body = await fs.readFile(filePath);
+    if (body.byteLength > 256 * 1024) throw new Error("static_file_invalid");
+    response.statusCode = 200;
+    for (const [name, value] of Object.entries(securityHeaders()))
+      response.setHeader(name, value);
+    response.setHeader("Content-Type", "font/woff2");
+    response.end(body);
+  } catch {
+    sendAppResponse(
+      response,
+      errorResponse(requestError(500, "static_asset_unavailable")),
+    );
+  }
+  return true;
+}
+
 async function sendPaymentLogo(
   response: ServerResponse,
   pathname: string,
@@ -2314,6 +2349,7 @@ async function route(
   try {
     const method = request.method ?? "";
     if (method === "GET" && (await sendPaymentLogo(response, pathname))) return;
+    if (method === "GET" && (await sendFontAsset(response, pathname))) return;
     const headers: Record<string, string | undefined> = {};
     const contentType = request.headers["content-type"];
     const contentLength = request.headers["content-length"];

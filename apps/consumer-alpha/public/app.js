@@ -77,6 +77,11 @@
       "M4.5 9.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z",
       "M9.5 20v-5.5h5V20",
     ],
+    clock: [
+      "M12 3.8a8.2 8.2 0 1 0 0 16.4 8.2 8.2 0 0 0 0-16.4z",
+      "M12 7.6V12l3 1.9",
+    ],
+    chevron: ["m6.5 9.5 5.5 5.5 5.5-5.5"],
   });
 
   const icon = (name, className) => {
@@ -97,14 +102,7 @@
   };
 
   const activateTab = (tabName) => {
-    const validTabs = [
-      "home",
-      "expiry",
-      "wallet",
-      "history",
-      "information",
-      "settings",
-    ];
+    const validTabs = ["balance", "spend", "earn", "information", "settings"];
     if (!validTabs.includes(tabName)) return;
     document.querySelectorAll("[data-tab-panel]").forEach((panel) => {
       const active = panel.dataset.tabPanel === tabName;
@@ -124,7 +122,7 @@
         button.setAttribute("aria-controls", `tab-${button.dataset.tabTarget}`);
       });
     const activePanel = document.querySelector(`[data-tab-panel="${tabName}"]`);
-    if (activePanel && activePanel.id !== "tab-home")
+    if (activePanel && activePanel.id !== "tab-balance")
       activePanel.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (tabName === "information") {
@@ -1891,153 +1889,216 @@
         button.disabled = false;
       }
     });
-
   // ---------------------------------------------------------------------
-  // Expiry advisor.
+  // Lot ledger.
   //
-  // No balance, expiry, or account backend exists yet, so this screen runs on
-  // a checked-in demo dataset. Days are stored relative to "today" rather than
-  // as absolute dates so the screen never renders a deadline in the past. The
-  // panel labels itself as demo data in the markup; nothing here is a
-  // published rule and nothing is sent anywhere.
+  // An aggregator stores one number per programme. This stores lots: a
+  // 通常 balance and a 期間限定 grant are different assets with different
+  // deadlines, different places they can be spent, and different answers
+  // to "can this deadline be moved at all?" — so they are separate rows.
+  //
+  // No balance, expiry, or account backend exists yet, so the panel runs on
+  // a checked-in demo dataset. Days are stored relative to "today" rather
+  // than as absolute dates, so a deadline is never rendered in the past.
+  // Every figure carries its confidence and every rule carries its source.
   // ---------------------------------------------------------------------
-  const expiryDemoPrograms = Object.freeze([
-    Object.freeze({
-      family_id: "point.ponta",
-      label: "Pontaポイント",
-      balance: 2184,
-      days_remaining: 18,
-      policy: "extendable",
-      rule: "最後に貯めた日か使った日から1年間。1ポイントでも動かせば、その日からまた1年になります。",
-      action: "ローソンで1ポイント使う",
-      outcome: "残り2,184ポイントの期限が、その日から1年先に動きます",
-      shops: Object.freeze([
-        "ローソン",
-        "ゲオ",
-        "ケンタッキーフライドチキン",
-        "シェルパワー",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.d",
-      label: "dポイント（通常）",
-      balance: 3268,
-      days_remaining: 42,
-      policy: "fixed",
-      rule: "貯めた月から48か月後の月末で失効します。使っても貯めても期限は動きません。",
-      action: "マクドナルドで使い切る",
-      outcome: "期限は延ばせないので、失効前に使い切るのが唯一の手です",
-      shops: Object.freeze([
-        "ローソン",
-        "マクドナルド",
-        "マツモトキヨシ",
-        "ドトールコーヒーショップ",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.v",
-      label: "Vポイント",
-      balance: 860,
-      days_remaining: 57,
-      policy: "extendable",
-      rule: "最後に残高が動いた日から1年間。貯めても使っても、その日を起点に1年になります。",
-      action: "ファミリーマートで1ポイント使う",
-      outcome: "残り860ポイントの期限が、その日から1年先に動きます",
-      shops: Object.freeze([
-        "ファミリーマート",
-        "ウエルシア薬局",
-        "ドトールコーヒーショップ",
-        "蔦屋書店",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.rakuten",
-      label: "楽天ポイント（通常）",
-      balance: 5730,
-      days_remaining: 94,
-      policy: "extendable",
-      rule: "最後に貯めた月を起点に約1年。新しく貯めるたびに、そこから1年先まで延びます。",
-      action: "楽天ペイで支払って1ポイント貯める",
-      outcome: "残り5,730ポイントの期限が、その月から1年先に動きます",
-      shops: Object.freeze([
-        "楽天市場",
-        "ミスタードーナツ",
-        "大丸松坂屋",
-        "楽天ペイの加盟店",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.jre",
-      label: "JRE POINT",
-      balance: 1405,
-      days_remaining: 126,
-      policy: "extendable",
-      rule: "最後に貯めた日か使った日から2年間。残高が動くたびに、そこから2年になります。",
-      action: "NewDaysでSuica払いにして貯める",
-      outcome: "残り1,405ポイントの期限が、その日から2年先に動きます",
-      shops: Object.freeze(["NewDays", "アトレ", "ルミネ", "JR東日本の駅ビル"]),
-    }),
-    Object.freeze({
-      family_id: "point.waon",
-      label: "WAON POINT",
-      balance: 940,
-      days_remaining: 220,
-      policy: "fixed",
-      rule: "貯めた年度の翌年度末までが期限です。使っても貯めても、その締め切りは動きません。",
-      action: "お客さま感謝デーにまとめて使う",
-      outcome: "期限は延ばせないので、締め切り前に使い切る計画にします",
-      shops: Object.freeze([
-        "イオン",
-        "まいばすけっと",
-        "ミニストップ",
-        "イオンモールの専門店",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.nanaco",
-      label: "nanacoポイント",
-      balance: 612,
-      days_remaining: 251,
-      policy: "fixed",
-      rule: "前の年度に貯めた分は、今の年度の終わりで失効します。期限そのものは延ばせません。",
-      action: "電子マネーに交換してセブン‐イレブンで使う",
-      outcome: "期限は延ばせないので、交換して使い切るのが確実です",
-      shops: Object.freeze([
-        "セブン‐イレブン",
-        "イトーヨーカドー",
-        "デニーズ",
-        "そごう・西武",
-      ]),
-    }),
-    Object.freeze({
-      family_id: "point.paypay",
-      label: "PayPayポイント",
-      balance: 1076,
-      days_remaining: null,
-      policy: "none",
-      rule: "有効期限はありません。急いで使う必要はないので、還元率の高い場面まで置いておけます。",
-      action: "",
-      outcome: "",
-      shops: Object.freeze([]),
-    }),
-  ]);
-
-  const expiryPolicyLabels = Object.freeze({
-    extendable: "延ばせます",
-    fixed: "延長できません",
-    none: "期限なし",
+  const walletDemo = Object.freeze({
+    updated_days_ago: 28,
+    programs: Object.freeze([
+      Object.freeze({
+        family_id: "point.rakuten",
+        label: "楽天ポイント",
+        asset_id: "asset.point.rakuten",
+        jpy_per_unit: 1,
+        source: "楽天PointClub ヘルプ",
+        checked_days_ago: 3,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "楽天ペイで1ポイント貯める",
+          detail: "通常ポイントの期限が、その月から1年先に動きます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 2040,
+            days_remaining: null,
+            extendable: true,
+            confidence: "confirmed",
+            note: "次回の獲得で自動的に1年先まで延びます",
+            note_kind: "rule",
+          }),
+          Object.freeze({
+            lot_class: "limited",
+            label: "期間限定",
+            quantity: 1000,
+            days_remaining: 4,
+            extendable: false,
+            confidence: "confirmed",
+            note: "楽天ペイ・楽天市場でのみ利用可。付与時に個別の期限が決まり、延長されません",
+            note_kind: "restriction",
+          }),
+          Object.freeze({
+            lot_class: "restricted",
+            label: "期間限定",
+            quantity: 200,
+            days_remaining: 21,
+            extendable: false,
+            confidence: "estimated",
+            note: "楽天市場でのみ利用可。期限は収録ルールからの推定です",
+            note_kind: "restriction",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.d",
+        label: "dポイント",
+        asset_id: "asset.point.d",
+        jpy_per_unit: 1,
+        source: "dポイントクラブ会員規約",
+        checked_days_ago: 12,
+        move: Object.freeze({
+          policy: "fixed",
+          action: "マクドナルドで使い切る",
+          detail: "期限は動かせないため、失効前に使い切るのが唯一の手です",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 3268,
+            days_remaining: 42,
+            extendable: false,
+            confidence: "confirmed",
+            note: "貯めた月から48か月後の月末で失効。使っても貯めても期限は動きません",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.v",
+        label: "Vポイント",
+        asset_id: "asset.point.v",
+        jpy_per_unit: 1,
+        source: "Vポイント公式サイト",
+        checked_days_ago: 9,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "ファミリーマートで1ポイント使う",
+          detail: "残高が動いた日から、また1年先まで延びます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 860,
+            days_remaining: 57,
+            extendable: true,
+            confidence: "estimated",
+            note: "最終変動日が分からないため、収録ルールから期限を推定しています",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.ponta",
+        label: "Pontaポイント",
+        asset_id: "asset.point.ponta",
+        jpy_per_unit: 1,
+        source: "Ponta公式FAQ・ローソン公式サポート",
+        checked_days_ago: 5,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "ローソンで1回買い物する",
+          detail: "全ポイントの期限が、その日から1年先に動きます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 1850,
+            days_remaining: 62,
+            extendable: true,
+            confidence: "confirmed",
+            note: "「KDDI定期付与」で入ったポイントでは延長されません。自分で使うか貯めるかが必要です",
+            note_kind: "trap",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.nanaco",
+        label: "nanacoポイント",
+        asset_id: "asset.point.nanaco",
+        jpy_per_unit: 1,
+        source: "nanaco公式サイト",
+        checked_days_ago: 18,
+        move: Object.freeze({
+          policy: "fixed",
+          action: "電子マネーに交換して使う",
+          detail:
+            "年度の締め切りは動かせないため、交換して使い切るのが確実です",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 612,
+            days_remaining: 251,
+            extendable: false,
+            confidence: "estimated",
+            note: "前の年度に貯めた分は今の年度末で失効。年度末の日付から推定しています",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.paypay",
+        label: "PayPayポイント",
+        asset_id: "asset.point.paypay",
+        jpy_per_unit: 1,
+        source: "PayPayヘルプ",
+        checked_days_ago: 4,
+        move: Object.freeze({ policy: "none", action: "", detail: "" }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 1076,
+            days_remaining: null,
+            extendable: null,
+            confidence: "confirmed",
+            note: "有効期限はありません。還元率の高い場面まで置いておけます",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+    ]),
   });
 
-  const expiryMoveLabels = Object.freeze({
+  const AT_RISK_DAYS = 30;
+  const RUNWAY_DAYS = 90;
+  const RUNWAY_BUCKETS = 12;
+
+  const lotClassLabels = Object.freeze({
+    standard: "通常",
+    limited: "期間限定",
+    restricted: "用途限定",
+  });
+
+  const confidenceLabels = Object.freeze({
+    confirmed: "確認済み",
+    estimated: "推定",
+  });
+
+  const moveHeadings = Object.freeze({
     extendable: "期限を延ばす一手",
     fixed: "使い切る一手",
   });
 
-  const AT_RISK_DAYS = 60;
+  const yen = (value) => `¥${Math.round(value).toLocaleString("ja-JP")}`;
+  const points = (value) => `${value.toLocaleString("ja-JP")} pt`;
 
-  const formatPoints = (value) => `${value.toLocaleString("ja-JP")}ポイント`;
-
-  const expiryDateLabel = (days) => {
+  const dateLabel = (days) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
     return date.toLocaleDateString("ja-JP", {
@@ -2047,66 +2108,342 @@
     });
   };
 
-  const runwayBand = (days) => {
-    if (days === null) return "5";
-    if (days <= 30) return "1";
-    if (days <= AT_RISK_DAYS) return "2";
-    if (days <= 120) return "3";
-    return "4";
+  const lotValue = (program, lot) => lot.quantity * program.jpy_per_unit;
+
+  const allLots = () =>
+    walletDemo.programs.flatMap((program) =>
+      program.lots.map((lot) => ({ program, lot })),
+    );
+
+  const dueBand = (days) => {
+    if (days === null) return "ok";
+    if (days <= AT_RISK_DAYS) return "hot";
+    if (days <= 60) return "warn";
+    return "info";
   };
 
-  const atRiskPrograms = () =>
-    expiryDemoPrograms.filter(
-      (program) =>
-        program.days_remaining !== null &&
-        program.days_remaining <= AT_RISK_DAYS,
-    );
+  const dueLabel = (lot) =>
+    lot.days_remaining === null
+      ? lot.extendable === null
+        ? "期限なし"
+        : "期限なし*"
+      : `あと${lot.days_remaining}日`;
 
-  const renderExpirySummary = () => {
-    const dated = expiryDemoPrograms.filter(
-      (program) => program.days_remaining !== null,
-    );
-    const soonest = dated.reduce((best, program) =>
-      program.days_remaining < best.days_remaining ? program : best,
-    );
-    const atRisk = atRiskPrograms();
-    const atRiskTotal = atRisk.reduce(
-      (total, program) => total + program.balance,
+  const renderBalanceHero = () => {
+    const entries = allLots();
+    const total = entries.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
       0,
     );
-    const savableTotal = atRisk
-      .filter((program) => program.policy === "extendable")
-      .reduce((total, program) => total + program.balance, 0);
-    document.getElementById("expiry-asof").textContent =
-      `${expiryDateLabel(0)}時点`;
-    document.getElementById("expiry-soonest").textContent =
-      `あと${soonest.days_remaining}日`;
-    document.getElementById("expiry-at-risk").textContent =
-      formatPoints(atRiskTotal);
-    document.getElementById("expiry-savable").textContent =
-      formatPoints(savableTotal);
-    const extendable = atRisk
-      .filter((program) => program.policy === "extendable")
-      .map((program) => program.label);
-    document.getElementById("expiry-detail").textContent = extendable.length
-      ? `対象は${atRisk.length}サービス。${extendable.join("と")}は、お店で1ポイント動かすだけで期限が延びます。`
-      : `対象は${atRisk.length}サービス。いずれも期限は延ばせないため、失効前に使い切る計画にします。`;
+    const atRisk = entries.filter(
+      (entry) =>
+        entry.lot.days_remaining !== null &&
+        entry.lot.days_remaining <= AT_RISK_DAYS,
+    );
+    const atRiskValue = atRisk.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
+      0,
+    );
+    const savable = entries.filter(
+      (entry) =>
+        entry.lot.extendable === true &&
+        entry.lot.days_remaining !== null &&
+        entry.lot.days_remaining <= RUNWAY_DAYS,
+    );
+    const savableValue = savable.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
+      0,
+    );
+    const estimated = entries.filter(
+      (entry) => entry.lot.confidence === "estimated",
+    );
+
+    document.getElementById("balance-asof").textContent = `${dateLabel(0)}時点`;
+    document.getElementById("balance-total").textContent = yen(total);
+    document.getElementById("balance-at-risk").textContent = yen(atRiskValue);
+
+    const chips = document.getElementById("balance-chips");
+    clear(chips);
+    const addChip = (tone, label) => {
+      const chip = text("span", label, "chip");
+      chip.dataset.tone = tone;
+      chips.appendChild(chip);
+    };
+    addChip("hot", `${atRisk.length}件が30日以内`);
+    if (savableValue)
+      addChip("ok", `${yen(savableValue)} は行動すれば延長できます`);
+    if (estimated.length) addChip("warn", `${estimated.length}件が推定値`);
+
+    document.getElementById("lot-list-count").textContent =
+      `${walletDemo.programs.length}プログラム・${entries.length}ロット`;
+    document.getElementById("capture-nudge").textContent =
+      `残高の更新から${walletDemo.updated_days_ago}日たちました。月に1回でも直すと、失効の予測がずれにくくなります。`;
   };
 
-  const expiryActionCallout = (program, target) => {
-    const callout = node("button", "action-callout");
-    callout.type = "button";
-    callout.dataset.tabTarget = target;
+  const renderValuation = () => {
+    const table = document.getElementById("valuation-table");
+    clear(table);
+    walletDemo.programs.forEach((program) => {
+      table.appendChild(text("dt", program.label));
+      table.appendChild(
+        text("dd", `1pt = ¥${program.jpy_per_unit.toFixed(2)}`),
+      );
+    });
+    document.getElementById("valuation-basis").textContent =
+      "交換先を決めずに保有している分は、額面どおり1ポイント=1円として数えています。交換や用途を絞ると1円を上回ることも下回ることもあるため、この合計は「いま失うと困る額」の目安で、最大化した価値ではありません。";
+  };
+
+  const renderRunway = () => {
+    const container = document.getElementById("runway-bars");
+    clear(container);
+    document.getElementById("runway-range").textContent =
+      `今日 → ${dateLabel(RUNWAY_DAYS)}`;
+    const width = RUNWAY_DAYS / RUNWAY_BUCKETS;
+    const buckets = Array.from({ length: RUNWAY_BUCKETS }, () => []);
+    allLots().forEach((entry) => {
+      const days = entry.lot.days_remaining;
+      if (days === null || days > RUNWAY_DAYS) return;
+      const index = Math.min(RUNWAY_BUCKETS - 1, Math.floor(days / width));
+      buckets[index].push(entry);
+    });
+    const peak = buckets.reduce(
+      (best, bucket) =>
+        Math.max(
+          best,
+          bucket.reduce(
+            (sum, entry) => sum + lotValue(entry.program, entry.lot),
+            0,
+          ),
+        ),
+      0,
+    );
+    buckets.forEach((bucket, index) => {
+      const bar = node("button");
+      bar.type = "button";
+      const value = bucket.reduce(
+        (sum, entry) => sum + lotValue(entry.program, entry.lot),
+        0,
+      );
+      const from = Math.round(index * width);
+      const to = Math.round((index + 1) * width);
+      if (!value) {
+        bar.disabled = true;
+        bar.setAttribute("aria-label", `${from}〜${to}日：失効なし`);
+        container.appendChild(bar);
+        return;
+      }
+      const entry = bucket[0];
+      bar.dataset.band = dueBand(entry.lot.days_remaining);
+      bar.style.height = `${Math.max(14, Math.round((value / peak) * 100))}%`;
+      bar.setAttribute(
+        "aria-label",
+        `${from}〜${to}日：${yen(value)}が失効。タップすると使い道を試算します`,
+      );
+      bar.addEventListener("click", () => {
+        focusLotForSpending(entry.program, entry.lot);
+      });
+      container.appendChild(bar);
+    });
+  };
+
+  // Tapping a runway bar or a lot's action jumps to 使う with that lot loaded.
+  const focusLotForSpending = (program, lot) => {
+    const slot = document.getElementById("spend-focus");
+    clear(slot);
+    const card = node("div", "action-callout");
     const mark = node("span", "callout-mark");
-    mark.appendChild(icon("hourglass"));
-    callout.appendChild(mark);
+    mark.appendChild(icon("clock"));
+    card.appendChild(mark);
     const copy = node("span", "callout-copy");
-    copy.appendChild(text("small", "いま効く一手"));
-    copy.appendChild(text("strong", program.action));
+    copy.appendChild(text("small", "この残高を使い切る"));
+    copy.appendChild(
+      text(
+        "strong",
+        `${program.label}・${lotClassLabels[lot.lot_class]} ${points(lot.quantity)}`,
+      ),
+    );
     copy.appendChild(
       text(
         "span",
-        `${program.label} ${formatPoints(program.balance)}が、あと${program.days_remaining}日で失効します。${program.outcome}。`,
+        lot.days_remaining === null
+          ? lot.note
+          : `${dateLabel(lot.days_remaining)}まで（あと${lot.days_remaining}日）。${lot.note}`,
+      ),
+    );
+    card.appendChild(copy);
+    slot.appendChild(card);
+
+    const source = document.getElementById("point-spend-source");
+    const match = [...source.options].find(
+      (option) => option.value === program.asset_id,
+    );
+    if (match) {
+      source.value = match.value;
+      source.dispatchEvent(new Event("change"));
+    }
+    document.getElementById("point-spend-balance").value = String(lot.quantity);
+    if (lot.days_remaining !== null)
+      document.getElementById("point-spend-objective").value =
+        "preserve_expiring";
+    activateTab("spend");
+  };
+
+  const renderLotRow = (body, lot) => {
+    const row = node("div", "lot-row");
+    const tag = text("span", lotClassLabels[lot.lot_class], "lot-tag");
+    tag.dataset.class = lot.lot_class;
+    row.appendChild(tag);
+    row.appendChild(text("span", points(lot.quantity), "lot-qty"));
+    const confidence = text(
+      "em",
+      confidenceLabels[lot.confidence],
+      "confidence",
+    );
+    confidence.dataset.state = lot.confidence;
+    row.appendChild(confidence);
+    const due = text("span", dueLabel(lot), "lot-due");
+    due.dataset.band = dueBand(lot.days_remaining);
+    row.appendChild(due);
+    body.appendChild(row);
+
+    const note = text("p", lot.note, "lot-note");
+    note.dataset.kind = lot.note_kind;
+    body.appendChild(note);
+  };
+
+  const renderLotCard = (list, program) => {
+    const card = node("article", "lot-card");
+    card.dataset.open = "true";
+    const value = program.lots.reduce(
+      (sum, lot) => sum + lotValue(program, lot),
+      0,
+    );
+
+    const head = node("button", "lot-card-head");
+    head.type = "button";
+    head.setAttribute("aria-expanded", "true");
+    head.appendChild(paymentLogo(program.family_id));
+    const identity = node("div", "lot-identity");
+    identity.appendChild(text("strong", program.label));
+    identity.appendChild(text("small", `${program.lots.length}件の内訳`));
+    head.appendChild(identity);
+    const total = node("span", "lot-total");
+    total.appendChild(text("b", yen(value)));
+    const chevron = node("span", "lot-chevron");
+    chevron.appendChild(icon("chevron"));
+    total.appendChild(chevron);
+    head.appendChild(total);
+    head.addEventListener("click", () => {
+      const open = card.dataset.open !== "true";
+      card.dataset.open = String(open);
+      head.setAttribute("aria-expanded", String(open));
+    });
+    card.appendChild(head);
+
+    const body = node("div", "lot-body");
+    program.lots.forEach((lot) => {
+      renderLotRow(body, lot);
+    });
+
+    if (program.move.policy !== "none") {
+      const move = node("div", "lot-move");
+      if (program.move.policy === "fixed") move.classList.add("is-fixed");
+      const copy = node("b");
+      copy.textContent = `${moveHeadings[program.move.policy]}：${program.move.action}`;
+      move.appendChild(copy);
+      const go = node("button");
+      go.type = "button";
+      go.textContent = "使う";
+      go.addEventListener("click", () => {
+        const target =
+          program.lots.find(
+            (lot) => lot.days_remaining !== null && lot.extendable !== true,
+          ) || program.lots[0];
+        focusLotForSpending(program, target);
+      });
+      move.appendChild(go);
+      body.appendChild(move);
+      body.appendChild(text("p", program.move.detail, "lot-note"));
+    }
+
+    const source = node("div", "lot-source");
+    source.appendChild(
+      text(
+        "span",
+        `出典 ${program.source}・${program.checked_days_ago}日前に確認`,
+      ),
+    );
+    const lookup = node("button");
+    lookup.type = "button";
+    lookup.textContent = "収録情報";
+    lookup.addEventListener("click", () => {
+      const search = document.getElementById("information-search");
+      search.value = program.label.replace("ポイント", "");
+      document.getElementById("information-family-filter").value = "";
+      activateTab("information");
+    });
+    source.appendChild(lookup);
+    body.appendChild(source);
+
+    card.appendChild(body);
+    list.appendChild(card);
+  };
+
+  const renderLotList = () => {
+    const list = document.getElementById("lot-list");
+    clear(list);
+    const soonest = (program) =>
+      program.lots.reduce(
+        (best, lot) =>
+          lot.days_remaining === null
+            ? best
+            : Math.min(best, lot.days_remaining),
+        Number.POSITIVE_INFINITY,
+      );
+    [...walletDemo.programs]
+      .sort((left, right) => soonest(left) - soonest(right))
+      .forEach((program) => {
+        renderLotCard(list, program);
+      });
+  };
+
+  const renderBalanceCallout = () => {
+    const slot = document.getElementById("balance-callout");
+    clear(slot);
+    const urgent = allLots()
+      .filter(
+        (entry) =>
+          entry.lot.days_remaining !== null &&
+          entry.lot.days_remaining <= RUNWAY_DAYS,
+      )
+      .sort(
+        (left, right) => left.lot.days_remaining - right.lot.days_remaining,
+      )[0];
+    if (!urgent) return;
+    const { program, lot } = urgent;
+    const callout = node("button", "action-callout");
+    callout.type = "button";
+    const mark = node("span", "callout-mark");
+    mark.appendChild(icon("clock"));
+    callout.appendChild(mark);
+    const copy = node("span", "callout-copy");
+    copy.appendChild(text("small", "いま効く一手"));
+    copy.appendChild(
+      text(
+        "strong",
+        lot.extendable === true
+          ? program.move.action
+          : `${program.label}を使い切る`,
+      ),
+    );
+    copy.appendChild(
+      text(
+        "span",
+        `${program.label}・${lotClassLabels[lot.lot_class]} ${points(lot.quantity)}が、あと${lot.days_remaining}日で失効します。${
+          lot.extendable === true
+            ? program.move.detail
+            : "この残高は期限を延ばせません"
+        }。`,
       ),
     );
     callout.appendChild(copy);
@@ -2114,197 +2451,18 @@
     go.appendChild(icon("arrow"));
     callout.appendChild(go);
     callout.addEventListener("click", () => {
-      activateTab(target);
+      focusLotForSpending(program, lot);
     });
-    return callout;
+    slot.appendChild(callout);
   };
 
-  const renderExpiryCallouts = () => {
-    const urgent = atRiskPrograms()
-      .filter((program) => program.policy === "extendable")
-      .sort((left, right) => left.days_remaining - right.days_remaining)[0];
-    const home = document.getElementById("home-expiry-callout");
-    const panel = document.getElementById("expiry-action");
-    clear(home);
-    clear(panel);
-    if (!urgent) return;
-    home.appendChild(expiryActionCallout(urgent, "expiry"));
-    panel.appendChild(expiryActionCallout(urgent, "expiry"));
+  const renderWallet = () => {
+    renderBalanceHero();
+    renderValuation();
+    renderRunway();
+    renderLotList();
+    renderBalanceCallout();
   };
-
-  const catalogueLookup = (label) => {
-    const search = document.getElementById("information-search");
-    search.value = label.replace(/（.*）$/u, "").replace("ポイント", "");
-    document.getElementById("information-family-filter").value = "";
-    activateTab("information");
-  };
-
-  const renderExpiryCard = (list, program) => {
-    const card = node("article", "expiry-card");
-    card.dataset.policy = program.policy;
-
-    const head = node("div", "expiry-card-head");
-    head.appendChild(paymentLogo(program.family_id));
-    const identity = node("div", "expiry-identity");
-    identity.appendChild(text("strong", program.label));
-    identity.appendChild(
-      text("small", `残高 ${formatPoints(program.balance)}`),
-    );
-    head.appendChild(identity);
-    const countdown = node("div", "expiry-countdown");
-    if (program.days_remaining === null) {
-      countdown.appendChild(text("strong", "—"));
-      countdown.appendChild(text("small", "期限なし"));
-    } else {
-      countdown.appendChild(text("strong", String(program.days_remaining)));
-      countdown.appendChild(text("small", "日"));
-    }
-    head.appendChild(countdown);
-    card.appendChild(head);
-
-    const runway = node("div", "expiry-runway");
-    runway.dataset.band = runwayBand(program.days_remaining);
-    runway.appendChild(node("i"));
-    card.appendChild(runway);
-
-    const meta = node("div", "expiry-meta");
-    meta.appendChild(
-      text(
-        "span",
-        program.days_remaining === null
-          ? "失効日なし"
-          : `${expiryDateLabel(program.days_remaining)}まで`,
-      ),
-    );
-    meta.appendChild(
-      text("em", expiryPolicyLabels[program.policy], "expiry-verdict"),
-    );
-    card.appendChild(meta);
-
-    if (program.policy !== "none") {
-      const move = node("div", "expiry-move");
-      move.appendChild(text("h4", expiryMoveLabels[program.policy]));
-      move.appendChild(text("strong", program.action));
-      move.appendChild(text("p", program.outcome));
-      const shops = node("ul", "expiry-shops");
-      program.shops.forEach((shop) => {
-        const entry = node("li");
-        entry.appendChild(icon("storefront"));
-        entry.appendChild(text("span", shop));
-        shops.appendChild(entry);
-      });
-      move.appendChild(shops);
-      card.appendChild(move);
-    }
-
-    card.appendChild(text("p", program.rule, "expiry-rule"));
-
-    const actions = node("div", "route-actions");
-    const lookup = node("button", "secondary");
-    lookup.type = "button";
-    lookup.textContent = "カタログで収録情報を見る";
-    lookup.addEventListener("click", () => {
-      catalogueLookup(program.label);
-    });
-    actions.appendChild(lookup);
-    card.appendChild(actions);
-
-    list.appendChild(card);
-  };
-
-  const renderExpiryList = () => {
-    const list = document.getElementById("expiry-list");
-    clear(list);
-    [...expiryDemoPrograms]
-      .sort((left, right) => {
-        if (left.days_remaining === null) return 1;
-        if (right.days_remaining === null) return -1;
-        return left.days_remaining - right.days_remaining;
-      })
-      .forEach((program) => {
-        renderExpiryCard(list, program);
-      });
-  };
-
-  const shopBoardEntries = () => {
-    const board = new Map();
-    expiryDemoPrograms.forEach((program) => {
-      if (program.policy === "none") return;
-      program.shops.forEach((shop) => {
-        if (!board.has(shop)) board.set(shop, []);
-        board.get(shop).push(program);
-      });
-    });
-    return [...board.entries()]
-      .map(([shop, programs]) => ({
-        shop,
-        programs: programs.sort(
-          (left, right) => left.days_remaining - right.days_remaining,
-        ),
-        extendable: programs.filter(
-          (program) => program.policy === "extendable",
-        ).length,
-        soonest: Math.min(...programs.map((program) => program.days_remaining)),
-      }))
-      .sort((left, right) => {
-        if (left.programs.length !== right.programs.length)
-          return right.programs.length - left.programs.length;
-        if (left.extendable !== right.extendable)
-          return right.extendable - left.extendable;
-        return left.soonest - right.soonest;
-      })
-      .slice(0, 6);
-  };
-
-  const renderExpiryShops = () => {
-    const container = document.getElementById("expiry-shops");
-    clear(container);
-    shopBoardEntries().forEach((entry) => {
-      const card = node("article", "shop-card");
-      const head = node("div", "shop-head");
-      const name = node("span", "shop-name");
-      name.appendChild(icon("storefront"));
-      name.appendChild(text("strong", entry.shop));
-      head.appendChild(name);
-      head.appendChild(
-        text(
-          "span",
-          entry.extendable
-            ? `${entry.extendable}件の期限が延びます`
-            : "使い切りに向くお店",
-          "shop-count",
-        ),
-      );
-      card.appendChild(head);
-      const effects = node("ul", "shop-effects");
-      entry.programs.forEach((program) => {
-        const item = node("li");
-        item.dataset.policy = program.policy;
-        item.appendChild(
-          text(
-            "span",
-            program.policy === "extendable" ? "延長" : "使い切り",
-            "effect-tag",
-          ),
-        );
-        item.appendChild(text("span", program.label, "effect-name"));
-        item.appendChild(
-          text("small", `あと${program.days_remaining}日`, "effect-days"),
-        );
-        effects.appendChild(item);
-      });
-      card.appendChild(effects);
-      container.appendChild(card);
-    });
-  };
-
-  const renderExpiryAdvisor = () => {
-    renderExpirySummary();
-    renderExpiryCallouts();
-    renderExpiryList();
-    renderExpiryShops();
-  };
-
   const instrumentInputs = document.querySelectorAll(
     'input[name="instrument"]',
   );
@@ -2350,7 +2508,7 @@
       activateTab(button.dataset.tabTarget);
     });
   });
-  const tabOrder = ["home", "expiry", "wallet", "information"];
+  const tabOrder = ["balance", "spend", "earn", "information", "settings"];
   const tabButtons = tabOrder
     .map((tab) =>
       document.querySelector(`.bottom-nav [data-tab-target="${tab}"]`),
@@ -2405,7 +2563,7 @@
     });
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
-      activateTab("home");
+      activateTab("earn");
       document
         .getElementById(button.dataset.scrollTo)
         .scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2416,7 +2574,7 @@
   syncInstrumentViews();
   syncAmountSummary();
   syncMerchantContext();
-  activateTab("home");
+  activateTab("balance");
 
   document
     .getElementById("recommendation-form")
@@ -2458,7 +2616,7 @@
       }
     });
 
-  renderExpiryAdvisor();
+  renderWallet();
   void loadExperimentalRules();
   void loadPointSpendOptions();
 })();

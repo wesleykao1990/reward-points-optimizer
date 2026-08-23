@@ -216,36 +216,48 @@ approved-rule status, and browser database credentials are never implied.
 
 ## Front-end presentation
 
-The browser shell uses a printed-ledger visual system: a warm off-white paper
-ground, indigo ink for structure and the primary action, and a single
-vermilion accent reserved for the seal and for peak moments (the urgent
-expiry, the best-route kicker). Depth comes from hairline rules and recessed
-paper wells rather than shadows, blur, or gradients, and every glyph comes
-from one 24x24 outline set at a 1.6px stroke. A `prefers-color-scheme: dark`
-block re-tints the same tokens onto warm charcoal stock; no component defines
-a colour outside the token layer.
+The browser shell is an award-wallet console: white cards on a cool grey
+ground, one hairline border and one soft elevation step, 10-12px radii, and
+full-round status chips. Colour is signal rather than decoration - the
+primary blue carries action, selection and navigation, while red/amber/green
+carry only expiry state, so the two channels stay readable side by side.
 
-Typography is a system stack by design. The strict same-origin CSP and the
-"nothing leaves the browser" stance rule out a webfont CDN, so display
-headings and figures use the platform Mincho families with Gothic for body
-and UI, and figures carry `tabular-nums`.
+Latin type is Archivo and figures are JetBrains Mono on a tabular grid, so
+balances and countdowns align down a column. Both faces are Latin-subset
+variable woff2 files served from this origin (`public/assets/fonts`, 66 KB
+total) rather than a font CDN: the strict same-origin CSP and the "nothing
+leaves the browser" stance rule out a third-party request, so `font-src
+'self'` is the only relaxation and no external host sees a visitor. Japanese
+runs in the platform Gothic stack; no CJK webfont is shipped.
 
-The bottom bar carries four peer destinations - `home`, `expiry`, `wallet`,
-`information`. The session log and the handling/privacy notes are sub-pages
-reached from a header control; they are ARIA regions, not tab panels.
+The bottom bar carries five peer destinations - `balance`, `spend`, `earn`,
+`information`, `settings`. Balance is the landing tab because the award-wallet
+job is a daily glance rather than a per-purchase query; the merchant
+comparison keeps its full behaviour as `earn`, with the session log folded
+into it.
 
-## Expiry advisor (demo data)
+## Lot ledger (demo data)
 
-The `expiry` panel answers "which points am I about to lose, and where do I
-shop to stop that?" for each recorded point programme: the remaining runway,
-whether the deadline can be moved at all, the single concrete action that
-moves it, and the chains where that action is available. A merchant-first
-board inverts the same dataset so one errand can be planned against several
-deadlines at once.
+An aggregator stores one number per programme. This screen stores lots: a
+通常 balance and a 期間限定 grant are different assets with different
+deadlines, different places they can be spent, and different answers to "can
+this deadline be moved at all?" Each programme card expands into its lots,
+and each lot carries its own countdown, its usage restriction, its
+`延長できる / できない` verdict, and its `推定 / 確認済み` confidence. Rule
+exceptions are pinned to the lot they qualify rather than to the programme -
+the 「KDDI定期付与」 case renders as a flagged note on the Ponta lot it
+actually affects.
+
+Above the list, a 90-day runway sizes bars by yen value and colours them by
+urgency; tapping one jumps to `spend` with that lot loaded and the
+expiring-balance objective preselected. Every yen figure is backed by a
+`この前提で計算` disclosure naming the per-programme valuation and stating
+plainly that the total is an "if I lost this today" figure, not a maximised
+one. Every expiry rule shows its source and how recently it was checked.
 
 No balance, expiry, or account backend exists yet. The panel therefore runs
-entirely on a checked-in demo dataset in `public/app.js`, stores days relative
-to "today" so a deadline is never rendered in the past, and labels itself as
-demo data in the markup. Nothing there is a published rule, nothing is sent
-anywhere, and each card links back into the catalogue for the recorded source
-information.
+on a checked-in demo dataset in `public/app.js`, stores days relative to
+"today" so a deadline is never rendered in the past, and says so in the
+markup. Balance capture is deliberately credential-free - screenshot, paste,
+CSV and manual entry are presented as the intended routes, all marked
+準備中 - and the settings screen states what the product does not collect.

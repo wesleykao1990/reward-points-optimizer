@@ -2,21 +2,30 @@
 
 ## Unreleased — 2026-08-23
 
-- Replaced the consumer shell's visual system with a printed-ledger design:
-  paper ground, indigo ink structure, one vermilion accent, hairline rules
-  instead of shadows and blur, one 24x24 outline icon set, Mincho display
-  type, and a token-only dark variant. No component defines a colour outside
-  the token layer.
-- Reworked the bottom bar to four peer destinations (`home`, `expiry`,
-  `wallet`, `information`). The session log and the handling/privacy notes
-  became header-reached sub-pages exposed as ARIA regions, and the duplicate
-  jump control above the comparison form was removed.
-- Added an expiry advisor panel that reports, per point programme, the
-  remaining runway, whether the deadline can be moved, the single action that
-  moves it, and the chains where that action is available, plus a
-  merchant-first board over the same data. It runs on a checked-in demo
-  dataset because no balance or expiry backend exists yet, and says so in the
-  markup.
+- Repositioned the consumer shell from a per-purchase comparison tool to an
+  award wallet. `balance` is now the landing tab, the redemption planner is
+  promoted to `spend`, the merchant comparison keeps its behaviour as `earn`
+  with the session log folded in, and the bottom bar carries five peer
+  destinations.
+- Added a lot-level ledger. Each programme expands into lots that each carry
+  their own countdown, usage restriction, extendable/fixed verdict, and
+  estimated/confirmed confidence, with rule exceptions pinned to the lot they
+  qualify rather than the programme. A 90-day runway sizes bars by yen value
+  and hands the tapped lot to the redemption planner. It runs on a
+  checked-in demo dataset because no balance or expiry backend exists yet,
+  and says so in the markup.
+- Added a per-figure valuation disclosure and per-rule source attribution, so
+  no yen total is shown without the assumption behind it and no expiry rule
+  without its source and check date.
+- Replaced the visual system with an award-wallet console: white cards on a
+  cool grey ground, one elevation step, full-round status chips, and a
+  colour system where the primary hue never encodes status.
+- Self-hosted the Latin subsets of Archivo and JetBrains Mono under
+  `public/assets/fonts` (66 KB) and added `font-src 'self'` to the loopback
+  and hosted CSP. No font CDN is contacted, so the same-origin stance holds.
+- Presented balance capture as credential-free by design (screenshot, paste,
+  CSV, manual entry) and stated in settings what the product does not
+  collect: no service logins, no bank or card statements, no browser storage.
 
 ## Unreleased — 2026-08-19
 

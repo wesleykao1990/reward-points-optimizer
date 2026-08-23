@@ -1,0 +1,6 @@
+Self-hosted Latin subsets. Upstream: Google Fonts, SIL Open Font License 1.1.
+Archivo - Omnibus-Type. https://fonts.google.com/specimen/Archivo
+JetBrains Mono - JetBrains. https://fonts.google.com/specimen/JetBrains+Mono
+Both are variable faces covering weight 400-800 / 400-700 in one file.
+Latin subset only (U+0000-00FF plus Latin punctuation); Japanese text renders
+in the platform Gothic stack, so no CJK webfont is shipped.
