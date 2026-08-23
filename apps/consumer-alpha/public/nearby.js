@@ -85,13 +85,17 @@ function appendLocation(location) {
     empty.textContent = "決済・ポイント情報はまだありません";
     compatibility.append(empty);
   } else {
-    accepted.forEach((item) => appendCompatibility(compatibility, item));
+    accepted.forEach((item) => {
+      appendCompatibility(compatibility, item);
+    });
   }
   card.append(compatibility);
 
   const meta = document.createElement("p");
   meta.className = "meta";
-  const branchFacts = accepted.filter((item) => !item.inherited_from_chain).length;
+  const branchFacts = accepted.filter(
+    (item) => !item.inherited_from_chain,
+  ).length;
   meta.textContent = `店舗確認 ${branchFacts}件 / 利用可能情報 ${accepted.length}件`;
   card.append(meta);
 
@@ -142,8 +146,11 @@ async function runNearbySearch() {
         setStatus("近くの店舗と決済情報を確認しています…", "loading");
         const payload = await requestNearby(position);
         clearResults();
-        if (payload.attribution?.text) attribution.textContent = payload.attribution.text;
-        const locations = Array.isArray(payload.locations) ? payload.locations : [];
+        if (payload.attribution?.text)
+          attribution.textContent = payload.attribution.text;
+        const locations = Array.isArray(payload.locations)
+          ? payload.locations
+          : [];
         locations.forEach(appendLocation);
         if (locations.length === 0) {
           setStatus(
@@ -154,8 +161,14 @@ async function runNearbySearch() {
           );
         } else {
           const cache = payload.discovery?.cache_status;
-          const suffix = cache === "degraded" ? "（外部店舗検索は一時的に利用できず、保存済みデータを表示）" : "";
-          setStatus(`${locations.length}店舗見つかりました。${suffix}`, "success");
+          const suffix =
+            cache === "degraded"
+              ? "（外部店舗検索は一時的に利用できず、保存済みデータを表示）"
+              : "";
+          setStatus(
+            `${locations.length}店舗見つかりました。${suffix}`,
+            "success",
+          );
         }
       } catch (error) {
         setStatus(`検索できませんでした（${error.message}）。`, "error");

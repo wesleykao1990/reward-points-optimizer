@@ -35,7 +35,11 @@ const KNOWN_MERCHANT_PATTERNS = Object.freeze([
   },
   {
     merchantKey: "merchant.seveneleven",
-    patterns: [/7[\s\-‐‑–—]?eleven/iu, /セブン[\s\-‐‑–—]?イレブン/u, /セブンイレブン/u],
+    patterns: [
+      /7[\s\-‐‑–—]?eleven/iu,
+      /セブン[\s\-‐‑–—]?イレブン/u,
+      /セブンイレブン/u,
+    ],
   },
 ] as const);
 
@@ -219,7 +223,8 @@ class NearbyRequestError extends Error {
 
 function singleHeader(value: HeaderValue): string | undefined {
   if (value === undefined) return undefined;
-  if (typeof value !== "string") throw new NearbyRequestError(400, "header_ambiguous");
+  if (typeof value !== "string")
+    throw new NearbyRequestError(400, "header_ambiguous");
   return value;
 }
 
@@ -252,8 +257,7 @@ function validateAuthority(
   if (origin === undefined) return;
   try {
     const parsed = new URL(origin);
-    if (parsed.origin !== `https://${host}`)
-      throw new Error("origin_mismatch");
+    if (parsed.origin !== `https://${host}`) throw new Error("origin_mismatch");
   } catch {
     throw new NearbyRequestError(403, "origin_invalid");
   }
@@ -282,7 +286,10 @@ function sendJson(
   response.end(JSON.stringify(body));
 }
 
-function sendError(response: NearbyVercelResponse, error: NearbyRequestError): void {
+function sendError(
+  response: NearbyVercelResponse,
+  error: NearbyRequestError,
+): void {
   sendJson(response, error.status, {
     error: {
       code: error.code,
@@ -329,9 +336,17 @@ function parseBody(request: NearbyVercelRequest): NearbyInput {
     longitude > 154
   )
     throw new NearbyRequestError(400, "nearby_coordinate_invalid");
-  if (!Number.isSafeInteger(radius) || (radius as number) < 100 || (radius as number) > MAX_RADIUS_M)
+  if (
+    !Number.isSafeInteger(radius) ||
+    (radius as number) < 100 ||
+    (radius as number) > MAX_RADIUS_M
+  )
     throw new NearbyRequestError(400, "nearby_radius_invalid");
-  if (!Number.isSafeInteger(limit) || (limit as number) < 1 || (limit as number) > MAX_LIMIT)
+  if (
+    !Number.isSafeInteger(limit) ||
+    (limit as number) < 1 ||
+    (limit as number) > MAX_LIMIT
+  )
     throw new NearbyRequestError(400, "nearby_limit_invalid");
   return Object.freeze({
     latitude,
@@ -343,11 +358,23 @@ function parseBody(request: NearbyVercelRequest): NearbyInput {
 
 function cleanText(value: unknown, maximum = 160): string {
   if (typeof value !== "string") return "";
-  return value.replace(/[\u0000-\u001f\u007f]/gu, "").trim().slice(0, maximum);
+  return [...value]
+    .filter((character) => {
+      const code = character.codePointAt(0);
+      return code !== undefined && code >= 0x20 && code !== 0x7f;
+    })
+    .join("")
+    .trim()
+    .slice(0, maximum);
 }
 
 function finiteNumber(value: unknown): number | null {
-  const number = typeof value === "number" ? value : typeof value === "string" ? Number(value) : NaN;
+  const number =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : NaN;
   return Number.isFinite(number) ? number : null;
 }
 
@@ -379,12 +406,18 @@ function normalizeLabel(value: string): string {
     .replace(/lawson|ローソン/giu, "")
     .replace(/mcdonald'?s?|マクドナルド/giu, "")
     .replace(/newdays|ニューデイズ/giu, "")
-    .replace(/7[\s\-‐‑–—]?eleven|セブン[\s\-‐‑–—]?イレブン|セブンイレブン/giu, "")
+    .replace(
+      /7[\s\-‐‑–—]?eleven|セブン[\s\-‐‑–—]?イレブン|セブンイレブン/giu,
+      "",
+    )
     .replace(/[\s\-‐‑–—・･_()（）]/gu, "")
     .replace(/店$/u, "");
 }
 
-function merchantKeyFor(tags: Readonly<Record<string, string>>, name: string): string | undefined {
+function merchantKeyFor(
+  tags: Readonly<Record<string, string>>,
+  name: string,
+): string | undefined {
   const identity = [name, tags.brand ?? "", tags.operator ?? ""].join(" ");
   for (const item of KNOWN_MERCHANT_PATTERNS) {
     if (item.patterns.some((pattern) => pattern.test(identity)))
@@ -393,14 +426,20 @@ function merchantKeyFor(tags: Readonly<Record<string, string>>, name: string): s
   return undefined;
 }
 
-function normalizedPaymentState(values: readonly string[]): "yes" | "no" | undefined {
+function normalizedPaymentState(
+  values: readonly string[],
+): "yes" | "no" | undefined {
   const normalized = values.map((value) => value.toLocaleLowerCase("en-US"));
-  if (normalized.some((value) => value === "yes" || value === "only")) return "yes";
-  if (normalized.length > 0 && normalized.every((value) => value === "no")) return "no";
+  if (normalized.some((value) => value === "yes" || value === "only"))
+    return "yes";
+  if (normalized.length > 0 && normalized.every((value) => value === "no"))
+    return "no";
   return undefined;
 }
 
-function paymentsFor(tags: Readonly<Record<string, string>>): readonly NormalizedPayment[] {
+function paymentsFor(
+  tags: Readonly<Record<string, string>>,
+): readonly NormalizedPayment[] {
   const output: NormalizedPayment[] = [];
   for (const mapping of PAYMENT_TAGS) {
     const values = mapping.tags.flatMap((tag) => {
@@ -408,17 +447,26 @@ function paymentsFor(tags: Readonly<Record<string, string>>): readonly Normalize
       return value === undefined ? [] : [value];
     });
     const state = normalizedPaymentState(values);
-    if (state) output.push(Object.freeze({ instrument_key: mapping.instrumentKey, state }));
+    if (state)
+      output.push(
+        Object.freeze({ instrument_key: mapping.instrumentKey, state }),
+      );
   }
   return Object.freeze(output);
 }
 
-function coordinatesFor(element: OverpassElement): { latitude: number; longitude: number } | null {
+function coordinatesFor(
+  element: OverpassElement,
+): { latitude: number; longitude: number } | null {
   const directLatitude = finiteNumber(element.lat);
   const directLongitude = finiteNumber(element.lon);
   if (directLatitude !== null && directLongitude !== null)
     return { latitude: directLatitude, longitude: directLongitude };
-  if (element.center && typeof element.center === "object" && !Array.isArray(element.center)) {
+  if (
+    element.center &&
+    typeof element.center === "object" &&
+    !Array.isArray(element.center)
+  ) {
     const center = element.center as Record<string, unknown>;
     const latitude = finiteNumber(center.lat);
     const longitude = finiteNumber(center.lon);
@@ -428,7 +476,8 @@ function coordinatesFor(element: OverpassElement): { latitude: number; longitude
 }
 
 function tagsFor(value: unknown): Readonly<Record<string, string>> {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) return Object.freeze({});
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return Object.freeze({});
   const tags: Record<string, string> = {};
   for (const [key, raw] of Object.entries(value)) {
     if (typeof raw === "string" && key.length <= 80 && raw.length <= 500)
@@ -437,7 +486,9 @@ function tagsFor(value: unknown): Readonly<Record<string, string>> {
   return Object.freeze(tags);
 }
 
-function addressFor(tags: Readonly<Record<string, string>>): Readonly<Record<string, string>> {
+function addressFor(
+  tags: Readonly<Record<string, string>>,
+): Readonly<Record<string, string>> {
   const address: Record<string, string> = {};
   const assign = (key: string, value: string | undefined) => {
     const cleaned = cleanText(value, 120);
@@ -448,7 +499,9 @@ function addressFor(tags: Readonly<Record<string, string>>): Readonly<Record<str
   assign("city", tags["addr:city"]);
   assign("ward", tags["addr:ward"]);
   const street = [tags["addr:street"], tags["addr:housenumber"]]
-    .filter((item): item is string => typeof item === "string" && item.length > 0)
+    .filter(
+      (item): item is string => typeof item === "string" && item.length > 0,
+    )
     .join(" ");
   assign("street", street);
   if (Object.keys(address).length > 0) address.country_code = "JP";
@@ -487,12 +540,25 @@ export function normalizeOverpassResponse(
     const element = raw as OverpassElement;
     const type = element.type;
     const id = element.id;
-    if ((type !== "node" && type !== "way" && type !== "relation") || !Number.isSafeInteger(id)) continue;
+    if (
+      (type !== "node" && type !== "way" && type !== "relation") ||
+      !Number.isSafeInteger(id)
+    )
+      continue;
     const coordinates = coordinatesFor(element);
-    if (!coordinates || coordinates.latitude < 20 || coordinates.latitude > 46 || coordinates.longitude < 122 || coordinates.longitude > 154)
+    if (
+      !coordinates ||
+      coordinates.latitude < 20 ||
+      coordinates.latitude > 46 ||
+      coordinates.longitude < 122 ||
+      coordinates.longitude > 154
+    )
       continue;
     const tags = tagsFor(element.tags);
-    const name = cleanText(tags["name:ja"] ?? tags.name ?? tags.brand ?? tags.operator, 160);
+    const name = cleanText(
+      tags["name:ja"] ?? tags.name ?? tags.brand ?? tags.operator,
+      160,
+    );
     if (!name) continue;
     const osmId = `${type}/${String(id)}`;
     if (seen.has(osmId)) continue;
@@ -519,7 +585,7 @@ export function normalizeOverpassResponse(
 export function buildOverpassQuery(input: NearbyInput): string {
   const latitude = input.latitude.toFixed(6);
   const longitude = input.longitude.toFixed(6);
-  return `[out:json][timeout:8][maxsize:8388608];\n(\n  nwr(around:${input.radiusM},${latitude},${longitude})[\"name\"][\"shop\"];\n  nwr(around:${input.radiusM},${latitude},${longitude})[\"name\"][\"amenity\"~\"^(restaurant|cafe|fast_food|fuel|pharmacy|bar|pub)$\"];\n);\nout center tags 80;`;
+  return `[out:json][timeout:8][maxsize:8388608];\n(\n  nwr(around:${input.radiusM},${latitude},${longitude})["name"]["shop"];\n  nwr(around:${input.radiusM},${latitude},${longitude})["name"]["amenity"~"^(restaurant|cafe|fast_food|fuel|pharmacy|bar|pub)$"];\n);\nout center tags 80;`;
 }
 
 function geoCell(input: NearbyInput): string {
@@ -545,7 +611,9 @@ function haversineMeters(
   return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function loadPrewarmCandidates(target: QueryPool): Promise<readonly PrewarmCandidateRow[]> {
+async function loadPrewarmCandidates(
+  target: QueryPool,
+): Promise<readonly PrewarmCandidateRow[]> {
   const result = await target.query<PrewarmCandidateRow>(
     `select location_key, merchant_key, location_name, address\n       from app_api.merchant_nearby_locations\n      where latitude is null\n        and metadata ? 'launch_area'\n      order by location_key\n      limit 100`,
   );
@@ -603,8 +671,7 @@ async function discoverFromOverpass(
   }
   if (response.status === 429)
     throw new NearbyRequestError(503, "osm_rate_limited");
-  if (!response.ok)
-    throw new NearbyRequestError(503, "osm_unavailable");
+  if (!response.ok) throw new NearbyRequestError(503, "osm_unavailable");
   const text = await response.text();
   if (Buffer.byteLength(text, "utf8") > MAX_OVERPASS_BYTES)
     throw new NearbyRequestError(502, "osm_response_too_large");
@@ -627,7 +694,13 @@ async function ingestOsm(
   const expiresAt = new Date(fetchedAt.getTime() + CACHE_TTL_MS);
   await target.query(
     `select app_private.ingest_osm_nearby_snapshot(\n       $1::text, $2::integer, $3::timestamptz, $4::timestamptz, $5::jsonb\n     ) as result`,
-    [cell, input.radiusM, fetchedAt.toISOString(), expiresAt.toISOString(), JSON.stringify(places)],
+    [
+      cell,
+      input.radiusM,
+      fetchedAt.toISOString(),
+      expiresAt.toISOString(),
+      JSON.stringify(places),
+    ],
   );
 }
 
@@ -636,7 +709,10 @@ async function loadNearbyLocations(
   input: NearbyInput,
 ): Promise<readonly BrowserLocation[]> {
   const latitudeDelta = input.radiusM / 110_540;
-  const longitudeScale = Math.max(0.2, Math.cos((input.latitude * Math.PI) / 180));
+  const longitudeScale = Math.max(
+    0.2,
+    Math.cos((input.latitude * Math.PI) / 180),
+  );
   const longitudeDelta = input.radiusM / (111_320 * longitudeScale);
   const result = await target.query<NearbyLocationRow>(
     `select location_key, merchant_key, merchant_name, location_name, address,\n            latitude, longitude, external_place_ids, confidence\n       from app_api.merchant_nearby_locations\n      where latitude between $1 and $2\n        and longitude between $3 and $4\n      limit 160`,
@@ -651,7 +727,12 @@ async function loadNearbyLocations(
     const latitude = finiteNumber(row.latitude);
     const longitude = finiteNumber(row.longitude);
     if (latitude === null || longitude === null) return [];
-    const distance = haversineMeters(input.latitude, input.longitude, latitude, longitude);
+    const distance = haversineMeters(
+      input.latitude,
+      input.longitude,
+      latitude,
+      longitude,
+    );
     if (distance > input.radiusM) return [];
     return [{ row, latitude, longitude, distance }];
   });
@@ -665,7 +746,12 @@ async function loadNearbyLocations(
   );
   const acceptanceByLocation = new Map<string, BrowserAcceptance[]>();
   for (const row of acceptanceResult.rows) {
-    if (row.action !== "pay" && row.action !== "earn" && row.action !== "redeem") continue;
+    if (
+      row.action !== "pay" &&
+      row.action !== "earn" &&
+      row.action !== "redeem"
+    )
+      continue;
     if (
       row.acceptance_state !== "yes" &&
       row.acceptance_state !== "no" &&
@@ -675,7 +761,10 @@ async function loadNearbyLocations(
       continue;
     const confidence = finiteNumber(row.confidence);
     if (confidence === null) continue;
-    const checkedAt = row.source_checked_at instanceof Date ? row.source_checked_at.toISOString() : new Date(row.source_checked_at).toISOString();
+    const checkedAt =
+      row.source_checked_at instanceof Date
+        ? row.source_checked_at.toISOString()
+        : new Date(row.source_checked_at).toISOString();
     const items = acceptanceByLocation.get(row.location_key) ?? [];
     items.push(
       Object.freeze({
@@ -702,7 +791,9 @@ async function loadNearbyLocations(
         longitude,
         distance_m: Math.round(distance),
         location_confidence: cleanText(row.confidence, 40),
-        accepted: Object.freeze(acceptanceByLocation.get(row.location_key) ?? []),
+        accepted: Object.freeze(
+          acceptanceByLocation.get(row.location_key) ?? [],
+        ),
       }),
     ),
   );
@@ -719,7 +810,10 @@ function databaseUrl(environment: DeploymentEnvironment): string {
 
 export function createNearbyVercelRequestHandler(
   options: NearbyVercelAdapterOptions = {},
-): (request: NearbyVercelRequest, response: NearbyVercelResponse) => Promise<void> {
+): (
+  request: NearbyVercelRequest,
+  response: NearbyVercelResponse,
+) => Promise<void> {
   const environment = options.environment ?? process.env;
   const fetchFn = options.fetchFn ?? fetch;
   let allowedHosts: ReadonlySet<string> | undefined;
@@ -735,7 +829,10 @@ export function createNearbyVercelRequestHandler(
         sslRootCertificate: SUPABASE_PROD_CA_2021,
       }),
     );
-    target = createRoleScopedQueryPool(pool as unknown as QueryPool, "jro_runtime");
+    target = createRoleScopedQueryPool(
+      pool as unknown as QueryPool,
+      "jro_runtime",
+    );
     return target;
   };
 
@@ -755,7 +852,12 @@ export function createNearbyVercelRequestHandler(
       } else if (environment.JRO_ENABLE_OSM_DISCOVERY === "true") {
         try {
           const prewarm = await loadPrewarmCandidates(target);
-          const places = await discoverFromOverpass(input, prewarm, environment, fetchFn);
+          const places = await discoverFromOverpass(
+            input,
+            prewarm,
+            environment,
+            fetchFn,
+          );
           discoveredCount = places.length;
           await ingestOsm(target, input, cell, places);
           cacheStatus = "miss";

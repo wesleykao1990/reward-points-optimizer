@@ -108,7 +108,13 @@ describe("nearby OSM discovery", () => {
     const places = normalizeOverpassResponse({
       elements: [
         { type: "node", id: 1, lat: 48.85, lon: 2.35, tags: { name: "Paris" } },
-        { type: "node", id: "bad", lat: 35.68, lon: 139.76, tags: { name: "bad" } },
+        {
+          type: "node",
+          id: "bad",
+          lat: 35.68,
+          lon: 139.76,
+          tags: { name: "bad" },
+        },
         { type: "way", id: 2, tags: { name: "missing center" } },
       ],
     });
@@ -116,8 +122,8 @@ describe("nearby OSM discovery", () => {
   });
 
   it("rejects a malformed Overpass envelope", () => {
-    expect(() => normalizeOverpassResponse({ elements: "not-an-array" })).toThrow(
-      "osm_response_invalid",
-    );
+    expect(() =>
+      normalizeOverpassResponse({ elements: "not-an-array" }),
+    ).toThrow("osm_response_invalid");
   });
 });
