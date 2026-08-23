@@ -19,6 +19,41 @@
     return valueNode;
   };
 
+  const paymentLogoSources = Object.freeze({
+    "point.d": "/assets/payment-logos/dpoint.png",
+    "point.jre": "/assets/payment-logos/jrepoint.webp",
+    "point.nanaco": "/assets/payment-logos/nanaco.png",
+    "point.paypay": "/assets/payment-logos/paypay.svg",
+    "point.ponta": "/assets/payment-logos/ponta.png",
+    "point.rakuten": "/assets/payment-logos/rakutenpoint.svg",
+    "point.v": "/assets/payment-logos/vpoint.svg",
+    "point.waon": "/assets/payment-logos/waon.png",
+    "wallet.aeonpay": "/assets/payment-logos/aeonpay.png",
+    "wallet.aupay": "/assets/payment-logos/aupay.png",
+    "wallet.dbarai": "/assets/payment-logos/dbarai.png",
+    "wallet.famipay": "/assets/payment-logos/famipay.svg",
+    "wallet.paypay": "/assets/payment-logos/paypay.svg",
+    "wallet.rakutenpay": "/assets/payment-logos/rakutenpay.svg",
+    "card.aeon": "/assets/payment-logos/aeoncard.png",
+    "card.aupay": "/assets/payment-logos/aupaycard.png",
+    "card.d": "/assets/payment-logos/dcard.png",
+    "card.paypay": "/assets/payment-logos/paypaycard.png",
+    "card.rakuten": "/assets/payment-logos/rakutencard.svg",
+    "card.smbc": "/assets/payment-logos/smbccard.png",
+    "card.view": "/assets/payment-logos/viewcard.gif",
+  });
+
+  const paymentLogo = (familyId) => {
+    const frame = node("span", "payment-logo");
+    const image = node("img");
+    image.src = paymentLogoSources[familyId];
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    frame.appendChild(image);
+    return frame;
+  };
+
   const clear = (element) => {
     while (element.firstChild) element.removeChild(element.firstChild);
   };
@@ -1510,11 +1545,11 @@
       return;
     }
     const groups = [
-      ["point", "ポイント・マイル", "P"],
-      ["mobile_pay", "モバイル決済", "▦"],
-      ["credit_card", "クレジットカード", "▰"],
+      ["point", "ポイント・マイル"],
+      ["mobile_pay", "モバイル決済"],
+      ["credit_card", "クレジットカード"],
     ];
-    groups.forEach(([kind, heading, icon]) => {
+    groups.forEach(([kind, heading]) => {
       const items = pointSpendOptions.walletCatalogue.filter(
         (item) => item.kind === kind,
       );
@@ -1524,7 +1559,7 @@
       const list = node("div", "p0-wallet-family-list");
       items.forEach((item) => {
         const card = node("article", "p0-wallet-family-card");
-        card.appendChild(text("span", icon, "p0-wallet-family-icon"));
+        card.appendChild(paymentLogo(item.family_id));
         const copy = node("span", "p0-wallet-family-copy");
         copy.appendChild(text("strong", item.label));
         card.appendChild(copy);
@@ -1638,16 +1673,9 @@
           checkbox.value = item.family_id;
           checkbox.dataset.p0Product = "true";
           checkbox.addEventListener("change", syncP0ProductPickers);
-          const copy = node("span");
+          const copy = node("span", "p0-product-identity");
+          copy.appendChild(paymentLogo(item.family_id));
           copy.appendChild(text("strong", item.label));
-          copy.appendChild(
-            text(
-              "small",
-              item.kind === "point"
-                ? "使い方と交換先を確認"
-                : "通常還元率で比較",
-            ),
-          );
           label.appendChild(checkbox);
           label.appendChild(copy);
           container.appendChild(label);

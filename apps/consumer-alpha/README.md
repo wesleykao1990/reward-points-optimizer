@@ -80,6 +80,11 @@ Home does not expose a generic electronic-money switch or a global
 `use / do not use` valuation question. Electronic money is represented only by
 named, service-specific routes such as Nanaco, with inputs collected when that
 route is relevant.
+Home and Wallet identify each of the 21 selectable service families with a
+locally served logo retrieved from the provider's official public website.
+The adjacent Japanese service name remains the accessible label; decorative
+logo images have empty alternative text. Source URLs and trademark handling
+notes are recorded in `public/assets/payment-logos/SOURCES.md`.
 
 The Wallet tab exposes the same 21 service families plus the deterministic
 fixed-ratio point-spending graph. Only complete transfer/redemption claims are
