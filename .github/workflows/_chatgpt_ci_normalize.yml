@@ -1,0 +1,46 @@
+name: Normalize PR branch
+
+on:
+  push:
+    branches:
+      - chatgpt/tokyo-merchant-database-20260823
+    paths:
+      - .github/workflows/_chatgpt_ci_normalize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt/tokyo-merchant-database-20260823
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format changed nearby files
+        run: |
+          pnpm exec biome format --write \
+            apps/consumer-alpha/src/nearby-purchase-advice.ts \
+            apps/consumer-alpha/test/nearby-purchase-advice.test.ts \
+            apps/consumer-alpha/public/nearby.html \
+            api/nearby-handler.mjs \
+            vercel.json
+      - name: Remove one-shot helper
+        run: rm .github/workflows/_chatgpt_ci_normalize.yml
+      - name: Refresh package integrity manifest
+        run: python3 scripts/generate_checksums.py --write
+      - name: Commit normalization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Normalize nearby purchase changes for CI"
+          git push origin HEAD:chatgpt/tokyo-merchant-database-20260823
