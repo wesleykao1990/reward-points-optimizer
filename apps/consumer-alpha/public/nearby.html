@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>近くのお店 | Rewards Optimizer</title>
+    <link rel="stylesheet" href="/nearby.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <a class="back" href="/">← Rewards Optimizer</a>
+        <p class="eyebrow">NEARBY MERCHANTS</p>
+        <h1>近くのお店で使える決済を探す</h1>
+        <p class="lede">
+          現在地はこの検索リクエストにだけ使用します。ユーザーIDや正確な検索座標はmerchant databaseに保存しません。
+        </p>
+      </header>
+
+      <section class="controls" aria-labelledby="search-title">
+        <div>
+          <h2 id="search-title">現在地から検索</h2>
+          <p>まず600m以内を検索します。店舗情報がある場合は店舗単位、なければチェーン情報を表示します。</p>
+        </div>
+        <button id="nearby-button" type="button">現在地から探す</button>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <section id="results" class="results" aria-label="検索結果"></section>
+
+      <footer class="footer">
+        <p>店舗位置データ: <span id="attribution">© OpenStreetMap contributors</span></p>
+        <p>表示内容が違う場合は、今後アプリから訂正報告できるmerchant correction flowに接続します。</p>
+      </footer>
+    </main>
+    <script src="/nearby.js" defer></script>
+  </body>
+</html>
