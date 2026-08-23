@@ -91,6 +91,27 @@ describe("PostgreSQL generic implementation catalogue", () => {
     );
   });
 
+  it("normalizes node-postgres timestamptz Date values in the provenance projection", async () => {
+    const target = clientFor(() => ({
+      rows: [
+        factRow({
+          source_url: "https://example.test/official",
+          checked_at: new Date("2026-08-22T00:00:00.000Z"),
+          effective_from: "2026-08-20",
+          effective_to: null,
+        }),
+      ],
+    }));
+    const result =
+      await createPostgresP0ImplementationCatalogueStore(target).list();
+    expect(result[0]).toMatchObject({
+      source_url: "https://example.test/official",
+      checked_at: "2026-08-22T00:00:00.000Z",
+      effective_from: "2026-08-20",
+      effective_to: null,
+    });
+  });
+
   it("binds an injected host clock as the effective-at instant", async () => {
     let valuesSeen: readonly unknown[] | undefined;
     const target = clientFor((text, values) => {

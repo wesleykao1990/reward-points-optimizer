@@ -281,6 +281,13 @@ function safeSourceUrl(value: unknown): string | null {
 
 function safeDate(value: unknown, field: string): string | null {
   if (value === null || value === undefined) return null;
+  // node-postgres decodes `timestamptz` columns as Date instances. Keep the
+  // public adapter canonical while accepting that standard driver shape.
+  if (value instanceof Date && !nodeTypes.isProxy(value)) {
+    const timestamp = value.getTime();
+    if (Number.isFinite(timestamp)) return value.toISOString();
+    throw new TypeError(`p0_implementation_${field}_invalid`);
+  }
   if (
     typeof value !== "string" ||
     value.length > 64 ||
