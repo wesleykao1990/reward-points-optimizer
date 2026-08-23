@@ -338,7 +338,8 @@ export async function buildNearbyPurchaseAdvice(
         });
         const winner = [...calculations].sort(
           (left, right) =>
-            numericReward(right.reward_points) - numericReward(left.reward_points),
+            numericReward(right.reward_points) -
+            numericReward(left.reward_points),
         )[0];
         if (winner) {
           bestPayment = Object.freeze({
