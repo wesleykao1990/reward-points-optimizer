@@ -7,6 +7,10 @@
   "regions": ["hnd1"],
   "rewrites": [
     {
+      "source": "/api/nearby",
+      "destination": "/api/nearby-handler"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -15,6 +19,9 @@
     "api/handler.mjs": {
       "maxDuration": 30,
       "includeFiles": "fixtures/m3/provisional/**"
+    },
+    "api/nearby-handler.mjs": {
+      "maxDuration": 30
     }
   },
   "headers": [
@@ -39,7 +46,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
+          "value": "camera=(), microphone=(), geolocation=(self)"
         },
         {
           "key": "Cache-Control",

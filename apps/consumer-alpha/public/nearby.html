@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>近くのお店 | Rewards Optimizer</title>
+    <link rel="stylesheet" href="/nearby.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <a class="back" href="/">← Rewards Optimizer</a>
+        <p class="eyebrow">NEARBY PURCHASE</p>
+        <h1>近くのお店で、いちばん得な払い方を探す</h1>
+        <p class="lede">
+          登録済みのカード・スマホ決済を、その店舗で実際に使えるものだけに絞って比較します。ポイントカードは支払い方法とは別に、貯められる候補を表示します。
+        </p>
+      </header>
+
+      <section class="controls" aria-labelledby="search-title">
+        <div class="control-copy">
+          <h2 id="search-title">現在地から検索</h2>
+          <p>位置情報はこの検索リクエストだけに使い、ユーザーIDや正確な検索座標をmerchant databaseには保存しません。</p>
+          <p id="wallet-summary" class="wallet-summary"></p>
+        </div>
+        <div class="search-actions">
+          <label class="amount-field" for="purchase-amount">
+            <span>予定金額</span>
+            <span class="amount-input"><b>¥</b><input id="purchase-amount" type="number" inputmode="numeric" min="1" max="1000000" step="1" value="1000" /></span>
+          </label>
+          <button id="nearby-button" type="button">現在地から探す</button>
+        </div>
+      </section>
+
+      <p class="disclosure">おすすめ還元は現在の登録ウォレットと有効なチェーン共通ルールによる概算です。店舗固有の決済例外がある場合は、その店舗の情報を優先します。</p>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <section id="results" class="results" aria-label="検索結果"></section>
+
+      <footer class="footer">
+        <p>店舗位置データ: <span id="attribution">© OpenStreetMap contributors</span></p>
+        <p>店舗ごとの例外はチェーン共通ルールを上書きします。表示内容が違う場合はmerchant correction flowで訂正できる設計です。</p>
+      </footer>
+    </main>
+    <script src="/nearby.js" defer></script>
+  </body>
+</html>
