@@ -589,9 +589,15 @@ describe("M6 localhost consumer shell", () => {
     expect(html).toContain('id="p0-card-picker"');
     expect(html).toContain('id="p0-mobile-pay-picker"');
     expect(html).toContain('id="p0-point-picker"');
-    expect(html).toContain("持っているカードを7種類から選択");
-    expect(html).toContain("利用中のサービスを6種類から選択");
-    expect(html).toContain("保有するポイントを8種類から選択");
+    expect(html).not.toContain('id="p0-card-toggle"');
+    expect(html).not.toContain('id="p0-mobile-pay-toggle"');
+    expect(html).not.toContain('id="p0-point-toggle"');
+    expect(html).not.toContain('class="choice-toggle"');
+    expect(source).toContain('"p0-product-check"');
+    expect(source).toContain("もう一度タップすると解除できます");
+    expect(html).toContain("カードをタップして選択");
+    expect(html).toContain("サービスをタップして選択");
+    expect(html).toContain("保有するポイントをタップして選択");
     expect(html).not.toContain("電子マネーの使い方");
     expect(html).not.toContain("今回使いたいですか？");
     expect(html).not.toContain('value="synthetic_stored_value"');

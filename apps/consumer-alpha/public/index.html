@@ -32,7 +32,7 @@
         <section class="overview-panel" aria-labelledby="overview-title">
           <div class="overview-topline"><span id="overview-title">現在の比較条件</span><span>保存されません</span></div>
           <div class="overview-value"><strong id="summary-amount">¥640</strong><span>のお買い物</span></div>
-          <div class="overview-meter"><span><i id="summary-meter"></i></span><small id="summary-instruments">支払い方法 1つ</small></div>
+          <div class="overview-meter"><span><i id="summary-meter"></i></span><small id="summary-instruments">支払い方法 0つ</small></div>
         </section>
 
         <section id="purchase-form" class="content-section" aria-labelledby="onboarding-title">
@@ -68,31 +68,27 @@
             </fieldset>
 
             <fieldset class="instrument-fieldset">
-              <legend><span>持っている支払い方法</span><small>複数選べます</small></legend>
+              <legend><span>比較するサービス</span><small>タップで選択・複数可</small></legend>
               <div class="choice-list">
-                <label class="choice-row">
-                  <input id="p0-card-toggle" type="checkbox" name="instrument" value="synthetic_card" checked>
+                <input id="p0-card-instrument" type="checkbox" name="instrument" value="synthetic_card" hidden>
+                <div class="p0-picker-heading">
                   <span class="choice-icon card-icon" aria-hidden="true">▰</span>
-                  <span class="choice-copy"><strong>クレジットカード</strong><small>持っているカードを7種類から選択</small></span>
-                  <span class="choice-toggle" aria-hidden="true"></span>
-                </label>
+                  <span class="choice-copy"><strong>クレジットカード</strong><small>カードをタップして選択</small></span>
+                </div>
                 <div id="p0-card-picker" class="p0-product-picker"><p class="helper">カード一覧を読み込んでいます…</p></div>
-                <label class="choice-row">
-                  <input id="p0-mobile-pay-toggle" type="checkbox" name="instrument" value="synthetic_qr_wallet">
+                <input id="p0-mobile-pay-instrument" type="checkbox" name="instrument" value="synthetic_qr_wallet" hidden>
+                <div class="p0-picker-heading">
                   <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
-                  <span class="choice-copy"><strong>モバイル決済</strong><small>利用中のサービスを6種類から選択</small></span>
-                  <span class="choice-toggle" aria-hidden="true"></span>
-                </label>
-                <div id="p0-mobile-pay-picker" class="p0-product-picker" hidden><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
-                <label class="choice-row">
-                  <input id="p0-point-toggle" type="checkbox">
+                  <span class="choice-copy"><strong>モバイル決済</strong><small>サービスをタップして選択</small></span>
+                </div>
+                <div id="p0-mobile-pay-picker" class="p0-product-picker"><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
+                <div class="p0-picker-heading">
                   <span class="choice-icon value-icon" aria-hidden="true">P</span>
-                  <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントを8種類から選択</small></span>
-                  <span class="choice-toggle" aria-hidden="true"></span>
-                </label>
-                <div id="p0-point-picker" class="p0-product-picker" hidden><p class="helper">ポイント一覧を読み込んでいます…</p></div>
+                  <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントをタップして選択</small></span>
+                </div>
+                <div id="p0-point-picker" class="p0-product-picker"><p class="helper">ポイント一覧を読み込んでいます…</p></div>
               </div>
-              <p id="p0-selection-status" class="helper" aria-live="polite">クレジットカードを1つ以上選んでください。</p>
+              <p id="p0-selection-status" class="helper" aria-live="polite">支払い方法をタップして選んでください。</p>
             </fieldset>
 
             <button type="submit" class="primary"><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>

@@ -85,6 +85,9 @@ locally served logo retrieved from the provider's official public website.
 The adjacent Japanese service name remains the accessible label; decorative
 logo images have empty alternative text. Source URLs and trademark handling
 notes are recorded in `public/assets/payment-logos/SOURCES.md`.
+Home presents every service directly without a family-level enable switch. The
+whole service card is the mobile-sized checkbox target, and its border and
+checkmark communicate the selected state.
 
 The Wallet tab exposes the same 21 service families plus the deterministic
 fixed-ratio point-spending graph. Only complete transfer/redemption claims are
