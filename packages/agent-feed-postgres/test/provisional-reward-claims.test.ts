@@ -189,14 +189,16 @@ function recordingPort(
       events.push("BEGIN");
     },
     async persist(input) {
-      events.push(`PERSIST:${input.candidate_hash}`);
+      events.push(
+        `PERSIST:${input.candidate_hash}:${input.activate === true ? "activate" : "retain"}`,
+      );
       if (failOnPersist) throw new Error("database failure");
       const duplicate = persisted.has(input.candidate_hash);
       persisted.add(input.candidate_hash);
       return {
         candidate_id: `candidate-${input.candidate_hash.slice(-8)}`,
         outcome: duplicate ? "duplicate" : "inserted",
-        status: "machine_checked",
+        status: input.activate ? "active_experimental" : "machine_checked",
       };
     },
     async commit() {
@@ -233,6 +235,10 @@ describe("generic structured reward-claim provisional bulk ingestion", () => {
     expect(events.filter((event) => event.startsWith("PERSIST:"))).toHaveLength(
       1,
     );
+    expect(events[1]).toContain(":activate");
+    expect(
+      result.members.find((member) => member.claim_id === "complete-claim"),
+    ).toMatchObject({ persisted_status: "active_experimental" });
   });
 
   it("does not convert observations without explicit reward_claims", async () => {
@@ -388,6 +394,7 @@ describe("generic structured reward-claim provisional bulk ingestion", () => {
 
     expect(first.status).toBe("inserted");
     expect(second.status).toBe("duplicate");
+    expect(second.members[0]?.persisted_status).toBe("active_experimental");
     expect(events.filter((event) => event.startsWith("PERSIST:"))).toHaveLength(
       2,
     );
@@ -445,7 +452,7 @@ describe("generic structured reward-claim provisional bulk ingestion", () => {
               {
                 candidate_id: "candidate-db-id",
                 outcome: "inserted",
-                status: "machine_checked",
+                status: "active_experimental",
               },
             ],
           };
@@ -466,5 +473,36 @@ describe("generic structured reward-claim provisional bulk ingestion", () => {
     expect(P0_PROVISIONAL_CANDIDATE_QUERY).toContain(
       "persist_p0_reward_claim_candidate",
     );
+  });
+
+  it("passes activation intent only for a compiler-produced active envelope", async () => {
+    const inputs: Array<{ activate?: boolean; intended_status?: string }> = [];
+    const port: P0EconomicCandidatePersistencePort = {
+      async persist(input) {
+        inputs.push({
+          activate: input.activate,
+          intended_status: input.intended_status,
+        });
+        return {
+          candidate_id: "candidate-activation-intent",
+          outcome: "inserted",
+          status: input.activate ? "active_experimental" : "machine_checked",
+        };
+      },
+    };
+    const needsEvidence = {
+      ...observation("needs-evidence", [claim("needs-evidence-claim")]),
+      status: "needs_evidence",
+    };
+    const result = await processP0RewardClaimBatch(
+      batch([observation("active", [claim("active-claim")]), needsEvidence]),
+      port,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(inputs).toEqual([
+      { activate: true, intended_status: "active_experimental" },
+      { activate: false, intended_status: "needs_evidence" },
+    ]);
   });
 });

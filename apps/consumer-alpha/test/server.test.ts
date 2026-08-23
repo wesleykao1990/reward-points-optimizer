@@ -587,8 +587,8 @@ describe("M6 localhost consumer shell", () => {
     expect(html).not.toContain("ファミリー");
     expect(source).not.toContain("交換計算対応");
     expect(source).not.toContain("情報掲載");
-    expect(html).toContain("比較するサービスを選ぶ");
-    expect(html).not.toContain("対応サービス一覧");
+    expect(html).toContain("比較するサービス");
+    expect(html).toContain("対応サービス一覧");
     expect(source).toContain("実施中のキャンペーン");
     expect(source).toContain("paymentLogoSources");
     expect(source).toContain('node("img")');

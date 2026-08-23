@@ -39,6 +39,7 @@ const MAX_FACTS = 512;
 const DATABASE_PAGE_SIZE = 128;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const PUBLIC_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/u;
 const URL_PATTERN = /https?:\/\//iu;
 const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/u;
 
@@ -226,6 +227,21 @@ function safePublicText(
   return value;
 }
 
+function safePublicIdentifier(
+  value: unknown,
+  field: string,
+  maxLength: number,
+): string {
+  if (
+    typeof value !== "string" ||
+    value.length < 1 ||
+    value.length > maxLength ||
+    !PUBLIC_IDENTIFIER_PATTERN.test(value)
+  )
+    throw new TypeError(`implementation_fact_${field}_invalid`);
+  return value;
+}
+
 function safeUpdatedAt(value: unknown): string | null {
   if (value === null) return null;
   if (
@@ -327,12 +343,10 @@ function displayClaim(value: string): string {
 function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
   if (!UUID_PATTERN.test(record.fact_id))
     throw new TypeError("implementation_fact_fact_id_invalid");
-  const family = displayFamily(
-    safePublicText(record.family_id, "family_id", 128),
-  );
-  const claim = displayClaim(
-    safePublicText(record.claim_type, "claim_type", 256),
-  );
+  const familyId = safePublicIdentifier(record.family_id, "family_id", 128);
+  const claimType = safePublicIdentifier(record.claim_type, "claim_type", 256);
+  const family = displayFamily(familyId);
+  const claim = displayClaim(claimType);
   const subject = localizeImplementationSubject(
     safePublicText(record.subject, "subject", 4096),
   );
@@ -344,6 +358,8 @@ function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
   );
   return Object.freeze({
     fact_key: record.fact_id,
+    family_id: familyId,
+    claim_type: claimType,
     family,
     claim,
     subject,
@@ -367,6 +383,8 @@ function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
 
 const CARD_KEYS = Object.freeze([
   "fact_key",
+  "family_id",
+  "claim_type",
   "family",
   "claim",
   "subject",
@@ -387,6 +405,8 @@ function normalizeCard(value: unknown): ImplementationFactCard {
   );
   if (typeof input.fact_key !== "string" || !UUID_PATTERN.test(input.fact_key))
     throw new TypeError("implementation_fact_fact_key_invalid");
+  const familyId = safePublicIdentifier(input.family_id, "family_id", 128);
+  const claimType = safePublicIdentifier(input.claim_type, "claim_type", 256);
   if (typeof input.use_in_comparison !== "boolean")
     throw new TypeError("implementation_fact_comparison_flag_invalid");
   const subject = localizeImplementationSubject(
@@ -394,6 +414,8 @@ function normalizeCard(value: unknown): ImplementationFactCard {
   );
   return Object.freeze({
     fact_key: input.fact_key,
+    family_id: familyId,
+    claim_type: claimType,
     family: safePublicText(input.family, "family", 96),
     claim: safePublicText(input.claim, "claim", 96),
     subject,
@@ -447,8 +469,8 @@ function fixtureEntry(value: unknown): FixtureEntry {
       "parent_claim_id",
       256,
     ),
-    family_id: safePublicText(entry.family_id, "family_id", 128),
-    claim_type: safePublicText(entry.claim_type, "claim_type", 256),
+    family_id: safePublicIdentifier(entry.family_id, "family_id", 128),
+    claim_type: safePublicIdentifier(entry.claim_type, "claim_type", 256),
     subject: safePublicText(entry.subject, "subject", 4096),
     predicate: safePublicText(entry.predicate, "predicate", 512),
     short_paraphrase: safePublicText(entry.short_paraphrase, "summary", 4096),
@@ -491,6 +513,8 @@ function fixtureCards(
       const claim = displayClaim(entry.claim_type);
       return Object.freeze({
         fact_key: opaqueFixtureKey(entry, index, document.version),
+        family_id: entry.family_id,
+        claim_type: entry.claim_type,
         family,
         claim,
         subject: localizeImplementationSubject(entry.subject),

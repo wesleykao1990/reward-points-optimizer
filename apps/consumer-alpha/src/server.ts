@@ -11,11 +11,13 @@ import { fileURLToPath } from "node:url";
 import { types as nodeTypes } from "node:util";
 import { classifyProvisionalValidity } from "@jro/provisional-rules";
 import { SYNTHETIC_REPLAY_KNOWLEDGE_TIME } from "@jro/test-fixtures";
+import type { ActiveRewardCalculationPort } from "./active-reward-calculation.js";
 import {
   AGENT_FEED_INTERNAL_EVENT_PATH,
   AGENT_FEED_INTERNAL_MAX_BODY_BYTES,
   type AgentFeedIngressPort,
 } from "./agent-feed-ingress.js";
+import { projectConsumerReference } from "./consumer-reference.js";
 import type {
   ExperimentalCataloguePort,
   ExperimentalCorrectionInput,
@@ -266,6 +268,8 @@ export interface AppDependencies {
   readonly factInfluence?: FactInfluenceGraphPort;
   /** Server-only signed Agent Feed delivery ingress. */
   readonly agentFeedIngress?: AgentFeedIngressPort;
+  /** Active machine-validated Agent Feed rules used directly by arithmetic. */
+  readonly activeRewardCalculations?: ActiveRewardCalculationPort;
 }
 
 export type AppCatalogueDependency =
@@ -275,7 +279,20 @@ export type AppCatalogueDependency =
   | ImplementationFactBackend
   | FactInfluenceGraphPort
   | AgentFeedIngressPort
+  | ActiveRewardCalculationPort
   | AppDependencies;
+
+function resolveActiveRewardCalculations(
+  dependency: AppCatalogueDependency | undefined,
+): ActiveRewardCalculationPort | undefined {
+  if (
+    dependency !== null &&
+    typeof dependency === "object" &&
+    "activeRewardCalculations" in dependency
+  )
+    return dependency.activeRewardCalculations;
+  return undefined;
+}
 
 function resolveAgentFeedIngress(
   dependency: AppCatalogueDependency | undefined,
@@ -1095,6 +1112,11 @@ interface UnifiedRouteRecord {
   readonly recommendation_id?: `sha256:${string}`;
   readonly recommendation?: Readonly<Record<string, unknown>>;
   readonly fact_influence?: FactInfluenceBrowserView;
+  /** Official provenance for structured Agent Feed claims used in arithmetic. */
+  readonly source_url?: string;
+  readonly checked_at?: string;
+  readonly automatic_application?: true;
+  readonly calculation_source?: "agent_feed_structured";
 }
 
 /**
@@ -1878,21 +1900,55 @@ async function unifiedRecommendations(
   // Keep each route isolated: an invalid top-up must not remove a valid
   // purchase neighbour, and an explanation outage must remain visible only on
   // the affected route.
-  const calculations = await calculateSelectedProductPurchases(
+  const fallbackCalculations = await calculateSelectedProductPurchases(
     input.selected_p0_products,
     input.amount_jpy,
   );
+  let activeCalculations = Object.freeze([]) as Awaited<
+    ReturnType<ActiveRewardCalculationPort["calculate"]>
+  >;
+  const activePort = resolveActiveRewardCalculations(dependency);
+  if (activePort) {
+    try {
+      activeCalculations = await activePort.calculate({
+        selected_p0_products: input.selected_p0_products,
+        merchant_id: input.merchant_id,
+        branch_id: input.branch_id,
+        amount_jpy: input.amount_jpy,
+        tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
+        effective_at: input.effective_at,
+      });
+    } catch (error) {
+      reportDeploymentFailure("active_reward_calculation", error);
+    }
+  }
+  // Active feed rules replace the checked-in bootstrap claim per family. A
+  // database outage retains the bootstrap result, but there is no promotion
+  // or UI approval between an active row and this calculation.
+  const calculationsByFamily = new Map(
+    fallbackCalculations.map((calculation) => [
+      calculation.family_id,
+      calculation,
+    ]),
+  );
+  for (const calculation of activeCalculations)
+    calculationsByFamily.set(calculation.family_id, calculation);
+  const calculations = [...calculationsByFamily.values()];
   const selectedRoutes = calculations.map((calculation) => {
     const routeId = `selected_product_${calculation.family_id}`;
     const recommendationId = unifiedRecommendationId(routeId, input);
     rememberRecommendationId(recommendationId);
     return Object.freeze({
       route_id: routeId,
-      label: `${calculation.label}（一般的な基本還元率）`,
+      label: calculation.label,
       kind: "calculation" as const,
       status: "eligible" as const,
       validity_state: "active" as const,
       issues: Object.freeze([]),
+      ...(calculation.source_url ? { source_url: calculation.source_url } : {}),
+      checked_at: calculation.checked_at,
+      automatic_application: true as const,
+      calculation_source: calculation.calculation_source,
       recommendation_id: recommendationId,
       recommendation: Object.freeze({
         outcome: "definite",
@@ -1903,6 +1959,7 @@ async function unifiedRecommendations(
           reward_label: calculation.reward_label,
           reward_rate_percent: calculation.rate_percent,
           objective_score_jpy: null,
+          source_claim_id: calculation.source_claim_id,
           conditions: Object.freeze([calculation.calculation_note]),
         }),
       }),
@@ -2212,7 +2269,11 @@ export async function handleRequest(
         Allow: "POST",
       });
     }
-    if (method !== "GET" && pathname === "/api/experimental/facts") {
+    if (
+      method !== "GET" &&
+      (pathname === "/api/experimental/facts" ||
+        pathname === "/api/consumer/reference")
+    ) {
       return errorResponseWithHeaders(requestError(405, "method_not_allowed"), {
         Allow: "GET",
       });
@@ -2227,6 +2288,29 @@ export async function handleRequest(
       });
     }
     if (method === "GET") {
+      if (pathname === "/api/consumer/reference") {
+        try {
+          const snapshot = normalizeImplementationFactSnapshot(
+            await resolveImplementationCatalogue(dependency).list(),
+          );
+          return jsonResponse(
+            200,
+            projectConsumerReference(snapshot) as unknown as Readonly<
+              Record<string, unknown>
+            >,
+          );
+        } catch (error) {
+          reportDeploymentFailure("consumer_reference_list", error);
+          if (
+            error &&
+            typeof error === "object" &&
+            "status" in error &&
+            "code" in error
+          )
+            throw error;
+          throw requestError(503, "consumer_reference_unavailable");
+        }
+      }
       if (pathname === "/api/experimental/lotteries") {
         try {
           return jsonResponse(

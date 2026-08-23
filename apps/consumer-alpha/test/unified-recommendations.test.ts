@@ -418,8 +418,13 @@ describe("unified merchant recommendation journey", () => {
       "nanaco_purchase",
     ]);
     expect(body.routes[0]).toMatchObject({
+      label: "楽天カード",
       kind: "calculation",
       status: "eligible",
+      source_url: expect.stringMatching(/^https:\/\//u),
+      checked_at: expect.stringMatching(/^2026-/u),
+      automatic_application: true,
+      calculation_source: "agent_feed_structured",
       recommendation: {
         winner: {
           display_name: "楽天カードで支払う",
@@ -449,6 +454,56 @@ describe("unified merchant recommendation journey", () => {
     );
   });
 
+  it("automatically replaces the bootstrap rate with an active Agent Feed calculation", async () => {
+    const base = dependencies();
+    const body = responseJson(
+      await jsonRequest(
+        requestBody({ selected_p0_products: ["card.rakuten"] }),
+        {
+          ...base,
+          activeRewardCalculations: {
+            async calculate(input) {
+              expect(input).toMatchObject({
+                merchant_id: "merchant.synthetic",
+                amount_jpy: 200,
+                tax_exclusive_amount_jpy: 200,
+                selected_p0_products: ["card.rakuten"],
+              });
+              return [
+                {
+                  family_id: "card.rakuten" as const,
+                  label: "楽天カード",
+                  reward_label: "楽天ポイント",
+                  reward_points: "9",
+                  rate_percent: "4.5",
+                  calculation_note: "有効なAgent Feedルールで自動計算",
+                  source_claim_id: "claim.rakuten.active-rate",
+                  source_url: "https://www.rakuten-card.co.jp/point/",
+                  checked_at: "2026-08-23T00:00:00+09:00",
+                  calculation_source: "agent_feed_structured" as const,
+                },
+              ];
+            },
+          },
+        },
+      ),
+    );
+    expect(body.routes).toHaveLength(1);
+    expect(body.routes[0]).toMatchObject({
+      route_id: "selected_product_card.rakuten",
+      automatic_application: true,
+      source_url: "https://www.rakuten-card.co.jp/point/",
+      checked_at: "2026-08-23T00:00:00+09:00",
+      recommendation: {
+        winner: {
+          reward_points: "9",
+          reward_rate_percent: "4.5",
+          source_claim_id: "claim.rakuten.active-rate",
+        },
+      },
+    });
+  });
+
   it("does not add Seven-Eleven or Nanaco routes to general shopping", async () => {
     const body = responseJson(
       await jsonRequest(
@@ -460,12 +515,32 @@ describe("unified merchant recommendation journey", () => {
       "selected_product_card.rakuten",
     ]);
     expect(body.routes[0]).toMatchObject({
-      label: "楽天カード（一般的な基本還元率）",
+      label: "楽天カード",
       kind: "calculation",
       status: "eligible",
       recommendation: {
         winner: { reward_points: "2", reward_rate_percent: "1" },
       },
+    });
+  });
+
+  it("accepts catalogue merchants without adding Seven-Eleven-only routes", async () => {
+    const body = responseJson(
+      await jsonRequest(
+        requestBody({
+          merchant_id: "merchant.lawson",
+          branch_id: "location.lawson.representative",
+          selected_p0_products: ["card.rakuten"],
+        }),
+        dependencies(),
+      ),
+    );
+    expect(body.routes.map((route) => route.route_id)).toEqual([
+      "selected_product_card.rakuten",
+    ]);
+    expect(body.routes[0]).toMatchObject({
+      label: "楽天カード",
+      automatic_application: true,
     });
   });
 

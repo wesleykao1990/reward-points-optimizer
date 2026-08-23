@@ -49,6 +49,8 @@ export interface P0RewardClaimBatchMemberResult {
   readonly candidate_hash?: Sha256;
   readonly definition_hash?: Sha256;
   readonly status: "inserted" | "duplicate" | "rejected";
+  /** Status returned by the private candidate persistence routine. */
+  readonly persisted_status?: P0EconomicCandidatePersistenceStatus;
   readonly issues?: readonly P0RewardClaimBatchIssue[];
 }
 
@@ -61,7 +63,7 @@ export interface P0RewardClaimBatchResult {
 
 export const P0_PROVISIONAL_CANDIDATE_QUERY = `
 select candidate_id, outcome, status
-  from app_private.persist_p0_reward_claim_candidate($1::text, $2::text, $3::jsonb)
+  from app_private.persist_p0_reward_claim_candidate($1::text, $2::text, $3::jsonb, $4::boolean)
 `;
 
 /** One database call made only after the complete in-process batch preflight. */
@@ -74,6 +76,10 @@ export interface P0EconomicCandidatePersistenceInput {
   readonly candidate_hash: Sha256;
   readonly definition_hash: Sha256;
   readonly candidate: ProvisionalRuleCandidate;
+  /** Compiler-owned lifecycle intent; callers must not derive this from prose. */
+  readonly intended_status?: P0EconomicCandidatePersistenceStatus;
+  /** True only when the compiler returned an active_experimental envelope. */
+  readonly activate?: boolean;
 }
 
 export type P0EconomicCandidatePersistenceOutcome = "inserted" | "duplicate";
@@ -280,6 +286,8 @@ export async function processP0NanacoEconomicBatch(
         candidate_hash: item.result.candidate_hash,
         definition_hash: item.result.definition_hash,
         candidate: item.candidate,
+        intended_status: item.result.envelope.status,
+        activate: false,
       });
       persisted.set(item.result.candidate_hash, persistedResult);
     }
@@ -453,6 +461,8 @@ interface PreparedRewardClaimCandidate {
   readonly candidateHash: Sha256;
   readonly definitionHash: Sha256;
   readonly candidate: ProvisionalRuleCandidate;
+  readonly intendedStatus: P0EconomicCandidatePersistenceStatus;
+  readonly activate: boolean;
 }
 
 function batchRecord(value: unknown): Record<string, unknown> | null {
@@ -774,6 +784,8 @@ export async function processP0RewardClaimBatch(
         candidateHash: member.candidate_hash as Sha256,
         definitionHash: member.definition_hash as Sha256,
         candidate,
+        intendedStatus: envelope.status,
+        activate: envelope.status === "active_experimental",
       });
     }
   }
@@ -863,14 +875,16 @@ export async function processP0RewardClaimBatch(
     }
     const persisted = new Map<Sha256, P0EconomicCandidatePersistenceResult>();
     for (const item of ordered) {
-      persisted.set(
-        item.candidateHash,
-        await persistence.persist({
-          candidate_hash: item.candidateHash,
-          definition_hash: item.definitionHash,
-          candidate: item.candidate,
-        }),
-      );
+      const result = await persistence.persist({
+        candidate_hash: item.candidateHash,
+        definition_hash: item.definitionHash,
+        candidate: item.candidate,
+        intended_status: item.intendedStatus,
+        activate: item.activate,
+      });
+      if (item.activate && result.status !== "active_experimental")
+        throw new Error("p0_reward_claim_activation_not_persisted");
+      persisted.set(item.candidateHash, result);
     }
     if (persistence.commit !== undefined) {
       await persistence.commit();
@@ -884,6 +898,7 @@ export async function processP0RewardClaimBatch(
       memberResults[item.memberIndex] = {
         ...member,
         status: result.outcome,
+        persisted_status: result.status,
       };
     }
     return Object.freeze({
@@ -927,6 +942,7 @@ export function createPostgresP0RewardClaimCandidatePersistence(
         input.candidate_hash,
         input.definition_hash,
         JSON.stringify(input.candidate),
+        input.activate === true,
       ]);
       if (result.rows.length !== 1 || result.rows[0] === undefined)
         throw new TypeError("p0_reward_claim_candidate_empty_result");

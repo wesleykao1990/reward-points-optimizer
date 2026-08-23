@@ -2,6 +2,24 @@
 
 ## Unreleased — 2026-08-23
 
+- Merged the award-wallet front-end revamp and expanded the merchant selector
+  from the Seven-Eleven canary to every merchant family currently projected by
+  the P0 catalogue.
+- Removed the fixed purchase-claim ID map. Selected services now discover
+  structured base-rate claims by family and source role, return their official
+  source/check date, and mark that the claim was automatically used in the
+  calculation.
+- Added automatic structured Agent Feed reward processing: an admitted
+  `reward-claim.v1` finding bound to an exact P0 target is compiled, persisted,
+  and atomically activated without a manual promotion step. Malformed claims
+  fail independently and are never inferred from prose.
+- Added the bounded active reward-claim PostgreSQL projection and wired it into
+  the normal recommendation runtime. Active computable rules now replace the
+  bootstrap calculation for their service family automatically, with exact
+  merchant/tax/validity/provenance bindings and sibling isolation.
+- Added `GET /api/consumer/reference`, projecting source-backed wallet expiry,
+  redemption, merchant acceptance, and campaign fields with stable family and
+  claim IDs, effective dates, validity state, and official provenance.
 - Repositioned the consumer shell from a per-purchase comparison tool to an
   award wallet. `balance` is now the landing tab, the redemption planner is
   promoted to `spend`, the merchant comparison keeps its behaviour as `earn`
@@ -12,8 +30,9 @@
   estimated/confirmed confidence, with rule exceptions pinned to the lot they
   qualify rather than the programme. A 90-day runway sizes bars by yen value
   and hands the tapped lot to the redemption planner. It runs on a
-  checked-in demo dataset because no balance or expiry backend exists yet,
-  and says so in the markup.
+  checked-in balance dataset because no account/balance backend exists yet.
+  Expiry and redemption reference fields now come from the source-backed P0
+  catalogue when available.
 - Added a per-figure valuation disclosure and per-rule source attribution, so
   no yen total is shown without the assumption behind it and no expiry rule
   without its source and check date.

@@ -1,12 +1,13 @@
 # M6 local consumer alpha
 
-This is a localhost-only consumer prototype. It exposes one bounded merchant
-comparison journey at `POST /api/recommendations`, which evaluates the
+This consumer prototype exposes one bounded merchant comparison journey at
+`POST /api/recommendations`, which evaluates the
 synthetic card route alongside the Nanaco purchase and Seven Card Plus ->
 Nanaco credit-charge experiments when their host ports are available. It
-binds to `127.0.0.1`, accepts only bounded consumer inputs, and keeps rules,
-assurances, evidence, candidate plans, source URLs, database credentials, and
-authorization material on the trusted host.
+binds to `127.0.0.1` locally, accepts only bounded consumer inputs, and keeps
+rules, assurances, evidence, candidate plans, database credentials, and
+authorization material on the trusted host. Browser DTOs may include only the
+official source URL and last-checked date needed to verify displayed guidance.
 
 Run the checks with:
 
@@ -25,8 +26,9 @@ JRO_DATABASE_URL=postgresql://.../jro_local \
 
 `JRO_DATABASE_URL` is explicit and server-only. When set, one bounded pool
 backs the experimental catalogue, its correction route, all 364 P0
-implementation facts, and the exact Nanaco/Seven-Eleven experimental
-recommendations. Without it the localhost shell retains its checked-in demo
+implementation facts, the active structured Agent Feed reward-rule
+projection, and the exact Nanaco/Seven-Eleven experimental recommendations.
+Without it the localhost shell retains its checked-in demo
 catalogues; each unavailable real route remains visible with a route-scoped
 issue instead of suppressing its valid neighbors.
 
@@ -68,8 +70,10 @@ storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.
 
 The legacy synthetic endpoint still exposes one exact Tokyo test branch. The
-browser now starts with a neutral general-shopping merchant; Seven-Eleven is
-an explicit merchant choice and only that choice adds the Nanaco routes.
+browser starts with neutral general shopping and populates every currently
+covered merchant family from `GET /api/consumer/reference`; Seven-Eleven is no
+longer the only named choice. Only that merchant adds its Nanaco-specific
+routes.
 Enabling credit cards, mobile payments, or point programmes expands an exact
 allowlisted catalogue of seven card families, six mobile-payment families,
 and eight point families. The selected cards and mobile payments create real
@@ -106,16 +110,17 @@ service-level wrong-information control identifies the exact fact on the
 trusted host. Hashes, rule payloads, evidence, source identifiers, and raw URLs
 stay on the trusted host.
 
-The five mobile tabs are ordered Home, Wallet, History, Catalogue, and
-Settings. Wallet and History are session-only views of the unified selection;
-they do not claim persistent account state. The `カタログ` tab exposes the
+The five mobile tabs are ordered Balance, Spend, Earn, Catalogue, and
+Settings. Earn keeps a session-only comparison history and does not claim
+persistent account state. The `カタログ` tab exposes the
 customer-facing projection of routes and implementation facts on one surface.
 Its default localhost port reads all 364 checked-in implementation facts; a
 host may inject either the browser-safe fact port or the bounded
 `@jro/agent-feed-postgres` implementation store. `GET
 /api/experimental/facts` returns `{ "status", "updated_at", "facts" }` with an
-opaque UUID, Japanese family/claim labels, subject, predicate, summary, and
-`use_in_comparison` for each fact. Search and the service-family filter run over
+opaque UUID, stable `family_id` and `claim_type`, Japanese family/claim labels,
+subject, predicate, summary, and `use_in_comparison` for each fact. Search and
+the service-family filter run over
 the returned bounded list in the browser before facts are grouped into service
 blocks. The checked-in fixture is labeled `partial` for
 provenance even though it contains all 364 facts in this wave; a database-
@@ -145,6 +150,24 @@ must supply the current admitted P0 operations manifest and an exact
 is checked against the manifest before the port is created; no run ID, target,
 locator, outcome, or economic claim is discovered from Agent Feed. A terminal
 event without an exact host mapping is rejected by the persistence boundary.
+
+Findings that carry an exact `reward-claim.v1` document do not enter a manual
+promotion queue. The ingress matches the signed finding's `target_id` to the
+delivery stream's admitted operations manifest, then intersects source IDs
+with the frozen P0 coverage index. Each valid sibling is compiled, persisted,
+and atomically activated. Invalid or incomplete siblings remain rejected
+without suppressing valid ones, and no summary or other prose is converted to
+reward arithmetic. `JRO_P0_COVERAGE_INDEX_FILE` can override the default
+checked-in coverage index used for this binding.
+
+The normal PostgreSQL runtime reads those `active_experimental` compiler
+candidates on every effective-time recommendation request. A computable active
+candidate automatically replaces the checked-in bootstrap rate for its exact
+service family; there is no second promotion endpoint, reviewer click, feature
+tag, or browser gate. Merchant, branch, channel, tax basis, transaction limits,
+conditions, caps, rounding, output certainty, validity, and provenance remain
+structured rule inputs. If one candidate cannot be evaluated for the request,
+it is skipped without hiding an applicable sibling or another service family.
 
 Signing can use a host-owned resolver or the environment resolver. The latter
 reads only `JRO_AGENT_FEED_SIGNING_KEY_ID` plus
@@ -201,9 +224,9 @@ server-only `JRO_DATABASE_URL`, selects the NOLOGIN `jro_runtime` database role
 inside each transaction, verifies Supabase pooler TLS with the published CA,
 and keeps the client pool at one connection per warm serverless instance.
 
-The hosted route is still an experimental alpha, not current reward advice.
-It does not enable Supabase Auth, public Data API access, Agent Feed ingress,
-or durable user/session state. See `docs/28_deployment_vercel_supabase.md` for
+The hosted route does not enable Supabase Auth, public Data API access, the
+private Agent Feed delivery endpoint, or durable user/session state. See
+`docs/28_deployment_vercel_supabase.md` for
 the exact deployment and release automation boundary.
 
 The PostgreSQL migration chain separately provides
@@ -255,8 +278,9 @@ expiring-balance objective preselected. Every yen figure is backed by a
 plainly that the total is an "if I lost this today" figure, not a maximised
 one. Every expiry rule shows its source and how recently it was checked.
 
-No balance, expiry, or account backend exists yet. The panel therefore runs
-on a checked-in demo dataset in `public/app.js`, stores days relative to
+No balance or account backend exists yet. The panel therefore runs on a
+checked-in demo balance dataset in `public/app.js`, while expiry and redemption
+reference fields load from `/api/consumer/reference`. It stores days relative to
 "today" so a deadline is never rendered in the past, and says so in the
 markup. Balance capture is deliberately credential-free - screenshot, paste,
 CSV and manual entry are presented as the intended routes, all marked

@@ -1,5 +1,18 @@
 export type { NanacoEconomicPilotRoute } from "@jro/provisional-rules";
 export type {
+  ActiveRewardClaimRecord,
+  ActiveRewardClaimStore,
+} from "./active-reward-claims.js";
+export {
+  ACTIVE_REWARD_CLAIM_CALCULATIONS_FUNCTION,
+  ACTIVE_REWARD_CLAIM_CALCULATIONS_QUERY,
+  ACTIVE_REWARD_CLAIMS_FUNCTION,
+  ACTIVE_REWARD_CLAIMS_QUERY,
+  createPostgresActiveRewardClaimStore,
+  MAX_ACTIVE_REWARD_CLAIM_ROWS,
+  reduceActiveRewardClaimRow,
+} from "./active-reward-claims.js";
+export type {
   PoolClient,
   QueryClient,
   QueryPool,

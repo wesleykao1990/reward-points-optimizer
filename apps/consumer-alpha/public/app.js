@@ -6,6 +6,7 @@
   let catalogueRulesLoaded = false;
   let campaignLinks = [];
   let campaignLinksLoaded = false;
+  let consumerReference = null;
 
   const node = (tag, className) => {
     const value = document.createElement(tag);
@@ -300,9 +301,9 @@
       ...manual,
       merchant_id: merchantId,
       branch_id:
-        merchantId === "merchant.seveneleven"
-          ? "location.seveneleven.representative"
-          : "location.synthetic",
+        merchantId === "merchant.synthetic"
+          ? "location.synthetic"
+          : `location.${merchantId.slice("merchant.".length)}.representative`,
       amount_jpy: amount,
       tax_exclusive_amount_jpy: numericValueOr("nanaco-tax-exclusive", amount),
       nanaco_balance_jpy: numericValueOr("nanaco-balance", amount),
@@ -603,6 +604,21 @@
       }
       if (Array.isArray(plan.conditions) && plan.conditions.length)
         appendList(card, "このルートの条件", plan.conditions);
+      if (
+        route.automatic_application === true &&
+        route.calculation_source === "agent_feed_structured"
+      ) {
+        const provenance = node("div", "route-calculation-source");
+        provenance.appendChild(
+          text("span", "公式情報を自動で計算に反映しています。"),
+        );
+        const sourceLink = officialSourceLink(
+          route.source_url,
+          route.checked_at,
+        );
+        if (sourceLink) provenance.appendChild(sourceLink);
+        card.appendChild(provenance);
+      }
     } else if (route.status === "no_valid_plan") {
       card.appendChild(
         text("p", "現在の条件では有効な計画がありません。", "route-empty"),
@@ -633,7 +649,6 @@
         const routeLabel = String(route.label || "");
         const searchValue = routeLabel
           .replace(/^(?:通常のお買い物|セブン‐イレブン)・/u, "")
-          .replace(/（一般的な基本還元率）$/u, "")
           .split("→")[0]
           .replace("購入", "")
           .trim();
@@ -1328,6 +1343,12 @@
         fact &&
         typeof fact === "object" &&
         typeof fact.fact_key === "string" &&
+        typeof fact.family_id === "string" &&
+        /^(?:point|wallet|card|emoney|merchant|reg|transit)\.[A-Za-z0-9._:-]{1,127}$/u.test(
+          fact.family_id,
+        ) &&
+        typeof fact.claim_type === "string" &&
+        /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(fact.claim_type) &&
         typeof fact.family === "string" &&
         typeof fact.claim === "string" &&
         typeof fact.subject === "string" &&
@@ -1335,6 +1356,126 @@
         typeof fact.summary === "string" &&
         typeof fact.use_in_comparison === "boolean",
     );
+  };
+
+  const safeConsumerReference = (value) => {
+    if (
+      !value ||
+      typeof value !== "object" ||
+      value.version !== "consumer-reference.v1" ||
+      value.automatic_application !== true ||
+      value.manual_promotion_required !== false ||
+      (value.status !== "ready" && value.status !== "partial") ||
+      !value.coverage ||
+      typeof value.coverage !== "object" ||
+      !Number.isInteger(value.coverage.wallet_program_count) ||
+      !Number.isInteger(value.coverage.merchant_count) ||
+      !Number.isInteger(value.coverage.fact_count) ||
+      !Array.isArray(value.wallet_programs) ||
+      !Array.isArray(value.merchants)
+    )
+      return null;
+    const validStates = new Set(["active", "scheduled", "expired", "unknown"]);
+    const nullableString = (field) =>
+      field === null || typeof field === "string";
+    const groups = (items, prefix) =>
+      items
+        .filter(
+          (group) =>
+            group &&
+            typeof group === "object" &&
+            typeof group.family_id === "string" &&
+            group.family_id.startsWith(prefix) &&
+            typeof group.label === "string" &&
+            Array.isArray(group.facts),
+        )
+        .slice(0, 64)
+        .map((group) => ({
+          family_id: group.family_id,
+          label: group.label,
+          facts: group.facts
+            .filter(
+              (fact) =>
+                fact &&
+                typeof fact === "object" &&
+                typeof fact.fact_key === "string" &&
+                typeof fact.claim_type === "string" &&
+                typeof fact.claim === "string" &&
+                typeof fact.subject === "string" &&
+                typeof fact.predicate === "string" &&
+                typeof fact.summary === "string" &&
+                nullableString(fact.source_url) &&
+                nullableString(fact.checked_at) &&
+                nullableString(fact.effective_from) &&
+                nullableString(fact.effective_to) &&
+                [
+                  "wallet_validity",
+                  "wallet_redemption",
+                  "merchant_eligibility",
+                  "campaign_condition",
+                ].includes(fact.logic_role) &&
+                validStates.has(fact.validity_state),
+            )
+            .slice(0, 64),
+        }));
+    return {
+      version: value.version,
+      status: value.status,
+      automatic_application: true,
+      manual_promotion_required: false,
+      coverage: {
+        wallet_program_count: value.coverage.wallet_program_count,
+        merchant_count: value.coverage.merchant_count,
+        fact_count: value.coverage.fact_count,
+      },
+      wallet_programs: groups(value.wallet_programs, "point."),
+      merchants: groups(value.merchants, "merchant."),
+    };
+  };
+
+  const loadConsumerReference = async () => {
+    try {
+      const response = await fetch("/api/consumer/reference", {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error("request_failed");
+      consumerReference = safeConsumerReference(body);
+      if (!consumerReference) throw new Error("response_invalid");
+      populateMerchantSelector();
+      renderLotList();
+    } catch {
+      consumerReference = null;
+    }
+  };
+
+  const populateMerchantSelector = () => {
+    const select = document.getElementById("merchant-selector");
+    if (!select || !consumerReference) return;
+    const previous = select.value;
+    const options = [
+      { value: "merchant.synthetic", label: "一般のお買い物" },
+      ...consumerReference.merchants.map((group) => ({
+        value:
+          group.family_id === "merchant.7eleven"
+            ? "merchant.seveneleven"
+            : group.family_id,
+        label: group.label,
+      })),
+    ];
+    clear(select);
+    const seen = new Set();
+    options.forEach((option) => {
+      if (seen.has(option.value)) return;
+      seen.add(option.value);
+      const element = node("option");
+      element.value = option.value;
+      element.textContent = option.label;
+      select.appendChild(element);
+    });
+    select.value = seen.has(previous) ? previous : "merchant.synthetic";
+    select.dispatchEvent(new Event("change"));
   };
 
   const appendInformationFilterOptions = () => {
@@ -2596,6 +2737,31 @@
       program.lots.map((lot) => ({ program, lot })),
     );
 
+  const referenceFactForProgram = (familyId) => {
+    const group = consumerReference?.wallet_programs.find(
+      (item) => item.family_id === familyId,
+    );
+    if (!group) return null;
+    const isExpiryFact = (fact) =>
+      fact.claim_type === "expiry_rule" ||
+      fact.claim_type === "expiry_and_reward_classes" ||
+      fact.claim_type === "expiry_and_redemption_priority" ||
+      fact.claim_type === "campaign_expiry";
+    return (
+      group.facts.find(
+        (fact) =>
+          fact.validity_state === "active" &&
+          isExpiryFact(fact) &&
+          fact.source_url,
+      ) ||
+      group.facts.find(
+        (fact) => fact.validity_state === "active" && isExpiryFact(fact),
+      ) ||
+      group.facts.find((fact) => fact.validity_state === "active") ||
+      null
+    );
+  };
+
   const dueBand = (days) => {
     if (days === null) return "ok";
     if (days <= AT_RISK_DAYS) return "hot";
@@ -2858,12 +3024,33 @@
     }
 
     const source = node("div", "lot-source");
-    source.appendChild(
-      text(
-        "span",
-        `出典 ${program.source}・${program.checked_days_ago}日前に確認`,
-      ),
-    );
+    const referenceFact = referenceFactForProgram(program.family_id);
+    const sourceCopy = node("div", "lot-source-copy");
+    if (referenceFact) {
+      const referenceLabel = referenceFact.claim_type.includes("expiry")
+        ? "期限情報"
+        : "公式情報";
+      sourceCopy.appendChild(
+        text(
+          "span",
+          `${referenceLabel}：${referenceFact.summary}`,
+          "lot-source-summary",
+        ),
+      );
+      const provenance = officialSourceLink(
+        referenceFact.source_url,
+        referenceFact.checked_at,
+      );
+      if (provenance) sourceCopy.appendChild(provenance);
+    } else {
+      sourceCopy.appendChild(
+        text(
+          "span",
+          `デモ参照元 ${program.source}・${program.checked_days_ago}日前に確認`,
+        ),
+      );
+    }
+    source.appendChild(sourceCopy);
     const lookup = node("button");
     lookup.type = "button";
     lookup.textContent = "収録情報";
@@ -3121,6 +3308,7 @@
 
   dropCurtain();
   renderWallet();
+  void loadConsumerReference();
   void loadExperimentalRules();
   void loadPointSpendOptions();
 })();

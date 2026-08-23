@@ -7,6 +7,7 @@ import type {
   HeadersLike,
   SignedEventRequest,
   SigningKeyResolver,
+  SourceObservation,
 } from "@jro/agent-feed-consumer";
 import {
   type ConsumerHandler,
@@ -15,7 +16,10 @@ import {
 } from "@jro/agent-feed-consumer";
 import {
   createPostgresAtomicPersistence,
+  createPostgresP0RewardClaimBatchProcessor,
   createPostgresP0TerminalAtomicPersistence,
+  type P0RewardClaimBatchBindingInput,
+  type P0RewardClaimBatchResult,
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
 import {
@@ -25,6 +29,7 @@ import {
   type P0OperationsManifest,
   type P0ReceiptReconciliation,
 } from "@jro/p0-source-operations";
+import { freezeP0CoverageIndex } from "@jro/provisional-rules";
 
 /** Exact internal endpoint; it is never linked from the browser shell. */
 export const AGENT_FEED_INTERNAL_EVENT_PATH =
@@ -36,6 +41,8 @@ export const P0_RECONCILIATION_MAP_VERSION =
   "p0-agent-feed-reconciliation-map.v1" as const;
 export const DEFAULT_P0_SOURCE_ROLE_PLAN_FILE =
   "registry/planning/p0-source-role-plan.v0.1.json" as const;
+export const DEFAULT_P0_COVERAGE_INDEX_FILE =
+  "fixtures/m3/provisional/p0-coverage-index.v0.6.json" as const;
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -279,6 +286,101 @@ function routePersistence(
   });
 }
 
+/**
+ * The structured reward-claim compiler is deliberately an optional host port:
+ * the ingress never derives a P0 family or source role from claim prose. The
+ * host supplies both the compiler-backed callback and an exact binding map.
+ */
+export type P0RewardClaimProcessor = (
+  value: unknown,
+) => Promise<P0RewardClaimBatchResult>;
+
+export type P0RewardClaimBindingResolver = (
+  observation: SourceObservation,
+) =>
+  | P0RewardClaimBatchBindingInput
+  | null
+  | Promise<P0RewardClaimBatchBindingInput | null>;
+
+function hasStructuredRewardClaims(observation: SourceObservation): boolean {
+  const attributes = observation.raw_attributes;
+  return (
+    attributes !== null &&
+    typeof attributes === "object" &&
+    !Array.isArray(attributes) &&
+    Object.hasOwn(attributes, "reward_claims")
+  );
+}
+
+function routeStructuredRewardClaims(
+  persistence: AtomicPersistencePort,
+  processor: P0RewardClaimProcessor | undefined,
+  bindingResolver: P0RewardClaimBindingResolver | undefined,
+): AtomicPersistencePort {
+  if (processor === undefined) return persistence;
+  if (bindingResolver === undefined)
+    throw new TypeError("reward_claim_binding_resolver_required");
+
+  return Object.freeze({
+    async persist(input: AtomicPersistenceInput) {
+      const outcome = await persistence.persist(input);
+      if (
+        input.observation === null ||
+        (outcome.status !== "mapped" && outcome.status !== "duplicate") ||
+        !hasStructuredRewardClaims(input.observation)
+      )
+        return outcome;
+
+      // Prefer the canonical document returned by the durable mapper. On a
+      // transport/mock adapter that omits it, the already-persisted input is
+      // still the exact observation that was admitted to the database.
+      const observation =
+        outcome.observation !== undefined && outcome.observation !== null
+          ? outcome.observation
+          : input.observation;
+      const binding = await bindingResolver(observation);
+      if (binding === null || binding === undefined)
+        throw new TypeError("reward_claim_binding_unavailable");
+      // One processor call per mapped observation lets its own bounded batch
+      // admission reject malformed claims while preserving valid siblings.
+      const rewardClaims = await processor({
+        version: "p0-reward-claim-batch.v1",
+        observations: [{ observation, binding }],
+      });
+      // Keep the receipt outcome as the transport ACK boundary while exposing
+      // the bounded compiler result to server-only callers of this ingress.
+      return { ...outcome, reward_claims: rewardClaims };
+    },
+  });
+}
+
+/**
+ * Resolve a signed finding to one exact host-plan target. `target_id` is an
+ * identity field, not prose: it must exist in the delivery stream's admitted
+ * manifest and the compiler independently intersects its source IDs with the
+ * frozen coverage index.
+ */
+export function createManifestRewardClaimBindingResolver(
+  manifest: P0OperationsManifest,
+  coverageIndex: unknown,
+): P0RewardClaimBindingResolver {
+  const coverage = freezeP0CoverageIndex(coverageIndex);
+  return (observation) => {
+    const targetId = observation.raw_attributes.target_id;
+    if (typeof targetId !== "string") return null;
+    const stream = manifest.streams.find(
+      (item) => item.stream_id === observation.agent_feed.stream_id,
+    );
+    const target = stream?.targets.find((item) => item.target_id === targetId);
+    if (!target) return null;
+    return Object.freeze({
+      family_id: target.family_id,
+      source_role_id: target.source_role_id,
+      p0_coverage_index: coverage,
+    });
+  };
+}
+
 export interface P0AgentFeedIngressOptions {
   readonly target: QueryTarget;
   readonly manifest: P0OperationsManifest;
@@ -289,6 +391,12 @@ export interface P0AgentFeedIngressOptions {
   readonly max_body_bytes?: number;
   readonly replay_window_seconds?: number;
   readonly now?: () => Date;
+  /** Frozen host coverage used by the default automatic reward compiler. */
+  readonly reward_claim_coverage_index?: unknown;
+  /** Compiler-backed callback; errors remain retryable and are never ACKed. */
+  readonly reward_claim_processor?: P0RewardClaimProcessor;
+  /** Host-owned family/source binding; never inferred from claim prose. */
+  readonly reward_claim_binding_resolver?: P0RewardClaimBindingResolver;
 }
 
 /**
@@ -339,6 +447,16 @@ export function loadP0AgentFeedIngressFromEnvironment(
     manifest,
   );
   const admittedMap = admitP0TerminalReconciliationMap(manifest, map);
+  const coverageFile =
+    nonEmpty(environment.JRO_P0_COVERAGE_INDEX_FILE) ??
+    DEFAULT_P0_COVERAGE_INDEX_FILE;
+  const rewardClaimCoverageIndex = freezeP0CoverageIndex(
+    readJsonFile(
+      configuredPath(coverageFile, cwd),
+      reader,
+      "jro_p0_coverage_index_file_invalid",
+    ),
+  );
 
   let signingSecret = secretFromEnvironment;
   if (signingSecret === undefined) {
@@ -353,6 +471,7 @@ export function loadP0AgentFeedIngressFromEnvironment(
   return Object.freeze({
     manifest,
     reconciliation_by_run_id: admittedMap,
+    reward_claim_coverage_index: rewardClaimCoverageIndex,
     signing_key: {
       key_id: keyId,
       secret: signingSecret,
@@ -386,9 +505,29 @@ export function createP0AgentFeedIngress(
     createPostgresAtomicPersistence(options.target),
     terminal,
   );
+  const rewardProcessor =
+    options.reward_claim_processor ??
+    (options.reward_claim_coverage_index === undefined
+      ? undefined
+      : createPostgresP0RewardClaimBatchProcessor(options.target));
+  const rewardBindingResolver =
+    options.reward_claim_binding_resolver ??
+    (options.reward_claim_coverage_index === undefined
+      ? undefined
+      : createManifestRewardClaimBindingResolver(
+          options.manifest,
+          options.reward_claim_coverage_index,
+        ));
+  if (rewardProcessor === undefined || rewardBindingResolver === undefined)
+    throw new TypeError("reward_claim_automatic_processing_required");
+  const rewardPersistence = routeStructuredRewardClaims(
+    persistence,
+    rewardProcessor,
+    rewardBindingResolver,
+  );
   const consumer: ConsumerHandler = createAgentFeedConsumerHandler({
     key_resolver: resolver,
-    persistence,
+    persistence: rewardPersistence,
     ...(options.max_body_bytes === undefined
       ? {}
       : { max_body_bytes: options.max_body_bytes }),
@@ -416,4 +555,6 @@ export function createP0AgentFeedIngress(
 export type AgentFeedIngressOutcome = Pick<
   PersistenceOutcome,
   "status" | "receipt_id" | "duplicate_kind" | "reason_code"
->;
+> & {
+  readonly reward_claims?: P0RewardClaimBatchResult;
+};

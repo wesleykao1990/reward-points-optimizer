@@ -6,6 +6,7 @@ import type {
 import { describe, expect, it } from "vitest";
 import {
   createPostgresImplementationFactCataloguePort,
+  normalizeImplementationFactSnapshot,
   resetImplementationFactCatalogue,
 } from "../src/implementation-catalog.js";
 import {
@@ -182,6 +183,8 @@ describe("P0 implementation-fact information catalogue", () => {
     expect(fact?.summary).not.toContain("Future English implementation prose");
     expect(fact?.summary).toContain("ポイント情報");
     expect(fact?.summary).toContain("その他の条件");
+    expect(fact?.family_id).toBe("point.future");
+    expect(fact?.claim_type).toBe("future_claim");
   });
 
   it("returns exactly the 364 browser-safe facts with Japanese facets", async () => {
@@ -209,10 +212,12 @@ describe("P0 implementation-fact information catalogue", () => {
       expect(Object.keys(fact).sort()).toEqual([
         "checked_at",
         "claim",
+        "claim_type",
         "effective_from",
         "effective_to",
         "fact_key",
         "family",
+        "family_id",
         "predicate",
         "source_url",
         "subject",
@@ -222,6 +227,8 @@ describe("P0 implementation-fact information catalogue", () => {
       expect(fact.fact_key).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu,
       );
+      expect(fact.family_id).toMatch(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u);
+      expect(fact.claim_type).toMatch(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/u);
       expect(hasJapanese(String(fact.predicate))).toBe(true);
       expect(hasJapanese(String(fact.summary))).toBe(true);
     }
@@ -407,6 +414,50 @@ describe("P0 implementation-fact information catalogue", () => {
     );
     expect(response.status).toBe(503);
     expect(response.body).not.toContain("implementation_hash");
+  });
+
+  it("rejects malformed stable identifiers while keeping localized labels separate", () => {
+    const validCard = {
+      fact_key: "11111111-1111-4111-8111-111111111111",
+      family_id: "point.d",
+      claim_type: "earn_rule",
+      family: "dポイント",
+      claim: "貯まる条件",
+      subject: "dポイント",
+      predicate: "利用金額に応じて貯まります",
+      summary: "dポイントに関する情報です。",
+      use_in_comparison: false,
+      source_url: null,
+      checked_at: null,
+      effective_from: null,
+      effective_to: null,
+    };
+    expect(
+      normalizeImplementationFactSnapshot({
+        status: "ready",
+        updated_at: null,
+        facts: [validCard],
+      }).facts[0],
+    ).toMatchObject({
+      family_id: "point.d",
+      claim_type: "earn_rule",
+      family: "dポイント",
+      claim: "貯まる条件",
+    });
+    expect(() =>
+      normalizeImplementationFactSnapshot({
+        status: "ready",
+        updated_at: null,
+        facts: [{ ...validCard, family_id: "dポイント" }],
+      }),
+    ).toThrow("implementation_fact_family_id_invalid");
+    expect(() =>
+      normalizeImplementationFactSnapshot({
+        status: "ready",
+        updated_at: null,
+        facts: [{ ...validCard, claim_type: "貯まる条件" }],
+      }),
+    ).toThrow("implementation_fact_claim_type_invalid");
   });
 
   it("keeps the information tab and correction rendering DOM-safe", () => {

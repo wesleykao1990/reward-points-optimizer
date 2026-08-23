@@ -33,39 +33,73 @@ describe("P0 point spending browser route", () => {
     expect(result).toHaveLength(4);
     expect(result).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           family_id: "wallet.dbarai",
           label: "d払い",
           reward_label: "dポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "200円ごとに2ポイントで計算（dカード設定を含む）",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "card.rakuten",
           label: "楽天カード",
           reward_label: "楽天ポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "100円ごとに1ポイントで計算",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "card.d",
           label: "dカード",
           reward_label: "dポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "100円ごとに1ポイントで計算",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "wallet.paypay",
           label: "PayPay",
           reward_label: "PayPayポイント",
           reward_points: "3",
           rate_percent: "0.5",
           calculation_note: "200円単位・残高払いの基本還元率0.5%で計算",
-        },
+        }),
       ]),
+    );
+    for (const calculation of result) {
+      expect(calculation.source_claim_id).toMatch(/^claim\./u);
+      expect(calculation.source_url).toMatch(/^https:\/\//u);
+      expect(calculation.checked_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/u,
+      );
+      expect(calculation.calculation_source).toBe("agent_feed_structured");
+    }
+  });
+
+  it("discovers reordered base claims by family and keeps provenance attached", async () => {
+    const result = await calculateSelectedProductPurchases(
+      ["wallet.aeonpay", "wallet.dbarai"],
+      640,
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        family_id: "wallet.aeonpay",
+        source_claim_id: "claim.wallet.aeonpay.base.general-200.001",
+        source_url: "https://www.aeon.co.jp/service/lp/aeonpay",
+        checked_at: "2026-08-22T00:20:17+09:00",
+        calculation_source: "agent_feed_structured",
+      }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        family_id: "wallet.dbarai",
+        source_claim_id: "claim.wallet.dbarai.base.general-200.001",
+        source_url:
+          "https://service.smt.docomo.ne.jp/keitai_payment/guide/wallet/payment.html",
+        checked_at: "2026-08-22T00:20:17+09:00",
+        calculation_source: "agent_feed_structured",
+      }),
     );
   });
 

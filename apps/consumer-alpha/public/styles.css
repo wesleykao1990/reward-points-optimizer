@@ -814,6 +814,49 @@ input[inputmode="numeric"] {
   font-size: 0.61rem;
 }
 
+.lot-source-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.lot-source-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--tx-2);
+  font-size: 0.64rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.lot-source .service-provenance {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.route-calculation-source {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--tx-2);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.route-calculation-source .service-provenance {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.lot-source .service-official-link {
+  padding: 5px 9px;
+}
+
 .lot-source button {
   border: 0;
   background: transparent;

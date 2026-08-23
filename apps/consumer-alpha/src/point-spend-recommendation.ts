@@ -255,6 +255,12 @@ const P0_WALLET_FAMILIES: Readonly<
   "card.view": { label: "ビューカード", kind: "credit_card" },
 });
 
+export function p0ProductFamilyDefinition(
+  familyId: string,
+): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {
+  return isP0ProductFamilyId(familyId) ? P0_WALLET_FAMILIES[familyId] : null;
+}
+
 if (Object.keys(P0_WALLET_FAMILIES).length !== P0_PRODUCT_FAMILY_IDS.length)
   throw new Error("p0_wallet_family_catalogue_incomplete");
 
@@ -275,11 +281,15 @@ interface P0ResearchSource {
   readonly source_id: string;
   readonly url: string;
   readonly official_domain: string;
+  readonly retrieval?: {
+    readonly accessed_at?: unknown;
+  };
 }
 
 interface P0ResearchClaim {
   readonly claim_id: string;
   readonly family_id: string;
+  readonly source_role_id: string;
   readonly claim_type: string;
   readonly predicate: string;
   readonly subject: string;
@@ -342,23 +352,24 @@ export interface SelectedProductPurchaseCalculation {
   readonly reward_points: string;
   readonly rate_percent: string;
   readonly calculation_note: string;
+  /** Host-only binding back to the selected Agent Feed claim. */
+  readonly source_claim_id: string;
+  /** Browser-safe official source locator for the calculation. */
+  readonly source_url?: string;
+  /** Agent Feed retrieval timestamp projected as the browser checked time. */
+  readonly checked_at: string;
+  readonly calculation_source: "agent_feed_structured";
 }
 
-const PURCHASE_RATE_CLAIMS: Readonly<Record<string, string>> = Object.freeze({
-  "card.aeon": "claim.card.aeon.base.general-200.001",
-  "card.aupay": "claim.card.aupay.base.general-100.001",
-  "card.d": "claim.card.d.base.general-100.001",
-  "card.paypay": "claim.point.paypay.earn.base-rates.002",
-  "card.rakuten": "claim.card.rakuten.base.general-100.001",
-  "card.smbc": "claim.card.smbc.base.general-200.001",
-  "card.view": "claim.card.view.base.general-1000.001",
-  "wallet.aeonpay": "claim.wallet.aeonpay.base.general-200.001",
-  "wallet.aupay": "claim.wallet.aupay.base.general-200.001",
-  "wallet.dbarai": "claim.wallet.dbarai.base.general-200.001",
-  "wallet.famipay": "claim.wallet.famipay.base.general-200.001",
-  "wallet.paypay": "claim.wallet.paypay.base.rates.001",
-  "wallet.rakutenpay": "claim.wallet.rakutenpay.base.routes.001",
-});
+/**
+ * Only base reward roles are eligible for the generic purchase calculation.
+ * The role names are Agent Feed data, not product/family bindings; new claim
+ * identifiers therefore do not require a code change here.
+ */
+const BASE_RATE_SOURCE_ROLES = new Set([
+  "base_point_rules",
+  "base_reward_rules",
+]);
 
 function jsonRecord(value: unknown): JsonRecord {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -431,6 +442,146 @@ function rateParts(
   };
 }
 
+interface PurchaseRateCandidate {
+  readonly claim: P0ResearchClaim;
+  readonly rate: ReturnType<typeof rateParts>;
+  readonly source_url: string;
+  readonly checked_at: string;
+  readonly d_card_dependency: boolean;
+}
+
+function officialSourceProvenance(
+  claim: P0ResearchClaim,
+  sources: ReadonlyMap<string, P0ResearchSource>,
+): { readonly source_url: string; readonly checked_at: string } | null {
+  // Source order is not a semantic signal.  Sorting keeps selection stable if
+  // an Agent Feed producer reorders source_ids or the source records.
+  if (
+    !Array.isArray(claim.source_ids) ||
+    !claim.source_ids.every((sourceId) => typeof sourceId === "string")
+  )
+    return null;
+  for (const sourceId of [...claim.source_ids].sort()) {
+    const source = sources.get(sourceId);
+    if (
+      !source ||
+      typeof source !== "object" ||
+      typeof source.url !== "string" ||
+      typeof source.official_domain !== "string"
+    )
+      continue;
+    let parsed: URL;
+    try {
+      parsed = new URL(source.url);
+    } catch {
+      continue;
+    }
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password)
+      continue;
+    const hostname = parsed.hostname.toLowerCase();
+    const officialDomain = source.official_domain.toLowerCase();
+    if (
+      !officialDomain ||
+      (hostname !== officialDomain && !hostname.endsWith(`.${officialDomain}`))
+    )
+      continue;
+    const accessedAt = source.retrieval?.accessed_at;
+    if (
+      typeof accessedAt !== "string" ||
+      !Number.isFinite(Date.parse(accessedAt))
+    )
+      continue;
+    return Object.freeze({ source_url: source.url, checked_at: accessedAt });
+  }
+  return null;
+}
+
+function hasDCardDependency(claim: P0ResearchClaim): boolean {
+  const value =
+    claim.value &&
+    typeof claim.value === "object" &&
+    !Array.isArray(claim.value)
+      ? (claim.value as JsonRecord)
+      : null;
+  // `components` is a typed Agent Feed field.  Do not inspect
+  // short_paraphrase (or any other prose) to infer dependencies.
+  return (
+    Array.isArray(value?.components) &&
+    value.components.some(
+      (component) =>
+        typeof component === "string" && /\bd\s*card\b/iu.test(component),
+    )
+  );
+}
+
+function purchaseRateCandidates(
+  familyId: P0ProductFamilyId,
+  claims: readonly P0ResearchClaim[],
+  sources: ReadonlyMap<string, P0ResearchSource>,
+): readonly PurchaseRateCandidate[] {
+  const candidates: PurchaseRateCandidate[] = [];
+  for (const claim of claims) {
+    if (!claim || typeof claim !== "object" || Array.isArray(claim)) continue;
+    if (
+      claim.family_id !== familyId ||
+      claim.claim_type !== "earn_rule" ||
+      !BASE_RATE_SOURCE_ROLES.has(claim.source_role_id)
+    )
+      continue;
+    let rate: ReturnType<typeof rateParts>;
+    try {
+      rate = rateParts(familyId, claim);
+    } catch {
+      // A malformed/unsupported claim must not hide a valid sibling claim or
+      // prevent other selected families from being calculated.
+      continue;
+    }
+    const provenance = officialSourceProvenance(claim, sources);
+    if (!provenance) continue;
+    candidates.push({
+      claim,
+      rate,
+      source_url: provenance.source_url,
+      checked_at: provenance.checked_at,
+      d_card_dependency: hasDCardDependency(claim),
+    });
+  }
+  return Object.freeze(candidates);
+}
+
+function comparePurchaseRates(
+  left: PurchaseRateCandidate,
+  right: PurchaseRateCandidate,
+): number {
+  const leftRate = left.rate.points / left.rate.unit;
+  const rightRate = right.rate.points / right.rate.unit;
+  return (
+    leftRate - rightRate ||
+    left.rate.unit - right.rate.unit ||
+    left.rate.points - right.rate.points ||
+    left.claim.claim_id.localeCompare(right.claim.claim_id)
+  );
+}
+
+function selectPurchaseRateCandidate(
+  familyId: P0ProductFamilyId,
+  candidates: readonly PurchaseRateCandidate[],
+  selected: ReadonlySet<P0ProductFamilyId>,
+): PurchaseRateCandidate | null {
+  if (!candidates.length) return null;
+  let eligible = candidates;
+  // d払い's higher dカード route is an explicit request dependency.  It is
+  // represented by a typed `components` field rather than a claim identifier
+  // or short_paraphrase, so a producer can rename/reorder claims safely.
+  if (familyId === "wallet.dbarai" && selected.has("card.d")) {
+    const dCardCandidates = candidates.filter(
+      (candidate) => candidate.d_card_dependency,
+    );
+    if (dCardCandidates.length) eligible = dCardCandidates;
+  }
+  return [...eligible].sort(comparePurchaseRates)[0] ?? null;
+}
+
 /** Calculate every selected card/mobile-payment base route from the checked-in
  * structured research. Selection affects the actual candidates, not only the
  * recommendation hash. */
@@ -446,22 +597,35 @@ export async function calculateSelectedProductPurchases(
     throw new TypeError("p0_purchase_amount_invalid");
   const selected = new Set(selectedProductIds);
   const { artifacts } = await loadBundle();
-  const claims = new Map(
+  const claims = artifacts.flatMap((artifact) => artifact.claims);
+  const sources = new Map(
     artifacts
-      .flatMap((artifact) => artifact.claims)
-      .map((claim) => [claim.claim_id, claim]),
+      .flatMap((artifact) => artifact.sources)
+      .filter(
+        (source) =>
+          source &&
+          typeof source === "object" &&
+          typeof source.source_id === "string",
+      )
+      .map((source) => [source.source_id, source]),
   );
   const calculations: SelectedProductPurchaseCalculation[] = [];
   for (const familyId of [...selected].sort()) {
-    const claimId = PURCHASE_RATE_CLAIMS[familyId];
-    if (!claimId) continue;
-    let effectiveClaimId = claimId;
-    if (familyId === "wallet.dbarai" && selected.has("card.d"))
-      effectiveClaimId = "claim.wallet.dbarai.base.dcard-200.002";
-    const claim = claims.get(effectiveClaimId);
     const definition = P0_WALLET_FAMILIES[familyId];
-    if (!claim || !definition) throw new TypeError("p0_purchase_rate_missing");
-    const rate = rateParts(familyId, claim);
+    if (
+      !definition ||
+      (definition.kind !== "credit_card" && definition.kind !== "mobile_pay")
+    )
+      continue;
+    const candidate = selectPurchaseRateCandidate(
+      familyId,
+      purchaseRateCandidates(familyId, claims, sources),
+      selected,
+    );
+    // A surfaced family can remain informational until its Agent Feed has a
+    // typed, computable base claim.  Do not let that suppress valid siblings.
+    if (!candidate) continue;
+    const { claim, rate } = candidate;
     const rewardPoints = Math.floor(amountJpy / rate.unit) * rate.points;
     const ratePercent = (rate.points / rate.unit) * 100;
     calculations.push(
@@ -472,9 +636,13 @@ export async function calculateSelectedProductPurchases(
         reward_points: String(rewardPoints),
         rate_percent: String(ratePercent),
         calculation_note:
-          familyId === "wallet.dbarai" && selected.has("card.d")
+          familyId === "wallet.dbarai" && candidate.d_card_dependency
             ? `${rate.note}（dカード設定を含む）`
             : rate.note,
+        source_claim_id: claim.claim_id,
+        source_url: candidate.source_url,
+        checked_at: candidate.checked_at,
+        calculation_source: "agent_feed_structured",
       }),
     );
   }
