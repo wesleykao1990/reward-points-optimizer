@@ -54,6 +54,65 @@
     return frame;
   };
 
+  const WALLET_STORAGE_KEY = "point-route.wallet.v1";
+  let walletHydrated = false;
+  let suppressWalletPersistence = false;
+  let walletStorageAvailable = true;
+
+  const safeStoredWalletIds = (value) => {
+    const ids = Array.isArray(value)
+      ? value
+      : value && Array.isArray(value.family_ids)
+        ? value.family_ids
+        : [];
+    return [...new Set(ids)]
+      .filter(
+        (familyId) =>
+          typeof familyId === "string" &&
+          /^(?:point|wallet|card)\.[a-z0-9.-]{1,64}$/u.test(familyId),
+      )
+      .slice(0, 32);
+  };
+
+  const readStoredWalletIds = () => {
+    try {
+      const raw = window.localStorage.getItem(WALLET_STORAGE_KEY);
+      if (!raw) return [];
+      return safeStoredWalletIds(JSON.parse(raw));
+    } catch {
+      walletStorageAvailable = false;
+      return [];
+    }
+  };
+
+  const writeStoredWalletIds = (familyIds) => {
+    try {
+      window.localStorage.setItem(
+        WALLET_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          family_ids: safeStoredWalletIds(familyIds),
+        }),
+      );
+      walletStorageAvailable = true;
+      return true;
+    } catch {
+      walletStorageAvailable = false;
+      return false;
+    }
+  };
+
+  const removeStoredWalletIds = () => {
+    try {
+      window.localStorage.removeItem(WALLET_STORAGE_KEY);
+      walletStorageAvailable = true;
+      return true;
+    } catch {
+      walletStorageAvailable = false;
+      return false;
+    }
+  };
+
   const clear = (element) => {
     while (element.firstChild) element.removeChild(element.firstChild);
   };
@@ -222,13 +281,6 @@
     unavailable: "情報を取得できません",
   });
 
-  const unifiedValidityLabels = Object.freeze({
-    active: "有効期間：現在",
-    scheduled: "有効期間：開始前",
-    expired: "有効期間：終了",
-    unknown: "有効期間：不明",
-  });
-
   const unifiedIssueLabels = Object.freeze({
     facts_unavailable: "関連情報を読み込めませんでした。数値結果は表示します。",
     fact_binding_required:
@@ -244,34 +296,141 @@
   const routePlan = (route) =>
     route?.recommendation?.winner || route?.recommendation?.primary || null;
 
-  const renderUnifiedRoute = (parent, route) => {
+  const formatYen = (value) => {
+    if (!Number.isSafeInteger(value) || value < 0) return null;
+    return `¥${value.toLocaleString("ja-JP")}`;
+  };
+
+  const appendSupplementalRouteCorrection = (card, route) => {
+    if (
+      typeof route.recommendation_id !== "string" ||
+      !/^sha256:[0-9a-f]{64}$/u.test(route.recommendation_id)
+    )
+      return;
+    const actions = node("div", "route-actions");
+    const correction = node("button", "secondary");
+    correction.type = "button";
+    correction.textContent = "情報の誤りを報告";
+    correction.addEventListener("click", () => {
+      const routeLabel = String(route.label || "");
+      const searchValue = routeLabel
+        .replace(/^(?:通常のお買い物|セブン‐イレブン)・/u, "")
+        .replace(/（一般的な基本還元率）$/u, "")
+        .split("→")[0]
+        .replace("購入", "")
+        .trim();
+      const search = document.getElementById("information-search");
+      search.value = searchValue;
+      document.getElementById("information-family-filter").value = "";
+      activateTab("information");
+    });
+    actions.appendChild(correction);
+    card.appendChild(actions);
+  };
+
+  const renderSupplementalRoute = (parent, route) => {
+    if (!route || typeof route !== "object") return;
+    const card = node("article", "supplemental-route-card");
+    const header = node("div", "supplemental-route-header");
+    header.appendChild(text("h4", String(route.label || "チャージ情報")));
+    header.appendChild(
+      text("span", "支払い比較の対象外", "supplemental-badge"),
+    );
+    card.appendChild(header);
+
+    const recommendation = route.recommendation;
+    const plan = routePlan(route);
+    const charge = formatYen(recommendation?.charge_amount_jpy);
+    const before = formatYen(recommendation?.nanaco_balance_before_jpy);
+    const after = formatYen(recommendation?.nanaco_balance_after_jpy);
+    const rewardPoints =
+      typeof plan?.reward_points === "string"
+        ? plan.reward_points
+        : typeof route.reward_units === "string"
+          ? route.reward_units
+          : null;
+
+    if (route.status === "eligible" && charge && before && after) {
+      const summary = node("div", "supplemental-route-summary");
+      summary.appendChild(text("strong", `${charge}をチャージ`));
+      summary.appendChild(
+        text("span", `残高 ${before} → ${after}（チャージ後）`),
+      );
+      if (rewardPoints !== null)
+        summary.appendChild(
+          text("span", `nanacoポイント ${rewardPoints}ポイント`),
+        );
+      card.appendChild(summary);
+      card.appendChild(
+        text(
+          "p",
+          "チャージで得られる情報です。今回の支払い方法の比較・順位には含めていません。",
+          "supplemental-route-note",
+        ),
+      );
+    } else if (
+      route.status === "no_valid_plan" ||
+      route.issues?.includes("route_input_invalid")
+    ) {
+      card.appendChild(
+        text(
+          "p",
+          "クレジットチャージは5,000円以上・1,000円単位です。セブンカード・プラスの所有とnanacoクレジットチャージの事前登録が必要で、チャージ後残高は50,000円までです。",
+          "supplemental-route-requirements",
+        ),
+      );
+    } else {
+      card.appendChild(
+        text(
+          "p",
+          "チャージ情報を現在確認できません。今回の支払い方法の比較には含めていません。",
+          "supplemental-route-requirements",
+        ),
+      );
+    }
+    appendSupplementalRouteCorrection(card, route);
+    parent.appendChild(card);
+  };
+
+  const renderSupplementalRoutes = (parent, routes) => {
+    if (!Array.isArray(routes) || routes.length === 0) return;
+    const section = node("section", "supplemental-route-section");
+    section.setAttribute("aria-labelledby", "supplemental-route-title");
+    section.appendChild(text("h3", "チャージ情報", "supplemental-route-title"));
+    section.appendChild(
+      text(
+        "p",
+        "チャージは支払い方法とは別の準備です。ここに表示するチャージ情報は、今回の支払い比較・順位・候補数には含めていません。",
+        "supplemental-route-intro",
+      ),
+    );
+    const list = node("div", "supplemental-route-list");
+    routes.forEach((route) => {
+      renderSupplementalRoute(list, route);
+    });
+    section.appendChild(list);
+    parent.appendChild(section);
+  };
+
+  const renderUnifiedRoute = (parent, route, rank = null) => {
     if (!route || typeof route !== "object") return;
     const card = node("article", "unified-route-card");
     const header = node("div", "unified-route-header");
     header.appendChild(text("h3", String(route.label || "支払いルート")));
-    const badges = node("div", "unified-route-badges");
-    badges.appendChild(
-      text(
-        "span",
-        route.kind === "calculation" ? "計算結果" : "情報表示",
-        "route-kind-badge",
-      ),
-    );
-    badges.appendChild(
-      text(
-        "span",
-        unifiedStatusLabels[route.status] || "状態不明",
-        `route-status-badge status-${String(route.status || "unknown")}`,
-      ),
-    );
-    badges.appendChild(
-      text(
-        "span",
-        unifiedValidityLabels[route.validity_state] || "有効期間：不明",
-        "route-validity-badge",
-      ),
-    );
-    header.appendChild(badges);
+    if (rank === 1) {
+      card.classList.add("is-winner");
+      header.appendChild(text("span", "おすすめ", "route-rank-badge"));
+    } else if (Number.isSafeInteger(rank)) {
+      header.appendChild(text("span", `${rank}位`, "route-rank-badge"));
+    } else if (route.status !== "eligible") {
+      header.appendChild(
+        text(
+          "span",
+          unifiedStatusLabels[route.status] || "状態不明",
+          `route-status-badge status-${String(route.status || "unknown")}`,
+        ),
+      );
+    }
     card.appendChild(header);
 
     const plan = routePlan(route);
@@ -291,6 +450,33 @@
           planBox.appendChild(
             text("span", `${rewardLabel} ${plan.reward_points}ポイント${rate}`),
           );
+          const unitMatch = Array.isArray(plan.conditions)
+            ? plan.conditions.join(" ").match(/(\d{1,6})円(?:単位|ごと)/u)
+            : null;
+          const purchaseAmount = Number(
+            document.getElementById("amount-jpy")?.value,
+          );
+          const rewardUnit = unitMatch ? Number(unitMatch[1]) : 0;
+          if (
+            Number.isSafeInteger(purchaseAmount) &&
+            rewardUnit > 0 &&
+            purchaseAmount % rewardUnit !== 0
+          )
+            planBox.appendChild(
+              text(
+                "small",
+                `あと${rewardUnit - (purchaseAmount % rewardUnit)}円で次のポイント単位です。`,
+                "route-next-point",
+              ),
+            );
+          if (typeof route.objective_score_jpy === "string")
+            planBox.appendChild(
+              text(
+                "b",
+                `${route.objective_score_jpy}円相当`,
+                "route-objective-score",
+              ),
+            );
         } else {
           const score = plan.objective_score_jpy
             ? `${plan.objective_score_jpy} 円相当`
@@ -340,6 +526,7 @@
         const routeLabel = String(route.label || "");
         const searchValue = routeLabel
           .replace(/^(?:通常のお買い物|セブン‐イレブン)・/u, "")
+          .replace(/（一般的な基本還元率）$/u, "")
           .split("→")[0]
           .replace("購入", "")
           .trim();
@@ -395,22 +582,40 @@
       throw new Error("selected_p0_products_invalid");
     const routes = Array.isArray(body?.routes) ? body.routes : [];
     if (!routes.length) throw new Error("routes_invalid");
+    const comparison =
+      body?.comparison && typeof body.comparison === "object"
+        ? body.comparison
+        : null;
+    const winner = comparison?.winner;
+    const runnerUp = comparison?.runner_up;
     const result = document.getElementById("result");
     clear(result);
     const hero = node("div", "result-hero");
-    hero.appendChild(text("p", "統合ルート比較", "status"));
-    const title = text("h2", "支払いルートをまとめて確認しました");
+    hero.appendChild(
+      text("p", winner ? "今回のおすすめ" : "比較結果", "status"),
+    );
+    const title = text(
+      "h2",
+      winner?.label || "支払いルートをまとめて確認しました",
+    );
     title.id = "result-title";
     hero.appendChild(title);
-    hero.appendChild(
-      text(
-        "p",
-        body.merchant_id === "merchant.seveneleven"
-          ? "セブン‐イレブンで、選択したサービスの収録レートと店舗固有ルートを使って比較しています。"
-          : "選択したカードとモバイル決済の通常還元率を使って比較しています。",
-        "result-summary",
-      ),
-    );
+    if (winner?.objective_score_jpy)
+      hero.appendChild(
+        text(
+          "p",
+          `${winner.objective_score_jpy}円相当`,
+          "winner-objective-score",
+        ),
+      );
+    if (runnerUp?.label && comparison?.delta_jpy !== null)
+      hero.appendChild(
+        text(
+          "p",
+          `次点の「${runnerUp.label}」より${comparison.delta_jpy}円相当お得です。`,
+          "result-summary",
+        ),
+      );
     const selectedProducts = body.selected_p0_products.map(
       (familyId) =>
         pointSpendOptions.walletCatalogue.find(
@@ -428,13 +633,35 @@
     result.appendChild(hero);
     const intro = node("p", "", "unified-disclosure");
     intro.textContent =
-      "一つのルートの問題が、ほかの有効なルートを隠すことはありません。";
+      comparison?.valuation_policy?.note ||
+      "通常ポイントを1ポイント=1円として比較しています。";
     result.appendChild(intro);
+    const breakEven = comparison?.break_even;
+    if (breakEven?.break_even_jpy_per_unit) {
+      const reversingRoute = routes.find(
+        (route) => route.route_id === breakEven.winner_above_threshold_route_id,
+      );
+      if (reversingRoute)
+        result.appendChild(
+          text(
+            "p",
+            `${reversingRoute.label}のポイントを1ポイント${breakEven.break_even_jpy_per_unit}円より高く見積もる場合は、順位が逆転します。`,
+            "break-even-note",
+          ),
+        );
+    }
     const list = node("div", "unified-route-list");
-    routes.forEach((route) => {
-      renderUnifiedRoute(list, route);
+    routes.forEach((route, index) => {
+      const ranked = comparison?.ranked_routes?.find(
+        (item) => item.route_id === route.route_id,
+      );
+      renderUnifiedRoute(list, route, ranked?.rank || index + 1);
     });
     result.appendChild(list);
+    renderSupplementalRoutes(
+      result,
+      Array.isArray(body?.supplemental_routes) ? body.supplemental_routes : [],
+    );
     recordUnifiedHistory(routes);
     const shownRoutes = routes.filter(
       (route) => route.status === "eligible" || route.status === "conditional",
@@ -709,6 +936,8 @@
         `確認元：${typeof rule.source_label === "string" ? rule.source_label : "情報提供元"}`,
       ),
     );
+    const sourceLink = officialSourceLink(rule.source_url, rule.checked_at);
+    if (sourceLink) meta.appendChild(sourceLink);
     meta.appendChild(
       text("span", `更新日：${formatExperimentalDate(rule.checked_at)}`),
     );
@@ -1103,6 +1332,35 @@
       .replace(/という先行公開情報です。/gu, "という情報です。")
       .replace(/先行公開/gu, "");
 
+  function officialSourceLink(sourceUrl, checkedAt) {
+    if (typeof sourceUrl !== "string") return null;
+    try {
+      const url = new URL(sourceUrl);
+      if (
+        url.protocol !== "https:" ||
+        url.username ||
+        url.password ||
+        url.port ||
+        url.hash
+      )
+        return null;
+      const wrapper = node("span", "service-provenance");
+      const link = node("a", "service-official-link");
+      link.href = url.href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "公式の出典";
+      wrapper.appendChild(link);
+      if (checkedAt)
+        wrapper.appendChild(
+          text("small", `最終確認 ${formatExperimentalDate(checkedAt)}`),
+        );
+      return wrapper;
+    } catch {
+      return null;
+    }
+  }
+
   const appendCampaignSection = (card, campaigns) => {
     if (!campaigns.length) return;
     const section = node("section", "service-campaign-section");
@@ -1138,7 +1396,10 @@
       methods.appendChild(text("strong", "利用できる支払い方法"));
       const list = node("ul");
       paymentRules.forEach((rule) => {
-        list.appendChild(text("li", paymentAcceptanceLabel(rule)));
+        const item = text("li", paymentAcceptanceLabel(rule));
+        const provenance = officialSourceLink(rule.source_url, rule.checked_at);
+        if (provenance) item.appendChild(provenance);
+        list.appendChild(item);
       });
       methods.appendChild(list);
       section.appendChild(methods);
@@ -1149,6 +1410,8 @@
         const item = node("article", "service-rule-item");
         item.appendChild(text("strong", rule.title));
         item.appendChild(text("p", customerRuleSummary(rule.summary)));
+        const provenance = officialSourceLink(rule.source_url, rule.checked_at);
+        if (provenance) item.appendChild(provenance);
         section.appendChild(item);
       });
     card.appendChild(section);
@@ -1191,6 +1454,8 @@
       const item = node("article", "service-highlight-item");
       item.appendChild(text("strong", fact.subject));
       item.appendChild(text("p", fact.summary));
+      const provenance = officialSourceLink(fact.source_url, fact.checked_at);
+      if (provenance) item.appendChild(provenance);
       list.appendChild(item);
     });
     card.appendChild(list);
@@ -1228,6 +1493,11 @@
           const item = node("li");
           item.appendChild(text("strong", fact.subject));
           item.appendChild(text("p", fact.summary));
+          const provenance = officialSourceLink(
+            fact.source_url,
+            fact.checked_at,
+          );
+          if (provenance) item.appendChild(provenance);
           list.appendChild(item);
         });
         section.appendChild(list);
@@ -1447,6 +1717,26 @@
     return body;
   };
 
+  const consumerErrorMessage = (error) => {
+    const code = error instanceof Error ? error.message : "request_failed";
+    const messages = {
+      amount_invalid: "金額は1円以上100万円以下で入力してください。",
+      p0_purchase_amount_invalid:
+        "金額は1円以上100万円以下で入力してください。",
+      selected_p0_card_required:
+        "カードまたはモバイル決済を1つ以上選んでください。",
+      p0_payment_selection_required:
+        "ウォレットでカードまたはモバイル決済を選んでください。",
+      route_input_invalid: "入力した条件では比較できませんでした。",
+      request_failed:
+        "通信できませんでした。接続を確認して、もう一度お試しください。",
+    };
+    return (
+      messages[code] ||
+      "比較結果を取得できませんでした。もう一度お試しください。"
+    );
+  };
+
   let pointSpendOptions = null;
 
   const safePointSpendOptions = (body) => {
@@ -1455,6 +1745,13 @@
       body.version !== "p0-point-spend-options.v2" ||
       body.experimental !== true ||
       !Number.isSafeInteger(body.rule_count) ||
+      !body.coverage ||
+      typeof body.coverage !== "object" ||
+      !Number.isSafeInteger(body.coverage.asset_count) ||
+      !Number.isSafeInteger(body.coverage.direct_pair_count) ||
+      !Number.isSafeInteger(body.coverage.reachable_pair_count) ||
+      !Number.isSafeInteger(body.coverage.conditional_rule_count) ||
+      !Array.isArray(body.coverage.targets_by_source) ||
       !Array.isArray(body.assets) ||
       !Array.isArray(body.wallet_catalogue) ||
       !Array.isArray(body.conditional_rules) ||
@@ -1527,52 +1824,120 @@
         calculation_status: item.calculation_status,
       };
     });
+    const targetsBySource = body.coverage.targets_by_source.map((source) => {
+      if (
+        !source ||
+        typeof source.asset_id !== "string" ||
+        typeof source.label !== "string" ||
+        !Array.isArray(source.targets) ||
+        source.targets.length > 64 ||
+        source.targets.some(
+          (target) =>
+            !target ||
+            typeof target.asset_id !== "string" ||
+            typeof target.label !== "string",
+        )
+      )
+        throw new Error("point_spend_options_invalid");
+      return {
+        asset_id: source.asset_id,
+        label: source.label,
+        targets: source.targets.map((target) => ({
+          asset_id: target.asset_id,
+          label: target.label,
+        })),
+      };
+    });
     return {
       assets,
       conditionalRules,
       walletCatalogue,
       rule_count: body.rule_count,
+      coverage: {
+        asset_count: body.coverage.asset_count,
+        direct_pair_count: body.coverage.direct_pair_count,
+        reachable_pair_count: body.coverage.reachable_pair_count,
+        conditional_rule_count: body.coverage.conditional_rule_count,
+        targetsBySource,
+      },
     };
   };
 
   const renderP0WalletCatalogue = () => {
-    const container = document.getElementById("p0-wallet-catalogue");
-    clear(container);
     if (!pointSpendOptions) {
-      container.appendChild(
-        text("p", "サービス一覧を読み込めませんでした。", "helper"),
-      );
+      document.getElementById("wallet-route-summary").textContent =
+        "サービス情報を読み込めませんでした";
       return;
     }
-    const groups = [
-      ["point", "ポイント・マイル"],
-      ["mobile_pay", "モバイル決済"],
-      ["credit_card", "クレジットカード"],
-    ];
-    groups.forEach(([kind, heading]) => {
-      const items = pointSpendOptions.walletCatalogue.filter(
-        (item) => item.kind === kind,
-      );
-      if (items.length === 0) return;
-      const section = node("section", "p0-wallet-family-group");
-      section.appendChild(text("h3", `${heading}（${items.length}）`));
-      const list = node("div", "p0-wallet-family-list");
-      items.forEach((item) => {
-        const card = node("article", "p0-wallet-family-card");
-        card.appendChild(paymentLogo(item.family_id));
-        const copy = node("span", "p0-wallet-family-copy");
-        copy.appendChild(text("strong", item.label));
-        card.appendChild(copy);
-        list.appendChild(card);
-      });
-      section.appendChild(list);
-      container.appendChild(section);
-    });
     document.getElementById("wallet-count").textContent = String(
       pointSpendOptions.walletCatalogue.length,
     );
     document.getElementById("wallet-route-summary").textContent =
       "選んだサービスの比較とポイント交換の試算に使います";
+  };
+
+  const updateWalletStorageStatus = (selectedCount) => {
+    const status = document.getElementById("wallet-save-status");
+    const reset = document.getElementById("wallet-reset-button");
+    if (!status || !reset) return;
+    reset.disabled = selectedCount === 0;
+    if (!walletHydrated) {
+      status.textContent = "選択状態を読み込んでいます…";
+      return;
+    }
+    if (!walletStorageAvailable) {
+      status.textContent =
+        "このブラウザでは端末保存が使えません。選択はこのページを開いている間だけ保持されます。";
+      return;
+    }
+    status.textContent = selectedCount
+      ? `${selectedCount}サービスをこの端末に保存中。アカウント連携はありません。`
+      : "選択中のサービスはありません。選んだ内容だけをこの端末に保存します。";
+  };
+
+  const renderHomeWalletSummary = () => {
+    const container = document.getElementById("home-wallet-chips");
+    if (!container) return;
+    clear(container);
+    if (!pointSpendOptions) {
+      container.appendChild(
+        text("p", "ウォレットを読み込んでいます…", "helper"),
+      );
+      return;
+    }
+    const selected = selectedP0Products();
+    const items = selected
+      .map((familyId) =>
+        pointSpendOptions.walletCatalogue.find(
+          (item) => item.family_id === familyId,
+        ),
+      )
+      .filter(Boolean);
+    if (!items.length) {
+      container.appendChild(
+        text("p", "ウォレットから支払い方法を選んでください。", "helper"),
+      );
+      return;
+    }
+    items.forEach((item) => {
+      const chip = node("button", "wallet-chip is-selected");
+      chip.type = "button";
+      chip.dataset.walletChip = item.family_id;
+      chip.setAttribute("aria-pressed", "true");
+      chip.setAttribute("aria-label", `${item.label}を比較から外す`);
+      chip.appendChild(paymentLogo(item.family_id));
+      chip.appendChild(text("strong", item.label));
+      chip.appendChild(text("span", "×", "wallet-chip-remove"));
+      chip.addEventListener("click", () => {
+        const input = [...document.querySelectorAll("[data-p0-product]")].find(
+          (candidate) => candidate.value === item.family_id,
+        );
+        if (!input) return;
+        input.checked = false;
+        syncP0ProductPickers();
+      });
+      container.appendChild(chip);
+    });
   };
 
   const p0PickerDefinitions = Object.freeze([
@@ -1608,7 +1973,15 @@
       status.textContent =
         "カードまたはモバイル決済を1つ以上タップして選んでください。";
       status.classList.add("is-error");
-      status.scrollIntoView({ behavior: "smooth", block: "center" });
+      const homeSummary = document.getElementById("home-wallet-chips");
+      if (
+        document.getElementById("tab-home")?.classList.contains("is-active")
+      ) {
+        homeSummary?.classList.add("is-error");
+        homeSummary?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        status.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       throw new Error("p0_payment_selection_required");
     }
     return selected;
@@ -1634,11 +2007,19 @@
       )?.kind;
       return kind === "credit_card" || kind === "mobile_pay";
     });
+    document.getElementById("compare-submit").disabled = !hasPaymentMethod;
     status.textContent = !selected.length
       ? "支払い方法をタップして選んでください。"
       : !hasPaymentMethod
         ? "ポイントに加えて、カードまたはモバイル決済も選んでください。"
         : `${selected.length}サービスを選択中。もう一度タップすると解除できます。`;
+    const homeSummary = document.getElementById("home-wallet-chips");
+    homeSummary?.classList.remove("is-error");
+    if (walletHydrated && !suppressWalletPersistence) {
+      writeStoredWalletIds(selected);
+    }
+    renderHomeWalletSummary();
+    updateWalletStorageStatus(selected.length);
   };
 
   const renderP0ProductPickers = () => {
@@ -1664,6 +2045,11 @@
           container.appendChild(label);
         });
     });
+    const savedIds = new Set(readStoredWalletIds());
+    document.querySelectorAll("[data-p0-product]").forEach((input) => {
+      input.checked = savedIds.has(input.value);
+    });
+    walletHydrated = true;
     syncP0ProductPickers();
   };
 
@@ -1699,6 +2085,21 @@
     });
   };
 
+  const renderPointSpendTargets = (preferredTarget = "") => {
+    const sourceId = document.getElementById("point-spend-source").value;
+    const target = document.getElementById("point-spend-target");
+    const sourceCoverage = pointSpendOptions?.coverage.targetsBySource.find(
+      (item) => item.asset_id === sourceId,
+    );
+    clear(target);
+    (sourceCoverage?.targets || []).forEach((asset) => {
+      target.appendChild(pointSpendSelectOption(asset));
+    });
+    if ([...target.options].some((option) => option.value === preferredTarget))
+      target.value = preferredTarget;
+    target.disabled = target.options.length === 0;
+  };
+
   const loadPointSpendOptions = async () => {
     const result = document.getElementById("point-spend-result");
     try {
@@ -1709,23 +2110,18 @@
       if (!response.ok) throw new Error("request_failed");
       pointSpendOptions = safePointSpendOptions(await response.json());
       const source = document.getElementById("point-spend-source");
-      const target = document.getElementById("point-spend-target");
       clear(source);
-      clear(target);
       pointSpendOptions.assets.forEach((asset) => {
         source.appendChild(pointSpendSelectOption(asset));
-        target.appendChild(pointSpendSelectOption(asset));
       });
       source.value = pointSpendOptions.assets.some(
         (asset) => asset.asset_id === "asset.point.rakuten",
       )
         ? "asset.point.rakuten"
         : pointSpendOptions.assets[0]?.asset_id || "";
-      target.value = pointSpendOptions.assets.some(
-        (asset) => asset.asset_id === "asset.mile.ana",
-      )
-        ? "asset.mile.ana"
-        : pointSpendOptions.assets[1]?.asset_id || "";
+      renderPointSpendTargets("asset.mile.ana");
+      document.getElementById("point-spend-coverage").textContent =
+        `${pointSpendOptions.coverage.asset_count}種類・${pointSpendOptions.coverage.reachable_pair_count}通りの交換先を収録しています。`;
       renderP0WalletCatalogue();
       renderP0ProductPickers();
       renderPointSpendConditions();
@@ -1758,6 +2154,22 @@
       text("strong", `${route.target_amount} ${route.target_label}`),
     );
     card.appendChild(heading);
+    const unitValue = Number(
+      document.getElementById("point-spend-unit-value").value,
+    );
+    const targetAmount = Number(route.target_amount);
+    if (
+      Number.isFinite(unitValue) &&
+      unitValue > 0 &&
+      Number.isFinite(targetAmount)
+    )
+      card.appendChild(
+        text(
+          "strong",
+          `約${Math.floor(unitValue * targetAmount).toLocaleString("ja-JP")}円相当（入力した価値で試算）`,
+          "point-spend-value",
+        ),
+      );
     card.appendChild(
       text(
         "p",
@@ -1784,7 +2196,10 @@
 
   document
     .getElementById("point-spend-source")
-    .addEventListener("change", renderPointSpendConditions);
+    .addEventListener("change", () => {
+      renderPointSpendTargets();
+      renderPointSpendConditions();
+    });
   document
     .getElementById("point-spend-target")
     .addEventListener("change", renderPointSpendConditions);
@@ -1813,7 +2228,7 @@
             balance: Number(
               document.getElementById("point-spend-balance").value,
             ),
-            objective: document.getElementById("point-spend-objective").value,
+            objective: "maximize_target",
             effective_at: new Date().toISOString(),
             confirmed_rule_ids: confirmed,
           },
@@ -1941,6 +2356,22 @@
       void loadInformationFacts(true);
       void loadLotteryLinks(true);
     });
+  document
+    .getElementById("wallet-reset-button")
+    .addEventListener("click", () => {
+      suppressWalletPersistence = true;
+      document.querySelectorAll("[data-p0-product]").forEach((input) => {
+        input.checked = false;
+      });
+      removeStoredWalletIds();
+      walletHydrated = true;
+      syncP0ProductPickers();
+      suppressWalletPersistence = false;
+      const status = document.getElementById("wallet-save-status");
+      if (status)
+        status.textContent =
+          "保存した選択を削除しました。必要なサービスを選び直せます。";
+    });
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
       activateTab("home");
@@ -1986,13 +2417,7 @@
             "error-panel",
           ),
         );
-        result.appendChild(
-          text(
-            "p",
-            error instanceof Error ? error.message : "request_failed",
-            "error",
-          ),
-        );
+        result.appendChild(text("p", consumerErrorMessage(error), "error"));
       }
     });
 

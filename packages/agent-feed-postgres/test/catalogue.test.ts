@@ -130,6 +130,7 @@ describe("PostgreSQL experimental catalogue store", () => {
       valid_to: candidate.rule.validity.valid_to,
       source_id: "jp.nanaco.shopping-earning",
       source_label: "nanaco公式情報",
+      source_url: expect.stringMatching(/^https:\/\//u),
       rule_id: "rr_jp_cvs_006_nanaco_purchase_reward",
       rule_version: 1,
       reward_units: "1",
@@ -149,14 +150,13 @@ describe("PostgreSQL experimental catalogue store", () => {
       "rule_version",
       "source_id",
       "source_label",
+      "source_url",
       "spend_jpy",
       "status",
       "valid_from",
       "valid_to",
     ]);
-    expect(JSON.stringify(records[0])).not.toMatch(
-      /candidate_payload|https?:\/\//iu,
-    );
+    expect(JSON.stringify(records[0])).not.toMatch(/candidate_payload/iu);
   });
 
   it("fails closed for extra fields, raw payload drift, and an oversized view", async () => {

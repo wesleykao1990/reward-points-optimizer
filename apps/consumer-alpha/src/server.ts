@@ -47,6 +47,7 @@ import {
 } from "./contracts.js";
 import {
   FACT_INFLUENCE_VERIFIED_APPLIED_PARENT_CLAIMS,
+  type FactInfluenceBrowserFactor,
   type FactInfluenceBrowserView,
   type FactInfluenceGraphContext,
   type FactInfluenceGraphPort,
@@ -88,6 +89,12 @@ import {
   createUnavailableNanacoExperimentalRecommendationPort,
   ExperimentalRecommendationError,
 } from "./real-experimental-recommendation.js";
+import {
+  defaultPointValuation,
+  type RankingCandidate,
+  rankUnifiedRoutes,
+  type UnifiedComparisonSummary,
+} from "./recommendation-ranking.js";
 import { createPostgresAppRuntime } from "./runtime.js";
 import { evaluateSynthetic, SYNTHETIC_ALPHA_CONFIG } from "./synthetic.js";
 
@@ -1075,9 +1082,54 @@ interface UnifiedRouteRecord {
   readonly status: UnifiedRouteStatus;
   readonly validity_state: UnifiedValidityState;
   readonly issues: readonly UnifiedRouteIssue[];
+  /** Comparable value only; native reward quantities remain in the plan. */
+  readonly objective_score_jpy?: string | null;
+  /** Purchase routes can compete for the merchant transaction; funding routes
+   * are exposed separately and never win that comparison. */
+  readonly comparison_role?: "purchase" | "funding";
+  readonly reward_units?: string | null;
+  readonly reward_asset_id?: string | null;
+  readonly reward_label?: string | null;
+  readonly valuation?: ReturnType<typeof defaultPointValuation>;
   readonly recommendation_id?: `sha256:${string}`;
   readonly recommendation?: Readonly<Record<string, unknown>>;
   readonly fact_influence?: FactInfluenceBrowserView;
+}
+
+/**
+ * The unified endpoint keeps the complete graph projection host-side while
+ * building the route result.  Only this bounded shared projection crosses
+ * the browser boundary; route records carry references into it below.
+ */
+interface UnifiedFactInfluenceShared {
+  readonly version: FactInfluenceBrowserView["version"];
+  readonly fact_count: number;
+  readonly active_count: number;
+  readonly relevant_count: number;
+  readonly relevant_factor_ids: readonly string[];
+  readonly applied_count: number;
+  readonly applied_factor_ids: readonly string[];
+  readonly factors: readonly FactInfluenceBrowserFactor[];
+  readonly deferred_factor_ids: readonly string[];
+}
+
+interface UnifiedFactInfluenceRef {
+  readonly applied_factor_ids: readonly string[];
+  readonly relevant_factor_ids: readonly string[];
+  readonly deferred_factor_ids: readonly string[];
+}
+
+interface UnifiedCompactRouteRecord
+  extends Omit<UnifiedRouteRecord, "fact_influence"> {
+  readonly fact_influence_ref?: UnifiedFactInfluenceRef;
+}
+
+interface UnifiedRecommendationsResult {
+  readonly routes: readonly UnifiedCompactRouteRecord[];
+  readonly supplemental_routes: readonly UnifiedCompactRouteRecord[];
+  readonly comparison: UnifiedComparisonSummary;
+  readonly fact_influence_shared: UnifiedFactInfluenceShared | null;
+  readonly questions: readonly string[];
 }
 
 function unifiedRecommendationId(
@@ -1530,10 +1582,298 @@ async function unifiedNanacoCreditChargeRoute(
   }
 }
 
+const REWARD_ASSET_BY_LABEL: Readonly<Record<string, string>> = Object.freeze({
+  dポイント: "point.d",
+  "JRE POINT": "point.jre",
+  nanacoポイント: "point.nanaco",
+  PayPayポイント: "point.paypay",
+  Pontaポイント: "point.ponta",
+  楽天ポイント: "point.rakuten",
+  Vポイント: "point.v",
+  "WAON POINT": "point.waon",
+});
+
+function recordValue(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return undefined;
+  return (value as Record<string, unknown>)[key];
+}
+
+function rewardPlanForRoute(
+  route: UnifiedRouteRecord,
+): Record<string, unknown> | null {
+  const recommendation = route.recommendation;
+  const winner = recordValue(recommendation, "winner");
+  if (winner !== undefined && winner !== null && typeof winner === "object")
+    return winner as Record<string, unknown>;
+  const primary = recordValue(recommendation, "primary");
+  if (primary !== undefined && primary !== null && typeof primary === "object")
+    return primary as Record<string, unknown>;
+  return null;
+}
+
+function scoreText(value: unknown): string | null {
+  if (typeof value !== "string" || !/^\d{1,32}(?:\.\d{1,4})?$/u.test(value))
+    return null;
+  const [integer, fraction = ""] = value.split(".");
+  const normalizedInteger = integer.replace(/^0+(?=\d)/u, "");
+  const normalizedFraction = fraction.replace(/0+$/u, "");
+  return normalizedFraction
+    ? `${normalizedInteger}.${normalizedFraction}`
+    : normalizedInteger;
+}
+
+function routeRewardAssetId(
+  route: UnifiedRouteRecord,
+  rewardLabel: string | null,
+): string | null {
+  if (
+    route.route_id === "nanaco_purchase" ||
+    route.route_id === "nanaco_credit_charge"
+  )
+    return "point.nanaco";
+  return rewardLabel === null
+    ? null
+    : (REWARD_ASSET_BY_LABEL[rewardLabel] ?? null);
+}
+
+function withPlanObjectiveScore(
+  route: UnifiedRouteRecord,
+  score: string,
+): Readonly<Record<string, unknown>> | undefined {
+  if (route.recommendation === undefined) return undefined;
+  const recommendation = route.recommendation;
+  const winner = recordValue(recommendation, "winner");
+  if (winner !== undefined && winner !== null && typeof winner === "object")
+    return {
+      ...recommendation,
+      winner: {
+        ...(winner as Record<string, unknown>),
+        objective_score_jpy: score,
+      },
+    };
+  const primary = recordValue(recommendation, "primary");
+  if (primary !== undefined && primary !== null && typeof primary === "object")
+    return {
+      ...recommendation,
+      primary: {
+        ...(primary as Record<string, unknown>),
+        objective_score_jpy: score,
+      },
+    };
+  return undefined;
+}
+
+function enrichUnifiedRoute(route: UnifiedRouteRecord): {
+  readonly route: UnifiedRouteRecord;
+  readonly candidate: RankingCandidate | null;
+} {
+  const plan = rewardPlanForRoute(route);
+  const rewardUnits = scoreText(plan?.reward_points);
+  const rewardLabel =
+    typeof plan?.reward_label === "string" ? plan.reward_label : null;
+  const existingScore = scoreText(plan?.objective_score_jpy);
+  const score = existingScore ?? rewardUnits;
+  const role =
+    route.route_id === "nanaco_credit_charge"
+      ? ("funding" as const)
+      : ("purchase" as const);
+  const rewardAssetId = routeRewardAssetId(route, rewardLabel);
+  if (role === "funding") {
+    return {
+      route: Object.freeze({
+        ...route,
+        // A top-up reward is not a reward for the merchant purchase.  Keep
+        // the native reward_points inside the supplemental plan, but never
+        // project it into the purchase comparison's JPY objective.
+        comparison_role: role,
+        reward_units: rewardUnits,
+        reward_asset_id: rewardAssetId,
+        reward_label: rewardLabel,
+      }),
+      candidate: null,
+    };
+  }
+  if (route.status !== "eligible" || score === null) {
+    return {
+      route: Object.freeze({
+        ...route,
+        objective_score_jpy: existingScore,
+        comparison_role: role,
+        reward_units: rewardUnits,
+        reward_asset_id: rewardAssetId,
+        reward_label: rewardLabel,
+      }),
+      candidate: null,
+    };
+  }
+  const valuation =
+    existingScore !== null
+      ? Object.freeze({
+          ...defaultPointValuation(rewardAssetId),
+          source: "engine_profile" as const,
+          note: "エンジンが計算したユーザー評価を採用",
+        })
+      : defaultPointValuation(rewardAssetId);
+  const enrichedRoute = Object.freeze({
+    ...route,
+    objective_score_jpy: score,
+    comparison_role: role,
+    reward_units: rewardUnits,
+    reward_asset_id: rewardAssetId,
+    reward_label: rewardLabel,
+    valuation,
+    ...(withPlanObjectiveScore(route, score)
+      ? { recommendation: withPlanObjectiveScore(route, score) }
+      : {}),
+  });
+  return {
+    route: enrichedRoute,
+    candidate: Object.freeze({
+      route_id: route.route_id,
+      label: route.label,
+      objective_score_jpy: score,
+      reward_units: rewardUnits,
+      reward_asset_id: rewardAssetId,
+      reward_label: rewardLabel,
+      valuation,
+      comparison_role: role,
+    }),
+  };
+}
+
+function rankRouteOrder(
+  routes: readonly UnifiedRouteRecord[],
+  comparison: UnifiedComparisonSummary,
+): readonly UnifiedRouteRecord[] {
+  const rankByRouteId = new Map(
+    comparison.ranked_routes.map((item) => [item.route_id, item.rank]),
+  );
+  return Object.freeze(
+    routes
+      .map((route, index) => ({ route, index }))
+      .sort((left, right) => {
+        const leftRank = rankByRouteId.get(left.route.route_id);
+        const rightRank = rankByRouteId.get(right.route.route_id);
+        if (leftRank !== undefined && rightRank !== undefined)
+          return leftRank - rightRank;
+        if (leftRank !== undefined) return -1;
+        if (rightRank !== undefined) return 1;
+        return left.index - right.index;
+      })
+      .map((item) => item.route),
+  );
+}
+
+const MAX_UNIFIED_INLINE_FACTORS = 3 as const;
+
+function compactUnifiedFactInfluence(routes: readonly UnifiedRouteRecord[]): {
+  readonly routes: readonly UnifiedCompactRouteRecord[];
+  readonly shared: UnifiedFactInfluenceShared | null;
+} {
+  const views = routes.flatMap((route) =>
+    route.fact_influence === undefined
+      ? []
+      : [{ route_id: route.route_id, view: route.fact_influence }],
+  );
+  if (views.length === 0)
+    return Object.freeze({
+      routes: Object.freeze(
+        routes.map(({ fact_influence: _factInfluence, ...route }) =>
+          Object.freeze(route),
+        ),
+      ),
+      shared: null,
+    });
+
+  const relevantFactorIds: string[] = [];
+  const relevantFactorIdSet = new Set<string>();
+  const appliedFactorIds: string[] = [];
+  const appliedFactorIdSet = new Set<string>();
+  const factorsById = new Map<string, FactInfluenceBrowserFactor>();
+  for (const { view } of views) {
+    for (const factorId of view.relevant_factor_ids) {
+      if (relevantFactorIdSet.has(factorId)) continue;
+      relevantFactorIdSet.add(factorId);
+      relevantFactorIds.push(factorId);
+    }
+    for (const factorId of view.applied_factor_ids) {
+      if (appliedFactorIdSet.has(factorId)) continue;
+      appliedFactorIdSet.add(factorId);
+      appliedFactorIds.push(factorId);
+    }
+    for (const factor of view.factors) {
+      const previous = factorsById.get(factor.factor_id);
+      // If one route applied a factor and another route only related to it,
+      // retain the applied projection in the shared detail.
+      if (previous === undefined || (!previous.applied && factor.applied))
+        factorsById.set(factor.factor_id, factor);
+    }
+  }
+
+  const inlineFactors = Object.freeze(
+    [...factorsById.values()]
+      .sort((left, right) => {
+        const leftPriority = left.applied
+          ? 0
+          : left.graph_role === "constraint"
+            ? 1
+            : left.graph_role === "warning"
+              ? 2
+              : 3;
+        const rightPriority = right.applied
+          ? 0
+          : right.graph_role === "constraint"
+            ? 1
+            : right.graph_role === "warning"
+              ? 2
+              : 3;
+        return leftPriority - rightPriority;
+      })
+      .slice(0, MAX_UNIFIED_INLINE_FACTORS),
+  );
+  const inlineFactorIds = new Set(
+    inlineFactors.map((factor) => factor.factor_id),
+  );
+  const shared = Object.freeze({
+    version: views[0].view.version,
+    fact_count: views[0].view.fact_count,
+    active_count: views[0].view.active_count,
+    relevant_count: relevantFactorIds.length,
+    applied_count: appliedFactorIds.length,
+    relevant_factor_ids: Object.freeze(relevantFactorIds),
+    applied_factor_ids: Object.freeze(appliedFactorIds),
+    factors: inlineFactors,
+    deferred_factor_ids: Object.freeze(
+      relevantFactorIds.filter((factorId) => !inlineFactorIds.has(factorId)),
+    ),
+  });
+  const compactRoutes = Object.freeze(
+    routes.map((route) => {
+      const view = route.fact_influence;
+      const { fact_influence: _factInfluence, ...withoutFullView } = route;
+      if (view === undefined) return Object.freeze(withoutFullView);
+      return Object.freeze({
+        ...withoutFullView,
+        fact_influence_ref: Object.freeze({
+          applied_factor_ids: view.applied_factor_ids,
+          relevant_factor_ids: view.relevant_factor_ids,
+          deferred_factor_ids: Object.freeze(
+            view.relevant_factor_ids.filter(
+              (factorId) => !inlineFactorIds.has(factorId),
+            ),
+          ),
+        }),
+      });
+    }),
+  );
+  return Object.freeze({ routes: compactRoutes, shared });
+}
+
 async function unifiedRecommendations(
   input: UnifiedRecommendationInput,
   dependency: AppCatalogueDependency | undefined,
-): Promise<readonly UnifiedRouteRecord[]> {
+): Promise<UnifiedRecommendationsResult> {
   // Keep each route isolated: an invalid top-up must not remove a valid
   // purchase neighbour, and an explanation outage must remain visible only on
   // the affected route.
@@ -1547,10 +1887,7 @@ async function unifiedRecommendations(
     rememberRecommendationId(recommendationId);
     return Object.freeze({
       route_id: routeId,
-      label:
-        input.merchant_id === "merchant.seveneleven"
-          ? `セブン‐イレブン・${calculation.label}`
-          : `通常のお買い物・${calculation.label}`,
+      label: `${calculation.label}（一般的な基本還元率）`,
       kind: "calculation" as const,
       status: "eligible" as const,
       validity_state: "active" as const,
@@ -1580,14 +1917,48 @@ async function unifiedRecommendations(
         ]
       : [];
   const resolvedNanacoRoutes = await Promise.all(nanacoRoutes);
-  if (input.merchant_id === "merchant.seveneleven")
-    return Object.freeze([...selectedRoutes, ...resolvedNanacoRoutes]);
-  if (selectedRoutes.length > 0) return Object.freeze(selectedRoutes);
-  return Object.freeze([
-    await unifiedSyntheticRoute(input, dependency),
-    ...selectedRoutes,
-    ...resolvedNanacoRoutes,
+  const routes =
+    input.merchant_id === "merchant.seveneleven"
+      ? [...selectedRoutes, ...resolvedNanacoRoutes]
+      : selectedRoutes.length > 0
+        ? [...selectedRoutes]
+        : [
+            await unifiedSyntheticRoute(input, dependency),
+            ...selectedRoutes,
+            ...resolvedNanacoRoutes,
+          ];
+  const enriched = routes.map(enrichUnifiedRoute);
+  const comparison = rankUnifiedRoutes(
+    enriched.flatMap((item) => (item.candidate ? [item.candidate] : [])),
+  );
+  const purchaseRoutes = enriched
+    .filter((item) => item.route.comparison_role !== "funding")
+    .map((item) => item.route);
+  const supplementalRoutes = enriched
+    .filter((item) => item.route.comparison_role === "funding")
+    .map((item) => item.route);
+  const compacted = compactUnifiedFactInfluence([
+    ...purchaseRoutes,
+    ...supplementalRoutes,
   ]);
+  const compactByRouteId = new Map(
+    compacted.routes.map((route) => [route.route_id, route]),
+  );
+  return Object.freeze({
+    routes: Object.freeze(
+      rankRouteOrder(purchaseRoutes, comparison).map(
+        (route) => compactByRouteId.get(route.route_id) ?? route,
+      ) as readonly UnifiedCompactRouteRecord[],
+    ),
+    supplemental_routes: Object.freeze(
+      supplementalRoutes.map(
+        (route) => compactByRouteId.get(route.route_id) ?? route,
+      ) as readonly UnifiedCompactRouteRecord[],
+    ),
+    comparison,
+    fact_influence_shared: compacted.shared,
+    questions: Object.freeze([]) as readonly string[],
+  });
 }
 
 function contentTypeIsJson(
@@ -2004,7 +2375,7 @@ export async function handleRequest(
       const input = parseUnifiedRecommendation(
         parseJsonBody(request, MAX_UNIFIED_RECOMMENDATION_BODY_BYTES),
       );
-      const routes = await unifiedRecommendations(input, dependency);
+      const recommendation = await unifiedRecommendations(input, dependency);
       return jsonResponse(200, {
         version: "unified-recommendations.v2",
         merchant_id: input.merchant_id,
@@ -2012,7 +2383,11 @@ export async function handleRequest(
         amount_jpy: input.amount_jpy,
         effective_at: input.effective_at,
         selected_p0_products: input.selected_p0_products,
-        routes,
+        routes: recommendation.routes,
+        supplemental_routes: recommendation.supplemental_routes,
+        comparison: recommendation.comparison,
+        fact_influence_shared: recommendation.fact_influence_shared,
+        questions: recommendation.questions,
       });
     }
     if (pathname === "/api/experimental/recommendation") {

@@ -73,6 +73,7 @@ const activeCard = (
   display_status: "experimental_unverified" as const,
   confidence: "medium" as const,
   source_label: "ホスト確認済み情報",
+  source_url: "https://example.com/official-source",
   checked_at: EFFECTIVE_AT,
   valid_from,
   valid_to: null,
@@ -178,6 +179,16 @@ function responseJson(response: { readonly body: string }) {
     version: string;
     selected_p0_products: string[];
     routes: Array<Record<string, unknown>>;
+    supplemental_routes: Array<Record<string, unknown>>;
+    comparison: Record<string, unknown>;
+    fact_influence_shared: {
+      relevant_count: number;
+      relevant_factor_ids: string[];
+      applied_factor_ids: string[];
+      factors: Array<Record<string, unknown>>;
+      deferred_factor_ids: string[];
+    } | null;
+    questions: string[];
   };
 }
 
@@ -222,7 +233,8 @@ describe("unified merchant recommendation journey", () => {
     const body = requestBody();
     delete (body as Record<string, unknown>).seven_card_plus_owned;
     delete (body as Record<string, unknown>).nanaco_credit_charge_preregistered;
-    const routes = responseJson(await jsonRequest(body, dependencies())).routes;
+    const bodyJson = responseJson(await jsonRequest(body, dependencies()));
+    const routes = bodyJson.routes;
     expect(
       routes.find((route) => route.route_id === "synthetic"),
     ).toMatchObject({ status: "eligible" });
@@ -230,7 +242,9 @@ describe("unified merchant recommendation journey", () => {
       routes.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({ status: "eligible" });
     expect(
-      routes.find((route) => route.route_id === "nanaco_credit_charge"),
+      bodyJson.supplemental_routes.find(
+        (route) => route.route_id === "nanaco_credit_charge",
+      ),
     ).toMatchObject({
       status: "no_valid_plan",
       issues: ["route_input_invalid"],
@@ -256,24 +270,59 @@ describe("unified merchant recommendation journey", () => {
     expect(body.routes.map((route) => route.route_id)).toEqual([
       "synthetic",
       "nanaco_purchase",
+    ]);
+    expect(body.supplemental_routes.map((route) => route.route_id)).toEqual([
       "nanaco_credit_charge",
     ]);
     expect(body.routes.map((route) => route.kind)).toEqual([
-      "calculation",
       "calculation",
       "calculation",
     ]);
     expect(body.routes.map((route) => route.status)).toEqual([
       "eligible",
       "eligible",
-      "eligible",
     ]);
     expect(
-      body.routes.every((route) => route.validity_state === "active"),
+      [...body.routes, ...body.supplemental_routes].every(
+        (route) => route.validity_state === "active",
+      ),
     ).toBe(true);
     expect(response.body).not.toMatch(
       /https?:\/\/|evidence_ids|source_ids|parent_claim_id|candidate_hash|definition_hash/iu,
     );
+  });
+
+  it("compacts unified fact explanations without changing route-local issues", async () => {
+    const response = await jsonRequest(requestBody(), dependencies());
+    expect(response.status).toBe(200);
+    const body = responseJson(response);
+    const shared = body.fact_influence_shared;
+    expect(shared).not.toBeNull();
+    expect(shared?.relevant_count).toBe(shared?.relevant_factor_ids.length);
+    expect(shared?.factors.length).toBeLessThanOrEqual(3);
+    expect(shared?.deferred_factor_ids.length).toBe(
+      (shared?.relevant_factor_ids.length ?? 0) - (shared?.factors.length ?? 0),
+    );
+    expect(body.questions).toEqual([]);
+    for (const route of [...body.routes, ...body.supplemental_routes]) {
+      expect(route).not.toHaveProperty("fact_influence");
+      const reference = route.fact_influence_ref as
+        | {
+            applied_factor_ids: string[];
+            relevant_factor_ids: string[];
+            deferred_factor_ids: string[];
+          }
+        | undefined;
+      if (!reference) continue;
+      expect(reference.deferred_factor_ids).toEqual(
+        reference.relevant_factor_ids.filter(
+          (factorId) =>
+            !shared?.factors.some((factor) => factor.factor_id === factorId),
+        ),
+      );
+    }
+    // The previous response carried two ~24 KB factor arrays for this input.
+    expect(Buffer.byteLength(response.body, "utf8")).toBeLessThan(24_000);
   });
 
   it("uses selected product rates in the Seven-Eleven calculation", async () => {
@@ -290,7 +339,6 @@ describe("unified merchant recommendation journey", () => {
     expect(body.routes.map((route) => route.route_id)).toEqual([
       "selected_product_card.rakuten",
       "nanaco_purchase",
-      "nanaco_credit_charge",
     ]);
     expect(body.routes[0]).toMatchObject({
       kind: "calculation",
@@ -301,10 +349,27 @@ describe("unified merchant recommendation journey", () => {
           reward_points: "2",
           reward_label: "楽天ポイント",
           reward_rate_percent: "1",
+          objective_score_jpy: "2",
         },
       },
+      objective_score_jpy: "2",
+      comparison_role: "purchase",
+      reward_units: "2",
+      reward_asset_id: "point.rakuten",
+    });
+    expect(body.comparison).toMatchObject({
+      winner_route_id: "selected_product_card.rakuten",
+      runner_up_route_id: "nanaco_purchase",
+      delta_jpy: "1",
     });
     expect(JSON.stringify(body.routes)).not.toContain("サンプル");
+    expect(body.supplemental_routes[0]).toMatchObject({
+      route_id: "nanaco_credit_charge",
+      comparison_role: "funding",
+    });
+    expect(body.supplemental_routes[0]).not.toHaveProperty(
+      "objective_score_jpy",
+    );
   });
 
   it("does not add Seven-Eleven or Nanaco routes to general shopping", async () => {
@@ -318,7 +383,7 @@ describe("unified merchant recommendation journey", () => {
       "selected_product_card.rakuten",
     ]);
     expect(body.routes[0]).toMatchObject({
-      label: "通常のお買い物・楽天カード",
+      label: "楽天カード（一般的な基本還元率）",
       kind: "calculation",
       status: "eligible",
       recommendation: {
@@ -474,12 +539,13 @@ describe("unified merchant recommendation journey", () => {
         } as typeof valid & { evidence_ids: string[] };
       },
     };
-    const malformedRoutes = responseJson(
+    const malformedBody = responseJson(
       await jsonRequest(requestBody(), {
         ...base,
         experimentalRecommendation: malformed,
       }),
-    ).routes;
+    );
+    const malformedRoutes = malformedBody.routes;
     expect(
       malformedRoutes.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
@@ -487,7 +553,7 @@ describe("unified merchant recommendation journey", () => {
       issues: ["recommendation_malformed"],
     });
     expect(
-      malformedRoutes.find(
+      malformedBody.supplemental_routes.find(
         (route) => route.route_id === "nanaco_credit_charge",
       ),
     ).toMatchObject({ status: "eligible" });
@@ -508,12 +574,13 @@ describe("unified merchant recommendation journey", () => {
         return { ...valid, plans: [...valid.plans, extraPlan] };
       },
     };
-    const incoherentRoutes = responseJson(
+    const incoherentBody = responseJson(
       await jsonRequest(requestBody(), {
         ...base,
         experimentalRecommendation: incoherent,
       }),
-    ).routes;
+    );
+    const incoherentRoutes = incoherentBody.routes;
     expect(
       incoherentRoutes.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
@@ -521,7 +588,7 @@ describe("unified merchant recommendation journey", () => {
       issues: ["recommendation_malformed"],
     });
     expect(
-      incoherentRoutes.find(
+      incoherentBody.supplemental_routes.find(
         (route) => route.route_id === "nanaco_credit_charge",
       ),
     ).toMatchObject({ status: "eligible" });
@@ -533,14 +600,17 @@ describe("unified merchant recommendation journey", () => {
       dependencies(),
     );
     expect(response.status).toBe(200);
-    const routes = responseJson(response).routes;
+    const responseBody = responseJson(response);
+    const routes = responseBody.routes;
     expect(
       routes.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
       status: "eligible",
     });
     expect(
-      routes.find((route) => route.route_id === "nanaco_credit_charge"),
+      responseBody.supplemental_routes.find(
+        (route) => route.route_id === "nanaco_credit_charge",
+      ),
     ).toMatchObject({
       status: "no_valid_plan",
       issues: ["route_input_invalid"],
@@ -553,9 +623,10 @@ describe("unified merchant recommendation journey", () => {
         throw new Error("graph temporarily unavailable");
       },
     };
-    const degraded = responseJson(
+    const degradedBody = responseJson(
       await jsonRequest(requestBody(), dependencies(graphUnavailable)),
-    ).routes;
+    );
+    const degraded = degradedBody.routes;
     expect(
       degraded.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
@@ -581,9 +652,10 @@ describe("unified merchant recommendation journey", () => {
         ),
       }),
     };
-    const blocked = responseJson(
+    const blockedBody = responseJson(
       await jsonRequest(requestBody(), dependencies(missingBindingGraph)),
-    ).routes;
+    );
+    const blocked = blockedBody.routes;
     expect(
       blocked.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
@@ -591,7 +663,9 @@ describe("unified merchant recommendation journey", () => {
       issues: expect.arrayContaining(["fact_binding_required"]),
     });
     expect(
-      blocked.find((route) => route.route_id === "nanaco_credit_charge"),
+      blockedBody.supplemental_routes.find(
+        (route) => route.route_id === "nanaco_credit_charge",
+      ),
     ).toMatchObject({
       status: "eligible",
     });
@@ -603,12 +677,13 @@ describe("unified merchant recommendation journey", () => {
       ...activeCard(CREDIT_ID, "2026-08-18T00:00:00+09:00"),
       valid_to: "2026-08-21T00:00:00+09:00",
     };
-    const routes = responseJson(
+    const responseBody = responseJson(
       await jsonRequest(
         requestBody(),
         dependencies(getDefaultFactInfluenceGraphPort(), [scheduled, expired]),
       ),
-    ).routes;
+    );
+    const routes = responseBody.routes;
     expect(
       routes.find((route) => route.route_id === "nanaco_purchase"),
     ).toMatchObject({
@@ -617,7 +692,9 @@ describe("unified merchant recommendation journey", () => {
       issues: expect.arrayContaining(["rule_not_current"]),
     });
     expect(
-      routes.find((route) => route.route_id === "nanaco_credit_charge"),
+      responseBody.supplemental_routes.find(
+        (route) => route.route_id === "nanaco_credit_charge",
+      ),
     ).toMatchObject({
       status: "blocked",
       validity_state: "expired",

@@ -259,6 +259,7 @@ function makeDemoCard(
     display_status: "experimental_unverified",
     confidence: "high",
     source_label: "セブン‐イレブン公式情報",
+    source_url: "https://www.sej.co.jp/services/cash.html",
     checked_at: checkedAt,
     valid_from: validFrom,
     valid_to: validTo,
@@ -318,11 +319,13 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
     "display_status",
     "confidence",
     "source_label",
+    "source_url",
     "checked_at",
     "valid_from",
     "valid_to",
   ] as const;
-  if (!exactKeys(value, cardKeys))
+  const legacyCardKeys = cardKeys.filter((key) => key !== "source_url");
+  if (!exactKeys(value, cardKeys) && !exactKeys(value, legacyCardKeys))
     throw new Error("catalogue_card_shape_invalid");
   if (
     typeof value.publication_id !== "string" ||
@@ -349,6 +352,15 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
     !safeDisplayText(value.source_label, MAX_EXPERIMENTAL_SOURCE_LABEL_LENGTH)
   )
     throw new Error("catalogue_source_label_invalid");
+  if (
+    value.source_url !== null &&
+    value.source_url !== undefined &&
+    (typeof value.source_url !== "string" ||
+      value.source_url.length > 2048 ||
+      !/^https:\/\/[^\s]+$/u.test(value.source_url) ||
+      hasControlCharacters(value.source_url))
+  )
+    throw new Error("catalogue_source_url_invalid");
   if (!validIsoDate(value.checked_at))
     throw new Error("catalogue_checked_at_invalid");
   if (!validIsoDate(value.valid_from))
@@ -364,6 +376,7 @@ function normalizeCard(value: unknown): ExperimentalCatalogueCard {
       value.display_status as ExperimentalCatalogueCard["display_status"],
     confidence: value.confidence as ExperimentalCatalogueCard["confidence"],
     source_label: value.source_label,
+    source_url: value.source_url ?? null,
     checked_at: value.checked_at,
     valid_from: value.valid_from,
     valid_to: value.valid_to,

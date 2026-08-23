@@ -159,6 +159,8 @@ export interface ExperimentalCatalogueCard {
   readonly display_status: ExperimentalDisplayStatus;
   readonly confidence: ExperimentalConfidence;
   readonly source_label: string;
+  /** First-party source URL when the host has one; null means unavailable. */
+  readonly source_url: string | null;
   readonly checked_at: string;
   readonly valid_from: string;
   readonly valid_to: string | null;
@@ -195,6 +197,13 @@ export interface ImplementationFactCard {
   readonly predicate: string;
   readonly summary: string;
   readonly use_in_comparison: boolean;
+  /** First-party source URL when the source registry contains one. */
+  readonly source_url: string | null;
+  /** Snapshot `as_of`; null is explicit when a backend cannot provide it. */
+  readonly checked_at: string | null;
+  /** Source-declared applicability window; dates may be date-only strings. */
+  readonly effective_from: string | null;
+  readonly effective_to: string | null;
 }
 
 export const IMPLEMENTATION_FACT_CATALOGUE_STATUSES = Object.freeze([

@@ -186,6 +186,7 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
       valid_to: null,
       source_id: "jp.nanaco.shopping-earning",
       source_label: "nanaco公式情報",
+      source_url: "https://www.nanaco-net.jp/how-to/save_point/shopping.html",
       rule_id: "rr_jp_cvs_006_nanaco_purchase_reward",
       rule_version: 1,
       reward_units: "1",
@@ -201,12 +202,13 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
       display_status: "experimental_unverified",
       confidence: "high",
       source_label: "nanaco公式情報",
+      source_url: "https://www.nanaco-net.jp/how-to/save_point/shopping.html",
       checked_at: "2026-08-21T00:05:00Z",
       valid_from: "2026-08-20T05:39:00+09:00",
       valid_to: null,
     });
     expect(JSON.stringify(card)).not.toMatch(
-      /candidate_hash|definition_hash|candidate_payload|https?:\/\//iu,
+      /candidate_hash|definition_hash|candidate_payload/iu,
     );
   });
 
@@ -222,7 +224,7 @@ describe("consumer-alpha PostgreSQL catalogue adapter", () => {
       display_status: "experimental_unverified",
     });
     expect(JSON.stringify(snapshot)).not.toMatch(
-      /candidate_hash|definition_hash|candidate_payload|https?:\/\//iu,
+      /candidate_hash|definition_hash|candidate_payload/iu,
     );
 
     await expect(

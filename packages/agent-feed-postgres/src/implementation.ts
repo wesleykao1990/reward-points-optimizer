@@ -13,7 +13,7 @@ export const P0_IMPLEMENTATION_FACTS_VIEW =
 
 /** The parameterized current projection; the DB owns top-level window checks. */
 export const P0_IMPLEMENTATION_FACT_ROWS_AT_FUNCTION =
-  "app_private.p0_active_implementation_fact_rows_at" as const;
+  "app_private.p0_active_implementation_fact_provenance_rows_at" as const;
 
 export const MAX_P0_IMPLEMENTATION_FACTS = 128 as const;
 
@@ -25,7 +25,8 @@ export const MAX_P0_IMPLEMENTATION_FACTS = 128 as const;
 export const P0_IMPLEMENTATION_FACTS_QUERY = `
 select fact_id, implementation_version, fact_version,
        family_id, source_role_id, source_ids, claim_type, subject, predicate,
-       short_paraphrase, disposition, reason, reason_detail
+       short_paraphrase, disposition, reason, reason_detail,
+       source_url, checked_at, effective_from, effective_to
   from ${P0_IMPLEMENTATION_FACT_ROWS_AT_FUNCTION}($7::timestamptz)
  where ($1::text is null or
         lower(subject) like '%' || lower($1::text) || '%' escape '\\'
@@ -66,6 +67,13 @@ export interface P0ImplementationFact {
   readonly disposition: "catalogue_fact" | "engine_rule";
   readonly reason: string;
   readonly reason_detail: string;
+  /** First-party URL selected from source_identity, or null if unavailable. */
+  readonly source_url: string | null;
+  /** Snapshot as_of timestamp, or null for legacy/injected rows. */
+  readonly checked_at: string | null;
+  /** Source-declared applicability bounds; may be date-only strings. */
+  readonly effective_from: string | null;
+  readonly effective_to: string | null;
 }
 
 export interface P0ImplementationFactSearchInput {
@@ -119,6 +127,26 @@ export interface P0ImplementationCatalogueStore {
 type JsonRecord = Record<string, unknown>;
 
 const FACT_ROW_KEYS = Object.freeze([
+  "fact_id",
+  "implementation_version",
+  "fact_version",
+  "family_id",
+  "source_role_id",
+  "source_ids",
+  "claim_type",
+  "subject",
+  "predicate",
+  "short_paraphrase",
+  "disposition",
+  "reason",
+  "reason_detail",
+  "source_url",
+  "checked_at",
+  "effective_from",
+  "effective_to",
+] as const);
+
+const LEGACY_FACT_ROW_KEYS = Object.freeze([
   "fact_id",
   "implementation_version",
   "fact_version",
@@ -238,6 +266,33 @@ function safeText(value: unknown, field: string, max: number): string {
   return value;
 }
 
+function safeSourceUrl(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 2048 ||
+    !/^https:\/\/[^\s]+$/u.test(value) ||
+    value.includes("\n") ||
+    value.includes("\r")
+  )
+    throw new TypeError("p0_implementation_source_url_invalid");
+  return value;
+}
+
+function safeDate(value: unknown, field: string): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 64 ||
+    !/^\d{4}-\d{2}-\d{2}(?:$|T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$)/u.test(
+      value,
+    ) ||
+    !Number.isFinite(Date.parse(value))
+  )
+    throw new TypeError(`p0_implementation_${field}_invalid`);
+  return value;
+}
+
 function identifier(value: unknown, field: string): string {
   if (typeof value !== "string" || !IDENTIFIER_PATTERN.test(value))
     throw new TypeError(`p0_implementation_${field}_invalid`);
@@ -276,11 +331,23 @@ function stringArray(value: unknown): readonly string[] {
 }
 
 function row(value: unknown): P0ImplementationFact {
-  const input = dataRecord(
-    value,
-    FACT_ROW_KEYS,
-    "p0_implementation_fact_row_shape_invalid",
-  );
+  if (!isPlainRecord(value))
+    throw new TypeError("p0_implementation_fact_row_shape_invalid");
+  const input = exactKeys(value, FACT_ROW_KEYS)
+    ? dataRecord(
+        value,
+        FACT_ROW_KEYS,
+        "p0_implementation_fact_row_shape_invalid",
+      )
+    : exactKeys(value, LEGACY_FACT_ROW_KEYS)
+      ? dataRecord(
+          value,
+          LEGACY_FACT_ROW_KEYS,
+          "p0_implementation_fact_row_shape_invalid",
+        )
+      : (() => {
+          throw new TypeError("p0_implementation_fact_row_shape_invalid");
+        })();
   const factId = uuid(input.fact_id, "fact_id");
   const implementationVersion = identifier(
     input.implementation_version,
@@ -326,6 +393,10 @@ function row(value: unknown): P0ImplementationFact {
     disposition: input.disposition,
     reason,
     reason_detail: reasonDetail,
+    source_url: safeSourceUrl(input.source_url),
+    checked_at: safeDate(input.checked_at, "checked_at"),
+    effective_from: safeDate(input.effective_from, "effective_from"),
+    effective_to: safeDate(input.effective_to, "effective_to"),
   });
 }
 

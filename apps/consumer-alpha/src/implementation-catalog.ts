@@ -133,6 +133,18 @@ interface FixtureEntry {
   readonly predicate: string;
   readonly short_paraphrase: string;
   readonly disposition?: string;
+  readonly source_identity?: readonly FixtureSourceIdentity[];
+  readonly applicability?: FixtureApplicability;
+}
+
+interface FixtureSourceIdentity {
+  readonly source_id: string;
+  readonly url?: string;
+}
+
+interface FixtureApplicability {
+  readonly effective_from?: string | null;
+  readonly effective_to?: string | null;
 }
 
 interface FixtureDocument {
@@ -225,6 +237,69 @@ function safeUpdatedAt(value: unknown): string | null {
   return value;
 }
 
+function safeDateOrNull(value: unknown, field: string): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 64 ||
+    containsControlCharacter(value) ||
+    !/^\d{4}-\d{2}-\d{2}(?:$|T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$)/u.test(
+      value,
+    ) ||
+    !Number.isFinite(Date.parse(value))
+  )
+    throw new TypeError(`implementation_fact_${field}_invalid`);
+  return value;
+}
+
+function safeSourceUrl(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 2048 ||
+    containsControlCharacter(value) ||
+    !/^https:\/\/[^\s]+$/u.test(value)
+  )
+    throw new TypeError("implementation_fact_source_url_invalid");
+  return value;
+}
+
+function fixtureSourceIdentity(
+  value: unknown,
+): readonly FixtureSourceIdentity[] {
+  if (value === undefined) return Object.freeze([]);
+  if (!Array.isArray(value))
+    throw new TypeError("implementation_fixture_source_identity_invalid");
+  return Object.freeze(
+    value.map((item) => {
+      if (!isPlainRecord(item))
+        throw new TypeError("implementation_fixture_source_identity_invalid");
+      const sourceId = safePublicText(item.source_id, "source_id", 256);
+      const url = safeSourceUrl(item.url);
+      return Object.freeze({ source_id: sourceId, ...(url ? { url } : {}) });
+    }),
+  );
+}
+
+function fixtureApplicability(value: unknown): FixtureApplicability {
+  if (value === undefined) return Object.freeze({});
+  if (!isPlainRecord(value))
+    throw new TypeError("implementation_fixture_applicability_invalid");
+  return Object.freeze({
+    effective_from: safeDateOrNull(value.effective_from, "effective_from"),
+    effective_to: safeDateOrNull(value.effective_to, "effective_to"),
+  });
+}
+
+function sourceUrlFromIdentity(
+  sourceIdentity: readonly FixtureSourceIdentity[] | undefined,
+): string | null {
+  for (const identity of sourceIdentity ?? []) {
+    if (identity.url !== undefined) return identity.url;
+  }
+  return null;
+}
+
 function opaqueFixtureKey(
   entry: FixtureEntry,
   index: number,
@@ -283,6 +358,10 @@ function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
     // with no derived engine rules.  A future explicit engine-rule row may
     // opt into the comparison lane through this one boolean only.
     use_in_comparison: record.disposition === "engine_rule",
+    source_url: record.source_url ?? null,
+    checked_at: record.checked_at ?? null,
+    effective_from: record.effective_from ?? null,
+    effective_to: record.effective_to ?? null,
   });
 }
 
@@ -294,6 +373,10 @@ const CARD_KEYS = Object.freeze([
   "predicate",
   "summary",
   "use_in_comparison",
+  "source_url",
+  "checked_at",
+  "effective_from",
+  "effective_to",
 ] as const);
 
 function normalizeCard(value: unknown): ImplementationFactCard {
@@ -317,6 +400,10 @@ function normalizeCard(value: unknown): ImplementationFactCard {
     predicate: safePublicText(input.predicate, "predicate", 512),
     summary: safePublicText(input.summary, "summary", 4096),
     use_in_comparison: input.use_in_comparison,
+    source_url: safeSourceUrl(input.source_url),
+    checked_at: safeDateOrNull(input.checked_at, "checked_at"),
+    effective_from: safeDateOrNull(input.effective_from, "effective_from"),
+    effective_to: safeDateOrNull(input.effective_to, "effective_to"),
   });
 }
 
@@ -367,6 +454,8 @@ function fixtureEntry(value: unknown): FixtureEntry {
     short_paraphrase: safePublicText(entry.short_paraphrase, "summary", 4096),
     disposition:
       typeof entry.disposition === "string" ? entry.disposition : undefined,
+    source_identity: fixtureSourceIdentity(entry.source_identity),
+    applicability: fixtureApplicability(entry.applicability),
   });
 }
 
@@ -413,6 +502,10 @@ function fixtureCards(
           family,
         ),
         use_in_comparison: entry.disposition === "engine_rule",
+        source_url: sourceUrlFromIdentity(entry.source_identity),
+        checked_at: document.as_of,
+        effective_from: entry.applicability?.effective_from ?? null,
+        effective_to: entry.applicability?.effective_to ?? null,
       });
     }),
   );

@@ -207,10 +207,14 @@ describe("P0 implementation-fact information catalogue", () => {
     expect(facts.every((fact) => fact.use_in_comparison === false)).toBe(true);
     for (const fact of facts) {
       expect(Object.keys(fact).sort()).toEqual([
+        "checked_at",
         "claim",
+        "effective_from",
+        "effective_to",
         "fact_key",
         "family",
         "predicate",
+        "source_url",
         "subject",
         "summary",
         "use_in_comparison",
@@ -222,7 +226,7 @@ describe("P0 implementation-fact information catalogue", () => {
       expect(hasJapanese(String(fact.summary))).toBe(true);
     }
     expect(JSON.stringify(body)).not.toMatch(
-      /implementation_hash|source_ids|evidence_locator|parent_claim_id|reason_detail|candidate_hash|https?:\/\//iu,
+      /implementation_hash|source_ids|evidence_locator|parent_claim_id|reason_detail|candidate_hash/iu,
     );
   });
 
@@ -420,7 +424,10 @@ describe("P0 implementation-fact information catalogue", () => {
     expect(source).toContain("/api/experimental/fact-corrections");
     expect(source).toContain("textContent");
     expect(source).not.toContain("innerHTML");
-    expect(source).not.toContain("localStorage");
+    expect(source).toContain(
+      'const WALLET_STORAGE_KEY = "point-route.wallet.v1"',
+    );
+    expect(source).toContain("safeStoredWalletIds");
     expect(source).not.toContain("sessionStorage");
     resetIssuedRecommendationIds();
   });

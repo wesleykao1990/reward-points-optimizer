@@ -37,6 +37,27 @@ export interface PointSpendBrowserAsset {
   readonly kind: string;
 }
 
+export interface PointSpendBrowserCoverageTarget {
+  readonly asset_id: string;
+  readonly label: string;
+}
+
+export interface PointSpendBrowserCoverageSource {
+  readonly asset_id: string;
+  readonly label: string;
+  readonly targets: readonly PointSpendBrowserCoverageTarget[];
+}
+
+/** Browser-safe summary of the bounded spend graph. */
+export interface PointSpendBrowserCoverage {
+  readonly rule_count: number;
+  readonly asset_count: number;
+  readonly direct_pair_count: number;
+  readonly reachable_pair_count: number;
+  readonly conditional_rule_count: number;
+  readonly targets_by_source: readonly PointSpendBrowserCoverageSource[];
+}
+
 export type P0WalletCatalogueKind = "point" | "mobile_pay" | "credit_card";
 
 export interface P0WalletCatalogueItem {
@@ -73,6 +94,19 @@ export interface PointSpendBrowserRoute {
   readonly steps: readonly PointSpendBrowserStep[];
 }
 
+export type PointSpendNoRouteReason =
+  | "source_target_not_covered"
+  | "condition_confirmation_required"
+  | "balance_below_minimum"
+  | "outside_validity_window"
+  | "route_unavailable";
+
+export interface PointSpendNoRouteDetails {
+  /** Only populated when the initial source has an explicit minimum. */
+  readonly minimum_source_amount: string | null;
+  readonly conditions: readonly string[];
+}
+
 export interface PointSpendBrowserResult {
   readonly version: "p0-point-spend-browser.v1";
   readonly status: "ready" | "no_route";
@@ -83,6 +117,8 @@ export interface PointSpendBrowserResult {
   readonly alternatives: readonly PointSpendBrowserRoute[];
   readonly message: string;
   readonly rule_count: number;
+  readonly no_route_reason: PointSpendNoRouteReason | null;
+  readonly no_route_details: PointSpendNoRouteDetails | null;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -496,6 +532,78 @@ function assets(ruleSet: P0SpendRuleSet): readonly P0SpendAsset[] {
   );
 }
 
+function pointSpendCoverage(
+  ruleSet: P0SpendRuleSet,
+  allAssets: readonly P0SpendAsset[],
+): PointSpendBrowserCoverage {
+  const labelByAsset = new Map(
+    allAssets.map((asset) => [asset.asset_id, asset.label_ja]),
+  );
+  const adjacency = new Map<string, readonly P0SpendRule[]>();
+  for (const rule of ruleSet.rules)
+    adjacency.set(rule.source_asset.asset_id, [
+      ...(adjacency.get(rule.source_asset.asset_id) ?? []),
+      rule,
+    ]);
+
+  const sources = allAssets.map((source) => {
+    const targets = new Set<string>();
+    const visited = new Set<string>([source.asset_id]);
+    const queue: { readonly asset_id: string; readonly steps: number }[] = [
+      { asset_id: source.asset_id, steps: 0 },
+    ];
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current || current.steps >= 4) continue;
+      for (const rule of adjacency.get(current.asset_id) ?? []) {
+        const target = rule.destination_asset.asset_id;
+        if (visited.has(target)) continue;
+        visited.add(target);
+        targets.add(target);
+        queue.push({ asset_id: target, steps: current.steps + 1 });
+      }
+    }
+    return Object.freeze({
+      asset_id: source.asset_id,
+      label: source.label_ja,
+      targets: Object.freeze(
+        [...targets]
+          .sort((left, right) =>
+            (labelByAsset.get(left) ?? left).localeCompare(
+              labelByAsset.get(right) ?? right,
+              "ja",
+            ),
+          )
+          .map((assetId) =>
+            Object.freeze({
+              asset_id: assetId,
+              label: labelByAsset.get(assetId) ?? "交換先",
+            }),
+          ),
+      ),
+    });
+  });
+
+  return Object.freeze({
+    rule_count: ruleSet.rule_count,
+    asset_count: allAssets.length,
+    direct_pair_count: new Set(
+      ruleSet.rules.map(
+        (rule) =>
+          `${rule.source_asset.asset_id}=>${rule.destination_asset.asset_id}`,
+      ),
+    ).size,
+    reachable_pair_count: sources.reduce(
+      (count, source) => count + source.targets.length,
+      0,
+    ),
+    conditional_rule_count: ruleSet.rules.filter(
+      (rule) => rule.required_conditions_ja.length > 0,
+    ).length,
+    targets_by_source: Object.freeze(sources),
+  });
+}
+
 function p0WalletCatalogue(
   artifacts: readonly P0ResearchArtifact[],
   ruleSet: P0SpendRuleSet,
@@ -688,6 +796,7 @@ export async function listPointSpendBrowserOptions(): Promise<{
   readonly version: "p0-point-spend-options.v2";
   readonly experimental: true;
   readonly rule_count: number;
+  readonly coverage: PointSpendBrowserCoverage;
   readonly assets: readonly PointSpendBrowserAsset[];
   readonly wallet_catalogue: readonly P0WalletCatalogueItem[];
   readonly conditional_rules: readonly {
@@ -699,11 +808,13 @@ export async function listPointSpendBrowserOptions(): Promise<{
   }[];
 }> {
   const { ruleSet, artifacts } = await loadBundle();
+  const allAssets = assets(ruleSet);
   return {
     version: "p0-point-spend-options.v2",
     experimental: true,
     rule_count: ruleSet.rule_count,
-    assets: assets(ruleSet).map((item) => ({
+    coverage: pointSpendCoverage(ruleSet, allAssets),
+    assets: allAssets.map((item) => ({
       asset_id: item.asset_id,
       label: item.label_ja,
       kind: item.asset_kind,
@@ -755,6 +866,144 @@ function browserRoute(
   };
 }
 
+function potentialRouteRuleIds(
+  sourceAssetId: string,
+  targetAssetId: string,
+  ruleSet: P0SpendRuleSet,
+): ReadonlySet<string> {
+  const rulesBySource = new Map<string, readonly P0SpendRule[]>();
+  for (const rule of ruleSet.rules)
+    rulesBySource.set(rule.source_asset.asset_id, [
+      ...(rulesBySource.get(rule.source_asset.asset_id) ?? []),
+      rule,
+    ]);
+  const relevant = new Set<string>();
+  const canReach = (
+    assetId: string,
+    visited: ReadonlySet<string>,
+    steps: number,
+  ): boolean => {
+    if (assetId === targetAssetId) return true;
+    if (steps >= 4) return false;
+    let found = false;
+    for (const rule of rulesBySource.get(assetId) ?? []) {
+      const nextAssetId = rule.destination_asset.asset_id;
+      if (visited.has(nextAssetId)) continue;
+      const nextVisited = new Set(visited);
+      nextVisited.add(nextAssetId);
+      if (!canReach(nextAssetId, nextVisited, steps + 1)) continue;
+      relevant.add(rule.rule_id);
+      found = true;
+    }
+    return found;
+  };
+  canReach(sourceAssetId, new Set([sourceAssetId]), 0);
+  return relevant;
+}
+
+function noRouteInfo(
+  input: PointSpendBrowserInput,
+  optimization: ReturnType<typeof optimizePointSpend>,
+  coverage: PointSpendBrowserCoverage,
+  ruleSet: P0SpendRuleSet,
+): {
+  readonly reason: PointSpendNoRouteReason;
+  readonly details: PointSpendNoRouteDetails;
+} {
+  const sourceCoverage = coverage.targets_by_source.find(
+    (source) => source.asset_id === input.source_asset_id,
+  );
+  const covered = sourceCoverage?.targets.some(
+    (target) => target.asset_id === input.target_asset_id,
+  );
+  if (!covered)
+    return {
+      reason: "source_target_not_covered",
+      details: { minimum_source_amount: null, conditions: [] },
+    };
+
+  const relevantRuleIds = potentialRouteRuleIds(
+    input.source_asset_id,
+    input.target_asset_id,
+    ruleSet,
+  );
+  const skippedByReason = new Set(
+    optimization.skipped
+      .filter((item) => relevantRuleIds.has(item.rule_id))
+      .map((item) => item.reason_code),
+  );
+  const conditionRuleIds = new Set(
+    optimization.skipped
+      .filter(
+        (item) =>
+          relevantRuleIds.has(item.rule_id) &&
+          item.reason_code === "condition_confirmation_required",
+      )
+      .map((item) => item.rule_id),
+  );
+  const conditions = [
+    ...new Set(
+      ruleSet.rules
+        .filter((rule) => conditionRuleIds.has(rule.rule_id))
+        .flatMap((rule) => rule.required_conditions_ja),
+    ),
+  ].sort((left, right) => left.localeCompare(right, "ja"));
+  if (conditions.length > 0)
+    return {
+      reason: "condition_confirmation_required",
+      details: { minimum_source_amount: null, conditions },
+    };
+
+  if (skippedByReason.has("insufficient_or_unaligned_balance")) {
+    const minimum = ruleSet.rules
+      .filter(
+        (rule) =>
+          relevantRuleIds.has(rule.rule_id) &&
+          rule.source_asset.asset_id === input.source_asset_id &&
+          rule.minimum_source_units !== null,
+      )
+      .sort((left, right) =>
+        left.rule_id.localeCompare(right.rule_id),
+      )[0]?.minimum_source_units;
+    return {
+      reason: "balance_below_minimum",
+      details: { minimum_source_amount: minimum ?? null, conditions: [] },
+    };
+  }
+
+  if (skippedByReason.has("outside_validity_window"))
+    return {
+      reason: "outside_validity_window",
+      details: { minimum_source_amount: null, conditions: [] },
+    };
+
+  return {
+    reason: "route_unavailable",
+    details: { minimum_source_amount: null, conditions: [] },
+  };
+}
+
+function noRouteMessage(
+  reason: PointSpendNoRouteReason,
+  sourceLabel: string,
+  targetLabel: string,
+  details: PointSpendNoRouteDetails,
+): string {
+  if (reason === "source_target_not_covered")
+    return `${sourceLabel}から${targetLabel}への交換ルートは、現在の収録範囲にありません。`;
+  if (reason === "condition_confirmation_required")
+    return details.conditions.length > 0
+      ? `この交換ルートには条件の確認が必要です：${details.conditions.join("・")}`
+      : "この交換ルートには条件の確認が必要です。";
+  if (reason === "balance_below_minimum")
+    return details.minimum_source_amount === null
+      ? "現在の残高では交換条件を満たしません。"
+      : `現在の残高では交換条件を満たしません。最低${details.minimum_source_amount}単位から交換できます。`;
+  if (reason === "outside_validity_window")
+    return "指定した日時に利用できる交換条件を確認できません。";
+  return "この残高・交換先で計算できるルートを確認できませんでした。";
+}
+
 export async function recommendPointSpend(
   raw: unknown,
 ): Promise<PointSpendBrowserResult> {
@@ -788,9 +1037,12 @@ export async function recommendPointSpend(
   const labels = new Map(
     allAssets.map((item) => [item.asset_id, item.label_ja]),
   );
+  const coverage = pointSpendCoverage(ruleSet, allAssets);
   const routes = result.routes
     .slice(0, 3)
     .map((route) => browserRoute(route, labels));
+  const noRoute =
+    routes.length === 0 ? noRouteInfo(input, result, coverage, ruleSet) : null;
   return {
     version: "p0-point-spend-browser.v1",
     status: routes.length > 0 ? "ready" : "no_route",
@@ -802,7 +1054,17 @@ export async function recommendPointSpend(
     message:
       routes.length > 0
         ? "収録されている交換レートで計算した候補です。実行前に提供元で条件を確認してください。"
-        : "この残高・交換先で計算できるルートは見つかりませんでした。",
+        : noRouteMessage(
+            noRoute?.reason ?? "route_unavailable",
+            labels.get(input.source_asset_id) ?? "交換元",
+            labels.get(input.target_asset_id) ?? "交換先",
+            noRoute?.details ?? {
+              minimum_source_amount: null,
+              conditions: [],
+            },
+          ),
     rule_count: ruleSet.rule_count,
+    no_route_reason: noRoute?.reason ?? null,
+    no_route_details: noRoute?.details ?? null,
   };
 }

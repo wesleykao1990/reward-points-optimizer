@@ -72,6 +72,26 @@ describe("P0 point spending browser route", () => {
   it("lists the bounded P0 asset graph without evidence internals", async () => {
     const result = await listPointSpendBrowserOptions();
     expect(result.rule_count).toBe(23);
+    expect(result.coverage).toMatchObject({
+      rule_count: 23,
+      asset_count: 18,
+      direct_pair_count: 21,
+      reachable_pair_count: 30,
+      conditional_rule_count: 9,
+    });
+    const rakutenCoverage = result.coverage.targets_by_source.find(
+      (source) => source.asset_id === "asset.point.rakuten",
+    );
+    expect(rakutenCoverage?.targets).toEqual(
+      expect.arrayContaining([
+        { asset_id: "asset.mile.ana", label: "ANAマイル" },
+        { asset_id: "asset.value.jpy-redemption", label: "支払い充当価値" },
+      ]),
+    );
+    expect(rakutenCoverage?.targets).not.toContainEqual({
+      asset_id: "asset.mile.jal",
+      label: "JALマイル",
+    });
     expect(result.assets).toContainEqual({
       asset_id: "asset.point.rakuten",
       label: "楽天ポイント",
@@ -127,6 +147,8 @@ describe("P0 point spending browser route", () => {
       status: "ready",
       experimental: true,
       current_advice: false,
+      no_route_reason: null,
+      no_route_details: null,
       winner: {
         target_amount: "500",
         target_label: "ANAマイル",
@@ -135,6 +157,52 @@ describe("P0 point spending browser route", () => {
     });
     expect(result.winner?.steps).toHaveLength(1);
     expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+  });
+
+  it("explains uncovered, conditional, and minimum-balance no-route states", async () => {
+    const uncovered = await recommendPointSpend({
+      ...input,
+      target_asset_id: "asset.mile.jal",
+    });
+    expect(uncovered).toMatchObject({
+      status: "no_route",
+      no_route_reason: "source_target_not_covered",
+      no_route_details: {
+        minimum_source_amount: null,
+        conditions: [],
+      },
+    });
+    expect(uncovered.message).toContain("楽天ポイントからJALマイル");
+
+    const conditionRequired = await recommendPointSpend({
+      ...input,
+      confirmed_rule_ids: [],
+    });
+    expect(conditionRequired).toMatchObject({
+      status: "no_route",
+      no_route_reason: "condition_confirmation_required",
+    });
+    expect(conditionRequired.no_route_details?.conditions).toContain(
+      "ANAマイレージクラブへの登録が必要です",
+    );
+
+    const belowMinimum = await recommendPointSpend({
+      source_asset_id: "asset.point.nanaco",
+      target_asset_id: "asset.mile.ana",
+      balance: 499,
+      objective: "maximize_target",
+      effective_at: input.effective_at,
+      confirmed_rule_ids: [],
+    });
+    expect(belowMinimum).toMatchObject({
+      status: "no_route",
+      no_route_reason: "balance_below_minimum",
+      no_route_details: {
+        minimum_source_amount: "500",
+        conditions: [],
+      },
+    });
+    expect(belowMinimum.message).toContain("最低500単位");
   });
 
   it("rejects unknown fields, accessors, and unknown assets", async () => {

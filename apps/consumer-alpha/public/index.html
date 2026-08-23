@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <main class="shell">
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <main id="main-content" class="shell">
       <section id="tab-home" class="tab-panel is-active" data-tab-panel="home" role="tabpanel" aria-labelledby="tab-button-home" tabindex="-1">
         <header class="app-header">
           <div class="app-title">
@@ -30,9 +31,13 @@
         </aside>
 
         <section class="overview-panel" aria-labelledby="overview-title">
-          <div class="overview-topline"><span id="overview-title">現在の比較条件</span><span>保存されません</span></div>
+          <div class="overview-topline"><span id="overview-title">現在の比較条件</span><span>ウォレットは端末保存</span></div>
           <div class="overview-value"><strong id="summary-amount">¥640</strong><span>のお買い物</span></div>
           <div class="overview-meter"><span><i id="summary-meter"></i></span><small id="summary-instruments">支払い方法 0つ</small></div>
+          <div class="home-wallet-summary">
+            <div class="home-wallet-summary-heading"><span>今回使う支払い方法</span><button type="button" class="text-button" data-tab-target="wallet">ウォレットを編集</button></div>
+            <div id="home-wallet-chips" class="wallet-chip-list" aria-live="polite"><p class="helper">ウォレットから支払い方法を選んでください。</p></div>
+          </div>
         </section>
 
         <section id="purchase-form" class="content-section" aria-labelledby="onboarding-title">
@@ -67,32 +72,10 @@
               <p class="helper">所有と事前登録は未確認のため未選択です。明示的に選んだ場合だけ対象ルートを確認します。</p>
             </fieldset>
 
-            <fieldset class="instrument-fieldset">
-              <legend><span>比較するサービス</span><small>タップで選択・複数可</small></legend>
-              <div class="choice-list">
-                <input id="p0-card-instrument" type="checkbox" name="instrument" value="synthetic_card" hidden>
-                <div class="p0-picker-heading">
-                  <span class="choice-icon card-icon" aria-hidden="true">▰</span>
-                  <span class="choice-copy"><strong>クレジットカード</strong><small>カードをタップして選択</small></span>
-                </div>
-                <div id="p0-card-picker" class="p0-product-picker"><p class="helper">カード一覧を読み込んでいます…</p></div>
-                <input id="p0-mobile-pay-instrument" type="checkbox" name="instrument" value="synthetic_qr_wallet" hidden>
-                <div class="p0-picker-heading">
-                  <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
-                  <span class="choice-copy"><strong>モバイル決済</strong><small>サービスをタップして選択</small></span>
-                </div>
-                <div id="p0-mobile-pay-picker" class="p0-product-picker"><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
-                <div class="p0-picker-heading">
-                  <span class="choice-icon value-icon" aria-hidden="true">P</span>
-                  <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントをタップして選択</small></span>
-                </div>
-                <div id="p0-point-picker" class="p0-product-picker"><p class="helper">ポイント一覧を読み込んでいます…</p></div>
-              </div>
-              <p id="p0-selection-status" class="helper" aria-live="polite">支払い方法をタップして選んでください。</p>
-            </fieldset>
+            <p class="helper home-wallet-helper">ウォレットで選んだサービスを比較します。ここでは金額とお店を入力できます。</p>
 
-            <button type="submit" class="primary"><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>
-            <p class="privacy-note">入力内容はブラウザに保存されません</p>
+            <button id="compare-submit" type="submit" class="primary compare-submit" disabled><span>お得な支払い方を比べる</span><span aria-hidden="true">▷</span></button>
+            <p class="privacy-note">ウォレットの選択だけこの端末に保存されます。金額・履歴は保存されません。</p>
           </form>
         </section>
 
@@ -109,26 +92,46 @@
       </section>
 
       <section id="tab-wallet" class="tab-panel" data-tab-panel="wallet" role="tabpanel" aria-labelledby="tab-button-wallet" tabindex="-1" hidden>
-        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> デモ版</span></header>
-        <aside class="inline-disclosure"><strong>このウォレットは端末に保存されません</strong><span>ホームの比較条件と連動するデモ表示です。</span></aside>
+        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>YOUR ASSETS</small><h1>ウォレット</h1></div></div><span class="demo-chip"><i></i> 端末保存</span></header>
+        <aside class="inline-disclosure wallet-storage-disclosure"><strong>ウォレットはこの端末だけに保存</strong><span id="wallet-save-status">アカウント連携なし。選んだサービスだけをブラウザに保存します。</span><button id="wallet-reset-button" type="button" class="secondary">保存した選択を削除</button></aside>
 
         <section class="wallet-overview"><small>情報を収録しているサービス</small><strong id="wallet-count">—</strong><span>種類</span><p id="wallet-route-summary" class="helper">サービス情報を読み込んでいます</p></section>
 
-        <section class="wallet-group" aria-labelledby="wallet-payment-title">
-          <div class="group-heading"><h2 id="wallet-payment-title">対応サービス一覧</h2><button type="button" data-tab-target="information">詳しい情報</button></div>
-          <p class="helper">収録済みのポイント、モバイル決済、クレジットカードを表示します。現在の保有状況は保存しません。</p>
-          <div id="p0-wallet-catalogue" class="p0-wallet-catalogue" aria-live="polite"><p class="helper">サービス一覧を読み込んでいます…</p></div>
+        <section class="wallet-group wallet-selection-group" aria-labelledby="wallet-selection-title">
+          <div class="group-heading"><h2 id="wallet-selection-title">比較するサービスを選ぶ</h2><span>タップで切り替え</span></div>
+          <p class="helper">ここで選んだサービスをホームの比較に使います。選択状態はこの端末にだけ保存されます。</p>
+          <div class="choice-list wallet-selection-list">
+            <input id="p0-card-instrument" type="checkbox" name="instrument" value="synthetic_card" hidden>
+            <div class="p0-picker-heading">
+              <span class="choice-icon card-icon" aria-hidden="true">▰</span>
+              <span class="choice-copy"><strong>クレジットカード</strong><small>カードをタップして選択</small></span>
+            </div>
+            <div id="p0-card-picker" class="p0-product-picker"><p class="helper">カード一覧を読み込んでいます…</p></div>
+            <input id="p0-mobile-pay-instrument" type="checkbox" name="instrument" value="synthetic_qr_wallet" hidden>
+            <div class="p0-picker-heading">
+              <span class="choice-icon qr-icon" aria-hidden="true">▦</span>
+              <span class="choice-copy"><strong>モバイル決済</strong><small>サービスをタップして選択</small></span>
+            </div>
+            <div id="p0-mobile-pay-picker" class="p0-product-picker"><p class="helper">モバイル決済一覧を読み込んでいます…</p></div>
+            <div class="p0-picker-heading">
+              <span class="choice-icon value-icon" aria-hidden="true">P</span>
+              <span class="choice-copy"><strong>ポイントプログラム</strong><small>保有するポイントをタップして選択</small></span>
+            </div>
+            <div id="p0-point-picker" class="p0-product-picker"><p class="helper">ポイント一覧を読み込んでいます…</p></div>
+          </div>
+          <p id="p0-selection-status" class="helper" aria-live="polite">支払い方法をタップして選んでください。</p>
         </section>
 
         <section class="wallet-group" aria-labelledby="wallet-program-title">
           <div class="group-heading"><h2 id="wallet-program-title">ポイント・マイルの使い方</h2><span>使い方を試算</span></div>
           <form id="point-spend-form" class="point-spend-card">
             <p>保有ポイントから、明示された固定比率だけを使って交換ルートを比較します。残高は保存されません。</p>
+            <p id="point-spend-coverage" class="helper">収録範囲を読み込んでいます…</p>
             <div class="point-spend-grid">
               <label>保有するポイント<select id="point-spend-source" required><option value="">読み込み中…</option></select></label>
               <label>残高<input id="point-spend-balance" type="number" min="1" max="1000000000" step="1" value="1000" inputmode="numeric" required></label>
               <label>交換先<select id="point-spend-target" required><option value="">読み込み中…</option></select></label>
-              <label>優先すること<select id="point-spend-objective"><option value="maximize_target">受取数を最大化</option><option value="fastest">所要日数を優先</option><option value="preserve_expiring">期限がある残高を優先</option></select></label>
+              <label>受取1単位の価値（円・任意）<input id="point-spend-unit-value" type="number" min="0.01" max="1000000" step="0.01" inputmode="decimal" placeholder="例：マイルなら2"></label>
             </div>
             <div id="point-spend-conditions" class="point-spend-conditions"></div>
             <button id="point-spend-submit" type="submit" class="primary wide">おすすめの使い方を計算</button>
@@ -145,7 +148,7 @@
       </section>
 
       <section id="tab-settings" class="tab-panel" data-tab-panel="settings" role="tabpanel" aria-labelledby="tab-button-settings" tabindex="-1" hidden>
-        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 保存なし</span></header>
+        <header class="app-header"><div class="app-title"><span class="brand-mark" aria-hidden="true">P</span><div><small>PREFERENCES</small><h1>設定</h1></div></div><span class="demo-chip"><i></i> 端末保存</span></header>
         <section class="settings-intro"><span class="settings-logo" aria-hidden="true">P</span><p>通知やプライバシーに関する設定を確認できます。</p></section>
 
         <section class="settings-group" aria-labelledby="notifications-title">
@@ -155,7 +158,7 @@
 
         <section class="settings-group" aria-labelledby="privacy-title">
           <h2 id="privacy-title">プライバシーとセキュリティ</h2>
-          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>入力内容・履歴・設定</small></span><em class="safe-state">使用しない</em></div><div class="settings-row"><span><strong>比較に使う情報</strong><small>現在収録しているサービス</small></span><em class="safe-state">収録情報</em></div><div class="settings-row"><span><strong>カタログ表示</strong><small>支払い方法とポイント</small></span><em>まとめて表示</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
+          <div class="settings-card"><div class="settings-row"><span><strong>ブラウザ保存</strong><small>ウォレットの選択だけ、この端末に保存</small></span><em class="safe-state">使用する</em></div><div class="settings-row"><span><strong>比較履歴</strong><small>ページを閉じると消えるセッション履歴</small></span><em class="safe-state">保存しない</em></div><div class="settings-row"><span><strong>比較に使う情報</strong><small>現在収録しているサービス</small></span><em class="safe-state">収録情報</em></div><div class="settings-row"><span><strong>アカウント</strong><small>ログインと外部連携</small></span><em>未提供</em></div></div>
         </section>
       </section>
 

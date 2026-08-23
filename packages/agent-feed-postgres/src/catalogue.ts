@@ -39,6 +39,19 @@ export const NANACO_P0_DEFINITION_HASH =
 const NANACO_P0_RULE_HASH =
   "sha256:1849f83d2c036718b082119098223adbec2ea70308d063916c942fefc912b5ee" as const;
 
+/**
+ * Source URLs are resolved from the existing trusted-source registry keys.
+ * This small allowlist keeps the database adapter from copying candidate
+ * payloads into a caller-visible projection; an unknown source remains
+ * explicitly unavailable instead of being guessed.
+ */
+const P0_SOURCE_URL_BY_ID: Readonly<Record<string, string>> = Object.freeze({
+  "jp.nanaco.shopping-earning":
+    "https://www.nanaco-net.jp/how-to/save_point/shopping.html",
+  "merchant.seveneleven.payment-methods":
+    "https://www.sej.co.jp/services/cash.html",
+});
+
 export const SEVEN_ELEVEN_PAYMENT_FAMILY_LABELS = Object.freeze({
   barcode_payment: "バーコード決済",
   brand_debit_card: "ブランドデビット",
@@ -250,6 +263,7 @@ interface P0ExperimentalCatalogueRecordBase {
   readonly admitted_at: string;
   readonly valid_from: string;
   readonly valid_to: string | null;
+  readonly source_url: string | null;
 }
 
 /** The bounded reward-rate record owned by this package; not a browser DTO. */
@@ -451,6 +465,14 @@ function stringArray(value: unknown, field: string): readonly string[] {
   )
     throw new TypeError(`p0_catalogue_${field}_invalid`);
   return Object.freeze([...value] as string[]);
+}
+
+function sourceUrlForIds(sourceIds: readonly string[]): string | null {
+  for (const sourceId of sourceIds) {
+    const url = P0_SOURCE_URL_BY_ID[sourceId];
+    if (url !== undefined) return url;
+  }
+  return null;
 }
 
 function exactStringArray(
@@ -906,6 +928,7 @@ function recordFromRow(
       admitted_at: admittedAt,
       valid_from: validFrom,
       valid_to: validTo,
+      source_url: sourceUrlForIds(row.source_ids as readonly string[]),
       source_id: NANACO_P0_SOURCE_ID,
       source_label: "nanaco公式情報" as const,
       rule_id: NANACO_P0_RULE_ID,
@@ -939,6 +962,7 @@ function recordFromRow(
     admitted_at: admittedAt,
     valid_from: payment.validFrom,
     valid_to: payment.validTo,
+    source_url: sourceUrlForIds(row.source_ids as readonly string[]),
     source_id: "merchant.seveneleven.payment-methods" as const,
     source_label: "セブン‐イレブン公式情報" as const,
     payment_family: payment.paymentFamily,
