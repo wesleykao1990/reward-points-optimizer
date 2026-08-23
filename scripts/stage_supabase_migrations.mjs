@@ -36,6 +36,10 @@ const PINNED_DESTINATIONS = new Map([
     "db/0026_osm_runtime_preseed_match.sql",
     "20260823153548_osm_runtime_preseed_match.sql",
   ],
+  [
+    "db/0027_merchant_purchase_context.sql",
+    "20260823161205_merchant_purchase_context.sql",
+  ],
 ]);
 
 if (mode !== "--check" && mode !== "--write") {
