@@ -71,6 +71,10 @@ import {
   NanacoCreditChargeRecommendationError,
 } from "./nanaco-credit-charge-recommendation.js";
 import {
+  MAX_PAYMENT_STACK_BODY_BYTES,
+  recommendPaymentStack,
+} from "./payment-stack-recommendation.js";
+import {
   calculateSelectedProductPurchases,
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
@@ -2262,6 +2266,7 @@ export async function handleRequest(
         pathname === "/api/experimental/recommendation" ||
         pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/point-spend/recommendation" ||
+        pathname === "/api/experimental/payment-stack/recommendation" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -2448,6 +2453,27 @@ export async function handleRequest(
         if (error instanceof TypeError)
           return errorResponse(requestError(400, error.message));
         throw requestError(503, "point_spend_recommendation_unavailable");
+      }
+    }
+    if (pathname === "/api/experimental/payment-stack/recommendation") {
+      if (method !== "POST") {
+        return errorResponseWithHeaders(
+          requestError(405, "method_not_allowed"),
+          { Allow: "POST" },
+        );
+      }
+      try {
+        const input = parseJsonBody(request, MAX_PAYMENT_STACK_BODY_BYTES);
+        return jsonResponse(
+          200,
+          (await recommendPaymentStack(input)) as unknown as Readonly<
+            Record<string, unknown>
+          >,
+        );
+      } catch (error) {
+        if (error instanceof TypeError)
+          return errorResponse(requestError(400, error.message));
+        throw requestError(503, "payment_stack_recommendation_unavailable");
       }
     }
     if (pathname === "/api/recommendations") {
@@ -2887,6 +2913,8 @@ export function requestBodyLimit(
     return MAX_EXPERIMENTAL_RECOMMENDATION_BODY_BYTES;
   if (pathname === "/api/experimental/point-spend/recommendation")
     return MAX_POINT_SPEND_BODY_BYTES;
+  if (pathname === "/api/experimental/payment-stack/recommendation")
+    return MAX_PAYMENT_STACK_BODY_BYTES;
   if (
     pathname === "/api/corrections/draft" ||
     pathname === "/api/recommendations/corrections" ||

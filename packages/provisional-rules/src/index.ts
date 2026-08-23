@@ -78,6 +78,19 @@ export {
   NANACO_PILOT_PROGRAM_ID,
 } from "./nanaco-pilot.js";
 export type {
+  P0ChargeExclusion,
+  P0ExitOption,
+  P0PaymentClaimDisposition,
+  P0PaymentDispositionStatus,
+  P0PaymentLayer,
+  P0PaymentLayerOption,
+  P0PaymentLayerSet,
+} from "./p0-payment-layers.js";
+export {
+  compileP0PaymentLayerSet,
+  P0_PAYMENT_LAYER_SET_VERSION,
+} from "./p0-payment-layers.js";
+export type {
   P0SpendAsset,
   P0SpendAssetKind,
   P0SpendClaimDisposition,

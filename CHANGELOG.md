@@ -2,6 +2,51 @@
 
 ## Unreleased — 2026-08-23
 
+- Added `point-route-optimizer.v2`, a value-maximising replacement for the
+  single-route point optimizer. It ranks by declared JPY value rather than by
+  native units, so routes that end in different assets are comparable and the
+  destination may be left open ("what is this balance best turned into").
+  `point-spend-optimizer.v1` is unchanged; its results are hash-bound.
+- Route capacity is now propagated backwards through each ratio before any
+  flow is committed. Feeding a whole balance into a route whose final hop is
+  capped converted the excess into an intermediate currency and abandoned it
+  there, which reads as a good rate while destroying most of the balance. The
+  optimizer now sends only what the tightest hop can absorb and offers the
+  rest to the next-best route, against a shared cap ledger. The split is
+  labelled greedy rather than presented as optimal, because transfer minimums
+  make a route's throughput a step function.
+- Transfer caps accept `day`, `month`, and `lifetime` periods. Monthly and
+  daily limits are what actually bind published multi-hop routes; the schema
+  previously carried only `year` and `campaign_period`.
+- The remainder stranded at every hop is reported, not just the first. A
+  coarse increment deep in a route silently destroyed value before.
+- Each hop is validated on the date it would actually be initiated rather than
+  today, so a route taking weeks is checked against the rules in force when it
+  arrives. A hop that closes first is reported as such.
+- Rules that only apply to directly held units stay out of later hops, which
+  no shortest-path formulation can express.
+- Added `point-valuation-profile.v1`. An asset is worth the best published
+  exit it has; yen-denominated balances are worth their face by definition;
+  an asset with neither is reported unvalued rather than assumed to be worth
+  one yen, and is never ranked above a priced alternative. A value the buyer
+  supplies for their destination replaces the derived one.
+- Added `payment-stack-synthesizer.v1` and
+  `POST /api/experimental/payment-stack/recommendation`. Paying well is
+  usually a stack rather than one instrument — a card funds a wallet, the
+  wallet pays, a loyalty identifier is shown — and the engine could already
+  price such a plan but nothing generated the combinations, so the caller had
+  to know the answer to ask the question. A charge only counts when the
+  purchase is paid from what it filled.
+- Added the P0 payment-layer compiler. It reads only the claim shapes that
+  state a rate exactly; a maximum, a range, or a conditional step rate gets a
+  non-executable disposition instead of a guess. Issuer statements that
+  charging a wallet earns nothing are compiled as first-class records and
+  shown as warnings, since several issuers are currently withdrawing those
+  rewards.
+- The conversion tool now reports the yen value and effective rate of a route,
+  the split when a cap forces one, the units stranded partway through, the
+  date each hop would start, and the destinations it cannot price.
+
 - Merged the award-wallet front-end revamp and expanded the merchant selector
   from the Seven-Eleven canary to every merchant family currently projected by
   the P0 catalogue.

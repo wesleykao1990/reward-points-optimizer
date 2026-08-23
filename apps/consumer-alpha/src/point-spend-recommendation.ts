@@ -1,15 +1,22 @@
 import { promises as fs } from "node:fs";
 
 import {
+  compileP0PaymentLayerSet,
   compileP0SpendRuleSet,
+  type P0PaymentLayerSet,
   type P0SpendAsset,
   type P0SpendRule,
   type P0SpendRuleSet,
 } from "@jro/provisional-rules";
 import {
-  optimizePointSpend,
-  type PointSpendEdge,
-  type PointSpendObjective,
+  type AssetValuation,
+  buildValuationProfile,
+  deriveBestExitValuations,
+  type ExitOption,
+  optimizePointRoute,
+  type PointRouteEdge,
+  type PointRoutePlan,
+  type ValuationProfile,
 } from "@jro/rule-engine";
 import { P0_PRODUCT_FAMILY_IDS, type P0ProductFamilyId } from "./contracts.js";
 
@@ -22,13 +29,40 @@ const RESEARCH_FILES = Object.freeze([
 
 export const MAX_POINT_SPEND_BODY_BYTES = 4_096;
 
+/**
+ * `maximize_value` compares routes that end in different assets by their
+ * declared JPY worth; the other objectives keep the older native-unit and
+ * timing orderings.
+ */
+export type PointSpendObjective =
+  | "maximize_value"
+  | "maximize_target"
+  | "fastest"
+  | "preserve_expiring";
+
+export const POINT_SPEND_OBJECTIVES: readonly PointSpendObjective[] =
+  Object.freeze([
+    "maximize_value",
+    "maximize_target",
+    "fastest",
+    "preserve_expiring",
+  ]);
+
 export interface PointSpendBrowserInput {
   readonly source_asset_id: string;
-  readonly target_asset_id: string;
+  /** `null` asks for the best exit instead of one chosen destination. */
+  readonly target_asset_id: string | null;
   readonly balance: number;
   readonly objective: PointSpendObjective;
   readonly effective_at: string;
   readonly confirmed_rule_ids: readonly string[];
+  /**
+   * What one unit of the destination is worth to this person.
+   *
+   * Supplied by the buyer, so it overrides the value derived from published
+   * redemptions rather than competing with it.
+   */
+  readonly unit_value_jpy: number | null;
 }
 
 export interface PointSpendBrowserAsset {
@@ -83,6 +117,20 @@ export interface PointSpendBrowserStep {
   readonly source_amount: string;
   readonly destination_amount: string;
   readonly processing_days: string;
+  /** Units this hop had to leave behind, in the hop's own source units. */
+  readonly stranded_amount: string;
+  /** Why this hop could not carry more, when something other than the balance. */
+  readonly limit_note: string | null;
+  /** The date this hop would be started, when every lead time is known. */
+  readonly start_date: string | null;
+}
+
+/** One route within a plan.  A plan holds several when a cap forces a split. */
+export interface PointSpendBrowserLeg {
+  readonly source_amount: string;
+  readonly target_amount: string;
+  readonly processing_days: string;
+  readonly steps: readonly PointSpendBrowserStep[];
 }
 
 export interface PointSpendBrowserRoute {
@@ -91,7 +139,17 @@ export interface PointSpendBrowserRoute {
   readonly target_label: string;
   readonly residual_source_amount: string;
   readonly processing_days: string;
+  /** The first leg's hops, kept so a single-route plan reads as before. */
   readonly steps: readonly PointSpendBrowserStep[];
+  readonly source_amount_used: string;
+  readonly value_jpy: string | null;
+  readonly value_note: string;
+  readonly effective_rate_percent: string | null;
+  readonly legs: readonly PointSpendBrowserLeg[];
+  /** Present when the balance had to be split across more than one route. */
+  readonly split_note: string | null;
+  /** Present when units are left behind partway through the route. */
+  readonly stranded_note: string | null;
 }
 
 export type PointSpendNoRouteReason =
@@ -108,7 +166,7 @@ export interface PointSpendNoRouteDetails {
 }
 
 export interface PointSpendBrowserResult {
-  readonly version: "p0-point-spend-browser.v1";
+  readonly version: "p0-point-spend-browser.v2";
   readonly status: "ready" | "no_route";
   readonly experimental: true;
   readonly current_advice: false;
@@ -119,6 +177,8 @@ export interface PointSpendBrowserResult {
   readonly rule_count: number;
   readonly no_route_reason: PointSpendNoRouteReason | null;
   readonly no_route_details: PointSpendNoRouteDetails | null;
+  /** Destinations that are reachable but have no declared yen value. */
+  readonly unvalued_asset_labels: readonly string[];
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -130,6 +190,7 @@ const REQUEST_KEYS = Object.freeze([
   "objective",
   "effective_at",
   "confirmed_rule_ids",
+  "unit_value_jpy",
 ] as const);
 
 function parseRecord(value: unknown): JsonRecord {
@@ -194,18 +255,23 @@ export function parsePointSpendBrowserInput(
   const objective = record.objective;
   const effectiveAt = record.effective_at;
   const confirmed = record.confirmed_rule_ids;
+  const unitValue = record.unit_value_jpy;
   if (
     typeof source !== "string" ||
     !/^asset\.[a-z0-9.-]{2,80}$/u.test(source) ||
-    typeof target !== "string" ||
-    !/^asset\.[a-z0-9.-]{2,80}$/u.test(target) ||
+    (target !== null &&
+      (typeof target !== "string" ||
+        !/^asset\.[a-z0-9.-]{2,80}$/u.test(target))) ||
     source === target ||
     !Number.isSafeInteger(balance) ||
     Number(balance) < 1 ||
     Number(balance) > 1_000_000_000 ||
-    !(["maximize_target", "fastest", "preserve_expiring"] as const).includes(
-      objective as PointSpendObjective,
-    ) ||
+    (unitValue !== null &&
+      (typeof unitValue !== "number" ||
+        !Number.isFinite(unitValue) ||
+        unitValue <= 0 ||
+        unitValue > 1_000_000)) ||
+    !POINT_SPEND_OBJECTIVES.includes(objective as PointSpendObjective) ||
     typeof effectiveAt !== "string" ||
     !canonicalDateTime(effectiveAt) ||
     !Array.isArray(confirmed) ||
@@ -218,11 +284,14 @@ export function parsePointSpendBrowserInput(
     throw new TypeError("point_spend_request_invalid");
   return {
     source_asset_id: source,
-    target_asset_id: target,
+    target_asset_id: target === null ? null : String(target),
     balance: Number(balance),
     objective: objective as PointSpendObjective,
     effective_at: effectiveAt,
     confirmed_rule_ids: Object.freeze([...confirmed].sort()),
+    // Rounded to sen so a long float cannot perturb the canonical hash.
+    unit_value_jpy:
+      unitValue === null ? null : Math.round(Number(unitValue) * 100) / 100,
   };
 }
 
@@ -306,6 +375,7 @@ interface P0ResearchArtifact {
 
 interface PointSpendBundle {
   readonly ruleSet: P0SpendRuleSet;
+  readonly paymentLayers: P0PaymentLayerSet;
   readonly artifacts: readonly P0ResearchArtifact[];
 }
 
@@ -322,6 +392,10 @@ function researchArtifacts(value: unknown[]): readonly P0ResearchArtifact[] {
   });
 }
 
+export async function loadPointSpendBundle(): Promise<PointSpendBundle> {
+  return loadBundle();
+}
+
 async function loadBundle(): Promise<PointSpendBundle> {
   if (!bundlePromise) {
     bundlePromise = Promise.all(
@@ -335,6 +409,7 @@ async function loadBundle(): Promise<PointSpendBundle> {
       ),
     ).then((rawArtifacts) => ({
       ruleSet: compileP0SpendRuleSet(rawArtifacts),
+      paymentLayers: compileP0PaymentLayerSet(rawArtifacts),
       artifacts: researchArtifacts(rawArtifacts),
     }));
   }
@@ -655,7 +730,7 @@ export async function calculateSelectedProductPurchases(
   );
 }
 
-function engineAsset(asset: P0SpendAsset): PointSpendEdge["source_asset"] {
+function engineAsset(asset: P0SpendAsset): PointRouteEdge["source_asset"] {
   return {
     asset_id: asset.asset_id,
     asset_kind: asset.asset_kind,
@@ -665,7 +740,7 @@ function engineAsset(asset: P0SpendAsset): PointSpendEdge["source_asset"] {
   };
 }
 
-function edge(rule: P0SpendRule): PointSpendEdge {
+function edge(rule: P0SpendRule): PointRouteEdge {
   return {
     rule_id: rule.rule_id,
     label_ja: rule.label_ja,
@@ -686,6 +761,7 @@ function edge(rule: P0SpendRule): PointSpendEdge {
     valid_from: rule.valid_from,
     valid_to: rule.valid_to,
     required_conditions_ja: rule.required_conditions_ja,
+    requires_direct_source: rule.requires_direct_source,
   };
 }
 
@@ -1000,38 +1076,195 @@ export async function listPointSpendBrowserOptions(): Promise<{
   };
 }
 
+const JPY_DENOMINATED_KINDS = new Set(["stored_value", "discount"]);
+
+/**
+ * Price the assets in the graph from what can actually be done with them.
+ *
+ * Stored-value and discount assets are denominated in yen, so one unit is one
+ * yen by definition rather than by assumption.  Every other asset is worth the
+ * best published exit it has — a point that redeems at 1 yen is worth 1 yen,
+ * and a point with no published redemption stays unpriced rather than being
+ * assumed to be worth face value.  A value the buyer supplies for the
+ * destination replaces the derived one, because their own redemption plans
+ * beat any published default.
+ */
+export function pointValuationProfile(
+  ruleSet: P0SpendRuleSet,
+  paymentLayers: P0PaymentLayerSet,
+  targetAssetId: string | null,
+  unitValueJpy: number | null,
+): ValuationProfile {
+  const allAssets = assets(ruleSet);
+  const denominated: AssetValuation[] = allAssets
+    .filter((asset) => JPY_DENOMINATED_KINDS.has(asset.asset_kind))
+    .map((asset) => ({
+      asset_id: asset.asset_id,
+      reward_class: asset.reward_class,
+      jpy_per_unit_min: "1",
+      jpy_per_unit_expected: "1",
+      jpy_per_unit_max: "1",
+      source: "face_value_default" as const,
+      note: "円建ての残高のため1単位=1円",
+    }));
+
+  const exits: ExitOption[] = [];
+  for (const rule of ruleSet.rules) {
+    const destination = allAssets.find(
+      (asset) => asset.asset_id === rule.destination_asset.asset_id,
+    );
+    if (!destination || !JPY_DENOMINATED_KINDS.has(destination.asset_kind))
+      continue;
+    const source = Number(rule.source_units);
+    const yen = Number(rule.destination_units);
+    if (!Number.isFinite(source) || source <= 0 || !Number.isFinite(yen))
+      continue;
+    exits.push({
+      exit_id: `exit.${rule.rule_id}`,
+      asset_id: rule.source_asset.asset_id,
+      reward_class: rule.source_asset.reward_class,
+      label_ja: rule.label_ja,
+      jpy_per_unit: String(Math.round((yen / source) * 10_000) / 10_000),
+      source: "official_disclosed",
+      source_claim_ids: rule.source_claim_ids.slice(0, 16),
+    });
+  }
+  for (const exit of paymentLayers.exit_options)
+    exits.push({
+      exit_id: exit.exit_id,
+      asset_id: exit.asset_id,
+      reward_class: "normal",
+      label_ja: exit.label_ja,
+      jpy_per_unit: exit.jpy_per_unit,
+      source: "official_disclosed",
+      source_claim_ids: exit.source_claim_ids.slice(0, 16),
+    });
+
+  const derived = deriveBestExitValuations(
+    buildValuationProfile("p0-point-value", denominated),
+    exits,
+  );
+  if (unitValueJpy === null || targetAssetId === null) return derived.profile;
+  const target = allAssets.find((asset) => asset.asset_id === targetAssetId);
+  if (!target) return derived.profile;
+  const supplied: AssetValuation = {
+    asset_id: target.asset_id,
+    reward_class: target.reward_class,
+    jpy_per_unit_min: String(unitValueJpy),
+    jpy_per_unit_expected: String(unitValueJpy),
+    jpy_per_unit_max: String(unitValueJpy),
+    source: "user_profile",
+    note: "入力した1単位の価値",
+  };
+  return buildValuationProfile("p0-point-value", [
+    ...derived.profile.entries.filter(
+      (entry) =>
+        entry.asset_id !== supplied.asset_id ||
+        entry.reward_class !== supplied.reward_class,
+    ),
+    supplied,
+  ]);
+}
+
 function dayLabel(minimum: number | null, maximum: number | null): string {
   if (minimum === null || maximum === null) return "所要日数は提供元で確認";
   if (maximum === 0) return "即時見込み";
   return minimum === maximum ? `約${maximum}日` : `約${minimum}〜${maximum}日`;
 }
 
+const LIMIT_NOTES: Readonly<Record<string, string>> = Object.freeze({
+  period_cap: "期間内の交換上限に達するため",
+  request_maximum: "1回あたりの上限があるため",
+  increment: "交換単位に満たない分が残るため",
+});
+
+function browserStep(
+  hop: PointRoutePlan["legs"][number]["hops"][number],
+  labelByAsset: ReadonlyMap<string, string>,
+): PointSpendBrowserStep {
+  return {
+    label: hop.label_ja,
+    source_label: labelByAsset.get(hop.source_asset_id) ?? "交換元",
+    destination_label: labelByAsset.get(hop.destination_asset_id) ?? "交換先",
+    source_amount: hop.source_amount,
+    destination_amount: hop.destination_amount,
+    processing_days: dayLabel(
+      hop.processing_time_days_min,
+      hop.processing_time_days_max,
+    ),
+    stranded_amount: hop.stranded_source_amount,
+    limit_note: LIMIT_NOTES[hop.binding_constraint] ?? null,
+    start_date: hop.initiated_on,
+  };
+}
+
+/**
+ * Project one plan for the browser.
+ *
+ * The older single-route fields are preserved so a plan with one leg reads
+ * exactly as before; the split, the value, and the units left behind partway
+ * through are added because they change what the buyer should do.
+ */
 function browserRoute(
-  route: NonNullable<ReturnType<typeof optimizePointSpend>["winner"]>,
+  plan: PointRoutePlan,
   labelByAsset: ReadonlyMap<string, string>,
 ): PointSpendBrowserRoute {
-  return {
-    recommendation_id: route.route_id,
-    target_amount: route.target_amount,
-    target_label: labelByAsset.get(route.target_asset.asset_id) ?? "交換先",
-    residual_source_amount: route.residual_source_amount,
+  const targetLabel = labelByAsset.get(plan.target_asset.asset_id) ?? "交換先";
+  const legs = plan.legs.map((leg) => ({
+    source_amount: leg.allocated_source_amount,
+    target_amount: leg.target_amount,
     processing_days: dayLabel(
-      route.processing_time_days_min,
-      route.processing_time_days_max,
+      leg.processing_time_days_min,
+      leg.processing_time_days_max,
     ),
-    steps: route.steps.map((step) => ({
-      label: step.label_ja,
-      source_label: labelByAsset.get(step.source_asset_id) ?? "交換元",
-      destination_label:
-        labelByAsset.get(step.destination_asset_id) ?? "交換先",
-      source_amount: step.source_amount,
-      destination_amount: step.destination_amount,
-      processing_days: dayLabel(
-        step.processing_time_days_min,
-        step.processing_time_days_max,
-      ),
-    })),
+    steps: leg.hops.map((hop) => browserStep(hop, labelByAsset)),
+  }));
+  const strandedLabel = plan.stranded
+    .map(
+      (item) =>
+        `${item.amount} ${labelByAsset.get(item.asset_id) ?? item.asset_id}`,
+    )
+    .join("・");
+  return {
+    recommendation_id: plan.plan_id,
+    target_amount: plan.target_amount,
+    target_label: targetLabel,
+    residual_source_amount: residual(plan),
+    processing_days: dayLabel(
+      plan.processing_time_days_min,
+      plan.processing_time_days_max,
+    ),
+    steps: legs[0]?.steps ?? [],
+    source_amount_used: plan.source_amount_used,
+    value_jpy: plan.value?.expected_jpy ?? null,
+    value_note: valueNote(plan),
+    effective_rate_percent: plan.effective_rate_percent,
+    legs,
+    split_note:
+      legs.length > 1
+        ? `上限があるため${legs.length}つのルートに分けています。合計で${plan.target_amount} ${targetLabel}です。`
+        : null,
+    stranded_note:
+      strandedLabel.length > 0
+        ? `途中で${strandedLabel}が交換されずに残ります。`
+        : null,
   };
+}
+
+function residual(plan: PointRoutePlan): string {
+  const available = Number(plan.source_amount_available);
+  const used = Number(plan.source_amount_used);
+  if (!Number.isFinite(available) || !Number.isFinite(used)) return "0";
+  return String(Math.max(0, available - used));
+}
+
+function valueNote(plan: PointRoutePlan): string {
+  if (!plan.value) return "この交換先の円換算は登録されていません。";
+  const source = plan.value.valuation.source;
+  if (source === "user_profile") return "入力した1単位の価値で試算しています。";
+  if (source === "best_exit_derived")
+    return `公表された使い道（${plan.value.valuation.note.replace("best exit: ", "")}）から換算しています。`;
+  return "収録された交換条件から換算しています。";
 }
 
 function potentialRouteRuleIds(
@@ -1071,7 +1304,7 @@ function potentialRouteRuleIds(
 
 function noRouteInfo(
   input: PointSpendBrowserInput,
-  optimization: ReturnType<typeof optimizePointSpend>,
+  optimization: ReturnType<typeof optimizePointRoute>,
   coverage: PointSpendBrowserCoverage,
   ruleSet: P0SpendRuleSet,
 ): {
@@ -1081,20 +1314,28 @@ function noRouteInfo(
   const sourceCoverage = coverage.targets_by_source.find(
     (source) => source.asset_id === input.source_asset_id,
   );
-  const covered = sourceCoverage?.targets.some(
-    (target) => target.asset_id === input.target_asset_id,
-  );
+  const covered =
+    input.target_asset_id === null
+      ? (sourceCoverage?.targets.length ?? 0) > 0
+      : sourceCoverage?.targets.some(
+          (target) => target.asset_id === input.target_asset_id,
+        );
   if (!covered)
     return {
       reason: "source_target_not_covered",
       details: { minimum_source_amount: null, conditions: [] },
     };
 
-  const relevantRuleIds = potentialRouteRuleIds(
-    input.source_asset_id,
-    input.target_asset_id,
-    ruleSet,
-  );
+  // With no chosen destination every rule reachable from the source is
+  // relevant, so the reason is drawn from the whole skipped set.
+  const relevantRuleIds =
+    input.target_asset_id === null
+      ? new Set(optimization.skipped.map((item) => item.rule_id))
+      : potentialRouteRuleIds(
+          input.source_asset_id,
+          input.target_asset_id,
+          ruleSet,
+        );
   const skippedByReason = new Set(
     optimization.skipped
       .filter((item) => relevantRuleIds.has(item.rule_id))
@@ -1176,17 +1417,24 @@ export async function recommendPointSpend(
   raw: unknown,
 ): Promise<PointSpendBrowserResult> {
   const input = parsePointSpendBrowserInput(raw);
-  const ruleSet = await loadRuleSet();
+  const { ruleSet, paymentLayers } = await loadBundle();
   const allAssets = assets(ruleSet);
   const sourceAsset = allAssets.find(
     (candidate) => candidate.asset_id === input.source_asset_id,
   );
   if (
     !sourceAsset ||
-    !allAssets.some((item) => item.asset_id === input.target_asset_id)
+    (input.target_asset_id !== null &&
+      !allAssets.some((item) => item.asset_id === input.target_asset_id))
   )
     throw new TypeError("point_spend_asset_unknown");
-  const result = optimizePointSpend({
+  const valuation = pointValuationProfile(
+    ruleSet,
+    paymentLayers,
+    input.target_asset_id,
+    input.unit_value_jpy,
+  );
+  const result = optimizePointRoute({
     effective_at: input.effective_at,
     objective: input.objective,
     target_asset_id: input.target_asset_id,
@@ -1199,20 +1447,24 @@ export async function recommendPointSpend(
     ],
     edges: ruleSet.rules.map(edge),
     confirmed_rule_ids: input.confirmed_rule_ids,
+    // No stored per-period usage exists in this lane, so a capped rule is
+    // reported as needing that figure rather than assumed to be unused.
     period_source_used_by_rule: {},
     max_steps: 4,
+    max_legs: 3,
+    valuation,
   });
   const labels = new Map(
     allAssets.map((item) => [item.asset_id, item.label_ja]),
   );
   const coverage = pointSpendCoverage(ruleSet, allAssets);
-  const routes = result.routes
+  const routes = result.plans
     .slice(0, 3)
-    .map((route) => browserRoute(route, labels));
+    .map((plan) => browserRoute(plan, labels));
   const noRoute =
     routes.length === 0 ? noRouteInfo(input, result, coverage, ruleSet) : null;
   return {
-    version: "p0-point-spend-browser.v1",
+    version: "p0-point-spend-browser.v2",
     status: routes.length > 0 ? "ready" : "no_route",
     experimental: true,
     current_advice: false,
@@ -1225,7 +1477,9 @@ export async function recommendPointSpend(
         : noRouteMessage(
             noRoute?.reason ?? "route_unavailable",
             labels.get(input.source_asset_id) ?? "交換元",
-            labels.get(input.target_asset_id) ?? "交換先",
+            input.target_asset_id === null
+              ? "使いみち"
+              : (labels.get(input.target_asset_id) ?? "交換先"),
             noRoute?.details ?? {
               minimum_source_amount: null,
               conditions: [],
@@ -1234,5 +1488,11 @@ export async function recommendPointSpend(
     rule_count: ruleSet.rule_count,
     no_route_reason: noRoute?.reason ?? null,
     no_route_details: noRoute?.details ?? null,
+    unvalued_asset_labels: Object.freeze(
+      result.unvalued_asset_ids
+        .map((id) => labels.get(id.split("#")[0] ?? id) ?? null)
+        .filter((label): label is string => label !== null)
+        .sort((left, right) => left.localeCompare(right, "ja")),
+    ),
   };
 }

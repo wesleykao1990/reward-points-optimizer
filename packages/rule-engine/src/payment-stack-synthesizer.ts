@@ -2,14 +2,18 @@ import type { Decimal } from "decimal.js";
 
 import {
   exactKeys,
-  plainInput,
   type PlainRecord,
+  plainInput,
   validDate,
   validDateTime,
 } from "./input-guard.js";
 import { resolveStacking, type StackingCandidate } from "./m1b-stacking.js";
 import { canonicalDecimal, canonicalHash, D, decimalString } from "./math.js";
-import { type JpyValuation, type ValuationProfile, valueQuantity } from "./point-valuation.js";
+import {
+  type JpyValuation,
+  type ValuationProfile,
+  valueQuantity,
+} from "./point-valuation.js";
 import type { AssetRef } from "./types.js";
 
 /**
@@ -109,6 +113,15 @@ export interface PaymentStackPlan {
   readonly total_value_jpy: string | null;
   readonly total_rate_percent: string | null;
   readonly value_status: "valued" | "unvalued";
+  /**
+   * Total native reward units, and the asset they are all in.
+   *
+   * Only set when every layer pays the same asset.  Two unpriced plans in the
+   * same currency are still comparable in units even though neither can be
+   * stated in yen, and that is the ordering an unpriced buyer actually wants.
+   */
+  readonly native_reward_units: string | null;
+  readonly native_reward_asset_id: string | null;
   readonly channel_count: number;
   readonly required_conditions_ja: readonly string[];
 }
@@ -254,7 +267,8 @@ function assertOption(value: unknown): asserts value is PaymentLayerOption {
       record.stacking_mode as string,
     ) ||
     (record.valid_from !== null &&
-      (typeof record.valid_from !== "string" || !validDate(record.valid_from))) ||
+      (typeof record.valid_from !== "string" ||
+        !validDate(record.valid_from))) ||
     (record.valid_to !== null &&
       (typeof record.valid_to !== "string" || !validDate(record.valid_to))) ||
     !stringArray(record.required_conditions_ja, 8) ||
@@ -576,14 +590,21 @@ export function synthesizePaymentStacks(
       ? layers.reduce<Decimal>(
           (accumulator, layer) =>
             accumulator.plus(
-              decimalString(
-                (layer.value as JpyValuation).expected_jpy,
-              ),
+              decimalString((layer.value as JpyValuation).expected_jpy),
             ),
           D(0),
         )
       : null;
     for (const id of appliedIds) usedOptionIds.add(id);
+
+    const nativeAssets = new Set(layers.map((layer) => layer.reward_asset_id));
+    const nativeAssetId =
+      nativeAssets.size === 1 ? (layers[0]?.reward_asset_id ?? null) : null;
+    const nativeUnits = layers.reduce<Decimal>(
+      (accumulator, layer) =>
+        accumulator.plus(decimalString(layer.reward_units)),
+      D(0),
+    );
 
     const projection = {
       option_ids: appliedIds,
@@ -597,6 +618,9 @@ export function synthesizePaymentStacks(
               total.div(input.amount_jpy).mul(100).toDecimalPlaces(3),
             ),
       value_status: (valued ? "valued" : "unvalued") as "valued" | "unvalued",
+      native_reward_units:
+        nativeAssetId === null ? null : canonicalDecimal(nativeUnits),
+      native_reward_asset_id: nativeAssetId,
       channel_count: layers.length,
       required_conditions_ja: [
         ...new Set(
@@ -621,6 +645,19 @@ export function synthesizePaymentStacks(
         decimalString(left.total_value_jpy),
       );
       if (value !== 0) return value;
+    }
+    // Neither plan can be stated in yen, but if both pay the same currency
+    // the one that earns more of it is plainly better.
+    if (
+      left.native_reward_asset_id !== null &&
+      left.native_reward_asset_id === right.native_reward_asset_id &&
+      left.native_reward_units !== null &&
+      right.native_reward_units !== null
+    ) {
+      const units = decimalString(right.native_reward_units).cmp(
+        decimalString(left.native_reward_units),
+      );
+      if (units !== 0) return units;
     }
     // Fewer channels is less to get wrong at the register, so a tie goes to
     // the simpler plan.

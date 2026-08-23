@@ -1,4 +1,4 @@
-import { exactKeys, plainInput, type PlainRecord } from "./input-guard.js";
+import { exactKeys, type PlainRecord, plainInput } from "./input-guard.js";
 import { canonicalDecimal, canonicalHash, decimalString } from "./math.js";
 
 /**

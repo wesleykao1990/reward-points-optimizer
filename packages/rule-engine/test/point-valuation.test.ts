@@ -39,7 +39,9 @@ describe("point valuation profile", () => {
 
   it("reports an undeclared asset as unvalued instead of assuming face value", () => {
     const profile = buildValuationProfile("test-profile", [entry()]);
-    expect(valueQuantity(profile, "asset.point.z", "normal", "1000")).toBeNull();
+    expect(
+      valueQuantity(profile, "asset.point.z", "normal", "1000"),
+    ).toBeNull();
   });
 
   it("values a restricted class separately from the ordinary one", () => {
@@ -80,9 +82,9 @@ describe("point valuation profile", () => {
         entry({ jpy_per_unit_min: "2", jpy_per_unit_expected: "1" }),
       ]),
     ).toThrow("valuation_range_not_ordered");
-    expect(() => buildValuationProfile("test-profile", [entry(), entry()])).toThrow(
-      "valuation_entry_duplicate",
-    );
+    expect(() =>
+      buildValuationProfile("test-profile", [entry(), entry()]),
+    ).toThrow("valuation_entry_duplicate");
   });
 
   it("raises a valuation to the best exit but never lowers it", () => {

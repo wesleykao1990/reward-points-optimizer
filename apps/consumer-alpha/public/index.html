@@ -140,7 +140,7 @@
               <label>保有するポイント<select id="point-spend-source" required><option value="">読み込み中…</option></select></label>
               <label>残高<input id="point-spend-balance" type="number" min="1" max="1000000000" step="1" value="1000" inputmode="numeric" required></label>
               <label>交換先<select id="point-spend-target" required><option value="">読み込み中…</option></select></label>
-              <label>優先すること<select id="point-spend-objective"><option value="maximize_target">受取数を最大化</option><option value="fastest">所要日数を優先</option><option value="preserve_expiring">期限がある残高を優先</option></select></label>
+              <label>優先すること<select id="point-spend-objective"><option value="maximize_value">円換算の価値を最大化</option><option value="maximize_target">受取数を最大化</option><option value="fastest">所要日数を優先</option><option value="preserve_expiring">期限がある残高を優先</option></select></label>
               <label>受取1単位の価値（円・任意）<input id="point-spend-unit-value" type="number" min="0.01" max="1000000" step="0.01" inputmode="decimal" placeholder="例：マイルなら2"></label>
             </div>
             <div id="point-spend-conditions" class="point-spend-conditions"></div>
@@ -148,6 +148,21 @@
             <p class="helper">収録した交換レートによる試算です。交換する前に提供元の条件を確認してください。</p>
           </form>
           <div id="point-spend-result" class="point-spend-result" aria-live="polite"><p class="helper">ポイント情報を読み込んでいます…</p></div>
+        </section>
+
+
+        <section class="wallet-group" aria-labelledby="payment-stack-title">
+          <div class="group-heading"><h2 id="payment-stack-title">支払い方法の組み合わせ</h2><span>重ね取りの比較</span></div>
+          <form id="payment-stack-form" class="point-spend-card">
+            <p>チャージ・支払い・提示を組み合わせた場合の還元を比較します。手持ちの決済手段だけで計算します。</p>
+            <div class="point-spend-grid">
+              <label>支払う金額（円）<input id="payment-stack-amount" type="number" min="1" max="10000000" step="1" value="10000" inputmode="numeric" required></label>
+            </div>
+            <div id="payment-stack-owned" class="point-spend-conditions" aria-live="polite"></div>
+            <button id="payment-stack-submit" type="submit" class="primary wide">支払い方法を比較する</button>
+            <p class="helper">収録した還元条件による試算です。支払う前に提供元の条件を確認してください。</p>
+          </form>
+          <div id="payment-stack-result" class="point-spend-result" aria-live="polite"><p class="helper">決済手段を読み込んでいます…</p></div>
         </section>
 
         <section class="wallet-group" aria-labelledby="spend-catalogue-title">

@@ -33,7 +33,11 @@ export function plainInput(
     (typeof value === "number" && Number.isFinite(value))
   )
     return value;
-  if (typeof value !== "object" || depth > MAX_DEPTH || nodeTypes.isProxy(value))
+  if (
+    typeof value !== "object" ||
+    depth > MAX_DEPTH ||
+    nodeTypes.isProxy(value)
+  )
     throw new TypeError(code);
   if (active.has(value)) throw new TypeError(code);
   active.add(value);

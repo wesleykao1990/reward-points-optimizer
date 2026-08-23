@@ -2596,6 +2596,33 @@ fieldset {
   font-size: 0.6rem;
 }
 
+
+/* A hop that could not carry the whole balance is where value is actually
+   lost, so the constraint is marked rather than left in the body text. */
+.point-spend-limit {
+  color: var(--tx-2);
+  font-size: 0.63rem;
+}
+
+.point-spend-steps small.point-spend-limit {
+  color: var(--tx-2);
+  font-weight: 600;
+}
+
+.point-spend-split {
+  margin-top: 8px;
+  color: var(--tx-2);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.point-spend-leg-heading {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 /* ── History ──────────────────────────────────────────────────────── */
 
 .history-list {

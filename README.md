@@ -101,6 +101,11 @@ A finding is not a fact, and submitted evidence is not canonical evidence.
 | `fixtures/m3/real-data/jp-cvs-002/golden-scenario.v1.json` | Immutable JP-CVS-002 golden replay oracle with exact reviewed rule bindings |
 | `fixtures/m3/real-data/jp-cvs-006/golden-scenario.v1.json` | Immutable JP-CVS-006 golden replay oracle with engine/preflight provenance and conserved asset ledger |
 | `docs/reviews/m3-real-data-alpha-candidate-2026-08-20.md` | Owner source-policy decision, golden fixture checkpoint, resolved tax-basis gap, and publication boundary |
+| `packages/rule-engine/src/point-route-optimizer.ts` | Value-ranked multi-hop routing with backward capacity, cap-aware splitting, per-hop stranded accounting, and date-of-hop validity |
+| `packages/rule-engine/src/point-valuation.ts` | Explicit per-asset valuation; unvalued assets are reported, never defaulted to face value |
+| `packages/rule-engine/src/payment-stack-synthesizer.ts` | Enumerates and prices funding/charge/payment/loyalty combinations through the stacking resolver |
+| `packages/provisional-rules/src/p0-payment-layers.ts` | Compiles payment layers, charge exclusions, and redemption values from exact claim shapes only |
+| `apps/consumer-alpha/src/payment-stack-recommendation.ts` | Browser surface for "how should I pay", scoped to what the buyer holds |
 
 The source registry remains data version v0.3. Its research cutoff is now 2026-08-20 and it includes the exact first-party pages used by the manual alpha slice.
 

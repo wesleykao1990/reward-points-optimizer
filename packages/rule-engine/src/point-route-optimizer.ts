@@ -3,8 +3,8 @@ import type { Decimal } from "decimal.js";
 import {
   addCalendarDays,
   exactKeys,
-  plainInput,
   type PlainRecord,
+  plainInput,
   validDate,
   validDateTime,
 } from "./input-guard.js";
@@ -51,7 +51,8 @@ import type { AssetRef } from "./types.js";
  * v1 is left untouched: its results are hash-bound and still referenced.
  */
 
-export const POINT_ROUTE_OPTIMIZER_VERSION = "point-route-optimizer.v2" as const;
+export const POINT_ROUTE_OPTIMIZER_VERSION =
+  "point-route-optimizer.v2" as const;
 
 /** Periods a per-period transfer cap can reset on. */
 export type CapPeriod =
@@ -531,7 +532,9 @@ function backwardCapacity(
     const remaining = capRemaining(ledger, edge);
     if (remaining !== null)
       hopMaximum =
-        hopMaximum === null || remaining.lt(hopMaximum) ? remaining : hopMaximum;
+        hopMaximum === null || remaining.lt(hopMaximum)
+          ? remaining
+          : hopMaximum;
     if (capacity !== null) {
       // Source units that produce at most `capacity` destination units.  The
       // forward calculation floors, so flooring here cannot overshoot.
@@ -582,8 +585,7 @@ function evaluateLeg(
   balanceExpiresOn: string | null,
 ): LegEvaluation | LegFailure {
   const capacity = backwardCapacity(path, ledger);
-  let amount =
-    capacity !== null && capacity.lt(input) ? capacity : input;
+  let amount = capacity !== null && capacity.lt(input) ? capacity : input;
   let minDays: number | null = 0;
   let maxDays: number | null = 0;
   let irreversible = 0;
@@ -655,8 +657,7 @@ function evaluateLeg(
         reward_class: edge.source_asset.reward_class,
         amount: canonicalDecimal(alignment.stranded),
       });
-    if (remaining !== null)
-      capConsumption.set(edge.rule_id, alignment.source);
+    if (remaining !== null) capConsumption.set(edge.rule_id, alignment.source);
 
     hops.push({
       rule_id: edge.rule_id,
@@ -721,9 +722,7 @@ function evaluateLeg(
   };
 }
 
-function isFailure(
-  value: LegEvaluation | LegFailure,
-): value is LegFailure {
+function isFailure(value: LegEvaluation | LegFailure): value is LegFailure {
   return "reason_code" in value;
 }
 
@@ -999,7 +998,8 @@ function assertRequest(input: PointRouteRequest): void {
   input.edges.forEach(assertEdge);
   if (
     !Array.isArray(input.confirmed_rule_ids) ||
-    new Set(input.confirmed_rule_ids).size !== input.confirmed_rule_ids.length ||
+    new Set(input.confirmed_rule_ids).size !==
+      input.confirmed_rule_ids.length ||
     input.confirmed_rule_ids.some((item) => typeof item !== "string") ||
     !input.period_source_used_by_rule ||
     typeof input.period_source_used_by_rule !== "object" ||
@@ -1008,7 +1008,9 @@ function assertRequest(input: PointRouteRequest): void {
     throw new TypeError("point_route_state_invalid");
   for (const value of Object.values(input.period_source_used_by_rule))
     decimalString(value);
-  if (new Set(input.edges.map((edge) => edge.rule_id)).size !== input.edges.length)
+  if (
+    new Set(input.edges.map((edge) => edge.rule_id)).size !== input.edges.length
+  )
     throw new TypeError("point_route_rule_duplicate");
   if (
     !input.valuation ||
@@ -1040,7 +1042,10 @@ export function optimizePointRoute(
   const usedRuleIds = new Set<string>();
 
   const usableEdges = input.edges.filter((edge) => {
-    if (edge.required_conditions_ja.length > 0 && !confirmed.has(edge.rule_id)) {
+    if (
+      edge.required_conditions_ja.length > 0 &&
+      !confirmed.has(edge.rule_id)
+    ) {
       skipped.set(edge.rule_id, "condition_confirmation_required");
       return false;
     }
@@ -1127,7 +1132,11 @@ export function optimizePointRoute(
       const targetAsset =
         paths[0]?.[paths[0].length - 1]?.destination_asset ?? balance.asset;
       const targetAmount = canonicalDecimal(outcome.produced);
-      const value = valueOfPlanTarget(input.valuation, targetAsset, targetAmount);
+      const value = valueOfPlanTarget(
+        input.valuation,
+        targetAsset,
+        targetAmount,
+      );
       if (!value)
         unvalued.add(
           `${targetAsset.asset_id}${
@@ -1185,9 +1194,7 @@ export function optimizePointRoute(
         ),
         expires_at: balance.expires_at,
         expiry_preserved_amount:
-          balance.expires_at === null
-            ? "0"
-            : canonicalDecimal(outcome.used),
+          balance.expires_at === null ? "0" : canonicalDecimal(outcome.used),
       };
       plans.push({
         plan_id: canonicalHash(projection) as `sha256:${string}`,

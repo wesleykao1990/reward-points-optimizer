@@ -2305,6 +2305,7 @@
     });
     walletHydrated = true;
     syncP0ProductPickers();
+    renderPaymentStackOwned();
   };
 
   const pointSpendSelectOption = (asset) => {
@@ -2346,6 +2347,12 @@
       (item) => item.asset_id === sourceId,
     );
     clear(target);
+    // Asking "what is this balance best turned into" is a different question
+    // from "how do I reach X", and it is usually the one people have.
+    const anyTarget = node("option");
+    anyTarget.value = "any";
+    anyTarget.textContent = "いちばん価値が高い使いみち";
+    target.appendChild(anyTarget);
     (sourceCoverage?.targets || []).forEach((asset) => {
       target.appendChild(pointSpendSelectOption(asset));
     });
@@ -2397,6 +2404,48 @@
     }
   };
 
+  const targetAssetId = () => {
+    const value = document.getElementById("point-spend-target").value;
+    return value === "any" || value === "" ? null : value;
+  };
+
+  const unitValueJpy = () => {
+    const raw = document.getElementById("point-spend-unit-value").value;
+    if (raw === "") return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0
+      ? Math.round(parsed * 100) / 100
+      : null;
+  };
+
+  const renderPointSpendStep = (step) => {
+    const item = node("li");
+    item.appendChild(text("strong", step.label));
+    item.appendChild(
+      text(
+        "span",
+        `${step.source_amount} ${step.source_label} → ${step.destination_amount} ${step.destination_label}`,
+      ),
+    );
+    const timing = step.start_date
+      ? `${step.processing_days}・${step.start_date}に開始`
+      : step.processing_days;
+    item.appendChild(text("small", timing));
+    // A hop that could not carry everything is where the plan actually loses
+    // value, so it says so on the hop rather than in a footnote.
+    if (step.limit_note)
+      item.appendChild(
+        text(
+          "small",
+          Number(step.stranded_amount) > 0
+            ? `${step.limit_note}、${step.stranded_amount} が残ります`
+            : step.limit_note,
+          "point-spend-limit",
+        ),
+      );
+    return item;
+  };
+
   const renderPointSpendRoute = (route, primary) => {
     const card = node(
       "article",
@@ -2408,43 +2457,46 @@
       text("strong", `${route.target_amount} ${route.target_label}`),
     );
     card.appendChild(heading);
-    const unitValue = Number(
-      document.getElementById("point-spend-unit-value").value,
-    );
-    const targetAmount = Number(route.target_amount);
-    if (
-      Number.isFinite(unitValue) &&
-      unitValue > 0 &&
-      Number.isFinite(targetAmount)
-    )
+    if (route.value_jpy !== null) {
+      const rate =
+        route.effective_rate_percent === null
+          ? ""
+          : `・実質${route.effective_rate_percent}%`;
       card.appendChild(
         text(
           "strong",
-          `約${Math.floor(unitValue * targetAmount).toLocaleString("ja-JP")}円相当（入力した価値で試算）`,
+          `約${Number(route.value_jpy).toLocaleString("ja-JP")}円相当${rate}`,
           "point-spend-value",
         ),
       );
+    }
+    card.appendChild(text("p", route.value_note, "helper"));
     card.appendChild(
       text(
         "p",
-        `${route.processing_days}・交換元の残り ${route.residual_source_amount}`,
+        `${route.processing_days}・交換に使う ${route.source_amount_used}・残り ${route.residual_source_amount}`,
         "helper",
       ),
     );
-    const steps = node("ol", "point-spend-steps");
-    route.steps.forEach((step) => {
-      const item = node("li");
-      item.appendChild(text("strong", step.label));
-      item.appendChild(
-        text(
-          "span",
-          `${step.source_amount} ${step.source_label} → ${step.destination_amount} ${step.destination_label}`,
-        ),
-      );
-      item.appendChild(text("small", step.processing_days));
-      steps.appendChild(item);
+    if (route.split_note)
+      card.appendChild(text("p", route.split_note, "point-spend-split"));
+    if (route.stranded_note)
+      card.appendChild(text("p", route.stranded_note, "point-spend-limit"));
+    route.legs.forEach((leg, index) => {
+      if (route.legs.length > 1)
+        card.appendChild(
+          text(
+            "strong",
+            `ルート${index + 1}：${leg.source_amount} → ${leg.target_amount}（${leg.processing_days}）`,
+            "point-spend-leg-heading",
+          ),
+        );
+      const steps = node("ol", "point-spend-steps");
+      leg.steps.forEach((step) => {
+        steps.appendChild(renderPointSpendStep(step));
+      });
+      card.appendChild(steps);
     });
-    card.appendChild(steps);
     return card;
   };
 
@@ -2477,14 +2529,16 @@
           {
             source_asset_id:
               document.getElementById("point-spend-source").value,
-            target_asset_id:
-              document.getElementById("point-spend-target").value,
+            target_asset_id: targetAssetId(),
             balance: Number(
               document.getElementById("point-spend-balance").value,
             ),
-            objective: "maximize_target",
+            objective:
+              document.getElementById("point-spend-objective").value ||
+              "maximize_value",
             effective_at: new Date().toISOString(),
             confirmed_rule_ids: confirmed,
+            unit_value_jpy: unitValueJpy(),
           },
         );
         clear(result);
@@ -2501,6 +2555,14 @@
         (body.alternatives || []).forEach((route) => {
           result.appendChild(renderPointSpendRoute(route, false));
         });
+        if ((body.unvalued_asset_labels || []).length > 0)
+          result.appendChild(
+            text(
+              "p",
+              `円換算が登録されていない交換先：${body.unvalued_asset_labels.join("・")}。1単位の価値を入力すると比較できます。`,
+              "helper",
+            ),
+          );
         result.appendChild(text("p", body.message, "helper"));
       } catch {
         clear(result);
@@ -2511,6 +2573,138 @@
         button.disabled = false;
       }
     });
+  // ---------------------------------------------------------------------
+  // Payment stack comparison.
+  //
+  // Paying well is usually a stack, not a single instrument: a card funds a
+  // wallet, the wallet pays, a loyalty identifier is shown. Only what the
+  // buyer actually holds is considered, because a plan they cannot execute
+  // is not advice.
+
+  const renderPaymentStackOwned = () => {
+    const container = document.getElementById("payment-stack-owned");
+    clear(container);
+    if (!pointSpendOptions) return;
+    container.appendChild(text("strong", "持っている決済手段"));
+    pointSpendOptions.walletCatalogue.forEach((item) => {
+      const label = node("label", "point-spend-check");
+      const checkbox = node("input");
+      checkbox.type = "checkbox";
+      checkbox.value = item.family_id;
+      checkbox.dataset.paymentStackOwned = "true";
+      const copy = node("span");
+      copy.appendChild(text("b", item.label));
+      label.appendChild(checkbox);
+      label.appendChild(copy);
+      container.appendChild(label);
+    });
+  };
+
+  const renderPaymentStackPlan = (plan, primary) => {
+    const card = node(
+      "article",
+      `point-spend-route${primary ? " is-primary" : ""}`,
+    );
+    const heading = node("div", "point-spend-route-heading");
+    heading.appendChild(text("span", primary ? "おすすめ" : "別の候補"));
+    // A yen total is only shown when every channel in the plan is priced;
+    // otherwise the honest headline is the native points it earns.
+    heading.appendChild(
+      text(
+        "strong",
+        plan.total_value_jpy !== null
+          ? `約${Number(plan.total_value_jpy).toLocaleString("ja-JP")}円相当`
+          : plan.native_reward_points !== null
+            ? `${plan.native_reward_points} ${plan.native_reward_label}`
+            : "還元の円換算は未登録",
+      ),
+    );
+    card.appendChild(heading);
+    if (plan.total_rate_percent !== null)
+      card.appendChild(
+        text("strong", `合計${plan.total_rate_percent}%`, "point-spend-value"),
+      );
+    card.appendChild(
+      text("p", `${plan.channel_count}つの経路を重ねています。`, "helper"),
+    );
+    const steps = node("ol", "point-spend-steps");
+    plan.layers.forEach((layer) => {
+      const item = node("li");
+      item.appendChild(text("strong", layer.action));
+      item.appendChild(
+        text("span", `${layer.reward_points} ${layer.reward_label}`),
+      );
+      if (layer.rate_percent !== null)
+        item.appendChild(text("small", `${layer.rate_percent}%`));
+      if (layer.cap_note)
+        item.appendChild(text("small", layer.cap_note, "point-spend-limit"));
+      steps.appendChild(item);
+    });
+    card.appendChild(steps);
+    if (plan.conditions.length > 0)
+      card.appendChild(
+        text("p", `条件：${plan.conditions.join("・")}`, "helper"),
+      );
+    return card;
+  };
+
+  document
+    .getElementById("payment-stack-form")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const result = document.getElementById("payment-stack-result");
+      const button = document.getElementById("payment-stack-submit");
+      button.disabled = true;
+      clear(result);
+      result.appendChild(text("p", "支払い方法を比較しています…", "helper"));
+      try {
+        const owned = [
+          ...document.querySelectorAll(
+            'input[data-payment-stack-owned="true"]:checked',
+          ),
+        ].map((checkbox) => checkbox.value);
+        const body = await postJson(
+          "/api/experimental/payment-stack/recommendation",
+          {
+            merchant_id: "merchant.any",
+            amount_jpy: Number(
+              document.getElementById("payment-stack-amount").value,
+            ),
+            owned_family_ids: owned,
+            effective_at: new Date().toISOString(),
+            confirmed_option_ids: [],
+          },
+        );
+        clear(result);
+        if (body.status !== "ready" || !body.winner) {
+          result.appendChild(
+            text("strong", "計算できる組み合わせがありません"),
+          );
+          result.appendChild(
+            text("p", body.message || "条件を確認してください。", "helper"),
+          );
+          return;
+        }
+        result.appendChild(renderPaymentStackPlan(body.winner, true));
+        (body.alternatives || []).forEach((plan) => {
+          result.appendChild(renderPaymentStackPlan(plan, false));
+        });
+        (body.charge_warnings || []).forEach((warning) => {
+          result.appendChild(
+            text("p", `${warning.label}：${warning.note}`, "point-spend-limit"),
+          );
+        });
+        result.appendChild(text("p", body.message, "helper"));
+      } catch {
+        clear(result);
+        result.appendChild(
+          text("p", "支払い方法を比較できませんでした。", "error-panel"),
+        );
+      } finally {
+        button.disabled = false;
+      }
+    });
+
   // ---------------------------------------------------------------------
   // Lot ledger.
   //

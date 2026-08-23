@@ -105,7 +105,9 @@ function profile(): ValuationProfile {
   ]);
 }
 
-function request(overrides: Partial<PointRouteRequest> = {}): PointRouteRequest {
+function request(
+  overrides: Partial<PointRouteRequest> = {},
+): PointRouteRequest {
   return {
     effective_at: "2026-08-23T00:00:00Z",
     objective: "maximize_value",
@@ -243,15 +245,11 @@ describe("point route optimizer", () => {
     expect(result.winner?.target_asset.asset_id).toBe(MILE.asset_id);
     // The transit currency is reachable but unpriced, so it is named rather
     // than scored.
-    expect(result.unvalued_asset_ids).toContain(
-      `${TRANSIT.asset_id}#normal`,
-    );
+    expect(result.unvalued_asset_ids).toContain(`${TRANSIT.asset_id}#normal`);
   });
 
   it("never ranks an unvalued plan above a valued one", () => {
-    const result = optimizePointRoute(
-      request({ target_asset_id: null }),
-    );
+    const result = optimizePointRoute(request({ target_asset_id: null }));
     const statuses = result.plans.map((plan) => plan.value_status);
     expect(statuses.indexOf("unvalued")).toBeGreaterThan(-1);
     expect(statuses.lastIndexOf("valued")).toBeLessThan(

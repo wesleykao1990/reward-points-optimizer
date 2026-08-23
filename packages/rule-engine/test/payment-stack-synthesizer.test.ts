@@ -116,9 +116,9 @@ describe("payment stack synthesizer", () => {
       plan.option_ids.includes("payment.card-a-direct"),
     );
     expect(direct?.total_rate_percent).toBe("2");
-    expect(
-      Number(result.winner?.total_rate_percent),
-    ).toBeGreaterThan(Number(direct?.total_rate_percent));
+    expect(Number(result.winner?.total_rate_percent)).toBeGreaterThan(
+      Number(direct?.total_rate_percent),
+    );
   });
 
   it("will not count a charge reward without the card that earns it", () => {
@@ -218,9 +218,7 @@ describe("payment stack synthesizer", () => {
     const right = synthesizePaymentStacks(request());
     expect(right.result_hash).toBe(left.result_hash);
     expect(() =>
-      synthesizePaymentStacks(
-        new Proxy(request(), {}) as PaymentStackRequest,
-      ),
+      synthesizePaymentStacks(new Proxy(request(), {}) as PaymentStackRequest),
     ).toThrow("payment_stack_input_invalid");
     expect(() =>
       synthesizePaymentStacks({

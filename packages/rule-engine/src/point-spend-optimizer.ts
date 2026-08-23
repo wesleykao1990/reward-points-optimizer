@@ -1,7 +1,7 @@
 import {
   exactKeys,
-  plainInput,
   type PlainRecord,
+  plainInput,
   validDateTime,
 } from "./input-guard.js";
 import {
@@ -355,7 +355,10 @@ function compareRoutes(
 export function optimizePointSpend(
   raw: PointSpendRequest,
 ): PointSpendOptimizationResult {
-  const input = plainInput(raw, "point_spend_input_invalid") as PointSpendRequest;
+  const input = plainInput(
+    raw,
+    "point_spend_input_invalid",
+  ) as PointSpendRequest;
   exactKeys(
     input as unknown as PlainRecord,
     [
