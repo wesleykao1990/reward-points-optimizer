@@ -113,18 +113,125 @@
     }
   };
 
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+  // One outline set, 24x24 grid, 1.6px stroke, round caps. Stroke colour and
+  // width live in the stylesheet so every glyph stays on the same system.
+  const iconPaths = Object.freeze({
+    arrow: ["M5 12h13", "m13 6.5 6 5.5-6 5.5"],
+    check: ["m5.5 12.4 4.2 4.2 8.8-9.2"],
+    slip: [
+      "M6 3.5h12v15.8l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3z",
+      "M9 8h6",
+      "M9 11.5h6",
+    ],
+    hourglass: [
+      "M7 3.5h10",
+      "M7 20.5h10",
+      "M7.5 3.5c0 4 4.5 5.5 4.5 8.5s-4.5 4.5-4.5 8.5",
+      "M16.5 3.5c0 4-4.5 5.5-4.5 8.5s4.5 4.5 4.5 8.5",
+    ],
+    storefront: [
+      "M4 9.5 5.5 5h13L20 9.5",
+      "M4.5 9.5h15V19a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z",
+      "M9.5 20v-5.5h5V20",
+    ],
+    clock: [
+      "M12 3.8a8.2 8.2 0 1 0 0 16.4 8.2 8.2 0 0 0 0-16.4z",
+      "M12 7.6V12l3 1.9",
+    ],
+    chevron: ["m6.5 9.5 5.5 5.5 5.5-5.5"],
+  });
+
+  const icon = (name, className) => {
+    const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("class", className ? `glyph ${className}` : "glyph");
+    (iconPaths[name] || []).forEach((definition) => {
+      const path = document.createElementNS(SVG_NAMESPACE, "path");
+      path.setAttribute("d", definition);
+      svg.appendChild(path);
+    });
+    return svg;
+  };
+
+  // ---------------------------------------------------------------------
+  // Motion helpers.
+  //
+  // Every reveal here is opt-in: the resting DOM is already the finished
+  // state, and these functions only add the class that plays the arrival.
+  // If script fails, or the visitor asked for reduced motion, the content
+  // is simply there.
+  // ---------------------------------------------------------------------
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Stagger index travels as a custom property so the cascade order lives
+  // in the markup rather than in a pile of nth-child rules.
+  const stagger = (elements, className = "reveal") => {
+    if (reducedMotion()) return;
+    [...elements].forEach((element, index) => {
+      element.style.setProperty("--i", String(index));
+      element.classList.remove(className);
+      // Force a reflow so re-rendered lists replay rather than sit still.
+      void element.offsetWidth;
+      element.classList.add(className);
+    });
+  };
+
+  // Figures count rather than appear. The same easing as the wipes, so the
+  // number settles on the beat the panel does.
+  const snapEase = (t) => {
+    const u = 1 - t;
+    return 3 * u * u * t * 0.05 + 3 * u * t * t * 0.97 + t * t * t;
+  };
+
+  const countTo = (element, target, format, duration = 900) => {
+    if (reducedMotion() || target <= 0) {
+      element.textContent = format(target);
+      return;
+    }
+    const started = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - started) / duration);
+      element.textContent = format(Math.round(target * snapEase(progress)));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const dropCurtain = () => {
+    if (reducedMotion()) return;
+    const curtain = node("div", "curtain");
+    curtain.setAttribute("aria-hidden", "true");
+    curtain.appendChild(node("i"));
+    curtain.appendChild(node("i"));
+    document.body.appendChild(curtain);
+    const remove = () => curtain.remove();
+    curtain.addEventListener("animationend", remove, { once: true });
+    // Belt and braces: never let a stalled animation leave a sheet over
+    // the interface.
+    window.setTimeout(remove, 1400);
+  };
+
   const clear = (element) => {
     while (element.firstChild) element.removeChild(element.firstChild);
   };
 
   const activateTab = (tabName) => {
-    const validTabs = ["home", "wallet", "history", "information", "settings"];
+    const validTabs = ["balance", "spend", "earn", "information", "settings"];
     if (!validTabs.includes(tabName)) return;
     document.querySelectorAll("[data-tab-panel]").forEach((panel) => {
       const active = panel.dataset.tabPanel === tabName;
       panel.hidden = !active;
       panel.classList.toggle("is-active", active);
       panel.setAttribute("aria-hidden", String(!active));
+      panel.classList.remove("is-entering");
+      if (active && !reducedMotion()) {
+        void panel.offsetWidth;
+        panel.classList.add("is-entering");
+      }
     });
     document
       .querySelectorAll(".bottom-nav [data-tab-target]")
@@ -138,7 +245,7 @@
         button.setAttribute("aria-controls", `tab-${button.dataset.tabTarget}`);
       });
     const activePanel = document.querySelector(`[data-tab-panel="${tabName}"]`);
-    if (activePanel && activePanel.id !== "tab-home")
+    if (activePanel && activePanel.id !== "tab-balance")
       activePanel.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (tabName === "information") {
@@ -551,7 +658,9 @@
     const history = document.getElementById("session-history");
     if (sessionHistoryCount === 0) clear(history);
     const item = node("div", "history-item");
-    item.appendChild(text("span", "↗", "history-icon"));
+    const marker = node("span", "history-icon");
+    marker.appendChild(icon("slip"));
+    item.appendChild(marker);
     const copy = node("div");
     copy.appendChild(text("strong", String(shown[0].label || "比較ルート")));
     copy.appendChild(
@@ -630,6 +739,7 @@
           "selected-products-summary",
         ),
       );
+    if (!reducedMotion()) hero.classList.add("is-revealing");
     result.appendChild(hero);
     const intro = node("p", "", "unified-disclosure");
     intro.textContent =
@@ -657,6 +767,7 @@
       );
       renderUnifiedRoute(list, route, ranked?.rank || index + 1);
     });
+    stagger(list.children);
     result.appendChild(list);
     renderSupplementalRoutes(
       result,
@@ -2041,7 +2152,9 @@
           copy.appendChild(text("strong", item.label));
           label.appendChild(checkbox);
           label.appendChild(copy);
-          label.appendChild(text("span", "✓", "p0-product-check"));
+          const tick = node("span", "p0-product-check");
+          tick.appendChild(icon("check"));
+          label.appendChild(tick);
           container.appendChild(label);
         });
     });
@@ -2257,7 +2370,592 @@
         button.disabled = false;
       }
     });
+  // ---------------------------------------------------------------------
+  // Lot ledger.
+  //
+  // An aggregator stores one number per programme. This stores lots: a
+  // 通常 balance and a 期間限定 grant are different assets with different
+  // deadlines, different places they can be spent, and different answers
+  // to "can this deadline be moved at all?" — so they are separate rows.
+  //
+  // No balance, expiry, or account backend exists yet, so the panel runs on
+  // a checked-in demo dataset. Days are stored relative to "today" rather
+  // than as absolute dates, so a deadline is never rendered in the past.
+  // Every figure carries its confidence and every rule carries its source.
+  // ---------------------------------------------------------------------
+  const walletDemo = Object.freeze({
+    updated_days_ago: 28,
+    programs: Object.freeze([
+      Object.freeze({
+        family_id: "point.rakuten",
+        label: "楽天ポイント",
+        asset_id: "asset.point.rakuten",
+        jpy_per_unit: 1,
+        source: "楽天PointClub ヘルプ",
+        checked_days_ago: 3,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "楽天ペイで1ポイント貯める",
+          detail: "通常ポイントの期限が、その月から1年先に動きます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 2040,
+            days_remaining: null,
+            extendable: true,
+            confidence: "confirmed",
+            note: "次回の獲得で自動的に1年先まで延びます",
+            note_kind: "rule",
+          }),
+          Object.freeze({
+            lot_class: "limited",
+            label: "期間限定",
+            quantity: 1000,
+            days_remaining: 4,
+            extendable: false,
+            confidence: "confirmed",
+            note: "楽天ペイ・楽天市場でのみ利用可。付与時に個別の期限が決まり、延長されません",
+            note_kind: "restriction",
+          }),
+          Object.freeze({
+            lot_class: "restricted",
+            label: "期間限定",
+            quantity: 200,
+            days_remaining: 21,
+            extendable: false,
+            confidence: "estimated",
+            note: "楽天市場でのみ利用可。期限は収録ルールからの推定です",
+            note_kind: "restriction",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.d",
+        label: "dポイント",
+        asset_id: "asset.point.d",
+        jpy_per_unit: 1,
+        source: "dポイントクラブ会員規約",
+        checked_days_ago: 12,
+        move: Object.freeze({
+          policy: "fixed",
+          action: "マクドナルドで使い切る",
+          detail: "期限は動かせないため、失効前に使い切るのが唯一の手です",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 3268,
+            days_remaining: 42,
+            extendable: false,
+            confidence: "confirmed",
+            note: "貯めた月から48か月後の月末で失効。使っても貯めても期限は動きません",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.v",
+        label: "Vポイント",
+        asset_id: "asset.point.v",
+        jpy_per_unit: 1,
+        source: "Vポイント公式サイト",
+        checked_days_ago: 9,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "ファミリーマートで1ポイント使う",
+          detail: "残高が動いた日から、また1年先まで延びます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 860,
+            days_remaining: 57,
+            extendable: true,
+            confidence: "estimated",
+            note: "最終変動日が分からないため、収録ルールから期限を推定しています",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.ponta",
+        label: "Pontaポイント",
+        asset_id: "asset.point.ponta",
+        jpy_per_unit: 1,
+        source: "Ponta公式FAQ・ローソン公式サポート",
+        checked_days_ago: 5,
+        move: Object.freeze({
+          policy: "extendable",
+          action: "ローソンで1回買い物する",
+          detail: "全ポイントの期限が、その日から1年先に動きます",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 1850,
+            days_remaining: 62,
+            extendable: true,
+            confidence: "confirmed",
+            note: "「KDDI定期付与」で入ったポイントでは延長されません。自分で使うか貯めるかが必要です",
+            note_kind: "trap",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.nanaco",
+        label: "nanacoポイント",
+        asset_id: "asset.point.nanaco",
+        jpy_per_unit: 1,
+        source: "nanaco公式サイト",
+        checked_days_ago: 18,
+        move: Object.freeze({
+          policy: "fixed",
+          action: "電子マネーに交換して使う",
+          detail:
+            "年度の締め切りは動かせないため、交換して使い切るのが確実です",
+        }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 612,
+            days_remaining: 251,
+            extendable: false,
+            confidence: "estimated",
+            note: "前の年度に貯めた分は今の年度末で失効。年度末の日付から推定しています",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+      Object.freeze({
+        family_id: "point.paypay",
+        label: "PayPayポイント",
+        asset_id: "asset.point.paypay",
+        jpy_per_unit: 1,
+        source: "PayPayヘルプ",
+        checked_days_ago: 4,
+        move: Object.freeze({ policy: "none", action: "", detail: "" }),
+        lots: Object.freeze([
+          Object.freeze({
+            lot_class: "standard",
+            label: "通常",
+            quantity: 1076,
+            days_remaining: null,
+            extendable: null,
+            confidence: "confirmed",
+            note: "有効期限はありません。還元率の高い場面まで置いておけます",
+            note_kind: "rule",
+          }),
+        ]),
+      }),
+    ]),
+  });
 
+  const AT_RISK_DAYS = 30;
+  const RUNWAY_DAYS = 90;
+  const RUNWAY_BUCKETS = 12;
+
+  const lotClassLabels = Object.freeze({
+    standard: "通常",
+    limited: "期間限定",
+    restricted: "用途限定",
+  });
+
+  const confidenceLabels = Object.freeze({
+    confirmed: "確認済み",
+    estimated: "推定",
+  });
+
+  const moveHeadings = Object.freeze({
+    extendable: "期限を延ばす一手",
+    fixed: "使い切る一手",
+  });
+
+  const yen = (value) => `¥${Math.round(value).toLocaleString("ja-JP")}`;
+  const points = (value) => `${value.toLocaleString("ja-JP")} pt`;
+
+  const dateLabel = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const lotValue = (program, lot) => lot.quantity * program.jpy_per_unit;
+
+  const allLots = () =>
+    walletDemo.programs.flatMap((program) =>
+      program.lots.map((lot) => ({ program, lot })),
+    );
+
+  const dueBand = (days) => {
+    if (days === null) return "ok";
+    if (days <= AT_RISK_DAYS) return "hot";
+    if (days <= 60) return "warn";
+    return "info";
+  };
+
+  const dueLabel = (lot) =>
+    lot.days_remaining === null
+      ? lot.extendable === null
+        ? "期限なし"
+        : "期限なし*"
+      : `あと${lot.days_remaining}日`;
+
+  const renderBalanceHero = () => {
+    const entries = allLots();
+    const total = entries.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
+      0,
+    );
+    const atRisk = entries.filter(
+      (entry) =>
+        entry.lot.days_remaining !== null &&
+        entry.lot.days_remaining <= AT_RISK_DAYS,
+    );
+    const atRiskValue = atRisk.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
+      0,
+    );
+    const savable = entries.filter(
+      (entry) =>
+        entry.lot.extendable === true &&
+        entry.lot.days_remaining !== null &&
+        entry.lot.days_remaining <= RUNWAY_DAYS,
+    );
+    const savableValue = savable.reduce(
+      (sum, entry) => sum + lotValue(entry.program, entry.lot),
+      0,
+    );
+    const estimated = entries.filter(
+      (entry) => entry.lot.confidence === "estimated",
+    );
+
+    document.getElementById("balance-asof").textContent = `${dateLabel(0)}時点`;
+    countTo(document.getElementById("balance-total"), total, yen);
+    countTo(document.getElementById("balance-at-risk"), atRiskValue, yen, 700);
+
+    const chips = document.getElementById("balance-chips");
+    clear(chips);
+    const addChip = (tone, label) => {
+      const chip = text("span", label, "chip");
+      chip.dataset.tone = tone;
+      chips.appendChild(chip);
+    };
+    addChip("hot", `${atRisk.length}件が30日以内`);
+    if (savableValue)
+      addChip("ok", `${yen(savableValue)} は行動すれば延長できます`);
+    if (estimated.length) addChip("warn", `${estimated.length}件が推定値`);
+    stagger(chips.children);
+
+    document.getElementById("lot-list-count").textContent =
+      `${walletDemo.programs.length}プログラム・${entries.length}ロット`;
+    document.getElementById("capture-nudge").textContent =
+      `残高の更新から${walletDemo.updated_days_ago}日たちました。月に1回でも直すと、失効の予測がずれにくくなります。`;
+  };
+
+  const renderValuation = () => {
+    const table = document.getElementById("valuation-table");
+    clear(table);
+    walletDemo.programs.forEach((program) => {
+      table.appendChild(text("dt", program.label));
+      table.appendChild(
+        text("dd", `1pt = ¥${program.jpy_per_unit.toFixed(2)}`),
+      );
+    });
+    document.getElementById("valuation-basis").textContent =
+      "交換先を決めずに保有している分は、額面どおり1ポイント=1円として数えています。交換や用途を絞ると1円を上回ることも下回ることもあるため、この合計は「いま失うと困る額」の目安で、最大化した価値ではありません。";
+  };
+
+  const renderRunway = () => {
+    const container = document.getElementById("runway-bars");
+    clear(container);
+    document.getElementById("runway-range").textContent =
+      `今日 → ${dateLabel(RUNWAY_DAYS)}`;
+    const width = RUNWAY_DAYS / RUNWAY_BUCKETS;
+    const buckets = Array.from({ length: RUNWAY_BUCKETS }, () => []);
+    allLots().forEach((entry) => {
+      const days = entry.lot.days_remaining;
+      if (days === null || days > RUNWAY_DAYS) return;
+      const index = Math.min(RUNWAY_BUCKETS - 1, Math.floor(days / width));
+      buckets[index].push(entry);
+    });
+    const peak = buckets.reduce(
+      (best, bucket) =>
+        Math.max(
+          best,
+          bucket.reduce(
+            (sum, entry) => sum + lotValue(entry.program, entry.lot),
+            0,
+          ),
+        ),
+      0,
+    );
+    buckets.forEach((bucket, index) => {
+      const bar = node("button");
+      bar.type = "button";
+      const value = bucket.reduce(
+        (sum, entry) => sum + lotValue(entry.program, entry.lot),
+        0,
+      );
+      const from = Math.round(index * width);
+      const to = Math.round((index + 1) * width);
+      if (!value) {
+        bar.disabled = true;
+        bar.setAttribute("aria-label", `${from}〜${to}日：失効なし`);
+        container.appendChild(bar);
+        return;
+      }
+      const entry = bucket[0];
+      bar.dataset.band = dueBand(entry.lot.days_remaining);
+      bar.style.height = `${Math.max(14, Math.round((value / peak) * 100))}%`;
+      bar.setAttribute(
+        "aria-label",
+        `${from}〜${to}日：${yen(value)}が失効。タップすると使い道を試算します`,
+      );
+      bar.addEventListener("click", () => {
+        focusLotForSpending(entry.program, entry.lot);
+      });
+      container.appendChild(bar);
+    });
+    if (!reducedMotion()) {
+      [...container.children].forEach((bar, index) => {
+        bar.style.setProperty("--i", String(index));
+      });
+      container.classList.remove("is-drawing");
+      void container.offsetWidth;
+      container.classList.add("is-drawing");
+    }
+  };
+
+  // Tapping a runway bar or a lot's action jumps to 使う with that lot loaded.
+  const focusLotForSpending = (program, lot) => {
+    const slot = document.getElementById("spend-focus");
+    clear(slot);
+    const card = node("div", "action-callout");
+    const mark = node("span", "callout-mark");
+    mark.appendChild(icon("clock"));
+    card.appendChild(mark);
+    const copy = node("span", "callout-copy");
+    copy.appendChild(text("small", "この残高を使い切る"));
+    copy.appendChild(
+      text(
+        "strong",
+        `${program.label}・${lotClassLabels[lot.lot_class]} ${points(lot.quantity)}`,
+      ),
+    );
+    copy.appendChild(
+      text(
+        "span",
+        lot.days_remaining === null
+          ? lot.note
+          : `${dateLabel(lot.days_remaining)}まで（あと${lot.days_remaining}日）。${lot.note}`,
+      ),
+    );
+    card.appendChild(copy);
+    slot.appendChild(card);
+
+    const source = document.getElementById("point-spend-source");
+    const match = [...source.options].find(
+      (option) => option.value === program.asset_id,
+    );
+    if (match) {
+      source.value = match.value;
+      source.dispatchEvent(new Event("change"));
+    }
+    document.getElementById("point-spend-balance").value = String(lot.quantity);
+    if (lot.days_remaining !== null)
+      document.getElementById("point-spend-objective").value =
+        "preserve_expiring";
+    activateTab("spend");
+  };
+
+  const renderLotRow = (body, lot) => {
+    const row = node("div", "lot-row");
+    const tag = text("span", lotClassLabels[lot.lot_class], "lot-tag");
+    tag.dataset.class = lot.lot_class;
+    row.appendChild(tag);
+    row.appendChild(text("span", points(lot.quantity), "lot-qty"));
+    const confidence = text(
+      "em",
+      confidenceLabels[lot.confidence],
+      "confidence",
+    );
+    confidence.dataset.state = lot.confidence;
+    row.appendChild(confidence);
+    const due = text("span", dueLabel(lot), "lot-due");
+    due.dataset.band = dueBand(lot.days_remaining);
+    row.appendChild(due);
+    body.appendChild(row);
+
+    const note = text("p", lot.note, "lot-note");
+    note.dataset.kind = lot.note_kind;
+    body.appendChild(note);
+  };
+
+  const renderLotCard = (list, program) => {
+    const card = node("article", "lot-card");
+    card.dataset.open = "true";
+    const value = program.lots.reduce(
+      (sum, lot) => sum + lotValue(program, lot),
+      0,
+    );
+
+    const head = node("button", "lot-card-head");
+    head.type = "button";
+    head.setAttribute("aria-expanded", "true");
+    head.appendChild(paymentLogo(program.family_id));
+    const identity = node("div", "lot-identity");
+    identity.appendChild(text("strong", program.label));
+    identity.appendChild(text("small", `${program.lots.length}件の内訳`));
+    head.appendChild(identity);
+    const total = node("span", "lot-total");
+    total.appendChild(text("b", yen(value)));
+    const chevron = node("span", "lot-chevron");
+    chevron.appendChild(icon("chevron"));
+    total.appendChild(chevron);
+    head.appendChild(total);
+    head.addEventListener("click", () => {
+      const open = card.dataset.open !== "true";
+      card.dataset.open = String(open);
+      head.setAttribute("aria-expanded", String(open));
+    });
+    card.appendChild(head);
+
+    const body = node("div", "lot-body");
+    const inner = node("div", "lot-body-inner");
+    program.lots.forEach((lot) => {
+      renderLotRow(inner, lot);
+    });
+
+    if (program.move.policy !== "none") {
+      const move = node("div", "lot-move");
+      if (program.move.policy === "fixed") move.classList.add("is-fixed");
+      const copy = node("b");
+      copy.textContent = `${moveHeadings[program.move.policy]}：${program.move.action}`;
+      move.appendChild(copy);
+      const go = node("button");
+      go.type = "button";
+      go.textContent = "使う";
+      go.addEventListener("click", () => {
+        const target =
+          program.lots.find(
+            (lot) => lot.days_remaining !== null && lot.extendable !== true,
+          ) || program.lots[0];
+        focusLotForSpending(program, target);
+      });
+      move.appendChild(go);
+      inner.appendChild(move);
+      inner.appendChild(text("p", program.move.detail, "lot-note"));
+    }
+
+    const source = node("div", "lot-source");
+    source.appendChild(
+      text(
+        "span",
+        `出典 ${program.source}・${program.checked_days_ago}日前に確認`,
+      ),
+    );
+    const lookup = node("button");
+    lookup.type = "button";
+    lookup.textContent = "収録情報";
+    lookup.addEventListener("click", () => {
+      const search = document.getElementById("information-search");
+      search.value = program.label.replace("ポイント", "");
+      document.getElementById("information-family-filter").value = "";
+      activateTab("information");
+    });
+    source.appendChild(lookup);
+    inner.appendChild(source);
+
+    body.appendChild(inner);
+    card.appendChild(body);
+    list.appendChild(card);
+  };
+
+  const renderLotList = () => {
+    const list = document.getElementById("lot-list");
+    clear(list);
+    const soonest = (program) =>
+      program.lots.reduce(
+        (best, lot) =>
+          lot.days_remaining === null
+            ? best
+            : Math.min(best, lot.days_remaining),
+        Number.POSITIVE_INFINITY,
+      );
+    [...walletDemo.programs]
+      .sort((left, right) => soonest(left) - soonest(right))
+      .forEach((program) => {
+        renderLotCard(list, program);
+      });
+    stagger(list.children);
+  };
+
+  const renderBalanceCallout = () => {
+    const slot = document.getElementById("balance-callout");
+    clear(slot);
+    const urgent = allLots()
+      .filter(
+        (entry) =>
+          entry.lot.days_remaining !== null &&
+          entry.lot.days_remaining <= RUNWAY_DAYS,
+      )
+      .sort(
+        (left, right) => left.lot.days_remaining - right.lot.days_remaining,
+      )[0];
+    if (!urgent) return;
+    const { program, lot } = urgent;
+    const callout = node("button", "action-callout");
+    callout.type = "button";
+    const mark = node("span", "callout-mark");
+    mark.appendChild(icon("clock"));
+    callout.appendChild(mark);
+    const copy = node("span", "callout-copy");
+    copy.appendChild(text("small", "いま効く一手"));
+    copy.appendChild(
+      text(
+        "strong",
+        lot.extendable === true
+          ? program.move.action
+          : `${program.label}を使い切る`,
+      ),
+    );
+    copy.appendChild(
+      text(
+        "span",
+        `${program.label}・${lotClassLabels[lot.lot_class]} ${points(lot.quantity)}が、あと${lot.days_remaining}日で失効します。${
+          lot.extendable === true
+            ? program.move.detail
+            : "この残高は期限を延ばせません"
+        }。`,
+      ),
+    );
+    callout.appendChild(copy);
+    const go = node("span", "callout-go");
+    go.appendChild(icon("arrow"));
+    callout.appendChild(go);
+    callout.addEventListener("click", () => {
+      focusLotForSpending(program, lot);
+    });
+    slot.appendChild(callout);
+  };
+
+  const renderWallet = () => {
+    renderBalanceHero();
+    renderValuation();
+    renderRunway();
+    renderLotList();
+    renderBalanceCallout();
+  };
   const instrumentInputs = document.querySelectorAll(
     'input[name="instrument"]',
   );
@@ -2284,7 +2982,7 @@
       return kind === "credit_card" || kind === "mobile_pay";
     });
     document.getElementById("summary-instruments").textContent =
-      `支払い方法 ${selectedPayments.length}つ`;
+      `${selectedPayments.length}件を選択中`;
     document.getElementById("summary-meter").dataset.count = String(
       checked.length,
     );
@@ -2303,7 +3001,7 @@
       activateTab(button.dataset.tabTarget);
     });
   });
-  const tabOrder = ["home", "wallet", "history", "information", "settings"];
+  const tabOrder = ["balance", "spend", "earn", "information", "settings"];
   const tabButtons = tabOrder
     .map((tab) =>
       document.querySelector(`.bottom-nav [data-tab-target="${tab}"]`),
@@ -2374,7 +3072,7 @@
     });
   document.querySelectorAll("[data-scroll-to]").forEach((button) => {
     button.addEventListener("click", () => {
-      activateTab("home");
+      activateTab("earn");
       document
         .getElementById(button.dataset.scrollTo)
         .scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2385,7 +3083,7 @@
   syncInstrumentViews();
   syncAmountSummary();
   syncMerchantContext();
-  activateTab("home");
+  activateTab("balance");
 
   document
     .getElementById("recommendation-form")
@@ -2421,6 +3119,8 @@
       }
     });
 
+  dropCurtain();
+  renderWallet();
   void loadExperimentalRules();
   void loadPointSpendOptions();
 })();

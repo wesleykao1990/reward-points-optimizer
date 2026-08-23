@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { getNanacoEconomicPilotRule } from "@jro/provisional-rules";
 import { describe, expect, it } from "vitest";
 import type { ExperimentalRecommendationInput } from "../src/contracts.js";
@@ -193,7 +193,7 @@ function responseJson(response: { readonly body: string }) {
 }
 
 describe("unified merchant recommendation journey", () => {
-  it("keeps the five-tab mobile walkthrough keyboard-addressable", () => {
+  it("keeps the five-tab award-wallet walkthrough keyboard-addressable", () => {
     const html = readFileSync(
       new URL("../public/index.html", import.meta.url),
       "utf8",
@@ -201,32 +201,109 @@ describe("unified merchant recommendation journey", () => {
     const navStart = html.indexOf('<nav class="bottom-nav"');
     const navEnd = html.indexOf("</nav>", navStart);
     const nav = html.slice(navStart, navEnd);
+    // Balance is the daily glance and therefore the landing tab; the earn
+    // comparison is a peer destination rather than the entry point.
     expect(
       [...nav.matchAll(/data-tab-target="([^"]+)"/gu)].map((match) => match[1]),
-    ).toEqual(["home", "wallet", "history", "information", "settings"]);
-    for (const tab of ["home", "wallet", "history", "information", "settings"])
+    ).toEqual(["balance", "spend", "earn", "information", "settings"]);
+    for (const tab of ["balance", "spend", "earn", "information", "settings"])
       expect(html).toMatch(
         new RegExp(
           `id="tab-${tab}"[^>]*role="tabpanel"[^>]*aria-labelledby="tab-button-${tab}"`,
           "u",
         ),
       );
+    expect(html).toMatch(
+      /<section id="tab-balance"[^>]*class="tab-panel is-active"/u,
+    );
     const app = readFileSync(
       new URL("../public/app.js", import.meta.url),
       "utf8",
     );
     expect(app).toContain(
-      'const tabOrder = ["home", "wallet", "history", "information", "settings"]',
+      'const tabOrder = ["balance", "spend", "earn", "information", "settings"]',
     );
+    expect(app).toContain('activateTab("balance")');
     const styles = readFileSync(
       new URL("../public/styles.css", import.meta.url),
       "utf8",
     );
-    expect(styles).toContain("@media (max-width: 380px)");
+    expect(styles).toContain("@media (max-width: 360px)");
     expect(styles).toContain(".route-input-grid");
     expect(html).not.toMatch(
       /id="(?:seven-card-owned|credit-preregistered)"[^>]*checked/iu,
     );
+  });
+
+  it("keeps the lot ledger source-attributed and self-hosted", () => {
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    // Lots, not one scalar per programme: a limited-time grant and a normal
+    // balance are different assets with different deadlines.
+    expect(app).toContain("walletDemo");
+    expect(app).toContain("lot_class");
+    expect(app).toContain("days_remaining");
+    expect(app).toContain("extendable");
+    // Every rule carries its source and check date, and every lot its
+    // confidence, so estimated figures never read as confirmed ones.
+    expect(app).toContain("checked_days_ago");
+    expect(app).toContain("confidence");
+    expect(app).toContain("confirmed");
+    expect(app).toContain("estimated");
+    // User figures remain demo/session data. Only the selected service IDs are
+    // persisted locally so repeat comparisons do not require wallet setup.
+    expect(app).toContain('const WALLET_STORAGE_KEY = "point-route.wallet.v1"');
+    expect(app).not.toContain('postJson("/api/wallet');
+    expect(app).not.toContain("sessionStorage");
+
+    const styles = readFileSync(
+      new URL("../public/styles.css", import.meta.url),
+      "utf8",
+    );
+    // Faces are served from this origin so the strict CSP holds and no
+    // third-party sees a request.
+    expect(styles).toContain('url("/assets/fonts/archivo-var.woff2")');
+    expect(styles).toContain('url("/assets/fonts/jetbrainsmono-var.woff2")');
+    expect(styles).not.toContain("fonts.googleapis.com");
+    expect(styles).not.toContain("fonts.gstatic.com");
+    for (const filename of ["archivo-var.woff2", "jetbrainsmono-var.woff2"])
+      expect(
+        existsSync(
+          new URL(`../public/assets/fonts/${filename}`, import.meta.url),
+        ),
+      ).toBe(true);
+  });
+
+  it("keeps motion optional and never hides content behind it", () => {
+    const styles = readFileSync(
+      new URL("../public/styles.css", import.meta.url),
+      "utf8",
+    );
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    // One signature easing, shared by every reveal in the system.
+    expect(styles).toContain("--ease-snap");
+    expect(styles).toContain("cubic-bezier(0.87, 0.05, 0.02, 0.97)");
+    // The reveal classes are opt-in, so the resting DOM is the finished
+    // state and a failed script leaves readable content behind.
+    expect(app).toContain("reducedMotion");
+    expect(app).toContain('className = "reveal"');
+    expect(app).toContain("classList.add(className)");
+    // Reduced motion must clear the reveal states outright, not merely
+    // shorten them: a reveal held at its `from` keyframe is invisible.
+    const reduced = styles.slice(
+      styles.lastIndexOf("@media (prefers-reduced-motion: reduce)"),
+    );
+    expect(reduced).toContain(".curtain");
+    expect(reduced).toContain("animation: none !important");
+    expect(reduced).toContain("opacity: 1 !important");
+    // The opening sheet must never be able to strand itself over the UI.
+    expect(app).toContain("window.setTimeout(remove");
+    expect(app).toContain('curtain.addEventListener("animationend"');
   });
 
   it("does not assume Nanaco ownership or preregistration when omitted", async () => {
