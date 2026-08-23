@@ -1,5 +1,61 @@
 # Changelog
 
+## Unreleased — 2026-08-23
+
+- Merged the award-wallet front-end revamp and expanded the merchant selector
+  from the Seven-Eleven canary to every merchant family currently projected by
+  the P0 catalogue.
+- Removed the fixed purchase-claim ID map. Selected services now discover
+  structured base-rate claims by family and source role, return their official
+  source/check date, and mark that the claim was automatically used in the
+  calculation.
+- Added automatic structured Agent Feed reward processing: an admitted
+  `reward-claim.v1` finding bound to an exact P0 target is compiled, persisted,
+  and atomically activated without a manual promotion step. Malformed claims
+  fail independently and are never inferred from prose.
+- Added the bounded active reward-claim PostgreSQL projection and wired it into
+  the normal recommendation runtime. Active computable rules now replace the
+  bootstrap calculation for their service family automatically, with exact
+  merchant/tax/validity/provenance bindings and sibling isolation.
+- Added `GET /api/consumer/reference`, projecting source-backed wallet expiry,
+  redemption, merchant acceptance, and campaign fields with stable family and
+  claim IDs, effective dates, validity state, and official provenance.
+- Repositioned the consumer shell from a per-purchase comparison tool to an
+  award wallet. `balance` is now the landing tab, the redemption planner is
+  promoted to `spend`, the merchant comparison keeps its behaviour as `earn`
+  with the session log folded in, and the bottom bar carries five peer
+  destinations.
+- Added a lot-level ledger. Each programme expands into lots that each carry
+  their own countdown, usage restriction, extendable/fixed verdict, and
+  estimated/confirmed confidence, with rule exceptions pinned to the lot they
+  qualify rather than the programme. A 90-day runway sizes bars by yen value
+  and hands the tapped lot to the redemption planner. It runs on a
+  checked-in balance dataset because no account/balance backend exists yet.
+  Expiry and redemption reference fields now come from the source-backed P0
+  catalogue when available.
+- Added a per-figure valuation disclosure and per-rule source attribution, so
+  no yen total is shown without the assumption behind it and no expiry rule
+  without its source and check date.
+- Replaced the visual system with an award-wallet console: white cards on a
+  cool grey ground, one elevation step, full-round status chips, and a
+  colour system where the primary hue never encodes status.
+- Self-hosted the Latin subsets of Archivo and JetBrains Mono under
+  `public/assets/fonts` (66 KB) and added `font-src 'self'` to the loopback
+  and hosted CSP. No font CDN is contacted, so the same-origin stance holds.
+- Added a motion layer adapted from yui540's public CSS studies: a diagonal
+  clip-path wipe on a `--skew-x` variable, paired offset sheets, and one
+  signature easing shared by every reveal. Frequent transitions run at about
+  a third of the reference amplitude; the full length is spent only on the
+  opening sheet and the comparison result. Balance figures count on the same
+  curve and runway bars grow from the axis in a stagger.
+- Guaranteed motion is never load-bearing: reveal classes are opt-in so the
+  resting DOM is the finished state, the opening sheet self-removes on both
+  `animationend` and a timeout, and `prefers-reduced-motion` clears reveal
+  states outright instead of shortening them.
+- Presented balance capture as credential-free by design (screenshot, paste,
+  CSV, manual entry) and stated in settings what the product does not
+  collect: no service logins, no bank or card statements, no browser storage.
+
 ## Unreleased — 2026-08-19
 
 - Added a PostgreSQL-backed `AtomicPersistencePort` for verified Agent Feed

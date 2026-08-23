@@ -39,6 +39,7 @@ const MAX_FACTS = 512;
 const DATABASE_PAGE_SIZE = 128;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const PUBLIC_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/u;
 const URL_PATTERN = /https?:\/\//iu;
 const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/u;
 
@@ -133,6 +134,18 @@ interface FixtureEntry {
   readonly predicate: string;
   readonly short_paraphrase: string;
   readonly disposition?: string;
+  readonly source_identity?: readonly FixtureSourceIdentity[];
+  readonly applicability?: FixtureApplicability;
+}
+
+interface FixtureSourceIdentity {
+  readonly source_id: string;
+  readonly url?: string;
+}
+
+interface FixtureApplicability {
+  readonly effective_from?: string | null;
+  readonly effective_to?: string | null;
 }
 
 interface FixtureDocument {
@@ -214,6 +227,21 @@ function safePublicText(
   return value;
 }
 
+function safePublicIdentifier(
+  value: unknown,
+  field: string,
+  maxLength: number,
+): string {
+  if (
+    typeof value !== "string" ||
+    value.length < 1 ||
+    value.length > maxLength ||
+    !PUBLIC_IDENTIFIER_PATTERN.test(value)
+  )
+    throw new TypeError(`implementation_fact_${field}_invalid`);
+  return value;
+}
+
 function safeUpdatedAt(value: unknown): string | null {
   if (value === null) return null;
   if (
@@ -223,6 +251,69 @@ function safeUpdatedAt(value: unknown): string | null {
   )
     throw new TypeError("implementation_fact_updated_at_invalid");
   return value;
+}
+
+function safeDateOrNull(value: unknown, field: string): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 64 ||
+    containsControlCharacter(value) ||
+    !/^\d{4}-\d{2}-\d{2}(?:$|T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$)/u.test(
+      value,
+    ) ||
+    !Number.isFinite(Date.parse(value))
+  )
+    throw new TypeError(`implementation_fact_${field}_invalid`);
+  return value;
+}
+
+function safeSourceUrl(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "string" ||
+    value.length > 2048 ||
+    containsControlCharacter(value) ||
+    !/^https:\/\/[^\s]+$/u.test(value)
+  )
+    throw new TypeError("implementation_fact_source_url_invalid");
+  return value;
+}
+
+function fixtureSourceIdentity(
+  value: unknown,
+): readonly FixtureSourceIdentity[] {
+  if (value === undefined) return Object.freeze([]);
+  if (!Array.isArray(value))
+    throw new TypeError("implementation_fixture_source_identity_invalid");
+  return Object.freeze(
+    value.map((item) => {
+      if (!isPlainRecord(item))
+        throw new TypeError("implementation_fixture_source_identity_invalid");
+      const sourceId = safePublicText(item.source_id, "source_id", 256);
+      const url = safeSourceUrl(item.url);
+      return Object.freeze({ source_id: sourceId, ...(url ? { url } : {}) });
+    }),
+  );
+}
+
+function fixtureApplicability(value: unknown): FixtureApplicability {
+  if (value === undefined) return Object.freeze({});
+  if (!isPlainRecord(value))
+    throw new TypeError("implementation_fixture_applicability_invalid");
+  return Object.freeze({
+    effective_from: safeDateOrNull(value.effective_from, "effective_from"),
+    effective_to: safeDateOrNull(value.effective_to, "effective_to"),
+  });
+}
+
+function sourceUrlFromIdentity(
+  sourceIdentity: readonly FixtureSourceIdentity[] | undefined,
+): string | null {
+  for (const identity of sourceIdentity ?? []) {
+    if (identity.url !== undefined) return identity.url;
+  }
+  return null;
 }
 
 function opaqueFixtureKey(
@@ -252,12 +343,10 @@ function displayClaim(value: string): string {
 function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
   if (!UUID_PATTERN.test(record.fact_id))
     throw new TypeError("implementation_fact_fact_id_invalid");
-  const family = displayFamily(
-    safePublicText(record.family_id, "family_id", 128),
-  );
-  const claim = displayClaim(
-    safePublicText(record.claim_type, "claim_type", 256),
-  );
+  const familyId = safePublicIdentifier(record.family_id, "family_id", 128);
+  const claimType = safePublicIdentifier(record.claim_type, "claim_type", 256);
+  const family = displayFamily(familyId);
+  const claim = displayClaim(claimType);
   const subject = localizeImplementationSubject(
     safePublicText(record.subject, "subject", 4096),
   );
@@ -269,6 +358,8 @@ function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
   );
   return Object.freeze({
     fact_key: record.fact_id,
+    family_id: familyId,
+    claim_type: claimType,
     family,
     claim,
     subject,
@@ -283,17 +374,27 @@ function mapRecordToCard(record: P0ImplementationFact): ImplementationFactCard {
     // with no derived engine rules.  A future explicit engine-rule row may
     // opt into the comparison lane through this one boolean only.
     use_in_comparison: record.disposition === "engine_rule",
+    source_url: record.source_url ?? null,
+    checked_at: record.checked_at ?? null,
+    effective_from: record.effective_from ?? null,
+    effective_to: record.effective_to ?? null,
   });
 }
 
 const CARD_KEYS = Object.freeze([
   "fact_key",
+  "family_id",
+  "claim_type",
   "family",
   "claim",
   "subject",
   "predicate",
   "summary",
   "use_in_comparison",
+  "source_url",
+  "checked_at",
+  "effective_from",
+  "effective_to",
 ] as const);
 
 function normalizeCard(value: unknown): ImplementationFactCard {
@@ -304,6 +405,8 @@ function normalizeCard(value: unknown): ImplementationFactCard {
   );
   if (typeof input.fact_key !== "string" || !UUID_PATTERN.test(input.fact_key))
     throw new TypeError("implementation_fact_fact_key_invalid");
+  const familyId = safePublicIdentifier(input.family_id, "family_id", 128);
+  const claimType = safePublicIdentifier(input.claim_type, "claim_type", 256);
   if (typeof input.use_in_comparison !== "boolean")
     throw new TypeError("implementation_fact_comparison_flag_invalid");
   const subject = localizeImplementationSubject(
@@ -311,12 +414,18 @@ function normalizeCard(value: unknown): ImplementationFactCard {
   );
   return Object.freeze({
     fact_key: input.fact_key,
+    family_id: familyId,
+    claim_type: claimType,
     family: safePublicText(input.family, "family", 96),
     claim: safePublicText(input.claim, "claim", 96),
     subject,
     predicate: safePublicText(input.predicate, "predicate", 512),
     summary: safePublicText(input.summary, "summary", 4096),
     use_in_comparison: input.use_in_comparison,
+    source_url: safeSourceUrl(input.source_url),
+    checked_at: safeDateOrNull(input.checked_at, "checked_at"),
+    effective_from: safeDateOrNull(input.effective_from, "effective_from"),
+    effective_to: safeDateOrNull(input.effective_to, "effective_to"),
   });
 }
 
@@ -360,13 +469,15 @@ function fixtureEntry(value: unknown): FixtureEntry {
       "parent_claim_id",
       256,
     ),
-    family_id: safePublicText(entry.family_id, "family_id", 128),
-    claim_type: safePublicText(entry.claim_type, "claim_type", 256),
+    family_id: safePublicIdentifier(entry.family_id, "family_id", 128),
+    claim_type: safePublicIdentifier(entry.claim_type, "claim_type", 256),
     subject: safePublicText(entry.subject, "subject", 4096),
     predicate: safePublicText(entry.predicate, "predicate", 512),
     short_paraphrase: safePublicText(entry.short_paraphrase, "summary", 4096),
     disposition:
       typeof entry.disposition === "string" ? entry.disposition : undefined,
+    source_identity: fixtureSourceIdentity(entry.source_identity),
+    applicability: fixtureApplicability(entry.applicability),
   });
 }
 
@@ -402,6 +513,8 @@ function fixtureCards(
       const claim = displayClaim(entry.claim_type);
       return Object.freeze({
         fact_key: opaqueFixtureKey(entry, index, document.version),
+        family_id: entry.family_id,
+        claim_type: entry.claim_type,
         family,
         claim,
         subject: localizeImplementationSubject(entry.subject),
@@ -413,6 +526,10 @@ function fixtureCards(
           family,
         ),
         use_in_comparison: entry.disposition === "engine_rule",
+        source_url: sourceUrlFromIdentity(entry.source_identity),
+        checked_at: document.as_of,
+        effective_from: entry.applicability?.effective_from ?? null,
+        effective_to: entry.applicability?.effective_to ?? null,
       });
     }),
   );

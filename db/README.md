@@ -62,6 +62,9 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     two correction routines needed by the hosted alpha; it receives no broad
     table writes, canonical-rule access, user-data access, or future-object
     privileges.
+19. `0019_p0_implementation_provenance.sql` exposes source URL, immutable
+    snapshot check time, and source-declared applicability dates for the
+    browser-safe implementation-fact catalogue. Missing URLs remain `NULL`.
 
 It separates:
 

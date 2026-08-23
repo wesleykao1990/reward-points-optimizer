@@ -274,7 +274,10 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("innerHTML");
     expect(source).not.toContain("insertAdjacentHTML");
     expect(source).not.toContain("document.write");
-    expect(source).not.toContain("localStorage");
+    expect(source).toContain(
+      'const WALLET_STORAGE_KEY = "point-route.wallet.v1"',
+    );
+    expect(source).toContain("safeStoredWalletIds");
     expect(source).not.toContain("sessionStorage");
     expect(source).not.toContain("document.cookie");
   });
@@ -304,6 +307,7 @@ describe("M6 localhost consumer shell", () => {
       display_status: "experimental_unverified",
       confidence: "high",
       source_label: "セブン‐イレブン公式情報",
+      source_url: "https://www.sej.co.jp/services/cash.html",
     });
     expect(Object.keys(creditCard ?? {}).sort()).toEqual([
       "checked_at",
@@ -312,13 +316,14 @@ describe("M6 localhost consumer shell", () => {
       "kind",
       "publication_id",
       "source_label",
+      "source_url",
       "summary",
       "title",
       "valid_from",
       "valid_to",
     ]);
     expect(JSON.stringify(creditCard)).not.toMatch(
-      /candidate_hash|definition_hash|source_ids|evidence|rule_id|https?:\/\//iu,
+      /candidate_hash|definition_hash|source_ids|evidence|rule_id/iu,
     );
   });
 
@@ -331,6 +336,7 @@ describe("M6 localhost consumer shell", () => {
       display_status: "experimental_unverified",
       confidence: "medium",
       source_label: "公式キャンペーン情報",
+      source_url: null,
       checked_at: "2026-08-21T00:00:00Z",
       valid_from: "2026-08-21T00:00:00Z",
       valid_to: null,
@@ -581,6 +587,7 @@ describe("M6 localhost consumer shell", () => {
     expect(html).not.toContain("ファミリー");
     expect(source).not.toContain("交換計算対応");
     expect(source).not.toContain("情報掲載");
+    expect(html).toContain("比較するサービス");
     expect(html).toContain("対応サービス一覧");
     expect(source).toContain("実施中のキャンペーン");
     expect(source).toContain("paymentLogoSources");
@@ -637,7 +644,9 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("先行実験");
     expect(source).toContain("textContent");
     expect(source).not.toContain("innerHTML");
-    expect(source).not.toContain("localStorage");
+    expect(source).toContain(
+      'const WALLET_STORAGE_KEY = "point-route.wallet.v1"',
+    );
     for (const filename of [
       "dpoint.png",
       "dbarai.png",

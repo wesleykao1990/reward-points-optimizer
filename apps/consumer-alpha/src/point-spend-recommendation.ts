@@ -37,6 +37,27 @@ export interface PointSpendBrowserAsset {
   readonly kind: string;
 }
 
+export interface PointSpendBrowserCoverageTarget {
+  readonly asset_id: string;
+  readonly label: string;
+}
+
+export interface PointSpendBrowserCoverageSource {
+  readonly asset_id: string;
+  readonly label: string;
+  readonly targets: readonly PointSpendBrowserCoverageTarget[];
+}
+
+/** Browser-safe summary of the bounded spend graph. */
+export interface PointSpendBrowserCoverage {
+  readonly rule_count: number;
+  readonly asset_count: number;
+  readonly direct_pair_count: number;
+  readonly reachable_pair_count: number;
+  readonly conditional_rule_count: number;
+  readonly targets_by_source: readonly PointSpendBrowserCoverageSource[];
+}
+
 export type P0WalletCatalogueKind = "point" | "mobile_pay" | "credit_card";
 
 export interface P0WalletCatalogueItem {
@@ -73,6 +94,19 @@ export interface PointSpendBrowserRoute {
   readonly steps: readonly PointSpendBrowserStep[];
 }
 
+export type PointSpendNoRouteReason =
+  | "source_target_not_covered"
+  | "condition_confirmation_required"
+  | "balance_below_minimum"
+  | "outside_validity_window"
+  | "route_unavailable";
+
+export interface PointSpendNoRouteDetails {
+  /** Only populated when the initial source has an explicit minimum. */
+  readonly minimum_source_amount: string | null;
+  readonly conditions: readonly string[];
+}
+
 export interface PointSpendBrowserResult {
   readonly version: "p0-point-spend-browser.v1";
   readonly status: "ready" | "no_route";
@@ -83,6 +117,8 @@ export interface PointSpendBrowserResult {
   readonly alternatives: readonly PointSpendBrowserRoute[];
   readonly message: string;
   readonly rule_count: number;
+  readonly no_route_reason: PointSpendNoRouteReason | null;
+  readonly no_route_details: PointSpendNoRouteDetails | null;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -219,6 +255,12 @@ const P0_WALLET_FAMILIES: Readonly<
   "card.view": { label: "ビューカード", kind: "credit_card" },
 });
 
+export function p0ProductFamilyDefinition(
+  familyId: string,
+): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {
+  return isP0ProductFamilyId(familyId) ? P0_WALLET_FAMILIES[familyId] : null;
+}
+
 if (Object.keys(P0_WALLET_FAMILIES).length !== P0_PRODUCT_FAMILY_IDS.length)
   throw new Error("p0_wallet_family_catalogue_incomplete");
 
@@ -239,11 +281,15 @@ interface P0ResearchSource {
   readonly source_id: string;
   readonly url: string;
   readonly official_domain: string;
+  readonly retrieval?: {
+    readonly accessed_at?: unknown;
+  };
 }
 
 interface P0ResearchClaim {
   readonly claim_id: string;
   readonly family_id: string;
+  readonly source_role_id: string;
   readonly claim_type: string;
   readonly predicate: string;
   readonly subject: string;
@@ -306,23 +352,24 @@ export interface SelectedProductPurchaseCalculation {
   readonly reward_points: string;
   readonly rate_percent: string;
   readonly calculation_note: string;
+  /** Host-only binding back to the selected Agent Feed claim. */
+  readonly source_claim_id: string;
+  /** Browser-safe official source locator for the calculation. */
+  readonly source_url?: string;
+  /** Agent Feed retrieval timestamp projected as the browser checked time. */
+  readonly checked_at: string;
+  readonly calculation_source: "agent_feed_structured";
 }
 
-const PURCHASE_RATE_CLAIMS: Readonly<Record<string, string>> = Object.freeze({
-  "card.aeon": "claim.card.aeon.base.general-200.001",
-  "card.aupay": "claim.card.aupay.base.general-100.001",
-  "card.d": "claim.card.d.base.general-100.001",
-  "card.paypay": "claim.point.paypay.earn.base-rates.002",
-  "card.rakuten": "claim.card.rakuten.base.general-100.001",
-  "card.smbc": "claim.card.smbc.base.general-200.001",
-  "card.view": "claim.card.view.base.general-1000.001",
-  "wallet.aeonpay": "claim.wallet.aeonpay.base.general-200.001",
-  "wallet.aupay": "claim.wallet.aupay.base.general-200.001",
-  "wallet.dbarai": "claim.wallet.dbarai.base.general-200.001",
-  "wallet.famipay": "claim.wallet.famipay.base.general-200.001",
-  "wallet.paypay": "claim.wallet.paypay.base.rates.001",
-  "wallet.rakutenpay": "claim.wallet.rakutenpay.base.routes.001",
-});
+/**
+ * Only base reward roles are eligible for the generic purchase calculation.
+ * The role names are Agent Feed data, not product/family bindings; new claim
+ * identifiers therefore do not require a code change here.
+ */
+const BASE_RATE_SOURCE_ROLES = new Set([
+  "base_point_rules",
+  "base_reward_rules",
+]);
 
 function jsonRecord(value: unknown): JsonRecord {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -395,6 +442,146 @@ function rateParts(
   };
 }
 
+interface PurchaseRateCandidate {
+  readonly claim: P0ResearchClaim;
+  readonly rate: ReturnType<typeof rateParts>;
+  readonly source_url: string;
+  readonly checked_at: string;
+  readonly d_card_dependency: boolean;
+}
+
+function officialSourceProvenance(
+  claim: P0ResearchClaim,
+  sources: ReadonlyMap<string, P0ResearchSource>,
+): { readonly source_url: string; readonly checked_at: string } | null {
+  // Source order is not a semantic signal.  Sorting keeps selection stable if
+  // an Agent Feed producer reorders source_ids or the source records.
+  if (
+    !Array.isArray(claim.source_ids) ||
+    !claim.source_ids.every((sourceId) => typeof sourceId === "string")
+  )
+    return null;
+  for (const sourceId of [...claim.source_ids].sort()) {
+    const source = sources.get(sourceId);
+    if (
+      !source ||
+      typeof source !== "object" ||
+      typeof source.url !== "string" ||
+      typeof source.official_domain !== "string"
+    )
+      continue;
+    let parsed: URL;
+    try {
+      parsed = new URL(source.url);
+    } catch {
+      continue;
+    }
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password)
+      continue;
+    const hostname = parsed.hostname.toLowerCase();
+    const officialDomain = source.official_domain.toLowerCase();
+    if (
+      !officialDomain ||
+      (hostname !== officialDomain && !hostname.endsWith(`.${officialDomain}`))
+    )
+      continue;
+    const accessedAt = source.retrieval?.accessed_at;
+    if (
+      typeof accessedAt !== "string" ||
+      !Number.isFinite(Date.parse(accessedAt))
+    )
+      continue;
+    return Object.freeze({ source_url: source.url, checked_at: accessedAt });
+  }
+  return null;
+}
+
+function hasDCardDependency(claim: P0ResearchClaim): boolean {
+  const value =
+    claim.value &&
+    typeof claim.value === "object" &&
+    !Array.isArray(claim.value)
+      ? (claim.value as JsonRecord)
+      : null;
+  // `components` is a typed Agent Feed field.  Do not inspect
+  // short_paraphrase (or any other prose) to infer dependencies.
+  return (
+    Array.isArray(value?.components) &&
+    value.components.some(
+      (component) =>
+        typeof component === "string" && /\bd\s*card\b/iu.test(component),
+    )
+  );
+}
+
+function purchaseRateCandidates(
+  familyId: P0ProductFamilyId,
+  claims: readonly P0ResearchClaim[],
+  sources: ReadonlyMap<string, P0ResearchSource>,
+): readonly PurchaseRateCandidate[] {
+  const candidates: PurchaseRateCandidate[] = [];
+  for (const claim of claims) {
+    if (!claim || typeof claim !== "object" || Array.isArray(claim)) continue;
+    if (
+      claim.family_id !== familyId ||
+      claim.claim_type !== "earn_rule" ||
+      !BASE_RATE_SOURCE_ROLES.has(claim.source_role_id)
+    )
+      continue;
+    let rate: ReturnType<typeof rateParts>;
+    try {
+      rate = rateParts(familyId, claim);
+    } catch {
+      // A malformed/unsupported claim must not hide a valid sibling claim or
+      // prevent other selected families from being calculated.
+      continue;
+    }
+    const provenance = officialSourceProvenance(claim, sources);
+    if (!provenance) continue;
+    candidates.push({
+      claim,
+      rate,
+      source_url: provenance.source_url,
+      checked_at: provenance.checked_at,
+      d_card_dependency: hasDCardDependency(claim),
+    });
+  }
+  return Object.freeze(candidates);
+}
+
+function comparePurchaseRates(
+  left: PurchaseRateCandidate,
+  right: PurchaseRateCandidate,
+): number {
+  const leftRate = left.rate.points / left.rate.unit;
+  const rightRate = right.rate.points / right.rate.unit;
+  return (
+    leftRate - rightRate ||
+    left.rate.unit - right.rate.unit ||
+    left.rate.points - right.rate.points ||
+    left.claim.claim_id.localeCompare(right.claim.claim_id)
+  );
+}
+
+function selectPurchaseRateCandidate(
+  familyId: P0ProductFamilyId,
+  candidates: readonly PurchaseRateCandidate[],
+  selected: ReadonlySet<P0ProductFamilyId>,
+): PurchaseRateCandidate | null {
+  if (!candidates.length) return null;
+  let eligible = candidates;
+  // d払い's higher dカード route is an explicit request dependency.  It is
+  // represented by a typed `components` field rather than a claim identifier
+  // or short_paraphrase, so a producer can rename/reorder claims safely.
+  if (familyId === "wallet.dbarai" && selected.has("card.d")) {
+    const dCardCandidates = candidates.filter(
+      (candidate) => candidate.d_card_dependency,
+    );
+    if (dCardCandidates.length) eligible = dCardCandidates;
+  }
+  return [...eligible].sort(comparePurchaseRates)[0] ?? null;
+}
+
 /** Calculate every selected card/mobile-payment base route from the checked-in
  * structured research. Selection affects the actual candidates, not only the
  * recommendation hash. */
@@ -410,22 +597,35 @@ export async function calculateSelectedProductPurchases(
     throw new TypeError("p0_purchase_amount_invalid");
   const selected = new Set(selectedProductIds);
   const { artifacts } = await loadBundle();
-  const claims = new Map(
+  const claims = artifacts.flatMap((artifact) => artifact.claims);
+  const sources = new Map(
     artifacts
-      .flatMap((artifact) => artifact.claims)
-      .map((claim) => [claim.claim_id, claim]),
+      .flatMap((artifact) => artifact.sources)
+      .filter(
+        (source) =>
+          source &&
+          typeof source === "object" &&
+          typeof source.source_id === "string",
+      )
+      .map((source) => [source.source_id, source]),
   );
   const calculations: SelectedProductPurchaseCalculation[] = [];
   for (const familyId of [...selected].sort()) {
-    const claimId = PURCHASE_RATE_CLAIMS[familyId];
-    if (!claimId) continue;
-    let effectiveClaimId = claimId;
-    if (familyId === "wallet.dbarai" && selected.has("card.d"))
-      effectiveClaimId = "claim.wallet.dbarai.base.dcard-200.002";
-    const claim = claims.get(effectiveClaimId);
     const definition = P0_WALLET_FAMILIES[familyId];
-    if (!claim || !definition) throw new TypeError("p0_purchase_rate_missing");
-    const rate = rateParts(familyId, claim);
+    if (
+      !definition ||
+      (definition.kind !== "credit_card" && definition.kind !== "mobile_pay")
+    )
+      continue;
+    const candidate = selectPurchaseRateCandidate(
+      familyId,
+      purchaseRateCandidates(familyId, claims, sources),
+      selected,
+    );
+    // A surfaced family can remain informational until its Agent Feed has a
+    // typed, computable base claim.  Do not let that suppress valid siblings.
+    if (!candidate) continue;
+    const { claim, rate } = candidate;
     const rewardPoints = Math.floor(amountJpy / rate.unit) * rate.points;
     const ratePercent = (rate.points / rate.unit) * 100;
     calculations.push(
@@ -436,9 +636,13 @@ export async function calculateSelectedProductPurchases(
         reward_points: String(rewardPoints),
         rate_percent: String(ratePercent),
         calculation_note:
-          familyId === "wallet.dbarai" && selected.has("card.d")
+          familyId === "wallet.dbarai" && candidate.d_card_dependency
             ? `${rate.note}（dカード設定を含む）`
             : rate.note,
+        source_claim_id: claim.claim_id,
+        source_url: candidate.source_url,
+        checked_at: candidate.checked_at,
+        calculation_source: "agent_feed_structured",
       }),
     );
   }
@@ -494,6 +698,78 @@ function assets(ruleSet: P0SpendRuleSet): readonly P0SpendAsset[] {
   return [...result.values()].sort((left, right) =>
     left.label_ja.localeCompare(right.label_ja, "ja"),
   );
+}
+
+function pointSpendCoverage(
+  ruleSet: P0SpendRuleSet,
+  allAssets: readonly P0SpendAsset[],
+): PointSpendBrowserCoverage {
+  const labelByAsset = new Map(
+    allAssets.map((asset) => [asset.asset_id, asset.label_ja]),
+  );
+  const adjacency = new Map<string, readonly P0SpendRule[]>();
+  for (const rule of ruleSet.rules)
+    adjacency.set(rule.source_asset.asset_id, [
+      ...(adjacency.get(rule.source_asset.asset_id) ?? []),
+      rule,
+    ]);
+
+  const sources = allAssets.map((source) => {
+    const targets = new Set<string>();
+    const visited = new Set<string>([source.asset_id]);
+    const queue: { readonly asset_id: string; readonly steps: number }[] = [
+      { asset_id: source.asset_id, steps: 0 },
+    ];
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current || current.steps >= 4) continue;
+      for (const rule of adjacency.get(current.asset_id) ?? []) {
+        const target = rule.destination_asset.asset_id;
+        if (visited.has(target)) continue;
+        visited.add(target);
+        targets.add(target);
+        queue.push({ asset_id: target, steps: current.steps + 1 });
+      }
+    }
+    return Object.freeze({
+      asset_id: source.asset_id,
+      label: source.label_ja,
+      targets: Object.freeze(
+        [...targets]
+          .sort((left, right) =>
+            (labelByAsset.get(left) ?? left).localeCompare(
+              labelByAsset.get(right) ?? right,
+              "ja",
+            ),
+          )
+          .map((assetId) =>
+            Object.freeze({
+              asset_id: assetId,
+              label: labelByAsset.get(assetId) ?? "交換先",
+            }),
+          ),
+      ),
+    });
+  });
+
+  return Object.freeze({
+    rule_count: ruleSet.rule_count,
+    asset_count: allAssets.length,
+    direct_pair_count: new Set(
+      ruleSet.rules.map(
+        (rule) =>
+          `${rule.source_asset.asset_id}=>${rule.destination_asset.asset_id}`,
+      ),
+    ).size,
+    reachable_pair_count: sources.reduce(
+      (count, source) => count + source.targets.length,
+      0,
+    ),
+    conditional_rule_count: ruleSet.rules.filter(
+      (rule) => rule.required_conditions_ja.length > 0,
+    ).length,
+    targets_by_source: Object.freeze(sources),
+  });
 }
 
 function p0WalletCatalogue(
@@ -688,6 +964,7 @@ export async function listPointSpendBrowserOptions(): Promise<{
   readonly version: "p0-point-spend-options.v2";
   readonly experimental: true;
   readonly rule_count: number;
+  readonly coverage: PointSpendBrowserCoverage;
   readonly assets: readonly PointSpendBrowserAsset[];
   readonly wallet_catalogue: readonly P0WalletCatalogueItem[];
   readonly conditional_rules: readonly {
@@ -699,11 +976,13 @@ export async function listPointSpendBrowserOptions(): Promise<{
   }[];
 }> {
   const { ruleSet, artifacts } = await loadBundle();
+  const allAssets = assets(ruleSet);
   return {
     version: "p0-point-spend-options.v2",
     experimental: true,
     rule_count: ruleSet.rule_count,
-    assets: assets(ruleSet).map((item) => ({
+    coverage: pointSpendCoverage(ruleSet, allAssets),
+    assets: allAssets.map((item) => ({
       asset_id: item.asset_id,
       label: item.label_ja,
       kind: item.asset_kind,
@@ -755,6 +1034,144 @@ function browserRoute(
   };
 }
 
+function potentialRouteRuleIds(
+  sourceAssetId: string,
+  targetAssetId: string,
+  ruleSet: P0SpendRuleSet,
+): ReadonlySet<string> {
+  const rulesBySource = new Map<string, readonly P0SpendRule[]>();
+  for (const rule of ruleSet.rules)
+    rulesBySource.set(rule.source_asset.asset_id, [
+      ...(rulesBySource.get(rule.source_asset.asset_id) ?? []),
+      rule,
+    ]);
+  const relevant = new Set<string>();
+  const canReach = (
+    assetId: string,
+    visited: ReadonlySet<string>,
+    steps: number,
+  ): boolean => {
+    if (assetId === targetAssetId) return true;
+    if (steps >= 4) return false;
+    let found = false;
+    for (const rule of rulesBySource.get(assetId) ?? []) {
+      const nextAssetId = rule.destination_asset.asset_id;
+      if (visited.has(nextAssetId)) continue;
+      const nextVisited = new Set(visited);
+      nextVisited.add(nextAssetId);
+      if (!canReach(nextAssetId, nextVisited, steps + 1)) continue;
+      relevant.add(rule.rule_id);
+      found = true;
+    }
+    return found;
+  };
+  canReach(sourceAssetId, new Set([sourceAssetId]), 0);
+  return relevant;
+}
+
+function noRouteInfo(
+  input: PointSpendBrowserInput,
+  optimization: ReturnType<typeof optimizePointSpend>,
+  coverage: PointSpendBrowserCoverage,
+  ruleSet: P0SpendRuleSet,
+): {
+  readonly reason: PointSpendNoRouteReason;
+  readonly details: PointSpendNoRouteDetails;
+} {
+  const sourceCoverage = coverage.targets_by_source.find(
+    (source) => source.asset_id === input.source_asset_id,
+  );
+  const covered = sourceCoverage?.targets.some(
+    (target) => target.asset_id === input.target_asset_id,
+  );
+  if (!covered)
+    return {
+      reason: "source_target_not_covered",
+      details: { minimum_source_amount: null, conditions: [] },
+    };
+
+  const relevantRuleIds = potentialRouteRuleIds(
+    input.source_asset_id,
+    input.target_asset_id,
+    ruleSet,
+  );
+  const skippedByReason = new Set(
+    optimization.skipped
+      .filter((item) => relevantRuleIds.has(item.rule_id))
+      .map((item) => item.reason_code),
+  );
+  const conditionRuleIds = new Set(
+    optimization.skipped
+      .filter(
+        (item) =>
+          relevantRuleIds.has(item.rule_id) &&
+          item.reason_code === "condition_confirmation_required",
+      )
+      .map((item) => item.rule_id),
+  );
+  const conditions = [
+    ...new Set(
+      ruleSet.rules
+        .filter((rule) => conditionRuleIds.has(rule.rule_id))
+        .flatMap((rule) => rule.required_conditions_ja),
+    ),
+  ].sort((left, right) => left.localeCompare(right, "ja"));
+  if (conditions.length > 0)
+    return {
+      reason: "condition_confirmation_required",
+      details: { minimum_source_amount: null, conditions },
+    };
+
+  if (skippedByReason.has("insufficient_or_unaligned_balance")) {
+    const minimum = ruleSet.rules
+      .filter(
+        (rule) =>
+          relevantRuleIds.has(rule.rule_id) &&
+          rule.source_asset.asset_id === input.source_asset_id &&
+          rule.minimum_source_units !== null,
+      )
+      .sort((left, right) =>
+        left.rule_id.localeCompare(right.rule_id),
+      )[0]?.minimum_source_units;
+    return {
+      reason: "balance_below_minimum",
+      details: { minimum_source_amount: minimum ?? null, conditions: [] },
+    };
+  }
+
+  if (skippedByReason.has("outside_validity_window"))
+    return {
+      reason: "outside_validity_window",
+      details: { minimum_source_amount: null, conditions: [] },
+    };
+
+  return {
+    reason: "route_unavailable",
+    details: { minimum_source_amount: null, conditions: [] },
+  };
+}
+
+function noRouteMessage(
+  reason: PointSpendNoRouteReason,
+  sourceLabel: string,
+  targetLabel: string,
+  details: PointSpendNoRouteDetails,
+): string {
+  if (reason === "source_target_not_covered")
+    return `${sourceLabel}から${targetLabel}への交換ルートは、現在の収録範囲にありません。`;
+  if (reason === "condition_confirmation_required")
+    return details.conditions.length > 0
+      ? `この交換ルートには条件の確認が必要です：${details.conditions.join("・")}`
+      : "この交換ルートには条件の確認が必要です。";
+  if (reason === "balance_below_minimum")
+    return details.minimum_source_amount === null
+      ? "現在の残高では交換条件を満たしません。"
+      : `現在の残高では交換条件を満たしません。最低${details.minimum_source_amount}単位から交換できます。`;
+  if (reason === "outside_validity_window")
+    return "指定した日時に利用できる交換条件を確認できません。";
+  return "この残高・交換先で計算できるルートを確認できませんでした。";
+}
+
 export async function recommendPointSpend(
   raw: unknown,
 ): Promise<PointSpendBrowserResult> {
@@ -788,9 +1205,12 @@ export async function recommendPointSpend(
   const labels = new Map(
     allAssets.map((item) => [item.asset_id, item.label_ja]),
   );
+  const coverage = pointSpendCoverage(ruleSet, allAssets);
   const routes = result.routes
     .slice(0, 3)
     .map((route) => browserRoute(route, labels));
+  const noRoute =
+    routes.length === 0 ? noRouteInfo(input, result, coverage, ruleSet) : null;
   return {
     version: "p0-point-spend-browser.v1",
     status: routes.length > 0 ? "ready" : "no_route",
@@ -802,7 +1222,17 @@ export async function recommendPointSpend(
     message:
       routes.length > 0
         ? "収録されている交換レートで計算した候補です。実行前に提供元で条件を確認してください。"
-        : "この残高・交換先で計算できるルートは見つかりませんでした。",
+        : noRouteMessage(
+            noRoute?.reason ?? "route_unavailable",
+            labels.get(input.source_asset_id) ?? "交換元",
+            labels.get(input.target_asset_id) ?? "交換先",
+            noRoute?.details ?? {
+              minimum_source_amount: null,
+              conditions: [],
+            },
+          ),
     rule_count: ruleSet.rule_count,
+    no_route_reason: noRoute?.reason ?? null,
+    no_route_details: noRoute?.details ?? null,
   };
 }

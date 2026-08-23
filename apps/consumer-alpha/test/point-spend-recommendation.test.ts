@@ -33,45 +33,99 @@ describe("P0 point spending browser route", () => {
     expect(result).toHaveLength(4);
     expect(result).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           family_id: "wallet.dbarai",
           label: "d払い",
           reward_label: "dポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "200円ごとに2ポイントで計算（dカード設定を含む）",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "card.rakuten",
           label: "楽天カード",
           reward_label: "楽天ポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "100円ごとに1ポイントで計算",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "card.d",
           label: "dカード",
           reward_label: "dポイント",
           reward_points: "6",
           rate_percent: "1",
           calculation_note: "100円ごとに1ポイントで計算",
-        },
-        {
+        }),
+        expect.objectContaining({
           family_id: "wallet.paypay",
           label: "PayPay",
           reward_label: "PayPayポイント",
           reward_points: "3",
           rate_percent: "0.5",
           calculation_note: "200円単位・残高払いの基本還元率0.5%で計算",
-        },
+        }),
       ]),
+    );
+    for (const calculation of result) {
+      expect(calculation.source_claim_id).toMatch(/^claim\./u);
+      expect(calculation.source_url).toMatch(/^https:\/\//u);
+      expect(calculation.checked_at).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/u,
+      );
+      expect(calculation.calculation_source).toBe("agent_feed_structured");
+    }
+  });
+
+  it("discovers reordered base claims by family and keeps provenance attached", async () => {
+    const result = await calculateSelectedProductPurchases(
+      ["wallet.aeonpay", "wallet.dbarai"],
+      640,
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        family_id: "wallet.aeonpay",
+        source_claim_id: "claim.wallet.aeonpay.base.general-200.001",
+        source_url: "https://www.aeon.co.jp/service/lp/aeonpay",
+        checked_at: "2026-08-22T00:20:17+09:00",
+        calculation_source: "agent_feed_structured",
+      }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        family_id: "wallet.dbarai",
+        source_claim_id: "claim.wallet.dbarai.base.general-200.001",
+        source_url:
+          "https://service.smt.docomo.ne.jp/keitai_payment/guide/wallet/payment.html",
+        checked_at: "2026-08-22T00:20:17+09:00",
+        calculation_source: "agent_feed_structured",
+      }),
     );
   });
 
   it("lists the bounded P0 asset graph without evidence internals", async () => {
     const result = await listPointSpendBrowserOptions();
     expect(result.rule_count).toBe(23);
+    expect(result.coverage).toMatchObject({
+      rule_count: 23,
+      asset_count: 18,
+      direct_pair_count: 21,
+      reachable_pair_count: 30,
+      conditional_rule_count: 9,
+    });
+    const rakutenCoverage = result.coverage.targets_by_source.find(
+      (source) => source.asset_id === "asset.point.rakuten",
+    );
+    expect(rakutenCoverage?.targets).toEqual(
+      expect.arrayContaining([
+        { asset_id: "asset.mile.ana", label: "ANAマイル" },
+        { asset_id: "asset.value.jpy-redemption", label: "支払い充当価値" },
+      ]),
+    );
+    expect(rakutenCoverage?.targets).not.toContainEqual({
+      asset_id: "asset.mile.jal",
+      label: "JALマイル",
+    });
     expect(result.assets).toContainEqual({
       asset_id: "asset.point.rakuten",
       label: "楽天ポイント",
@@ -127,6 +181,8 @@ describe("P0 point spending browser route", () => {
       status: "ready",
       experimental: true,
       current_advice: false,
+      no_route_reason: null,
+      no_route_details: null,
       winner: {
         target_amount: "500",
         target_label: "ANAマイル",
@@ -135,6 +191,52 @@ describe("P0 point spending browser route", () => {
     });
     expect(result.winner?.steps).toHaveLength(1);
     expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+  });
+
+  it("explains uncovered, conditional, and minimum-balance no-route states", async () => {
+    const uncovered = await recommendPointSpend({
+      ...input,
+      target_asset_id: "asset.mile.jal",
+    });
+    expect(uncovered).toMatchObject({
+      status: "no_route",
+      no_route_reason: "source_target_not_covered",
+      no_route_details: {
+        minimum_source_amount: null,
+        conditions: [],
+      },
+    });
+    expect(uncovered.message).toContain("楽天ポイントからJALマイル");
+
+    const conditionRequired = await recommendPointSpend({
+      ...input,
+      confirmed_rule_ids: [],
+    });
+    expect(conditionRequired).toMatchObject({
+      status: "no_route",
+      no_route_reason: "condition_confirmation_required",
+    });
+    expect(conditionRequired.no_route_details?.conditions).toContain(
+      "ANAマイレージクラブへの登録が必要です",
+    );
+
+    const belowMinimum = await recommendPointSpend({
+      source_asset_id: "asset.point.nanaco",
+      target_asset_id: "asset.mile.ana",
+      balance: 499,
+      objective: "maximize_target",
+      effective_at: input.effective_at,
+      confirmed_rule_ids: [],
+    });
+    expect(belowMinimum).toMatchObject({
+      status: "no_route",
+      no_route_reason: "balance_below_minimum",
+      no_route_details: {
+        minimum_source_amount: "500",
+        conditions: [],
+      },
+    });
+    expect(belowMinimum.message).toContain("最低500単位");
   });
 
   it("rejects unknown fields, accessors, and unknown assets", async () => {

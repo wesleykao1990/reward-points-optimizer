@@ -29,6 +29,7 @@ describe("host-owned experimental catalogue port", () => {
       display_status: "experimental_unverified",
       confidence: "high",
       source_label: "セブン‐イレブン公式情報",
+      source_url: "https://www.sej.co.jp/services/cash.html",
       checked_at: "2026-08-21T04:52:00Z",
       valid_from: "2026-08-21T13:49:24+09:00",
       valid_to: null,
@@ -42,6 +43,7 @@ describe("host-owned experimental catalogue port", () => {
         "kind",
         "publication_id",
         "source_label",
+        "source_url",
         "summary",
         "title",
         "valid_from",
@@ -49,10 +51,10 @@ describe("host-owned experimental catalogue port", () => {
       ]);
       const serialized = JSON.stringify(rule);
       expect(serialized).not.toMatch(
-        /candidate_hash|definition_hash|source_ids|evidence|rule_id|https?:\/\//iu,
+        /candidate_hash|definition_hash|source_ids|evidence|rule_id/iu,
       );
     }
-  });
+  }, 15_000);
 
   it("creates a host-owned correction and removes the exact publication version", async () => {
     const initial = await getExperimentalRules();

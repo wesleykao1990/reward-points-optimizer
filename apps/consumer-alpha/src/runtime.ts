@@ -1,4 +1,5 @@
 import {
+  createPostgresActiveRewardClaimStore,
   createPostgresP0FactInfluenceGraphStore,
   createPostgresP0ImplementationCatalogueStore,
   type P0ImplementationCatalogueOptions,
@@ -8,6 +9,7 @@ import {
   type QueryTarget,
 } from "@jro/agent-feed-postgres";
 import { Pool, type PoolConfig } from "pg";
+import { createActiveRewardCalculationPort } from "./active-reward-calculation.js";
 import {
   createP0AgentFeedIngress,
   loadP0AgentFeedIngressFromEnvironment,
@@ -230,6 +232,9 @@ export function createPostgresAppDependencies(
     options,
   );
   return Object.freeze({
+    activeRewardCalculations: createActiveRewardCalculationPort(
+      createPostgresActiveRewardClaimStore(target),
+    ),
     experimentalCatalogue: createPostgresExperimentalCataloguePort(target),
     experimentalRecommendation:
       createPostgresNanacoExperimentalRecommendationPort(target),

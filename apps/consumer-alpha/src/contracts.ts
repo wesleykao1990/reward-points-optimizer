@@ -159,6 +159,8 @@ export interface ExperimentalCatalogueCard {
   readonly display_status: ExperimentalDisplayStatus;
   readonly confidence: ExperimentalConfidence;
   readonly source_label: string;
+  /** First-party source URL when the host has one; null means unavailable. */
+  readonly source_url: string | null;
   readonly checked_at: string;
   readonly valid_from: string;
   readonly valid_to: string | null;
@@ -174,8 +176,9 @@ export interface ExperimentalCatalogueSnapshot {
  * The implementation-fact catalogue is a separate, deliberately smaller
  * browser contract.  `fact_key` is an opaque UUID: it is useful only for
  * binding one correction back to the trusted host and has no claim identity
- * or source meaning in the UI.  Family and claim are display labels rather
- * than the internal family/claim-type identifiers.
+ * or source meaning in the UI.  Family and claim remain localized display
+ * labels; the stable family/claim-type identifiers are exposed separately so
+ * downstream projections do not need to reverse-map localized text.
  */
 export const IMPLEMENTATION_FACT_CORRECTION_CATEGORIES = Object.freeze([
   "fact_incorrect",
@@ -189,12 +192,23 @@ export type ImplementationFactCorrectionCategory =
 
 export interface ImplementationFactCard {
   readonly fact_key: string;
+  /** Stable host-owned family identifier; not a localized display label. */
+  readonly family_id: string;
+  /** Stable host-owned claim-type identifier; not a localized display label. */
+  readonly claim_type: string;
   readonly family: string;
   readonly claim: string;
   readonly subject: string;
   readonly predicate: string;
   readonly summary: string;
   readonly use_in_comparison: boolean;
+  /** First-party source URL when the source registry contains one. */
+  readonly source_url: string | null;
+  /** Snapshot `as_of`; null is explicit when a backend cannot provide it. */
+  readonly checked_at: string | null;
+  /** Source-declared applicability window; dates may be date-only strings. */
+  readonly effective_from: string | null;
+  readonly effective_to: string | null;
 }
 
 export const IMPLEMENTATION_FACT_CATALOGUE_STATUSES = Object.freeze([
@@ -396,12 +410,38 @@ export interface CorrectionDraftInput {
   readonly recommendation_id: `sha256:${string}`;
 }
 
-export type UnifiedMerchantId =
-  | typeof SYNTHETIC_MERCHANT_ID
-  | "merchant.seveneleven";
+/** Merchant families currently supplied by the structured P0 catalogue. */
+export const UNIFIED_MERCHANT_IDS = Object.freeze([
+  SYNTHETIC_MERCHANT_ID,
+  "merchant.seveneleven",
+  "merchant.aeon-group",
+  "merchant.amazon-jp",
+  "merchant.biccamera",
+  "merchant.familymart",
+  "merchant.itoyokado",
+  "merchant.lawson",
+  "merchant.matsukiyo",
+  "merchant.mcdonalds",
+  "merchant.newdays",
+  "merchant.rakuten-market",
+  "merchant.starbucks",
+  "merchant.welcia",
+  "merchant.yahoo-shopping",
+  "merchant.yodobashi",
+] as const);
+
+export type UnifiedMerchantId = (typeof UNIFIED_MERCHANT_IDS)[number];
 export type UnifiedBranchId =
   | typeof SYNTHETIC_BRANCH_ID
-  | "location.seveneleven.representative";
+  | `location.${string}.representative`;
+
+export function representativeBranchId(
+  merchantId: UnifiedMerchantId,
+): UnifiedBranchId {
+  return merchantId === SYNTHETIC_MERCHANT_ID
+    ? SYNTHETIC_BRANCH_ID
+    : (`location.${merchantId.slice("merchant.".length)}.representative` as const);
+}
 
 /** Browser-safe, host-owned input for `/api/recommendations`. */
 export interface UnifiedRecommendationInput {
@@ -931,12 +971,9 @@ export function parseUnifiedRecommendation(
 
   const merchant =
     value.merchant_id === undefined ? SYNTHETIC_MERCHANT_ID : value.merchant_id;
-  if (merchant !== SYNTHETIC_MERCHANT_ID && merchant !== "merchant.seveneleven")
+  if (!(UNIFIED_MERCHANT_IDS as readonly unknown[]).includes(merchant))
     throw new InputContractError("merchant_id_invalid");
-  const expectedBranch =
-    merchant === SYNTHETIC_MERCHANT_ID
-      ? SYNTHETIC_BRANCH_ID
-      : "location.seveneleven.representative";
+  const expectedBranch = representativeBranchId(merchant as UnifiedMerchantId);
   const branch =
     value.branch_id === undefined ? expectedBranch : value.branch_id;
   if (branch !== expectedBranch)

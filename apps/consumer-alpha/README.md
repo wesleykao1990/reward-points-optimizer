@@ -1,12 +1,13 @@
 # M6 local consumer alpha
 
-This is a localhost-only consumer prototype. It exposes one bounded merchant
-comparison journey at `POST /api/recommendations`, which evaluates the
+This consumer prototype exposes one bounded merchant comparison journey at
+`POST /api/recommendations`, which evaluates the
 synthetic card route alongside the Nanaco purchase and Seven Card Plus ->
 Nanaco credit-charge experiments when their host ports are available. It
-binds to `127.0.0.1`, accepts only bounded consumer inputs, and keeps rules,
-assurances, evidence, candidate plans, source URLs, database credentials, and
-authorization material on the trusted host.
+binds to `127.0.0.1` locally, accepts only bounded consumer inputs, and keeps
+rules, assurances, evidence, candidate plans, database credentials, and
+authorization material on the trusted host. Browser DTOs may include only the
+official source URL and last-checked date needed to verify displayed guidance.
 
 Run the checks with:
 
@@ -25,8 +26,9 @@ JRO_DATABASE_URL=postgresql://.../jro_local \
 
 `JRO_DATABASE_URL` is explicit and server-only. When set, one bounded pool
 backs the experimental catalogue, its correction route, all 364 P0
-implementation facts, and the exact Nanaco/Seven-Eleven experimental
-recommendations. Without it the localhost shell retains its checked-in demo
+implementation facts, the active structured Agent Feed reward-rule
+projection, and the exact Nanaco/Seven-Eleven experimental recommendations.
+Without it the localhost shell retains its checked-in demo
 catalogues; each unavailable real route remains visible with a route-scoped
 issue instead of suppressing its valid neighbors.
 
@@ -68,8 +70,10 @@ storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.
 
 The legacy synthetic endpoint still exposes one exact Tokyo test branch. The
-browser now starts with a neutral general-shopping merchant; Seven-Eleven is
-an explicit merchant choice and only that choice adds the Nanaco routes.
+browser starts with neutral general shopping and populates every currently
+covered merchant family from `GET /api/consumer/reference`; Seven-Eleven is no
+longer the only named choice. Only that merchant adds its Nanaco-specific
+routes.
 Enabling credit cards, mobile payments, or point programmes expands an exact
 allowlisted catalogue of seven card families, six mobile-payment families,
 and eight point families. The selected cards and mobile payments create real
@@ -106,16 +110,17 @@ service-level wrong-information control identifies the exact fact on the
 trusted host. Hashes, rule payloads, evidence, source identifiers, and raw URLs
 stay on the trusted host.
 
-The five mobile tabs are ordered Home, Wallet, History, Catalogue, and
-Settings. Wallet and History are session-only views of the unified selection;
-they do not claim persistent account state. The `カタログ` tab exposes the
+The five mobile tabs are ordered Balance, Spend, Earn, Catalogue, and
+Settings. Earn keeps a session-only comparison history and does not claim
+persistent account state. The `カタログ` tab exposes the
 customer-facing projection of routes and implementation facts on one surface.
 Its default localhost port reads all 364 checked-in implementation facts; a
 host may inject either the browser-safe fact port or the bounded
 `@jro/agent-feed-postgres` implementation store. `GET
 /api/experimental/facts` returns `{ "status", "updated_at", "facts" }` with an
-opaque UUID, Japanese family/claim labels, subject, predicate, summary, and
-`use_in_comparison` for each fact. Search and the service-family filter run over
+opaque UUID, stable `family_id` and `claim_type`, Japanese family/claim labels,
+subject, predicate, summary, and `use_in_comparison` for each fact. Search and
+the service-family filter run over
 the returned bounded list in the browser before facts are grouped into service
 blocks. The checked-in fixture is labeled `partial` for
 provenance even though it contains all 364 facts in this wave; a database-
@@ -145,6 +150,24 @@ must supply the current admitted P0 operations manifest and an exact
 is checked against the manifest before the port is created; no run ID, target,
 locator, outcome, or economic claim is discovered from Agent Feed. A terminal
 event without an exact host mapping is rejected by the persistence boundary.
+
+Findings that carry an exact `reward-claim.v1` document do not enter a manual
+promotion queue. The ingress matches the signed finding's `target_id` to the
+delivery stream's admitted operations manifest, then intersects source IDs
+with the frozen P0 coverage index. Each valid sibling is compiled, persisted,
+and atomically activated. Invalid or incomplete siblings remain rejected
+without suppressing valid ones, and no summary or other prose is converted to
+reward arithmetic. `JRO_P0_COVERAGE_INDEX_FILE` can override the default
+checked-in coverage index used for this binding.
+
+The normal PostgreSQL runtime reads those `active_experimental` compiler
+candidates on every effective-time recommendation request. A computable active
+candidate automatically replaces the checked-in bootstrap rate for its exact
+service family; there is no second promotion endpoint, reviewer click, feature
+tag, or browser gate. Merchant, branch, channel, tax basis, transaction limits,
+conditions, caps, rounding, output certainty, validity, and provenance remain
+structured rule inputs. If one candidate cannot be evaluated for the request,
+it is skipped without hiding an applicable sibling or another service family.
 
 Signing can use a host-owned resolver or the environment resolver. The latter
 reads only `JRO_AGENT_FEED_SIGNING_KEY_ID` plus
@@ -201,9 +224,9 @@ server-only `JRO_DATABASE_URL`, selects the NOLOGIN `jro_runtime` database role
 inside each transaction, verifies Supabase pooler TLS with the published CA,
 and keeps the client pool at one connection per warm serverless instance.
 
-The hosted route is still an experimental alpha, not current reward advice.
-It does not enable Supabase Auth, public Data API access, Agent Feed ingress,
-or durable user/session state. See `docs/28_deployment_vercel_supabase.md` for
+The hosted route does not enable Supabase Auth, public Data API access, the
+private Agent Feed delivery endpoint, or durable user/session state. See
+`docs/28_deployment_vercel_supabase.md` for
 the exact deployment and release automation boundary.
 
 The PostgreSQL migration chain separately provides
@@ -213,3 +236,85 @@ localhost build does not open a database connection or grant client access;
 an app-server adapter may query that view with an explicitly privileged
 server role and map only its bounded projection. Raw Agent Feed observations,
 approved-rule status, and browser database credentials are never implied.
+
+## Front-end presentation
+
+The browser shell is an award-wallet console: white cards on a cool grey
+ground, one hairline border and one soft elevation step, 10-12px radii, and
+full-round status chips. Colour is signal rather than decoration - the
+primary blue carries action, selection and navigation, while red/amber/green
+carry only expiry state, so the two channels stay readable side by side.
+
+Latin type is Archivo and figures are JetBrains Mono on a tabular grid, so
+balances and countdowns align down a column. Both faces are Latin-subset
+variable woff2 files served from this origin (`public/assets/fonts`, 66 KB
+total) rather than a font CDN: the strict same-origin CSP and the "nothing
+leaves the browser" stance rule out a third-party request, so `font-src
+'self'` is the only relaxation and no external host sees a visitor. Japanese
+runs in the platform Gothic stack; no CJK webfont is shipped.
+
+The bottom bar carries five peer destinations - `balance`, `spend`, `earn`,
+`information`, `settings`. Balance is the landing tab because the award-wallet
+job is a daily glance rather than a per-purchase query; the merchant
+comparison keeps its full behaviour as `earn`, with the session log folded
+into it.
+
+## Lot ledger (demo data)
+
+An aggregator stores one number per programme. This screen stores lots: a
+通常 balance and a 期間限定 grant are different assets with different
+deadlines, different places they can be spent, and different answers to "can
+this deadline be moved at all?" Each programme card expands into its lots,
+and each lot carries its own countdown, its usage restriction, its
+`延長できる / できない` verdict, and its `推定 / 確認済み` confidence. Rule
+exceptions are pinned to the lot they qualify rather than to the programme -
+the 「KDDI定期付与」 case renders as a flagged note on the Ponta lot it
+actually affects.
+
+Above the list, a 90-day runway sizes bars by yen value and colours them by
+urgency; tapping one jumps to `spend` with that lot loaded and the
+expiring-balance objective preselected. Every yen figure is backed by a
+`この前提で計算` disclosure naming the per-programme valuation and stating
+plainly that the total is an "if I lost this today" figure, not a maximised
+one. Every expiry rule shows its source and how recently it was checked.
+
+No balance or account backend exists yet. The panel therefore runs on a
+checked-in demo balance dataset in `public/app.js`, while expiry and redemption
+reference fields load from `/api/consumer/reference`. It stores days relative to
+"today" so a deadline is never rendered in the past, and says so in the
+markup. Balance capture is deliberately credential-free - screenshot, paste,
+CSV and manual entry are presented as the intended routes, all marked
+準備中 - and the settings screen states what the product does not collect.
+
+## Motion
+
+The motion vocabulary is adapted from yui540's public CSS studies
+(https://github.com/yui540/css-animations): a diagonal `clip-path` wipe
+driven by a `--skew-x` variable, paired sheets offset by roughly 0.2s, and
+one signature easing - `cubic-bezier(0.87, 0.05, 0.02, 0.97)` - that
+loiters at both ends and snaps through the middle. Every reveal in the app
+uses that curve, so the whole surface reads as one system.
+
+What is deliberately not adapted is the amplitude. Those studies are
+0.8-1.0s showpieces for a page you visit once; this is a wallet somebody
+opens at a till. The same shapes therefore run at about a third of the
+length for anything frequent - a 340ms panel wipe on tab change, a 320ms
+lot expand - and the full-length treatment is spent only on moments that
+happen once per visit: the 620ms opening sheet and the 720ms comparison
+result reveal. Balance figures count up on the same curve so the number
+settles on the beat the panel does, and the runway bars grow from the axis
+in a 38ms stagger, which puts the eye on the tallest column while it is
+still the only thing moving.
+
+Two invariants hold throughout:
+
+- **Nothing is visible only because an animation ran.** The resting DOM is
+  the finished state; reveals are opt-in classes added by script. A failed
+  script, a blocked stylesheet, or a disabled animation still leaves
+  readable content. The opening sheet additionally removes itself on
+  `animationend` and on a timeout, so a stalled animation can never strand
+  a panel over the interface.
+- **`prefers-reduced-motion: reduce` clears the reveal states outright**
+  rather than merely shortening them, since a reveal held at its `from`
+  keyframe would be invisible. Under that setting the curtain never
+  renders, figures print their final value, and every panel is static.
