@@ -82,6 +82,8 @@ export interface PaymentStackBrowserResult {
   /** Issuer statements that charging a wallet with a held card earns nothing. */
   readonly charge_warnings: readonly PaymentStackBrowserWarning[];
   readonly option_count: number;
+  /** Merchants whose presentment programme this result could have used. */
+  readonly merchants: readonly PaymentStackMerchant[];
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -170,8 +172,49 @@ export function parsePaymentStackBrowserInput(
   };
 }
 
+/**
+ * Merchant programmes are not wallet families, so they carry their own labels.
+ * A presentment option is displayed by the shop that publishes it.
+ */
+const MERCHANT_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  "merchant.aeon-group": "イオングループ対象店",
+  "merchant.biccamera": "ビックカメラ",
+  "merchant.newdays": "NewDays",
+});
+
 function familyLabel(familyId: string): string {
-  return p0ProductFamilyDefinition(familyId)?.label ?? familyId;
+  return (
+    p0ProductFamilyDefinition(familyId)?.label ??
+    MERCHANT_LABELS[familyId] ??
+    familyId
+  );
+}
+
+export interface PaymentStackMerchant {
+  readonly merchant_id: string;
+  readonly label: string;
+}
+
+/** Merchants with a presentment programme the buyer can be asked about. */
+export async function listPaymentStackMerchants(): Promise<{
+  readonly version: "p0-payment-stack-merchants.v1";
+  readonly merchants: readonly PaymentStackMerchant[];
+}> {
+  const { paymentLayers } = await loadPointSpendBundle();
+  const merchants = new Map<string, PaymentStackMerchant>();
+  for (const option of paymentLayers.options) {
+    if (option.merchant_scope === null) continue;
+    merchants.set(option.merchant_scope, {
+      merchant_id: option.merchant_scope,
+      label: familyLabel(option.family_id),
+    });
+  }
+  return {
+    version: "p0-payment-stack-merchants.v1",
+    merchants: [...merchants.values()].sort((left, right) =>
+      left.label.localeCompare(right.label, "ja"),
+    ),
+  };
 }
 
 /**
@@ -190,10 +233,7 @@ function layerAction(layer: PaymentStackLayerKind, familyId: string): string {
   return `${label}の特典を適用する`;
 }
 
-function engineOption(
-  option: P0PaymentLayerOption,
-  merchantId: string,
-): PaymentLayerOption {
+function engineOption(option: P0PaymentLayerOption): PaymentLayerOption {
   return {
     option_id: option.option_id,
     layer: option.layer,
@@ -215,23 +255,35 @@ function engineOption(
       option.cap_reward_units_per_period === null ? null : "0",
     requires_option_ids: option.requires_option_ids,
     conflicts_with_option_ids: [],
-    merchant_ids: option.merchant_scope === null ? [] : [merchantId],
+    // Scoped to the merchant that published the rate, not to the merchant
+    // being asked about: a presentment rate belongs to one chain and must
+    // never follow the buyer to another.
+    merchant_ids: option.merchant_scope === null ? [] : [option.merchant_scope],
     stack_group: option.layer,
     stacking_mode: "additive",
     valid_from: null,
     valid_to: null,
-    required_conditions_ja: [],
+    required_conditions_ja: option.required_conditions_ja,
     source_claim_ids: option.source_claim_ids,
   };
 }
 
+/**
+ * Narrow to what the buyer can actually execute.
+ *
+ * A merchant's own presentment programme is not something the buyer holds —
+ * it belongs to the shop — so it survives the wallet filter and is instead
+ * confined by its merchant scope.
+ */
 function ownedOptions(
   layers: P0PaymentLayerSet,
   owned: readonly string[],
 ): readonly P0PaymentLayerOption[] {
   if (owned.length === 0) return layers.options;
   const held = new Set(owned);
-  return layers.options.filter((option) => held.has(option.family_id));
+  return layers.options.filter(
+    (option) => held.has(option.family_id) || option.merchant_scope !== null,
+  );
 }
 
 function chargeWarnings(
@@ -318,7 +370,7 @@ export async function recommendPaymentStack(
     effective_at: input.effective_at,
     merchant_id: input.merchant_id,
     amount_jpy: input.amount_jpy,
-    options: compiled.map((option) => engineOption(option, input.merchant_id)),
+    options: compiled.map(engineOption),
     confirmed_option_ids: input.confirmed_option_ids,
     max_bonus_options: 2,
     valuation,
@@ -344,5 +396,6 @@ export async function recommendPaymentStack(
       input.owned_family_ids,
     ),
     option_count: compiled.length,
+    merchants: (await listPaymentStackMerchants()).merchants,
   };
 }

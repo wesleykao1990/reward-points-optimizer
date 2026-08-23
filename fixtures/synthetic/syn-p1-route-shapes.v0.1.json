@@ -1,0 +1,186 @@
+{
+  "fixture_id": "SYN-P1-ROUTE-SHAPES",
+  "version": "syn-p1-route-shapes.v0.1",
+  "evidence_status": "synthetic_never_evidence",
+  "note": "Synthetic route shapes that the P0 research wave does not yet contain: a transfer fee, a per-day cap, a per-lifetime cap, and a campaign whose uplift is paid in a restricted reward class worth less than the ordinary one. These probes never count as evidence, canonical coverage, or a published rule. They exist so the routing kernel is exercised against the shapes before real facts arrive.",
+  "balances": [
+    {
+      "asset": {
+        "asset_id": "asset.point.syn-site",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-site",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "amount": "30000",
+      "expires_at": null
+    }
+  ],
+  "valuation_entries": [
+    {
+      "asset_id": "asset.point.syn-site",
+      "reward_class": "normal",
+      "jpy_per_unit_min": "1",
+      "jpy_per_unit_expected": "1",
+      "jpy_per_unit_max": "1",
+      "source": "face_value_default",
+      "note": "synthetic source face value"
+    },
+    {
+      "asset_id": "asset.mile.syn-air",
+      "reward_class": "normal",
+      "jpy_per_unit_min": "1.5",
+      "jpy_per_unit_expected": "2",
+      "jpy_per_unit_max": "3",
+      "source": "user_profile",
+      "note": "synthetic mile valuation"
+    },
+    {
+      "asset_id": "asset.point.syn-campaign",
+      "reward_class": "limited_period",
+      "jpy_per_unit_min": "0.5",
+      "jpy_per_unit_expected": "0.7",
+      "jpy_per_unit_max": "1",
+      "source": "user_profile",
+      "note": "short-dated usage-limited uplift is discounted"
+    }
+  ],
+  "edges": [
+    {
+      "rule_id": "syn-p1.transfer.site.hub",
+      "label_ja": "SYNサイト→SYNハブ（手数料あり）",
+      "source_claim_ids": ["claim.syn-p1.site.hub"],
+      "source_asset": {
+        "asset_id": "asset.point.syn-site",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-site",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "destination_asset": {
+        "asset_id": "asset.point.syn-hub",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-hub",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "source_units": "1",
+      "destination_units": "1",
+      "minimum_source_units": "500",
+      "increment_source_units": "100",
+      "maximum_source_units_per_request": null,
+      "maximum_source_units_per_period": null,
+      "maximum_period": null,
+      "fee_source_units": "150",
+      "processing_time_days_min": 1,
+      "processing_time_days_max": 3,
+      "cancellation_policy": "not_cancelable",
+      "valid_from": null,
+      "valid_to": null,
+      "required_conditions_ja": [],
+      "requires_direct_source": false
+    },
+    {
+      "rule_id": "syn-p1.transfer.hub.air",
+      "label_ja": "SYNハブ→SYNマイル（1日あたり上限）",
+      "source_claim_ids": ["claim.syn-p1.hub.air"],
+      "source_asset": {
+        "asset_id": "asset.point.syn-hub",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-hub",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "destination_asset": {
+        "asset_id": "asset.mile.syn-air",
+        "asset_kind": "airline_mile",
+        "program_id": "program.syn-air",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "source_units": "1000",
+      "destination_units": "700",
+      "minimum_source_units": "1000",
+      "increment_source_units": "1000",
+      "maximum_source_units_per_request": null,
+      "maximum_source_units_per_period": "20000",
+      "maximum_period": "day",
+      "fee_source_units": "0",
+      "processing_time_days_min": 2,
+      "processing_time_days_max": 7,
+      "cancellation_policy": "not_cancelable",
+      "valid_from": null,
+      "valid_to": null,
+      "required_conditions_ja": [],
+      "requires_direct_source": false
+    },
+    {
+      "rule_id": "syn-p1.transfer.site.air",
+      "label_ja": "SYNサイト→SYNマイル（直接）",
+      "source_claim_ids": ["claim.syn-p1.site.air"],
+      "source_asset": {
+        "asset_id": "asset.point.syn-site",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-site",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "destination_asset": {
+        "asset_id": "asset.mile.syn-air",
+        "asset_kind": "airline_mile",
+        "program_id": "program.syn-air",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "source_units": "1000",
+      "destination_units": "300",
+      "minimum_source_units": null,
+      "increment_source_units": null,
+      "maximum_source_units_per_request": null,
+      "maximum_source_units_per_period": null,
+      "maximum_period": null,
+      "fee_source_units": "0",
+      "processing_time_days_min": 0,
+      "processing_time_days_max": 0,
+      "cancellation_policy": "provider_defined",
+      "valid_from": null,
+      "valid_to": null,
+      "required_conditions_ja": [],
+      "requires_direct_source": false
+    },
+    {
+      "rule_id": "syn-p1.transfer.site.campaign",
+      "label_ja": "SYNサイト→SYN増量ポイント（期間・用途限定／通算上限）",
+      "source_claim_ids": ["claim.syn-p1.site.campaign"],
+      "source_asset": {
+        "asset_id": "asset.point.syn-site",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-site",
+        "reward_class": "normal",
+        "scale": 0
+      },
+      "destination_asset": {
+        "asset_id": "asset.point.syn-campaign",
+        "asset_kind": "reward_point",
+        "program_id": "program.syn-campaign",
+        "reward_class": "limited_period",
+        "scale": 0
+      },
+      "source_units": "2",
+      "destination_units": "3",
+      "minimum_source_units": null,
+      "increment_source_units": null,
+      "maximum_source_units_per_request": null,
+      "maximum_source_units_per_period": "10000",
+      "maximum_period": "lifetime",
+      "fee_source_units": "0",
+      "processing_time_days_min": 0,
+      "processing_time_days_max": 0,
+      "cancellation_policy": "not_cancelable",
+      "valid_from": null,
+      "valid_to": null,
+      "required_conditions_ja": [],
+      "requires_direct_source": true
+    }
+  ]
+}

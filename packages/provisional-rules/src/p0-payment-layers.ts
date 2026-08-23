@@ -46,6 +46,7 @@ export interface P0PaymentLayerOption {
   /** Option ids that must also be selected for this option to apply. */
   readonly requires_option_ids: readonly string[];
   readonly merchant_scope: string | null;
+  readonly required_conditions_ja: readonly string[];
   readonly source_claim_ids: readonly string[];
   readonly source_ids: readonly string[];
   readonly status: "active_experimental";
@@ -174,6 +175,9 @@ const FAMILY_REWARD_ASSET: Readonly<Record<string, P0SpendAsset>> =
 /** Families whose payment option represents a credit card presented directly. */
 const CARD_FAMILY_PREFIX = "card.";
 
+/** Families that describe a merchant's own presentment programme. */
+const MERCHANT_FAMILY_PREFIX = "merchant.";
+
 /**
  * Charge rewards, with the pairing each one depends on.
  *
@@ -197,6 +201,63 @@ const CHARGE_BINDINGS: readonly {
     funding_family_id: "point.nanaco",
     payment_family_id: "point.nanaco",
   },
+]);
+
+/**
+ * Merchant presentment programmes, and what each pays in.
+ *
+ * Showing a loyalty identifier is the third earning channel of a stacked
+ * payment, and it is merchant-scoped: a rate published for one chain must
+ * never be offered at another.  Each entry therefore carries the merchant the
+ * option is confined to, plus any condition the source attaches to earning it.
+ */
+const MERCHANT_LOYALTY_BINDINGS: readonly {
+  readonly family_id: string;
+  readonly merchant_id: string;
+  readonly reward_asset: P0SpendAsset;
+  readonly conditions_ja: readonly string[];
+}[] = Object.freeze([
+  {
+    family_id: "merchant.newdays",
+    merchant_id: "merchant.newdays",
+    reward_asset: asset("asset.point.jre", "program.jre-point", "JRE POINT"),
+    conditions_ja: Object.freeze(["登録済みSuicaの提示が必要です"]),
+  },
+  {
+    // Bound so the refusal is recorded for the right reason: this programme
+    // pays WAON POINT unambiguously, but only on named tenders, which makes
+    // it a bonus on those tenders rather than a presentment anyone can earn.
+    family_id: "merchant.aeon-group",
+    merchant_id: "merchant.aeon-group",
+    reward_asset: asset("asset.point.waon", "program.waon-point", "WAON POINT"),
+    conditions_ja: Object.freeze([]),
+  },
+  {
+    family_id: "merchant.biccamera",
+    merchant_id: "merchant.biccamera",
+    reward_asset: asset(
+      "asset.point.bic",
+      "program.bic-point",
+      "ビックポイント",
+    ),
+    conditions_ja: Object.freeze([]),
+  },
+]);
+
+/**
+ * Keys that make a published loyalty rate conditional rather than ordinary.
+ *
+ * A rate that only applies to named tenders is a bonus on those tenders, not a
+ * presentment anyone can earn; a rate that changes at a time of day is two
+ * rates.  Neither is representable as one option, so both are refused rather
+ * than flattened to whichever figure happens to be larger.
+ */
+const CONDITIONAL_LOYALTY_KEYS = Object.freeze([
+  "target_tenders",
+  "points_before_16",
+  "points_from_16",
+  "monthly",
+  "annual",
 ]);
 
 const BASE_RATE_ROLES = new Set([
@@ -287,7 +348,32 @@ function exactRate(value: unknown): ExactRate | null {
   const amountPoints = positiveNumber(value.points);
   if (amount !== null && amountPoints !== null)
     return { units: decimalText(amountPoints), basis: amount };
+  // Merchant loyalty claims state the same pair under a tax-qualified key.
+  // Which basis the tax sits on changes the reward on a real basket, so it is
+  // carried through rather than normalised away.
+  const includingTax = positiveInteger(value.yen_including_tax);
+  const excludingTax = positiveInteger(value.yen_excluding_tax);
+  const taxedBasis = includingTax ?? excludingTax;
+  if (taxedBasis !== null && points !== null)
+    return { units: decimalText(points), basis: taxedBasis };
   return null;
+}
+
+/**
+ * A loyalty rate, which may also be published as a flat percentage.
+ *
+ * Presentment programmes commonly quote "10%" rather than a points-per-yen
+ * pair.  A percentage of a 100 yen basis is exact, so it is accepted here —
+ * but only in the loyalty pass, so a card's headline campaign percentage
+ * cannot silently become its ordinary payment rate.
+ */
+function loyaltyRate(value: unknown): ExactRate | null {
+  const direct = exactRate(value);
+  if (direct) return direct;
+  if (!isRecord(value)) return null;
+  const percent = positiveNumber(value.basic_rate_percent);
+  if (percent === null) return null;
+  return { units: decimalText(percent), basis: 100 };
 }
 
 /** A stated programme name must agree with the declared asset binding. */
@@ -341,6 +427,7 @@ function chargeOption(
     cap_period: monthlyCap === null ? null : "month",
     requires_option_ids: Object.freeze(requires.sort()),
     merchant_scope: null,
+    required_conditions_ja: Object.freeze([]),
     source_claim_ids: Object.freeze([claim.claim_id]),
     source_ids: claim.source_ids,
     status: "active_experimental",
@@ -519,6 +606,7 @@ export function compileP0PaymentLayerSet(input: unknown): P0PaymentLayerSet {
       cap_period: null,
       requires_option_ids: Object.freeze([]),
       merchant_scope: null,
+      required_conditions_ja: Object.freeze([]),
       source_claim_ids: Object.freeze([claim.claim_id]),
       source_ids: claim.source_ids,
       status: "active_experimental",
@@ -538,6 +626,7 @@ export function compileP0PaymentLayerSet(input: unknown): P0PaymentLayerSet {
         cap_period: null,
         requires_option_ids: Object.freeze([]),
         merchant_scope: null,
+        required_conditions_ja: Object.freeze([]),
         source_claim_ids: Object.freeze([claim.claim_id]),
         source_ids: claim.source_ids,
         status: "active_experimental",
@@ -566,7 +655,76 @@ export function compileP0PaymentLayerSet(input: unknown): P0PaymentLayerSet {
     record(claim.claim_id, option);
   }
 
-  // Pass 3: exclusions and redemption values.
+  // Pass 3: merchant presentment rates, scoped to the merchant that published
+  // them.  This is the third earning channel of a stacked payment; without it
+  // every stack the engine can build stops at charge plus payment.
+  const loyaltyBinding = new Map(
+    MERCHANT_LOYALTY_BINDINGS.map((binding) => [binding.family_id, binding]),
+  );
+  for (const claim of ordered) {
+    if (
+      claim.claim_type !== "earn_rule" ||
+      !claim.family_id.startsWith(MERCHANT_FAMILY_PREFIX)
+    )
+      continue;
+    const binding = loyaltyBinding.get(claim.family_id);
+    if (!binding) {
+      note(
+        claim,
+        "no_asset_binding",
+        "no declared reward-asset binding for this merchant programme",
+      );
+      continue;
+    }
+    if (!programmeMatches(claim.value, binding.reward_asset)) {
+      note(
+        claim,
+        "no_asset_binding",
+        "stated programme does not match the declared reward-asset binding",
+      );
+      continue;
+    }
+    const loyaltyValue = isRecord(claim.value) ? claim.value : null;
+    if (
+      loyaltyValue !== null &&
+      CONDITIONAL_LOYALTY_KEYS.some((key) => key in loyaltyValue)
+    ) {
+      note(
+        claim,
+        "maximum_or_conditional_only",
+        "loyalty rate depends on the tender used or on the time of purchase",
+      );
+      continue;
+    }
+    const rate = loyaltyRate(claim.value);
+    if (!rate) {
+      note(
+        claim,
+        "maximum_or_conditional_only",
+        "loyalty claim does not state an exact rate",
+      );
+      continue;
+    }
+    record(claim.claim_id, {
+      option_id: optionId("loyalty", binding.family_id),
+      layer: "loyalty",
+      family_id: binding.family_id,
+      label_ja: claim.subject,
+      reward_asset: binding.reward_asset,
+      reward_units_per_basis: rate.units,
+      basis_unit_jpy: rate.basis,
+      cap_reward_units_per_period: null,
+      cap_period: null,
+      requires_option_ids: Object.freeze([]),
+      merchant_scope: binding.merchant_id,
+      required_conditions_ja: binding.conditions_ja,
+      source_claim_ids: Object.freeze([claim.claim_id]),
+      source_ids: claim.source_ids,
+      status: "active_experimental",
+    });
+  }
+
+  // Pass 4: exclusions and redemption values.
   for (const claim of ordered) {
     if (claim.claim_type === "redemption_value") {
       const derived = exitOptions(claim);

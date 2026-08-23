@@ -84,6 +84,60 @@ describe("P0 payment stack browser route", () => {
     expect(priced.winner?.total_rate_percent).toBe("1");
   });
 
+  it("stacks a merchant presentment on top of the card payment", async () => {
+    const base = {
+      ...input,
+      merchant_id: "merchant.newdays",
+      owned_family_ids: ["card.view"],
+    };
+    const withheld = await recommendPaymentStack(base);
+    // The presentment needs a registered Suica, so it is held back until the
+    // buyer confirms that condition.
+    expect(withheld.winner?.total_rate_percent).toBe("0.5");
+
+    const confirmed = await recommendPaymentStack({
+      ...base,
+      confirmed_option_ids: ["p0.pay.loyalty.merchant.newdays"],
+    });
+    expect(
+      confirmed.winner?.layers.map((layer) => [
+        layer.layer,
+        layer.reward_points,
+      ]),
+    ).toEqual([
+      ["payment", "50"],
+      ["loyalty", "50"],
+    ]);
+    expect(confirmed.winner?.total_rate_percent).toBe("1");
+    expect(confirmed.winner?.conditions).toEqual([
+      "登録済みSuicaの提示が必要です",
+    ]);
+  });
+
+  it("never offers one merchant's presentment rate at another", async () => {
+    const elsewhere = await recommendPaymentStack({
+      ...input,
+      merchant_id: "merchant.any",
+      owned_family_ids: ["card.view"],
+      confirmed_option_ids: ["p0.pay.loyalty.merchant.newdays"],
+    });
+    expect(
+      elsewhere.winner?.layers.some((layer) => layer.layer === "loyalty"),
+    ).toBe(false);
+    expect(elsewhere.winner?.total_rate_percent).toBe("0.5");
+  });
+
+  it("lists the merchants whose presentment programme it knows", async () => {
+    const result = await recommendPaymentStack(input);
+    expect(result.merchants.map((item) => item.merchant_id)).toContain(
+      "merchant.newdays",
+    );
+    expect(
+      result.merchants.find((item) => item.merchant_id === "merchant.newdays")
+        ?.label,
+    ).toBe("NewDays");
+  });
+
   it("rejects unknown fields, accessors, and out-of-range amounts", async () => {
     expect(() =>
       parsePaymentStackBrowserInput({ ...input, extra: true }),

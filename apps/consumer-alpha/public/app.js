@@ -2600,6 +2600,22 @@
     });
   };
 
+  // The merchant list arrives with the result rather than from a separate
+  // call, so the picker fills in as soon as the first comparison runs.
+  const renderPaymentStackMerchants = (merchants) => {
+    const select = document.getElementById("payment-stack-merchant");
+    if (select.options.length > 1 || merchants.length === 0) return;
+    const chosen = select.value;
+    merchants.forEach((merchant) => {
+      if (typeof merchant?.merchant_id !== "string") return;
+      const option = node("option");
+      option.value = merchant.merchant_id;
+      option.textContent = merchant.label || merchant.merchant_id;
+      select.appendChild(option);
+    });
+    select.value = chosen;
+  };
+
   const renderPaymentStackPlan = (plan, primary) => {
     const card = node(
       "article",
@@ -2666,7 +2682,9 @@
         const body = await postJson(
           "/api/experimental/payment-stack/recommendation",
           {
-            merchant_id: "merchant.any",
+            merchant_id:
+              document.getElementById("payment-stack-merchant").value ||
+              "merchant.any",
             amount_jpy: Number(
               document.getElementById("payment-stack-amount").value,
             ),
@@ -2685,6 +2703,7 @@
           );
           return;
         }
+        renderPaymentStackMerchants(body.merchants || []);
         result.appendChild(renderPaymentStackPlan(body.winner, true));
         (body.alternatives || []).forEach((plan) => {
           result.appendChild(renderPaymentStackPlan(plan, false));

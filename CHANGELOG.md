@@ -2,6 +2,30 @@
 
 ## Unreleased — 2026-08-23
 
+- Compiled merchant presentment programmes into the `loyalty` layer, which
+  had produced zero options. Every stack the app could build therefore
+  stopped at charge plus payment, understating the rate wherever showing a
+  point card also earns. Two mechanical gaps caused it: merchant families
+  had no declared reward-asset binding, and the rate reader did not know the
+  tax-qualified `yen_including_tax` / `yen_excluding_tax` keys these claims
+  use. A presentment rate published as a flat percentage is now also read,
+  but only in the loyalty pass, so a card's headline campaign percentage
+  cannot become its ordinary payment rate.
+- Presentment options are scoped to the merchant that published them. The
+  payment surface previously scoped a merchant-bound option to whichever
+  merchant was being asked about, which would have let one chain's rate
+  follow the buyer to another.
+- A rate that applies only to named tenders, or that changes at a time of
+  day, is refused with that reason rather than flattened to whichever figure
+  is larger. Each such claim now records why it was refused instead of
+  falling through to a generic disposition.
+- Added the `SYN-P1-ROUTE-SHAPES` synthetic fixture. Real P0 evidence carries
+  no transfer fee, no per-day or per-lifetime cap, and no restricted reward
+  class, so those kernel paths only ever ran against assertions written
+  beside them. The fixture states the shapes explicitly — including a fee
+  that must be carried back through the capacity calculation, which no other
+  test covered — and never counts as evidence, coverage, or a published rule.
+
 - Added `point-route-optimizer.v2`, a value-maximising replacement for the
   single-route point optimizer. It ranks by declared JPY value rather than by
   native units, so routes that end in different assets are comparable and the

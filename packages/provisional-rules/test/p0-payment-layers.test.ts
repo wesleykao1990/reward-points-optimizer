@@ -83,6 +83,47 @@ describe("P0 payment layer compiler", () => {
     ).toBe(true);
   });
 
+  it("compiles a merchant presentment rate scoped to that merchant", () => {
+    const loyalty = set.options.find(
+      (option) => option.option_id === "p0.pay.loyalty.merchant.newdays",
+    );
+    expect(loyalty?.layer).toBe("loyalty");
+    // 200 yen including tax earns 1 JRE POINT when a registered Suica is shown.
+    expect(loyalty?.reward_units_per_basis).toBe("1");
+    expect(loyalty?.basis_unit_jpy).toBe(200);
+    expect(loyalty?.reward_asset.asset_id).toBe("asset.point.jre");
+    expect(loyalty?.merchant_scope).toBe("merchant.newdays");
+    expect(loyalty?.required_conditions_ja).toEqual([
+      "登録済みSuicaの提示が必要です",
+    ]);
+  });
+
+  it("reads a presentment rate published as a percentage", () => {
+    const loyalty = set.options.find(
+      (option) => option.option_id === "p0.pay.loyalty.merchant.biccamera",
+    );
+    expect(loyalty?.reward_units_per_basis).toBe("10");
+    expect(loyalty?.basis_unit_jpy).toBe(100);
+    expect(loyalty?.reward_asset.asset_id).toBe("asset.point.bic");
+  });
+
+  it("refuses a presentment rate that depends on tender or time of day", () => {
+    // The AEON rate applies only to named tenders, so it is a bonus on those
+    // tenders rather than a presentment anyone can earn.
+    expect(
+      set.dispositions.find(
+        (item) => item.claim_id === "claim.merchant.aeon-group.loyalty.001",
+      )?.status,
+    ).toBe("maximum_or_conditional_only");
+    // The Lawson rate changes at 16:00 and pays one of two programmes.
+    expect(
+      set.options.some((option) => option.family_id === "merchant.lawson"),
+    ).toBe(false);
+    expect(
+      set.options.some((option) => option.family_id === "merchant.mcdonalds"),
+    ).toBe(false);
+  });
+
   it("compiles issuer statements that charging earns nothing", () => {
     expect(set.charge_exclusions.map((item) => item.family_id)).toContain(
       "card.d",

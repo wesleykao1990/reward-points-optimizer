@@ -157,6 +157,7 @@
             <p>チャージ・支払い・提示を組み合わせた場合の還元を比較します。手持ちの決済手段だけで計算します。</p>
             <div class="point-spend-grid">
               <label>支払う金額（円）<input id="payment-stack-amount" type="number" min="1" max="10000000" step="1" value="10000" inputmode="numeric" required></label>
+              <label>お店<select id="payment-stack-merchant"><option value="merchant.any">指定しない</option></select></label>
             </div>
             <div id="payment-stack-owned" class="point-spend-conditions" aria-live="polite"></div>
             <button id="payment-stack-submit" type="submit" class="primary wide">支払い方法を比較する</button>
