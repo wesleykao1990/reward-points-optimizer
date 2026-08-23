@@ -8,6 +8,28 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUTPUT = join(ROOT, "supabase", "migrations");
 const mode = process.argv[2] ?? "--check";
 
+// These sources were first applied through the connected Supabase production
+// project on 2026-08-23. Keep their recorded migration versions stable so
+// staging the canonical sources does not generate duplicate migrations later.
+const PINNED_DESTINATIONS = new Map([
+  [
+    "db/0022_merchant_acceptance_geo_cache.sql",
+    "20260823144106_merchant_acceptance_geo_cache.sql",
+  ],
+  [
+    "db/seeds/012_tokyo_major_merchant_seed.sql",
+    "20260823144429_tokyo_major_merchant_seed.sql",
+  ],
+  [
+    "db/0023_merchant_acceptance_resolved_projection.sql",
+    "20260823144445_merchant_acceptance_resolved_projection.sql",
+  ],
+  [
+    "db/0024_merchant_acceptance_indexes.sql",
+    "20260823144716_merchant_acceptance_indexes.sql",
+  ],
+]);
+
 if (mode !== "--check" && mode !== "--write") {
   console.error("usage: node scripts/stage_supabase_migrations.mjs [--check|--write]");
   process.exitCode = 2;
@@ -46,6 +68,10 @@ function postgresSql(source, sourceName) {
   return `-- Staged from ${sourceName}; edit the canonical source, not this file.\n${hostedSql}`;
 }
 
+function destinationFor(sourceName, fallback) {
+  return PINNED_DESTINATIONS.get(sourceName) ?? fallback;
+}
+
 async function main(requestedMode) {
   const schemaDirectory = join(ROOT, "db");
   const dataDirectory = join(ROOT, "db", "seeds");
@@ -57,16 +83,28 @@ async function main(requestedMode) {
   assertSequence(dataNames, 3, "data");
 
   const inputs = [
-    ...schemaNames.map((name, index) => ({
-      source: join(schemaDirectory, name),
-      sourceName: `db/${name}`,
-      destination: `${migrationVersion(20260817000000n, index)}_schema_${name}`,
-    })),
-    ...dataNames.map((name, index) => ({
-      source: join(dataDirectory, name),
-      sourceName: `db/seeds/${name}`,
-      destination: `${migrationVersion(20260818000000n, index)}_released_data_${name}`,
-    })),
+    ...schemaNames.map((name, index) => {
+      const sourceName = `db/${name}`;
+      return {
+        source: join(schemaDirectory, name),
+        sourceName,
+        destination: destinationFor(
+          sourceName,
+          `${migrationVersion(20260817000000n, index)}_schema_${name}`,
+        ),
+      };
+    }),
+    ...dataNames.map((name, index) => {
+      const sourceName = `db/seeds/${name}`;
+      return {
+        source: join(dataDirectory, name),
+        sourceName,
+        destination: destinationFor(
+          sourceName,
+          `${migrationVersion(20260818000000n, index)}_released_data_${name}`,
+        ),
+      };
+    }),
   ];
   const destinations = new Set(inputs.map((item) => item.destination));
   if (destinations.size !== inputs.length)
