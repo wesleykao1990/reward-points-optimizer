@@ -2182,10 +2182,177 @@
         })),
       };
     });
+    const campaignRoutes = (() => {
+      if (
+        !Array.isArray(body.campaign_routes) ||
+        body.campaign_routes.length > 8
+      )
+        throw new Error("point_spend_options_invalid");
+      const routeKeys = new Set();
+      return body.campaign_routes.map((route) => {
+        const kind = route?.kind ?? route?.scenario ?? route?.route_id;
+        if (
+          !route ||
+          typeof route.route_id !== "string" ||
+          !["moppy_aug_2026", "jal_mileage_park_rakuten"].includes(
+            route.route_id,
+          ) ||
+          (route.scenario !== undefined && route.scenario !== route.route_id) ||
+          (route.kind !== undefined && route.kind !== route.route_id) ||
+          typeof route.source_asset_id !== "string" ||
+          !/^asset\.[a-z0-9.-]{2,80}$/u.test(route.source_asset_id) ||
+          typeof route.target_asset_id !== "string" ||
+          !/^asset\.[a-z0-9.-]{2,80}$/u.test(route.target_asset_id) ||
+          typeof route.label !== "string" ||
+          route.label.length < 1 ||
+          route.label.length > 80 ||
+          typeof route.source_label !== "string" ||
+          route.source_label.length < 1 ||
+          route.source_label.length > 80 ||
+          !["reward_point", "fiat"].includes(route.source_kind) ||
+          typeof route.target_label !== "string" ||
+          route.target_label.length < 1 ||
+          route.target_label.length > 80 ||
+          route.target_kind !== "airline_mile" ||
+          typeof route.principal_source_amount !== "string" ||
+          !/^[0-9]+$/u.test(route.principal_source_amount) ||
+          typeof route.principal_target_amount !== "string" ||
+          !/^[0-9]+$/u.test(route.principal_target_amount) ||
+          (route.valid_from !== null &&
+            (typeof route.valid_from !== "string" ||
+              !Number.isFinite(Date.parse(route.valid_from)))) ||
+          (route.valid_to !== null &&
+            (typeof route.valid_to !== "string" ||
+              !Number.isFinite(Date.parse(route.valid_to)))) ||
+          (route.required_inputs !== undefined &&
+            (!Array.isArray(route.required_inputs) ||
+              route.required_inputs.length > 4))
+        )
+          throw new Error("point_spend_options_invalid");
+        const routeKey = `${route.source_asset_id}→${route.target_asset_id}`;
+        if (routeKeys.has(routeKey))
+          throw new Error("point_spend_options_invalid");
+        routeKeys.add(routeKey);
+        const inputKeys = new Set();
+        const rawInputs =
+          route.required_inputs ||
+          (kind === "moppy_aug_2026"
+            ? [
+                {
+                  field: "campaign_ad_earned_points",
+                  label: "広告利用で獲得したモッピーポイント（任意）",
+                  type: "integer",
+                  required: false,
+                  min: 0,
+                  max: 1_000_000_000,
+                  step: 1,
+                },
+                {
+                  field: "campaign_monthly_exchange_count",
+                  label: "今月の交換回数（任意）",
+                  type: "integer",
+                  required: false,
+                  min: 0,
+                  max: 1_000_000_000,
+                  step: 1,
+                },
+              ]
+            : [
+                {
+                  field: "portal_traversal_confirmed",
+                  label: "購入直前にJALマイレージパークから遷移した",
+                  type: "boolean",
+                  required: false,
+                },
+              ]);
+        const inputs = rawInputs.map((input) => {
+          if (!input || typeof input !== "object")
+            throw new Error("point_spend_options_invalid");
+          const field =
+            typeof input.field === "string"
+              ? input.field
+              : typeof input.name === "string"
+                ? input.name
+                : typeof input.key === "string"
+                  ? input.key
+                  : typeof input.input_id === "string"
+                    ? input.input_id
+                    : "";
+          const type =
+            typeof input.type === "string"
+              ? input.type
+              : typeof input.value_type === "string"
+                ? input.value_type
+                : typeof input.kind === "string"
+                  ? input.kind
+                  : "";
+          if (
+            ![
+              "campaign_ad_earned_points",
+              "campaign_monthly_exchange_count",
+              "portal_traversal_confirmed",
+            ].includes(field) ||
+            !["integer", "number", "boolean"].includes(type) ||
+            (field === "portal_traversal_confirmed" && type !== "boolean") ||
+            (field !== "portal_traversal_confirmed" &&
+              !["integer", "number"].includes(type)) ||
+            typeof input.label !== "string" ||
+            input.label.length < 1 ||
+            input.label.length > 100 ||
+            (input.required !== undefined &&
+              typeof input.required !== "boolean") ||
+            inputKeys.has(field)
+          )
+            throw new Error("point_spend_options_invalid");
+          const min = input.min ?? input.minimum ?? 0;
+          const max = input.max ?? input.maximum ?? 1_000_000_000;
+          const step = input.step ?? 1;
+          if (
+            type !== "boolean" &&
+            (!Number.isSafeInteger(min) ||
+              !Number.isSafeInteger(max) ||
+              min < 0 ||
+              max < min ||
+              max > 1_000_000_000 ||
+              !Number.isSafeInteger(step) ||
+              step < 1)
+          )
+            throw new Error("point_spend_options_invalid");
+          inputKeys.add(field);
+          return {
+            field,
+            label: input.label,
+            type: type === "number" ? "integer" : type,
+            required: input.required === true,
+            min: type === "boolean" ? null : min,
+            max: type === "boolean" ? null : max,
+            step: type === "boolean" ? null : step,
+          };
+        });
+        return {
+          route_id: route.route_id,
+          scenario: route.route_id,
+          source_asset_id: route.source_asset_id,
+          source_label: route.source_label,
+          source_kind: route.source_kind,
+          target_asset_id: route.target_asset_id,
+          target_label: route.target_label,
+          target_kind: route.target_kind,
+          principal_source_amount: route.principal_source_amount,
+          principal_target_amount: route.principal_target_amount,
+          valid_from: route.valid_from,
+          valid_to: route.valid_to,
+          kind,
+          label: route.label,
+          required_inputs: inputs,
+        };
+      });
+    })();
     return {
       assets,
       conditionalRules,
       walletCatalogue,
+      campaignRoutes,
       rule_count: body.rule_count,
       coverage: {
         asset_count: body.coverage.asset_count,
@@ -2494,6 +2661,84 @@
     });
   };
 
+  const campaignInputId = (field) => `point-spend-campaign-${field}`;
+
+  const selectedCampaignRoute = () => {
+    if (!pointSpendOptions) return null;
+    const source = document.getElementById("point-spend-source").value;
+    const target = targetAssetId();
+    if (!source || !target) return null;
+    return (
+      pointSpendOptions.campaignRoutes.find(
+        (route) =>
+          route.source_asset_id === source && route.target_asset_id === target,
+      ) || null
+    );
+  };
+
+  const campaignInputValue = (input) => {
+    if (!input) return null;
+    if (input.type === "boolean") return input.checked;
+    if (input.value === "") return null;
+    const value = Number(input.value);
+    return Number.isSafeInteger(value) ? value : null;
+  };
+
+  const renderPointSpendCampaign = () => {
+    const container = document.getElementById("point-spend-campaign");
+    if (!container) return;
+    clear(container);
+    const route = selectedCampaignRoute();
+    if (!route) return;
+
+    const fieldset = node("fieldset", "point-spend-campaign-fieldset");
+    const legend = node("legend", "point-spend-campaign-heading");
+    legend.appendChild(text("span", route.label));
+    legend.appendChild(text("small", "選択した交換先に適用できる条件"));
+    fieldset.appendChild(legend);
+
+    const toggle = node("label", "point-spend-campaign-toggle");
+    const checkbox = node("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "point-spend-campaign-application";
+    checkbox.name = "campaign_application";
+    checkbox.checked = true;
+    checkbox.setAttribute("aria-controls", "point-spend-campaign-inputs");
+    toggle.appendChild(checkbox);
+    toggle.appendChild(text("span", "キャンペーン適用"));
+    fieldset.appendChild(toggle);
+
+    const inputs = node("div", "point-spend-campaign-inputs");
+    inputs.id = "point-spend-campaign-inputs";
+    inputs.hidden = false;
+    route.required_inputs.forEach((definition) => {
+      const label = node("label", "point-spend-campaign-input");
+      label.appendChild(text("span", definition.label));
+      const input = node("input");
+      input.id = campaignInputId(definition.field);
+      input.name = definition.field;
+      input.dataset.campaignInput = definition.field;
+      input.type = definition.type === "boolean" ? "checkbox" : "number";
+      if (definition.type !== "boolean") {
+        input.min = String(definition.min);
+        input.max = String(definition.max);
+        input.step = String(definition.step);
+        input.inputMode = "numeric";
+      }
+      if (definition.required) input.required = true;
+      label.appendChild(input);
+      inputs.appendChild(label);
+    });
+    fieldset.appendChild(inputs);
+    checkbox.addEventListener("change", () => {
+      inputs.hidden = !checkbox.checked;
+      inputs.querySelectorAll("input").forEach((input) => {
+        input.disabled = !checkbox.checked;
+      });
+    });
+    container.appendChild(fieldset);
+  };
+
   const renderPointSpendTargets = (preferredTarget = "") => {
     const sourceId = document.getElementById("point-spend-source").value;
     const target = document.getElementById("point-spend-target");
@@ -2540,6 +2785,7 @@
       renderP0WalletCatalogue();
       renderP0ProductPickers();
       renderPointSpendConditions();
+      renderPointSpendCampaign();
       clear(result);
       result.appendChild(
         text("p", "交換元・交換先・残高を選んでください。", "helper"),
@@ -2547,6 +2793,7 @@
     } catch {
       pointSpendOptions = null;
       renderP0WalletCatalogue();
+      clear(document.getElementById("point-spend-campaign"));
       clear(result);
       result.appendChild(
         text("p", "ポイント交換ルートを読み込めませんでした。", "error-panel"),
@@ -2712,10 +2959,160 @@
     .addEventListener("change", () => {
       renderPointSpendTargets();
       renderPointSpendConditions();
+      renderPointSpendCampaign();
     });
   document
     .getElementById("point-spend-target")
-    .addEventListener("change", renderPointSpendConditions);
+    .addEventListener("change", () => {
+      renderPointSpendConditions();
+      renderPointSpendCampaign();
+    });
+  const safePointSpendReward = (reward) => {
+    if (
+      !reward ||
+      !["bonus", "rebate", "portal_reward"].includes(reward.kind) ||
+      typeof reward.label !== "string" ||
+      reward.label.length < 1 ||
+      reward.label.length > 120 ||
+      typeof reward.asset_id !== "string" ||
+      !/^asset\.[a-z0-9.-]{1,113}$/u.test(reward.asset_id) ||
+      typeof reward.asset_label !== "string" ||
+      reward.asset_label.length < 1 ||
+      reward.asset_label.length > 80 ||
+      typeof reward.amount !== "string" ||
+      !/^[0-9]+$/u.test(reward.amount) ||
+      !["posted", "pending"].includes(reward.settlement) ||
+      typeof reward.posting !== "string" ||
+      reward.posting.length > 160 ||
+      (!Number.isSafeInteger(reward.processing_days_min) &&
+        reward.processing_days_min !== null) ||
+      (!Number.isSafeInteger(reward.processing_days_max) &&
+        reward.processing_days_max !== null)
+    )
+      throw new Error("point_spend_result_invalid");
+    return reward;
+  };
+
+  const safePointSpendResult = (body) => {
+    if (
+      !body ||
+      body.version !== "p0-point-spend-browser.v2" ||
+      body.experimental !== true ||
+      body.current_advice !== false ||
+      typeof body.campaign_applied !== "boolean" ||
+      !Array.isArray(body.campaign_rewards) ||
+      body.campaign_rewards.length > 8 ||
+      !body.campaign_rewards.every(safePointSpendReward) ||
+      !Array.isArray(body.campaign_prerequisites) ||
+      body.campaign_prerequisites.length > 8 ||
+      !body.campaign_prerequisites.every(
+        (prerequisite) =>
+          prerequisite &&
+          typeof prerequisite.label === "string" &&
+          prerequisite.label.length <= 120 &&
+          ["satisfied", "missing", "not_satisfied"].includes(
+            prerequisite.status,
+          ),
+      ) ||
+      (!body.campaign_applied && body.campaign_rewards.length > 0)
+    )
+      throw new Error("point_spend_result_invalid");
+    return body;
+  };
+
+  const renderCampaignPrerequisites = (parent, prerequisites) => {
+    if (!prerequisites.length) return;
+    const conditions = node("ul", "campaign-route-conditions");
+    prerequisites.forEach((prerequisite) => {
+      const statusLabel =
+        prerequisite.status === "satisfied"
+          ? "確認済み"
+          : prerequisite.status === "not_satisfied"
+            ? "未達"
+            : "確認が必要";
+      conditions.appendChild(
+        text("li", `${statusLabel}：${prerequisite.label}`),
+      );
+    });
+    parent.appendChild(conditions);
+  };
+
+  const renderCampaignRewards = (parent, rewards) => {
+    const additionalRewards = rewards;
+    if (!additionalRewards.length) return;
+    const section = node("section", "campaign-reward-section");
+    section.appendChild(text("h4", "後日付与・還元", "campaign-reward-title"));
+    const cards = node("div", "campaign-route-rewards");
+    additionalRewards.forEach((reward) => {
+      const card = node("article", "campaign-reward-card");
+      if (reward.settlement === "pending") card.classList.add("is-pending");
+      const heading = node("div", "campaign-reward-heading");
+      heading.appendChild(routeNodeLogo(reward.asset_id, reward.asset_label));
+      const copy = node("div");
+      copy.appendChild(text("strong", reward.label));
+      copy.appendChild(text("span", reward.asset_label));
+      heading.appendChild(copy);
+      card.appendChild(heading);
+      card.appendChild(
+        text(
+          "p",
+          `${Number(reward.amount).toLocaleString("ja-JP")} ${reward.asset_label}`,
+          "campaign-reward-amount",
+        ),
+      );
+      const timing =
+        reward.processing_days_min !== null &&
+        reward.processing_days_max !== null
+          ? `・${reward.processing_days_min}〜${reward.processing_days_max}日程度`
+          : "";
+      card.appendChild(
+        text(
+          "small",
+          `${reward.settlement === "pending" ? "後日付与" : "別還元"}・${reward.posting}${timing}`,
+        ),
+      );
+      cards.appendChild(card);
+    });
+    section.appendChild(cards);
+    parent.appendChild(section);
+  };
+
+  const renderPointSpendResult = (rawBody) => {
+    const body = safePointSpendResult(rawBody);
+    const result = document.getElementById("point-spend-result");
+    clear(result);
+    if (body.status !== "ready" || !body.winner) {
+      result.appendChild(text("strong", "安全に計算できるルートがありません"));
+      result.appendChild(
+        text("p", body.message || "条件を確認してください。", "helper"),
+      );
+      renderCampaignPrerequisites(result, body.campaign_prerequisites);
+      return;
+    }
+    const winner = renderPointSpendRoute(body.winner, true);
+    if (body.campaign_applied) {
+      winner.appendChild(
+        text("span", "キャンペーン適用", "campaign-applied-badge"),
+      );
+    }
+    result.appendChild(winner);
+    (body.alternatives || []).forEach((route) => {
+      result.appendChild(renderPointSpendRoute(route, false));
+    });
+    renderCampaignRewards(result, body.campaign_rewards);
+    renderCampaignPrerequisites(result, body.campaign_prerequisites);
+    if ((body.unvalued_asset_labels || []).length > 0)
+      result.appendChild(
+        text(
+          "p",
+          `円換算が登録されていない交換先：${body.unvalued_asset_labels.join("・")}。1単位の価値を入力すると比較できます。`,
+          "helper",
+        ),
+      );
+    result.appendChild(text("p", dataOriginNote(body), "helper"));
+    result.appendChild(text("p", body.message, "helper"));
+  };
+
   document
     .getElementById("point-spend-form")
     .addEventListener("submit", async (event) => {
@@ -2746,6 +3143,22 @@
             Number(input.value),
           ]),
         );
+        const campaignRoute = selectedCampaignRoute();
+        const campaignCheckbox = document.getElementById(
+          "point-spend-campaign-application",
+        );
+        const campaignApplication = Boolean(campaignCheckbox?.checked);
+        const campaignValues =
+          campaignApplication && campaignRoute
+            ? Object.fromEntries(
+                campaignRoute.required_inputs.map((definition) => {
+                  const input = document.getElementById(
+                    campaignInputId(definition.field),
+                  );
+                  return [definition.field, campaignInputValue(input)];
+                }),
+              )
+            : {};
         const body = await postJson(
           "/api/experimental/point-spend/recommendation",
           {
@@ -2763,32 +3176,11 @@
             confirmed_prerequisite_ids: confirmedPrerequisites,
             period_source_used_by_rule: periodUsage,
             unit_value_jpy: unitValueJpy(),
+            campaign_application: campaignApplication,
+            ...campaignValues,
           },
         );
-        clear(result);
-        if (body.status !== "ready" || !body.winner) {
-          result.appendChild(
-            text("strong", "安全に計算できるルートがありません"),
-          );
-          result.appendChild(
-            text("p", body.message || "条件を確認してください。", "helper"),
-          );
-          return;
-        }
-        result.appendChild(renderPointSpendRoute(body.winner, true));
-        (body.alternatives || []).forEach((route) => {
-          result.appendChild(renderPointSpendRoute(route, false));
-        });
-        if ((body.unvalued_asset_labels || []).length > 0)
-          result.appendChild(
-            text(
-              "p",
-              `円換算が登録されていない交換先：${body.unvalued_asset_labels.join("・")}。1単位の価値を入力すると比較できます。`,
-              "helper",
-            ),
-          );
-        result.appendChild(text("p", dataOriginNote(body), "helper"));
-        result.appendChild(text("p", body.message, "helper"));
+        renderPointSpendResult(body);
       } catch {
         clear(result);
         result.appendChild(
@@ -2798,340 +3190,6 @@
         button.disabled = false;
       }
     });
-
-  // ---------------------------------------------------------------------
-  // Campaign route benchmark.
-  //
-  // This small surface lives immediately after the fixed-ratio spend result.
-  // It submits only bounded scenario state; all campaign claims, engine
-  // plans, and source bindings remain on the trusted host.
-  // ---------------------------------------------------------------------
-  const campaignRouteStatusLabels = Object.freeze({
-    eligible: "条件を満たすルート",
-    conditional: "確認が必要なルート",
-    no_valid_plan: "有効なルートなし",
-  });
-
-  const safeCampaignRoute = (body) => {
-    if (
-      !body ||
-      body.version !== "campaign-route-recommendation.v1" ||
-      body.experimental !== true ||
-      body.current_advice !== false ||
-      !["moppy_aug_2026", "jal_mileage_park_rakuten"].includes(body.scenario) ||
-      !["eligible", "conditional", "no_valid_plan"].includes(body.status) ||
-      body.status !== body.outcome ||
-      (body.winner !== null &&
-        (!body.winner ||
-          typeof body.winner !== "object" ||
-          !Array.isArray(body.winner.steps) ||
-          !Array.isArray(body.winner.rewards) ||
-          !Array.isArray(body.winner.prerequisites)))
-    )
-      throw new Error("campaign_route_invalid");
-    if (body.winner) {
-      if (body.winner.steps.length < 1 || body.winner.steps.length > 6)
-        throw new Error("campaign_route_invalid");
-      body.winner.steps.forEach((step) => {
-        if (
-          !step ||
-          typeof step.label !== "string" ||
-          typeof step.source_label !== "string" ||
-          typeof step.destination_label !== "string" ||
-          typeof step.source_amount !== "string" ||
-          typeof step.destination_amount !== "string" ||
-          typeof step.source_node_id !== "string" ||
-          typeof step.destination_node_id !== "string" ||
-          !/^[a-z][a-z0-9.-]{1,119}$/u.test(step.source_node_id) ||
-          !/^[a-z][a-z0-9.-]{1,119}$/u.test(step.destination_node_id)
-        )
-          throw new Error("campaign_route_invalid");
-      });
-      if (body.winner.rewards.length > 4)
-        throw new Error("campaign_route_invalid");
-      body.winner.rewards.forEach((reward) => {
-        if (
-          !reward ||
-          !["principal", "bonus", "rebate", "portal_reward"].includes(
-            reward.kind,
-          ) ||
-          typeof reward.label !== "string" ||
-          typeof reward.asset_id !== "string" ||
-          !/^asset\.[a-z0-9.-]{1,113}$/u.test(reward.asset_id) ||
-          typeof reward.asset_label !== "string" ||
-          typeof reward.amount !== "string" ||
-          !/^[0-9]+$/u.test(reward.amount) ||
-          !["posted", "pending"].includes(reward.settlement) ||
-          typeof reward.posting !== "string" ||
-          (!Number.isSafeInteger(reward.processing_days_min) &&
-            reward.processing_days_min !== null) ||
-          (!Number.isSafeInteger(reward.processing_days_max) &&
-            reward.processing_days_max !== null)
-        )
-          throw new Error("campaign_route_invalid");
-      });
-      body.winner.prerequisites.forEach((prerequisite) => {
-        if (
-          !prerequisite ||
-          typeof prerequisite.label !== "string" ||
-          !["satisfied", "missing", "not_satisfied"].includes(
-            prerequisite.status,
-          )
-        )
-          throw new Error("campaign_route_invalid");
-      });
-    }
-    return body;
-  };
-
-  const renderCampaignRoute = (container, body) => {
-    clear(container);
-    const status = node("p", "status");
-    status.textContent = campaignRouteStatusLabels[body.status] || "結果";
-    container.appendChild(status);
-    if (!body.winner) {
-      container.appendChild(text("p", body.message, "helper"));
-      return;
-    }
-    container.appendChild(text("h3", body.winner.label));
-    container.appendChild(
-      renderRouteChain(body.winner.steps, "キャンペーンを含む経路"),
-    );
-    const routeSteps = node("ol", "point-spend-steps campaign-route-steps");
-    body.winner.steps.forEach((step) => {
-      const item = node("li");
-      item.appendChild(text("strong", step.label));
-      item.appendChild(
-        text(
-          "span",
-          `${step.source_amount} ${step.source_label} → ${step.destination_amount} ${step.destination_label}`,
-        ),
-      );
-      routeSteps.appendChild(item);
-    });
-    container.appendChild(routeSteps);
-    const cards = node("div", "campaign-route-rewards");
-    body.winner.rewards.forEach((reward) => {
-      const card = node("article", "campaign-reward-card");
-      const heading = node("div", "campaign-reward-heading");
-      heading.appendChild(routeNodeLogo(reward.asset_id, reward.asset_label));
-      const copy = node("div");
-      copy.appendChild(text("strong", reward.label));
-      copy.appendChild(text("span", reward.asset_label));
-      heading.appendChild(copy);
-      card.appendChild(heading);
-      card.appendChild(
-        text(
-          "p",
-          `${Number(reward.amount).toLocaleString("ja-JP")} ${reward.asset_label}`,
-          "campaign-reward-amount",
-        ),
-      );
-      card.appendChild(
-        text(
-          "small",
-          `${reward.settlement === "pending" ? "後日付与" : "本体"}・${reward.posting}`,
-        ),
-      );
-      cards.appendChild(card);
-    });
-    container.appendChild(cards);
-    if (body.winner.prerequisites.length) {
-      const conditions = node("ul", "campaign-route-conditions");
-      body.winner.prerequisites.forEach((prerequisite) => {
-        const statusLabel =
-          prerequisite.status === "satisfied"
-            ? "確認済み"
-            : prerequisite.status === "not_satisfied"
-              ? "未達"
-              : "確認が必要";
-        conditions.appendChild(
-          text("li", `${statusLabel}：${prerequisite.label}`),
-        );
-      });
-      container.appendChild(conditions);
-    }
-    container.appendChild(text("p", body.winner.note, "helper"));
-    container.appendChild(text("p", body.message, "helper"));
-  };
-
-  const insertCampaignRoutePanel = () => {
-    const pointResult = document.getElementById("point-spend-result");
-    const standardForm = document.getElementById("point-spend-form");
-    if (
-      !pointResult ||
-      !standardForm ||
-      document.getElementById("campaign-route-panel")
-    )
-      return;
-    const modeSwitch = node("div", "route-mode-switch");
-    modeSwitch.setAttribute("role", "tablist");
-    modeSwitch.setAttribute("aria-label", "交換ルートの種類");
-    const standardMode = node("button", "is-active");
-    standardMode.type = "button";
-    standardMode.setAttribute("role", "tab");
-    standardMode.setAttribute("aria-selected", "true");
-    standardMode.textContent = "通常の交換";
-    const campaignMode = node("button");
-    campaignMode.type = "button";
-    campaignMode.setAttribute("role", "tab");
-    campaignMode.setAttribute("aria-selected", "false");
-    campaignMode.textContent = "キャンペーン込み";
-    modeSwitch.appendChild(standardMode);
-    modeSwitch.appendChild(campaignMode);
-    standardForm.before(modeSwitch);
-
-    const panel = node("div", "campaign-route-inline");
-    panel.id = "campaign-route-panel";
-    panel.hidden = true;
-    const title = text("h3", "キャンペーン・ポータルを含むルート");
-    title.id = "campaign-route-title";
-    panel.setAttribute("aria-labelledby", "campaign-route-title");
-    panel.appendChild(title);
-    panel.appendChild(
-      text(
-        "p",
-        "交換本体と中継先を一本の経路で表示し、後日付与とポータル還元は分けて確認します。抽選は計算しません。",
-        "helper",
-      ),
-    );
-    const form = node("form", "point-spend-card");
-    form.id = "campaign-route-form";
-    const grid = node("div", "point-spend-grid");
-    const scenarioLabel = node("label");
-    scenarioLabel.appendChild(text("span", "試算する経路"));
-    const scenario = selectField([
-      { value: "moppy_aug_2026", label: "モッピー→JAL（2026年8月）" },
-      {
-        value: "jal_mileage_park_rakuten",
-        label: "JALマイレージパーク→楽天市場",
-      },
-    ]);
-    scenario.id = "campaign-route-scenario";
-    scenarioLabel.appendChild(scenario);
-    grid.appendChild(scenarioLabel);
-    const adLabel = node("label");
-    adLabel.id = "campaign-route-ad-earned-label";
-    adLabel.appendChild(text("span", "広告利用で獲得したモッピー（任意）"));
-    const adEarned = node("input");
-    adEarned.id = "campaign-route-ad-earned";
-    adEarned.type = "number";
-    adEarned.min = "0";
-    adEarned.step = "1";
-    adEarned.placeholder = "例：10000";
-    adLabel.appendChild(adEarned);
-    grid.appendChild(adLabel);
-    const monthlyLabel = node("label");
-    monthlyLabel.id = "campaign-route-monthly-label";
-    monthlyLabel.appendChild(text("span", "今月の交換回数（任意）"));
-    const monthly = node("input");
-    monthly.id = "campaign-route-monthly-count";
-    monthly.type = "number";
-    monthly.min = "0";
-    monthly.step = "1";
-    monthly.placeholder = "例：0";
-    monthlyLabel.appendChild(monthly);
-    grid.appendChild(monthlyLabel);
-    const amountLabel = node("label");
-    amountLabel.id = "campaign-route-amount-label";
-    amountLabel.hidden = true;
-    amountLabel.appendChild(text("span", "楽天市場の購入金額"));
-    const amount = node("input");
-    amount.id = "campaign-route-purchase-amount";
-    amount.type = "number";
-    amount.min = "1";
-    amount.step = "1";
-    amount.value = "30000";
-    amountLabel.appendChild(amount);
-    grid.appendChild(amountLabel);
-    const traversalLabel = node("label");
-    traversalLabel.id = "campaign-route-traversal-label";
-    traversalLabel.hidden = true;
-    const traversal = node("input");
-    traversal.id = "campaign-route-traversal";
-    traversal.type = "checkbox";
-    traversalLabel.appendChild(traversal);
-    traversalLabel.appendChild(
-      text("span", "購入直前にJALマイレージパークから遷移した"),
-    );
-    grid.appendChild(traversalLabel);
-    form.appendChild(grid);
-    const submit = node("button", "primary wide");
-    submit.type = "submit";
-    submit.textContent = "キャンペーン経路を試算する";
-    form.appendChild(submit);
-    panel.appendChild(form);
-    const output = node("div", "point-spend-result");
-    output.id = "campaign-route-result";
-    output.setAttribute("aria-live", "polite");
-    output.appendChild(text("p", "経路を選んで試算してください。", "helper"));
-    panel.appendChild(output);
-    pointResult.after(panel);
-    const selectMode = (campaignSelected) => {
-      standardMode.classList.toggle("is-active", !campaignSelected);
-      campaignMode.classList.toggle("is-active", campaignSelected);
-      standardMode.setAttribute("aria-selected", String(!campaignSelected));
-      campaignMode.setAttribute("aria-selected", String(campaignSelected));
-      standardForm.hidden = campaignSelected;
-      pointResult.hidden = campaignSelected;
-      panel.hidden = !campaignSelected;
-    };
-    standardMode.addEventListener("click", () => selectMode(false));
-    campaignMode.addEventListener("click", () => selectMode(true));
-    const sync = () => {
-      const moppy = scenario.value === "moppy_aug_2026";
-      adLabel.hidden = !moppy;
-      monthlyLabel.hidden = !moppy;
-      amountLabel.hidden = moppy;
-      traversalLabel.hidden = moppy;
-    };
-    scenario.addEventListener("change", sync);
-    sync();
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      submit.disabled = true;
-      clear(output);
-      output.appendChild(
-        text("p", "キャンペーン経路を確認しています…", "helper"),
-      );
-      const moppy = scenario.value === "moppy_aug_2026";
-      const numberOrNull = (input) => {
-        const value = Number(input.value);
-        return input.value === "" || !Number.isSafeInteger(value)
-          ? null
-          : value;
-      };
-      try {
-        const body = await postJson(
-          "/api/experimental/campaign-routes/recommendation",
-          {
-            scenario: scenario.value,
-            effective_at: new Date().toISOString(),
-            ...(moppy
-              ? {
-                  moppy_balance_points: 12000,
-                  ad_earned_points: numberOrNull(adEarned),
-                  monthly_exchange_count: numberOrNull(monthly),
-                }
-              : {
-                  purchase_amount_jpy: numberOrNull(amount),
-                  portal_traversal_confirmed: traversal.checked,
-                }),
-          },
-        );
-        renderCampaignRoute(output, safeCampaignRoute(body));
-      } catch {
-        clear(output);
-        output.appendChild(
-          text("p", "キャンペーン経路を計算できませんでした。", "error-panel"),
-        );
-      } finally {
-        submit.disabled = false;
-      }
-    });
-  };
-
-  insertCampaignRoutePanel();
 
   // ---------------------------------------------------------------------
   // Payment stack comparison.

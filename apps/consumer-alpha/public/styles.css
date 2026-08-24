@@ -2648,45 +2648,85 @@ fieldset {
   margin-top: 12px;
 }
 
-.route-mode-switch {
+.point-spend-campaign {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  margin: 0 0 12px;
-  padding: 4px;
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  background: var(--card-sunken);
+  gap: 9px;
 }
 
-.route-mode-switch button {
-  min-height: 36px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--tx-3);
-  font-size: 0.68rem;
-  font-weight: 700;
+.point-spend-campaign-fieldset {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--pri);
+  border-radius: 11px;
+  background: var(--pri-bed);
 }
 
-.route-mode-switch button.is-active {
-  background: var(--card);
-  box-shadow: var(--lift-2);
-  color: var(--pri);
-}
-
-.campaign-route-inline {
-  margin-top: 12px;
-}
-
-.campaign-route-inline > h3 {
-  margin: 0 0 4px;
-  font-size: 0.86rem;
+.point-spend-campaign-heading {
+  display: grid;
+  gap: 2px;
+  padding: 0 5px;
+  color: var(--tx);
+  font-size: 0.7rem;
   font-weight: 800;
 }
 
-.campaign-route-inline > .helper {
-  margin: 0 0 11px;
+.point-spend-campaign-heading small {
+  color: var(--tx-3);
+  font-size: 0.58rem;
+  font-weight: 500;
+}
+
+.point-spend-campaign-toggle {
+  display: flex;
+  min-height: 38px;
+  gap: 9px;
+  align-items: center;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--tx);
+  font-size: 0.73rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.point-spend-campaign-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--pri);
+}
+
+.point-spend-campaign-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.point-spend-campaign-input {
+  display: grid;
+  gap: 5px;
+  color: var(--tx-2);
+  font-size: 0.63rem;
+  font-weight: 600;
+}
+
+.point-spend-campaign-input input {
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  font-size: 0.72rem;
+}
+
+.point-spend-campaign-input input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--pri);
 }
 
 .point-spend-route {
@@ -2851,6 +2891,33 @@ fieldset {
   margin-top: 12px;
 }
 
+.campaign-reward-section {
+  margin-top: 13px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--card-sunken);
+}
+
+.campaign-reward-title {
+  margin: 0;
+  color: var(--tx-2);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.campaign-applied-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--ok);
+  color: #fff;
+  font-size: 0.61rem;
+  font-weight: 800;
+}
+
 .campaign-reward-card {
   display: grid;
   gap: 7px;
@@ -2859,6 +2926,11 @@ fieldset {
   border-radius: 11px;
   background: var(--card);
   box-shadow: var(--lift);
+}
+
+.campaign-reward-card.is-pending {
+  border-color: var(--warn);
+  background: var(--warn-bed);
 }
 
 .campaign-reward-heading {
@@ -3120,6 +3192,7 @@ fieldset {
 
   .route-input-grid,
   .point-spend-grid,
+  .point-spend-campaign-inputs,
   .p0-product-picker,
   .p0-wallet-family-list,
   .capture-grid {

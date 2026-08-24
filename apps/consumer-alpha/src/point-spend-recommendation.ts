@@ -1,4 +1,5 @@
 import { promises as fs } from "node:fs";
+import { types as nodeTypes } from "node:util";
 
 import {
   compileP0PaymentLayerSet,
@@ -18,6 +19,10 @@ import {
   type PointRoutePlan,
   type ValuationProfile,
 } from "@jro/rule-engine";
+import {
+  type CampaignRouteDescriptor,
+  listCampaignRouteDescriptors,
+} from "./campaign-route-recommendation.js";
 import {
   isCanonicalProductFamilyId,
   isStrictCanonicalDateTime,
@@ -73,6 +78,14 @@ export interface PointSpendBrowserInput {
    * redemptions rather than competing with it.
    */
   readonly unit_value_jpy: number | null;
+  /** Whether the request asks the unified adapter to apply a campaign lane. */
+  readonly campaign_application: boolean;
+  /** Advertising-earned Moppy points, when applying the Moppy campaign. */
+  readonly campaign_ad_earned_points: number | null;
+  /** Campaign exchange count already used in the current month. */
+  readonly campaign_monthly_exchange_count: number | null;
+  /** Whether the required JAL portal traversal was confirmed. */
+  readonly portal_traversal_confirmed: boolean | null;
 }
 
 export interface PointSpendBrowserAsset {
@@ -171,6 +184,30 @@ export interface PointSpendBrowserRoute {
   readonly stranded_note: string | null;
 }
 
+/**
+ * Campaign outputs that are not the principal target of a point route.
+ *
+ * The principal campaign output is projected into `winner`/`steps`; bonus,
+ * rebate, and portal outputs stay separate so unlike assets are never added
+ * to the principal amount.
+ */
+export interface PointSpendBrowserCampaignReward {
+  readonly kind: "bonus" | "rebate" | "portal_reward";
+  readonly label: string;
+  readonly asset_id: string;
+  readonly asset_label: string;
+  readonly amount: string;
+  readonly settlement: "posted" | "pending";
+  readonly posting: string;
+  readonly processing_days_min: number | null;
+  readonly processing_days_max: number | null;
+}
+
+export interface PointSpendBrowserCampaignPrerequisite {
+  readonly label: string;
+  readonly status: "satisfied" | "missing" | "not_satisfied";
+}
+
 export type PointSpendNoRouteReason =
   | "source_target_not_covered"
   | "condition_confirmation_required"
@@ -204,6 +241,11 @@ export interface PointSpendBrowserResult {
   readonly data_as_of: string | null;
   /** Present when the database claims could not be used. */
   readonly data_fallback_reason: string | null;
+  /** Whether a source-bound campaign evaluator supplied the winner. */
+  readonly campaign_applied: boolean;
+  /** Separate campaign outputs; never added to `winner.target_amount`. */
+  readonly campaign_rewards: readonly PointSpendBrowserCampaignReward[];
+  readonly campaign_prerequisites: readonly PointSpendBrowserCampaignPrerequisite[];
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -221,6 +263,10 @@ const REQUEST_REQUIRED_KEYS = Object.freeze([
 const REQUEST_OPTIONAL_KEYS = Object.freeze([
   "confirmed_prerequisite_ids",
   "period_source_used_by_rule",
+  "campaign_application",
+  "campaign_ad_earned_points",
+  "campaign_monthly_exchange_count",
+  "portal_traversal_confirmed",
 ] as const);
 
 const POINT_ROUTE_ID = /^[a-z0-9][a-z0-9.-]{1,119}$/u;
@@ -228,7 +274,12 @@ const POINT_ROUTE_ID = /^[a-z0-9][a-z0-9.-]{1,119}$/u;
 function parseRecord(value: unknown): JsonRecord {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new TypeError("point_spend_request_invalid");
-  const descriptors = Object.getOwnPropertyDescriptors(value);
+  if (nodeTypes.isProxy(value))
+    throw new TypeError("point_spend_request_invalid");
+  const descriptors = Object.getOwnPropertyDescriptors(value) as Record<
+    string,
+    PropertyDescriptor
+  >;
   const keys = Object.keys(descriptors).sort();
   const required = new Set<string>(REQUEST_REQUIRED_KEYS);
   const allowed = new Set<string>([
@@ -256,18 +307,56 @@ function parseRecord(value: unknown): JsonRecord {
 }
 
 function parseConfirmationIds(value: unknown): readonly string[] {
+  if (!Array.isArray(value) || nodeTypes.isProxy(value))
+    throw new TypeError("point_spend_request_invalid");
+  const descriptors = Object.getOwnPropertyDescriptors(value) as Record<
+    string,
+    PropertyDescriptor
+  >;
+  const lengthDescriptor = descriptors.length;
+  const length =
+    lengthDescriptor &&
+    "value" in lengthDescriptor &&
+    lengthDescriptor.enumerable === false &&
+    Number.isSafeInteger(lengthDescriptor.value)
+      ? Number(lengthDescriptor.value)
+      : -1;
+  const allowedKeys = new Set([
+    "length",
+    ...Array.from({ length: Math.max(0, length) }, (_, index) => String(index)),
+  ]);
   if (
-    !Array.isArray(value) ||
-    value.length > 64 ||
-    new Set(value).size !== value.length ||
-    value.some((item) => typeof item !== "string" || !POINT_ROUTE_ID.test(item))
+    length < 0 ||
+    length > 64 ||
+    Object.keys(descriptors).some((key) => !allowedKeys.has(key)) ||
+    Object.getOwnPropertySymbols(value).length > 0
   )
     throw new TypeError("point_spend_request_invalid");
-  return Object.freeze([...value].sort());
+  const output: string[] = [];
+  for (let index = 0; index < length; index += 1) {
+    const descriptor = descriptors[String(index)];
+    if (
+      !descriptor ||
+      descriptor.enumerable !== true ||
+      !("value" in descriptor) ||
+      typeof descriptor.value !== "string" ||
+      !POINT_ROUTE_ID.test(descriptor.value)
+    )
+      throw new TypeError("point_spend_request_invalid");
+    output.push(descriptor.value);
+  }
+  if (new Set(output).size !== output.length)
+    throw new TypeError("point_spend_request_invalid");
+  return Object.freeze(output.sort());
 }
 
 function parsePeriodUsage(value: unknown): Readonly<Record<string, string>> {
-  if (!value || typeof value !== "object" || Array.isArray(value))
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    nodeTypes.isProxy(value)
+  )
     throw new TypeError("point_spend_request_invalid");
   const descriptors = Object.getOwnPropertyDescriptors(value);
   const keys = Object.keys(descriptors).sort();
@@ -291,6 +380,24 @@ function parsePeriodUsage(value: unknown): Readonly<Record<string, string>> {
   return Object.freeze(output);
 }
 
+function parseOptionalCampaignCount(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  if (
+    !Number.isSafeInteger(value) ||
+    Number(value) < 0 ||
+    Number(value) > 1_000_000_000
+  )
+    throw new TypeError("point_spend_request_invalid");
+  return Number(value);
+}
+
+function parseOptionalCampaignBoolean(value: unknown): boolean | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "boolean")
+    throw new TypeError("point_spend_request_invalid");
+  return value;
+}
+
 export function parsePointSpendBrowserInput(
   value: unknown,
 ): PointSpendBrowserInput {
@@ -304,6 +411,19 @@ export function parsePointSpendBrowserInput(
   const confirmedPrerequisites = record.confirmed_prerequisite_ids ?? [];
   const periodUsage = record.period_source_used_by_rule ?? {};
   const unitValue = record.unit_value_jpy;
+  const campaignApplication =
+    record.campaign_application === undefined
+      ? false
+      : record.campaign_application;
+  const campaignAdEarned = parseOptionalCampaignCount(
+    record.campaign_ad_earned_points,
+  );
+  const campaignMonthlyCount = parseOptionalCampaignCount(
+    record.campaign_monthly_exchange_count,
+  );
+  const portalTraversal = parseOptionalCampaignBoolean(
+    record.portal_traversal_confirmed,
+  );
   if (
     typeof source !== "string" ||
     !/^asset\.[a-z0-9.-]{2,80}$/u.test(source) ||
@@ -322,7 +442,8 @@ export function parsePointSpendBrowserInput(
     !POINT_SPEND_OBJECTIVES.includes(objective as PointSpendObjective) ||
     typeof effectiveAt !== "string" ||
     !isStrictCanonicalDateTime(effectiveAt) ||
-    !Array.isArray(confirmed)
+    !Array.isArray(confirmed) ||
+    typeof campaignApplication !== "boolean"
   )
     throw new TypeError("point_spend_request_invalid");
   return {
@@ -337,6 +458,10 @@ export function parsePointSpendBrowserInput(
     // Rounded to sen so a long float cannot perturb the canonical hash.
     unit_value_jpy:
       unitValue === null ? null : Math.round(Number(unitValue) * 100) / 100,
+    campaign_application: campaignApplication,
+    campaign_ad_earned_points: campaignAdEarned,
+    campaign_monthly_exchange_count: campaignMonthlyCount,
+    portal_traversal_confirmed: portalTraversal,
   };
 }
 
@@ -1245,22 +1370,103 @@ export async function listPointSpendBrowserOptions(
     readonly destination_asset_id: string;
     readonly conditions: readonly string[];
   }[];
+  readonly campaign_routes: readonly CampaignRouteDescriptor[];
 }> {
   const bundle = await loadPointSpendBundle(source);
   const { ruleSet, artifacts } = bundle;
   const allAssets = assets(ruleSet);
+  const campaignRoutes = source
+    ? await listCampaignRouteDescriptors(source)
+    : Object.freeze([] as readonly CampaignRouteDescriptor[]);
+  const campaignAssets = campaignRoutes.flatMap((route) => [
+    {
+      asset_id: route.source_asset_id,
+      label: route.source_label,
+      kind: route.source_kind,
+    },
+    {
+      asset_id: route.target_asset_id,
+      label: route.target_label,
+      kind: route.target_kind,
+    },
+  ]);
+  const optionAssets = [
+    ...allAssets.map((item) => ({
+      asset_id: item.asset_id,
+      label: item.label_ja,
+      kind: item.asset_kind,
+    })),
+    ...campaignAssets,
+  ].filter(
+    (item, index, values) =>
+      values.findIndex((candidate) => candidate.asset_id === item.asset_id) ===
+      index,
+  );
+  const genericCoverage = pointSpendCoverage(ruleSet, allAssets);
+  const coverageSources = genericCoverage.targets_by_source.map((item) => ({
+    asset_id: item.asset_id,
+    label: item.label,
+    targets: [...item.targets],
+  }));
+  for (const route of campaignRoutes) {
+    const sourceCoverage = coverageSources.find(
+      (item) => item.asset_id === route.source_asset_id,
+    );
+    const target = {
+      asset_id: route.target_asset_id,
+      label: route.target_label,
+      conditional_rule_ids: [],
+    };
+    if (sourceCoverage) {
+      if (
+        !sourceCoverage.targets.some(
+          (candidate) => candidate.asset_id === target.asset_id,
+        )
+      )
+        sourceCoverage.targets.push(target);
+    } else {
+      coverageSources.push({
+        asset_id: route.source_asset_id,
+        label: route.source_label,
+        targets: [target],
+      });
+    }
+  }
+  const campaignDirectPairs = campaignRoutes.filter(
+    (route) =>
+      !allAssets.some((item) => item.asset_id === route.source_asset_id) ||
+      !allAssets.some((item) => item.asset_id === route.target_asset_id),
+  ).length;
+  const coverage: PointSpendBrowserCoverage = {
+    ...genericCoverage,
+    asset_count: optionAssets.length,
+    direct_pair_count: genericCoverage.direct_pair_count + campaignDirectPairs,
+    reachable_pair_count:
+      genericCoverage.reachable_pair_count + campaignDirectPairs,
+    targets_by_source: Object.freeze(
+      coverageSources.map((item) => ({
+        asset_id: item.asset_id,
+        label: item.label,
+        targets: Object.freeze(
+          item.targets.map((target) => ({
+            asset_id: target.asset_id,
+            label: target.label,
+            conditional_rule_ids: Object.freeze([
+              ...target.conditional_rule_ids,
+            ]),
+          })),
+        ),
+      })),
+    ),
+  };
   return {
     version: "p0-point-spend-options.v2",
     data_origin: bundle.origin,
     data_as_of: bundle.as_of,
     experimental: true,
     rule_count: ruleSet.rule_count,
-    coverage: pointSpendCoverage(ruleSet, allAssets),
-    assets: allAssets.map((item) => ({
-      asset_id: item.asset_id,
-      label: item.label_ja,
-      kind: item.asset_kind,
-    })),
+    coverage,
+    assets: Object.freeze(optionAssets),
     wallet_catalogue: p0WalletCatalogue(artifacts, ruleSet),
     conditional_rules: ruleSet.rules
       .filter(
@@ -1285,6 +1491,7 @@ export async function listPointSpendBrowserOptions(
                 partial_consumption: rule.partial_consumption ?? true,
               },
       })),
+    campaign_routes: campaignRoutes,
   };
 }
 
@@ -1649,6 +1856,21 @@ export async function recommendPointSpend(
   source?: RouteGraphSourcePort,
 ): Promise<PointSpendBrowserResult> {
   const input = parsePointSpendBrowserInput(raw);
+  if (input.campaign_application) {
+    if (source === undefined) throw new Error("route_graph_source_unavailable");
+    const { recommendUnifiedParsedPointSpend } = await import(
+      "./point-spend-unified.js"
+    );
+    return recommendUnifiedParsedPointSpend(input, source);
+  }
+  return recommendParsedPointSpend(input, source);
+}
+
+/** Run the generic graph evaluator after a caller has already parsed input. */
+export async function recommendParsedPointSpend(
+  input: PointSpendBrowserInput,
+  source?: RouteGraphSourcePort,
+): Promise<PointSpendBrowserResult> {
   const bundle = await loadPointSpendBundle(source, input.effective_at);
   const { ruleSet, paymentLayers } = bundle;
   const allAssets = assets(ruleSet);
@@ -1723,6 +1945,9 @@ export async function recommendPointSpend(
     data_origin: bundle.origin,
     data_as_of: bundle.as_of,
     data_fallback_reason: bundle.fallback_reason,
+    campaign_applied: false,
+    campaign_rewards: Object.freeze([]),
+    campaign_prerequisites: Object.freeze([]),
     unvalued_asset_labels: Object.freeze(
       result.unvalued_asset_ids
         .map((id) => labels.get(id.split("#")[0] ?? id) ?? null)

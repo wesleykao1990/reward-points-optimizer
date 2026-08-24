@@ -104,6 +104,27 @@ export interface CampaignRouteRecommendationResult {
   readonly data_as_of: string | null;
 }
 
+/**
+ * Browser-safe campaign lane metadata.  Values are projected from the
+ * source-bound native claims; the descriptor is not an independent rate
+ * catalogue and contains no evidence internals.
+ */
+export interface CampaignRouteDescriptor {
+  readonly route_id: CampaignRouteScenario;
+  readonly scenario: CampaignRouteScenario;
+  readonly label: string;
+  readonly source_asset_id: string;
+  readonly source_label: string;
+  readonly source_kind: "reward_point" | "fiat";
+  readonly target_asset_id: string;
+  readonly target_label: string;
+  readonly target_kind: "airline_mile";
+  readonly principal_source_amount: string;
+  readonly principal_target_amount: string;
+  readonly valid_from: string | null;
+  readonly valid_to: string | null;
+}
+
 interface JsonRecord {
   readonly [key: string]: unknown;
 }
@@ -700,6 +721,53 @@ async function loadCampaignClaims(
     jal: parseJalRakuten(found.get(JAL_RAKUTEN_ID)),
     data_as_of: dataAsOf,
   };
+}
+
+/**
+ * Return the bounded campaign lanes exposed beside the generic point graph.
+ * The source is mandatory here: labels, amounts, and validity are admitted
+ * only after the same claim parser used by the native evaluator succeeds.
+ */
+export async function listCampaignRouteDescriptors(
+  source: CampaignRouteSourcePort,
+): Promise<readonly CampaignRouteDescriptor[]> {
+  const claims = await loadCampaignClaims(source, new Date().toISOString());
+  return Object.freeze([
+    {
+      route_id: "moppy_aug_2026" as const,
+      scenario: "moppy_aug_2026" as const,
+      label: "モッピーからJALマイルへ交換",
+      source_asset_id: claims.moppy.principal.source_asset_ref,
+      source_label: MOPPY_SOURCE_LABEL,
+      source_kind: "reward_point" as const,
+      target_asset_id: claims.moppy.principal.destination_asset_ref,
+      target_label: JAL_MILE_LABEL,
+      target_kind: "airline_mile" as const,
+      principal_source_amount: String(
+        claims.moppy.principal.source_units_debited,
+      ),
+      principal_target_amount: String(
+        claims.moppy.principal.destination_units_principal,
+      ),
+      valid_from: claims.moppy.principal.validity.effective_from,
+      valid_to: claims.moppy.principal.validity.effective_to,
+    },
+    {
+      route_id: "jal_mileage_park_rakuten" as const,
+      scenario: "jal_mileage_park_rakuten" as const,
+      label: "JALマイレージパーク経由で楽天市場を利用",
+      source_asset_id: JAL_SPEND_ASSET_ID,
+      source_label: "日本円での支出",
+      source_kind: "fiat" as const,
+      target_asset_id: JAL_MILE_ASSET_ID,
+      target_label: JAL_MILE_LABEL,
+      target_kind: "airline_mile" as const,
+      principal_source_amount: String(claims.jal.source_units),
+      principal_target_amount: String(claims.jal.destination_units),
+      valid_from: null,
+      valid_to: null,
+    },
+  ] satisfies readonly CampaignRouteDescriptor[]);
 }
 
 function recordInput(value: unknown): Record<string, unknown> {
@@ -1408,6 +1476,24 @@ function moppyPrerequisites(
         input.monthly_exchange_count === null
           ? ("missing" as const)
           : input.monthly_exchange_count < 1
+            ? ("satisfied" as const)
+            : ("not_satisfied" as const),
+    },
+  ]);
+}
+
+/** Browser-safe prerequisite projection shared by the unified point route. */
+export function campaignRoutePrerequisites(
+  input: CampaignRouteBrowserInput,
+): readonly CampaignRoutePrerequisite[] {
+  if (input.scenario === "moppy_aug_2026") return moppyPrerequisites(input);
+  return Object.freeze([
+    {
+      label: "購入直前にJALマイレージパークから楽天市場へ遷移してください",
+      status:
+        input.portal_traversal_confirmed === null
+          ? ("missing" as const)
+          : input.portal_traversal_confirmed
             ? ("satisfied" as const)
             : ("not_satisfied" as const),
     },

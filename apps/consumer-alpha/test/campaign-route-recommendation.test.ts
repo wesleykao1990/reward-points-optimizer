@@ -2,11 +2,9 @@ import { promises as fs } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   type CampaignRouteSourcePort,
-  MAX_CAMPAIGN_ROUTE_BODY_BYTES,
   parseCampaignRouteBrowserInput,
   recommendCampaignRoute,
 } from "../src/campaign-route-recommendation.js";
-import { handleRequest, requestBodyLimit } from "../src/server.js";
 
 const artifact = JSON.parse(
   await fs.readFile(
@@ -241,35 +239,5 @@ describe("campaign route recommendation", () => {
         source(malformed),
       ),
     ).rejects.toThrow("campaign_route_source_malformed");
-  });
-
-  it("keeps the HTTP route DB-only and bounded", async () => {
-    const body = JSON.stringify(moppyInput);
-    const request = {
-      method: "POST",
-      pathname: "/api/experimental/campaign-routes/recommendation",
-      headers: {
-        "content-type": "application/json",
-        "content-length": String(Buffer.byteLength(body, "utf8")),
-      },
-      body,
-    };
-    const unavailable = await handleRequest(request);
-    expect(unavailable.status).toBe(503);
-    expect(JSON.parse(unavailable.body)).toMatchObject({
-      error: { code: "route_graph_source_unavailable" },
-    });
-    expect(
-      requestBodyLimit(
-        "POST",
-        "/api/experimental/campaign-routes/recommendation",
-      ),
-    ).toBe(MAX_CAMPAIGN_ROUTE_BODY_BYTES);
-    const get = await handleRequest({
-      method: "GET",
-      pathname: "/api/experimental/campaign-routes/recommendation",
-    });
-    expect(get.status).toBe(405);
-    expect(get.headers.Allow).toBe("POST");
   });
 });

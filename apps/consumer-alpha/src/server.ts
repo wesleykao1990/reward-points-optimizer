@@ -16,11 +16,6 @@ import {
   AGENT_FEED_INTERNAL_MAX_BODY_BYTES,
   type AgentFeedIngressPort,
 } from "./agent-feed-ingress.js";
-import {
-  MAX_CAMPAIGN_ROUTE_BODY_BYTES,
-  parseCampaignRouteBrowserInput,
-  recommendCampaignRoute,
-} from "./campaign-route-recommendation.js";
 import { projectConsumerReference } from "./consumer-reference.js";
 import type {
   ExperimentalCataloguePort,
@@ -89,8 +84,8 @@ import {
   p0ProductFamilyDefinition,
   parsePointSpendBrowserInput,
   type RouteGraphSourcePort,
-  recommendPointSpend,
 } from "./point-spend-recommendation.js";
+import { recommendUnifiedParsedPointSpend } from "./point-spend-unified.js";
 import {
   mapCorrectionDraftForBrowser,
   mapRecommendationForBrowser,
@@ -2016,7 +2011,6 @@ export async function handleRequest(
         pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/point-spend/recommendation" ||
         pathname === "/api/experimental/payment-stack/recommendation" ||
-        pathname === "/api/experimental/campaign-routes/recommendation" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -2192,11 +2186,12 @@ export async function handleRequest(
         );
       }
       try {
-        const input = parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES);
-        parsePointSpendBrowserInput(input);
+        const input = parsePointSpendBrowserInput(
+          parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES),
+        );
         return jsonResponse(
           200,
-          (await recommendPointSpend(
+          (await recommendUnifiedParsedPointSpend(
             input,
             requiredRouteGraphSourceOf(dependency),
           )) as unknown as Readonly<Record<string, unknown>>,
@@ -2229,43 +2224,6 @@ export async function handleRequest(
         if (error instanceof TypeError)
           return errorResponse(requestError(400, error.message));
         throw requestError(503, "payment_stack_recommendation_unavailable");
-      }
-    }
-    if (pathname === "/api/experimental/campaign-routes/recommendation") {
-      if (method !== "POST") {
-        return errorResponseWithHeaders(
-          requestError(405, "method_not_allowed"),
-          { Allow: "POST" },
-        );
-      }
-      let input: ReturnType<typeof parseCampaignRouteBrowserInput>;
-      try {
-        input = parseCampaignRouteBrowserInput(
-          parseJsonBody(request, MAX_CAMPAIGN_ROUTE_BODY_BYTES),
-        );
-      } catch (error) {
-        if (error instanceof TypeError)
-          return errorResponse(requestError(400, error.message));
-        throw error;
-      }
-      try {
-        return jsonResponse(
-          200,
-          (await recommendCampaignRoute(
-            input,
-            requiredRouteGraphSourceOf(dependency),
-          )) as unknown as Readonly<Record<string, unknown>>,
-        );
-      } catch (error) {
-        if (
-          error &&
-          typeof error === "object" &&
-          "status" in error &&
-          "code" in error
-        )
-          throw error;
-        reportDeploymentFailure("campaign_route_calculation", error);
-        throw requestError(503, "campaign_route_recommendation_unavailable");
       }
     }
     if (pathname === "/api/recommendations") {
@@ -2707,8 +2665,6 @@ export function requestBodyLimit(
     return MAX_POINT_SPEND_BODY_BYTES;
   if (pathname === "/api/experimental/payment-stack/recommendation")
     return MAX_PAYMENT_STACK_BODY_BYTES;
-  if (pathname === "/api/experimental/campaign-routes/recommendation")
-    return MAX_CAMPAIGN_ROUTE_BODY_BYTES;
   if (
     pathname === "/api/corrections/draft" ||
     pathname === "/api/recommendations/corrections" ||

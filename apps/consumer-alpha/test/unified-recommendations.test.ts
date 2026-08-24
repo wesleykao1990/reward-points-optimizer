@@ -142,7 +142,7 @@ describe("unified merchant recommendation journey", () => {
     expect(reduced).toContain("opacity: 1 !important");
   });
 
-  it("keeps campaigns inside the conversion surface and renders every route node", () => {
+  it("keeps campaign application inside the single point route journey", () => {
     const html = readFileSync(
       new URL("../public/index.html", import.meta.url),
       "utf8",
@@ -156,16 +156,29 @@ describe("unified merchant recommendation journey", () => {
       "utf8",
     );
     expect(html).toContain("ポイントの交換ルート");
-    expect(html).toContain("通常・キャンペーン");
-    expect(app).not.toContain('text("h2", "キャンペーン経路の試算")');
-    expect(app).toContain('campaignMode.textContent = "キャンペーン込み"');
+    expect(html).toContain('id="point-spend-form"');
+    expect(html).toContain('id="point-spend-campaign"');
+    expect(app).not.toContain("insertCampaignRoutePanel");
+    expect(app).not.toContain("route-mode-switch");
+    expect(app).not.toContain("キャンペーン込み");
+    expect(app).not.toContain("キャンペーン経路の試算");
+    expect(app).not.toContain(
+      "/api/experimental/campaign-routes/recommendation",
+    );
+    expect(app).toContain("campaign_routes");
+    expect(app).toContain("campaign_application");
+    expect(app).toContain("campaign_rewards");
+    expect(app).toContain("campaign_prerequisites");
+    expect(app).toContain("キャンペーン適用");
+    expect(app).toContain("checkbox.checked = true");
+    expect(app).toContain("renderPointSpendCampaign");
     expect(app).toContain("renderRouteChain(leg.steps");
-    expect(app).toContain("renderRouteChain(body.winner.steps");
     expect(app).toContain("routeNodeLogo(reward.asset_id");
     expect(app).toContain("target.conditional_rule_ids");
     expect(app).toContain("relevantRuleIds.has(rule.rule_id)");
     expect(styles).toContain(".route-chain-node");
-    expect(styles).toContain(".route-mode-switch");
+    expect(styles).not.toContain(".route-mode-switch");
+    expect(styles).toContain(".campaign-reward-card.is-pending");
   });
 
   it("fails visibly when the active database path is not composed", async () => {
