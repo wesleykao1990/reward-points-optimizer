@@ -111,7 +111,6 @@
           <div id="point-spend-result" class="point-spend-result" aria-live="polite"><p class="helper">ポイント情報を読み込んでいます…</p></div>
         </section>
 
-
         <section class="wallet-group" aria-labelledby="payment-stack-title">
           <div class="group-heading"><h2 id="payment-stack-title">支払い方法の組み合わせ</h2><span>重ね取りの比較</span></div>
           <form id="payment-stack-form" class="point-spend-card">
@@ -276,6 +275,25 @@
           <p>還元レートと実施中のキャンペーンを、サービスごとに表示します。</p>
         </section>
 
+        <section class="slip" aria-labelledby="card-coverage-title">
+          <div class="slip-head">
+            <h2 id="card-coverage-title">クレジットカード収録状況</h2>
+            <span class="slip-stamp">公式根拠ベース</span>
+          </div>
+          <div class="readout">
+            <span class="readout-main">
+              <span class="readout-label">カタログ収録</span>
+              <strong class="big-figure" id="card-catalogue-coverage">—</strong>
+            </span>
+            <span class="readout-flag">
+              <strong id="card-optimization-coverage">—</strong>
+              <small>最適化対応</small>
+            </span>
+          </div>
+          <div class="chip-row" id="card-coverage-tiers" aria-label="優先度別の最適化対応状況"></div>
+          <p id="card-coverage-note" class="helper">カード収録状況を読み込んでいます…</p>
+        </section>
+
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
           <label for="information-search">キーワード</label>
           <input id="information-search" type="search" autocomplete="off" placeholder="サービス名や内容で検索">
@@ -332,5 +350,6 @@
       </nav>
     </main>
     <script src="/app.js" defer></script>
+    <script src="/coverage.js" defer></script>
   </body>
 </html>
