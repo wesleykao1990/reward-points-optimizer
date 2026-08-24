@@ -142,6 +142,30 @@ describe("unified merchant recommendation journey", () => {
     expect(reduced).toContain("opacity: 1 !important");
   });
 
+  it("keeps campaigns inside the conversion surface and renders every route node", () => {
+    const html = readFileSync(
+      new URL("../public/index.html", import.meta.url),
+      "utf8",
+    );
+    const app = readFileSync(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    const styles = readFileSync(
+      new URL("../public/styles.css", import.meta.url),
+      "utf8",
+    );
+    expect(html).toContain("ポイントの交換ルート");
+    expect(html).toContain("通常・キャンペーン");
+    expect(app).not.toContain('text("h2", "キャンペーン経路の試算")');
+    expect(app).toContain('campaignMode.textContent = "キャンペーン込み"');
+    expect(app).toContain("renderRouteChain(leg.steps");
+    expect(app).toContain("renderRouteChain(body.winner.steps");
+    expect(app).toContain("routeNodeLogo(reward.asset_id");
+    expect(styles).toContain(".route-chain-node");
+    expect(styles).toContain(".route-mode-switch");
+  });
+
   it("fails visibly when the active database path is not composed", async () => {
     const response = await jsonRequest(requestBody());
     expect(response.status).toBe(200);

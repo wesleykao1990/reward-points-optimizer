@@ -127,6 +127,8 @@ export interface P0LotteryBrowserLink {
 
 export interface PointSpendBrowserStep {
   readonly label: string;
+  readonly source_node_id: string;
+  readonly destination_node_id: string;
   readonly source_label: string;
   readonly destination_label: string;
   readonly source_amount: string;
@@ -1377,6 +1379,8 @@ function browserStep(
 ): PointSpendBrowserStep {
   return {
     label: hop.label_ja,
+    source_node_id: hop.source_asset_id,
+    destination_node_id: hop.destination_asset_id,
     source_label: labelByAsset.get(hop.source_asset_id) ?? "交換元",
     destination_label: labelByAsset.get(hop.destination_asset_id) ?? "交換先",
     source_amount: hop.source_amount,

@@ -59,6 +59,7 @@ export interface CampaignRoutePrerequisite {
 export interface CampaignRouteRewardCard {
   readonly kind: "principal" | "bonus" | "rebate" | "portal_reward";
   readonly label: string;
+  readonly asset_id: string;
   readonly asset_label: string;
   readonly amount: string;
   readonly settlement: "posted" | "pending";
@@ -69,6 +70,8 @@ export interface CampaignRouteRewardCard {
 
 export interface CampaignRouteStep {
   readonly label: string;
+  readonly source_node_id: string;
+  readonly destination_node_id: string;
   readonly source_label: string;
   readonly destination_label: string;
   readonly source_amount: string;
@@ -1422,6 +1425,8 @@ function moppyPlanDto(
     steps: [
       {
         label: "キャンペーン本体を交換",
+        source_node_id: MOPPY_SOURCE_ASSET_ID,
+        destination_node_id: MOPPY_JAL_ASSET_ID,
         source_label: MOPPY_SOURCE_LABEL,
         destination_label: JAL_MILE_LABEL,
         source_amount: "12000",
@@ -1432,6 +1437,7 @@ function moppyPlanDto(
       {
         kind: "principal",
         label: "本体交換分",
+        asset_id: MOPPY_JAL_ASSET_ID,
         asset_label: JAL_MILE_LABEL,
         amount: String(claims.principal.destination_units_principal),
         settlement: "posted",
@@ -1442,6 +1448,7 @@ function moppyPlanDto(
       {
         kind: "bonus",
         label: "JAL増量分（別途積算）",
+        asset_id: MOPPY_BONUS_ASSET_ID,
         asset_label: JAL_MILE_LABEL,
         amount: String(claims.bonus.bonus_units),
         settlement: "pending",
@@ -1452,6 +1459,7 @@ function moppyPlanDto(
       {
         kind: "rebate",
         label: "モッピー スカイボーナス（別付与）",
+        asset_id: MOPPY_REBATE_ASSET_ID,
         asset_label: MOPPY_REBATE_LABEL,
         amount: String(claims.rebate.rebate_units),
         settlement: "pending",
@@ -1477,23 +1485,30 @@ function jalPlanDto(
     steps: [
       {
         label: "購入直前にポータルから遷移",
+        source_node_id: JAL_PORTAL_ID,
+        destination_node_id: JAL_RAKUTEN_MERCHANT_ID,
         source_label: "JALマイレージパーク",
         destination_label: "楽天市場",
         source_amount: "—",
         destination_amount: "—",
       },
       {
-        label: "楽天市場で購入",
-        source_label: "日本円",
-        destination_label: "楽天市場",
+        label: "楽天市場で購入してマイル獲得",
+        source_node_id: JAL_RAKUTEN_MERCHANT_ID,
+        destination_node_id: JAL_MILE_ASSET_ID,
+        source_label: "楽天市場での購入",
+        destination_label: JAL_MILE_LABEL,
         source_amount: String(amount),
-        destination_amount: String(amount),
+        destination_amount: String(
+          Math.floor(amount / claim.source_units) * claim.destination_units,
+        ),
       },
     ],
     rewards: [
       {
         kind: "portal_reward",
         label: "ポータル経由の還元",
+        asset_id: JAL_MILE_ASSET_ID,
         asset_label: JAL_MILE_LABEL,
         amount: String(
           Math.floor(amount / claim.source_units) * claim.destination_units,

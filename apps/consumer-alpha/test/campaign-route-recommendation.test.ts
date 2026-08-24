@@ -87,21 +87,30 @@ describe("campaign route recommendation", () => {
       data_origin: "database",
       winner: {
         source_amount: "12000",
+        steps: [
+          {
+            source_node_id: "asset.point.moppy",
+            destination_node_id: "asset.mile.jal",
+          },
+        ],
         rewards: [
           {
             kind: "principal",
+            asset_id: "asset.mile.jal",
             asset_label: "JALマイル",
             amount: "6000",
             settlement: "posted",
           },
           {
             kind: "bonus",
+            asset_id: "asset.mile.jal-campaign-bonus",
             asset_label: "JALマイル",
             amount: "1200",
             settlement: "pending",
           },
           {
             kind: "rebate",
+            asset_id: "asset.point.moppy-campaign-rebate",
             asset_label: "モッピーポイント（スカイボーナス）",
             amount: "4500",
             settlement: "pending",
@@ -164,9 +173,21 @@ describe("campaign route recommendation", () => {
     expect(result).toMatchObject({
       status: "eligible",
       winner: {
+        steps: [
+          {
+            source_node_id: "portal.jal-mileage-park",
+            destination_node_id: "merchant.rakuten-market",
+          },
+          {
+            source_node_id: "merchant.rakuten-market",
+            destination_node_id: "asset.mile.jal",
+            destination_amount: "100",
+          },
+        ],
         rewards: [
           {
             kind: "portal_reward",
+            asset_id: "asset.mile.jal",
             asset_label: "JALマイル",
             amount: "100",
             settlement: "pending",

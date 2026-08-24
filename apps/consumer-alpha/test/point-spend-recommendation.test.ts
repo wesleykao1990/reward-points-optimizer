@@ -219,6 +219,16 @@ describe("P0 point spending browser route", () => {
     expect(result.winner?.steps.map((step) => step.destination_amount)).toEqual(
       ["10000", "2000", "7000"],
     );
+    expect(
+      result.winner?.steps.map((step) => [
+        step.source_node_id,
+        step.destination_node_id,
+      ]),
+    ).toEqual([
+      ["asset.point.v", "asset.point.jr-kyupo"],
+      ["asset.point.jr-kyupo", "asset.point.saison-permanent"],
+      ["asset.point.saison-permanent", "asset.mile.ana"],
+    ]);
   });
 
   it("uses the ANA-card V-point rate only after explicit confirmation", async () => {

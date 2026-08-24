@@ -2648,6 +2648,47 @@ fieldset {
   margin-top: 12px;
 }
 
+.route-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 4px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--card-sunken);
+}
+
+.route-mode-switch button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--tx-3);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.route-mode-switch button.is-active {
+  background: var(--card);
+  box-shadow: var(--lift-2);
+  color: var(--pri);
+}
+
+.campaign-route-inline {
+  margin-top: 12px;
+}
+
+.campaign-route-inline > h3 {
+  margin: 0 0 4px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.campaign-route-inline > .helper {
+  margin: 0 0 11px;
+}
+
 .point-spend-route {
   padding: 14px;
   border: 1px solid var(--line);
@@ -2686,6 +2727,58 @@ fieldset {
   font-size: 1.14rem;
   font-weight: 800;
   letter-spacing: -0.03em;
+}
+
+.route-chain {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 13px;
+  padding: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--ground);
+  scrollbar-width: thin;
+}
+
+.route-chain-node {
+  display: grid;
+  flex: 0 0 66px;
+  min-width: 0;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+
+.route-chain-node .route-node-logo {
+  flex-basis: 44px;
+  width: 44px;
+  height: 36px;
+  border-radius: 9px;
+  box-shadow: var(--lift);
+}
+
+.route-chain-node span:last-child {
+  min-height: 2.6em;
+  color: var(--tx-2);
+  font-size: 0.57rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.route-chain-arrow {
+  display: grid;
+  flex: 0 0 16px;
+  place-items: center;
+  color: var(--pri);
+}
+
+.route-chain-arrow .glyph {
+  width: 16px;
+  height: 16px;
 }
 
 .point-spend-steps {
@@ -2749,6 +2842,75 @@ fieldset {
   margin-top: 12px;
   font-size: 0.68rem;
   font-weight: 700;
+}
+
+.campaign-route-rewards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.campaign-reward-card {
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--card);
+  box-shadow: var(--lift);
+}
+
+.campaign-reward-heading {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  align-items: center;
+}
+
+.campaign-reward-heading .route-node-logo {
+  flex-basis: 38px;
+  width: 38px;
+  height: 30px;
+}
+
+.campaign-reward-heading > div {
+  display: grid;
+  min-width: 0;
+}
+
+.campaign-reward-heading strong {
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+.campaign-reward-heading span,
+.campaign-reward-card small {
+  color: var(--tx-3);
+  font-size: 0.56rem;
+  line-height: 1.45;
+}
+
+.campaign-reward-amount {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.campaign-route-conditions {
+  display: grid;
+  gap: 6px;
+  margin: 11px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campaign-route-conditions li {
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--card-sunken);
+  color: var(--tx-2);
+  font-size: 0.61rem;
 }
 
 /* ── History ──────────────────────────────────────────────────────── */

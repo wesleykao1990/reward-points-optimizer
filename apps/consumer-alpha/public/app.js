@@ -83,6 +83,52 @@
     return frame;
   };
 
+  const routeNodeFamilyIds = Object.freeze({
+    "asset.mile.ana": "mile.ana",
+    "asset.mile.jal": "mile.jal",
+    "asset.mile.jal-campaign-bonus": "mile.jal",
+    "asset.point.moppy": "point.moppy",
+    "asset.point.moppy-campaign-rebate": "point.moppy",
+    "asset.value.ana-pay": "wallet.anapay",
+    "asset.value.nanaco": "emoney.nanaco",
+    "asset.value.waon": "emoney.waon",
+    "asset.value.revolut-jpy": "wallet.revolut",
+    "asset.value.suica": "storedvalue.suica",
+    "merchant.rakuten-market": "point.rakuten",
+    "portal.jal-mileage-park": "portal.jal-mileage-park",
+  });
+
+  const routeNodeInitials = Object.freeze({
+    "mile.ana": "ANA",
+    "mile.jal": "JAL",
+    "point.moppy": "M",
+    "point.saison-permanent": "永",
+    "point.jr-kyupo": "JR",
+    "point.seven-mile": "7iD",
+    "storedvalue.suica": "Su",
+    "wallet.anapay": "ANA",
+    "wallet.revolut": "R",
+    "portal.jal-mileage-park": "JAL",
+  });
+
+  const routeNodeFamilyId = (nodeId) => {
+    if (routeNodeFamilyIds[nodeId]) return routeNodeFamilyIds[nodeId];
+    if (String(nodeId).startsWith("asset.point."))
+      return `point.${String(nodeId).slice("asset.point.".length)}`;
+    return String(nodeId || "route.unknown");
+  };
+
+  const routeNodeLogo = (nodeId, label) => {
+    const familyId = routeNodeFamilyId(nodeId);
+    const logo = paymentLogo(familyId, label);
+    logo.classList.add("route-node-logo");
+    const fallback = logo.querySelector(".payment-logo-fallback");
+    if (fallback)
+      fallback.textContent =
+        routeNodeInitials[familyId] || String(label || "?").slice(0, 2);
+    return logo;
+  };
+
   const WALLET_STORAGE_KEY = "point-route.wallet.v1";
   let walletHydrated = false;
   let suppressWalletPersistence = false;
@@ -2515,6 +2561,46 @@
       : "同梱のレートで計算しています。";
   };
 
+  const routeChainNodes = (steps) => {
+    if (!Array.isArray(steps) || steps.length === 0) return [];
+    const output = [
+      {
+        node_id: steps[0].source_node_id,
+        label: steps[0].source_label,
+      },
+    ];
+    steps.forEach((step) => {
+      const previous = output[output.length - 1];
+      if (previous.node_id !== step.source_node_id)
+        output.push({ node_id: step.source_node_id, label: step.source_label });
+      output.push({
+        node_id: step.destination_node_id,
+        label: step.destination_label,
+      });
+    });
+    return output;
+  };
+
+  const renderRouteChain = (steps, label = "交換経路") => {
+    const chain = node("div", "route-chain");
+    chain.setAttribute("role", "list");
+    chain.setAttribute("aria-label", label);
+    routeChainNodes(steps).forEach((routeNode, index) => {
+      if (index > 0) {
+        const connector = node("span", "route-chain-arrow");
+        connector.setAttribute("aria-hidden", "true");
+        connector.appendChild(icon("arrow"));
+        chain.appendChild(connector);
+      }
+      const item = node("div", "route-chain-node");
+      item.setAttribute("role", "listitem");
+      item.appendChild(routeNodeLogo(routeNode.node_id, routeNode.label));
+      item.appendChild(text("span", routeNode.label));
+      chain.appendChild(item);
+    });
+    return chain;
+  };
+
   const renderPointSpendStep = (step) => {
     const item = node("li");
     item.appendChild(text("strong", step.label));
@@ -2589,6 +2675,7 @@
           ),
         );
       const steps = node("ol", "point-spend-steps");
+      card.appendChild(renderRouteChain(leg.steps, `交換ルート${index + 1}`));
       leg.steps.forEach((step) => {
         steps.appendChild(renderPointSpendStep(step));
       });
@@ -2714,11 +2801,29 @@
       (body.winner !== null &&
         (!body.winner ||
           typeof body.winner !== "object" ||
+          !Array.isArray(body.winner.steps) ||
           !Array.isArray(body.winner.rewards) ||
           !Array.isArray(body.winner.prerequisites)))
     )
       throw new Error("campaign_route_invalid");
     if (body.winner) {
+      if (body.winner.steps.length < 1 || body.winner.steps.length > 6)
+        throw new Error("campaign_route_invalid");
+      body.winner.steps.forEach((step) => {
+        if (
+          !step ||
+          typeof step.label !== "string" ||
+          typeof step.source_label !== "string" ||
+          typeof step.destination_label !== "string" ||
+          typeof step.source_amount !== "string" ||
+          typeof step.destination_amount !== "string" ||
+          typeof step.source_node_id !== "string" ||
+          typeof step.destination_node_id !== "string" ||
+          !/^[a-z][a-z0-9.-]{1,119}$/u.test(step.source_node_id) ||
+          !/^[a-z][a-z0-9.-]{1,119}$/u.test(step.destination_node_id)
+        )
+          throw new Error("campaign_route_invalid");
+      });
       if (body.winner.rewards.length > 4)
         throw new Error("campaign_route_invalid");
       body.winner.rewards.forEach((reward) => {
@@ -2728,6 +2833,8 @@
             reward.kind,
           ) ||
           typeof reward.label !== "string" ||
+          typeof reward.asset_id !== "string" ||
+          !/^asset\.[a-z0-9.-]{1,113}$/u.test(reward.asset_id) ||
           typeof reward.asset_label !== "string" ||
           typeof reward.amount !== "string" ||
           !/^[0-9]+$/u.test(reward.amount) ||
@@ -2764,10 +2871,32 @@
       return;
     }
     container.appendChild(text("h3", body.winner.label));
+    container.appendChild(
+      renderRouteChain(body.winner.steps, "キャンペーンを含む経路"),
+    );
+    const routeSteps = node("ol", "point-spend-steps campaign-route-steps");
+    body.winner.steps.forEach((step) => {
+      const item = node("li");
+      item.appendChild(text("strong", step.label));
+      item.appendChild(
+        text(
+          "span",
+          `${step.source_amount} ${step.source_label} → ${step.destination_amount} ${step.destination_label}`,
+        ),
+      );
+      routeSteps.appendChild(item);
+    });
+    container.appendChild(routeSteps);
     const cards = node("div", "campaign-route-rewards");
     body.winner.rewards.forEach((reward) => {
       const card = node("article", "campaign-reward-card");
-      card.appendChild(text("strong", reward.label));
+      const heading = node("div", "campaign-reward-heading");
+      heading.appendChild(routeNodeLogo(reward.asset_id, reward.asset_label));
+      const copy = node("div");
+      copy.appendChild(text("strong", reward.label));
+      copy.appendChild(text("span", reward.asset_label));
+      heading.appendChild(copy);
+      card.appendChild(heading);
       card.appendChild(
         text(
           "p",
@@ -2805,20 +2934,41 @@
 
   const insertCampaignRoutePanel = () => {
     const pointResult = document.getElementById("point-spend-result");
-    if (!pointResult || document.getElementById("campaign-route-panel")) return;
-    const panel = node("section", "wallet-group campaign-route-group");
+    const standardForm = document.getElementById("point-spend-form");
+    if (
+      !pointResult ||
+      !standardForm ||
+      document.getElementById("campaign-route-panel")
+    )
+      return;
+    const modeSwitch = node("div", "route-mode-switch");
+    modeSwitch.setAttribute("role", "tablist");
+    modeSwitch.setAttribute("aria-label", "交換ルートの種類");
+    const standardMode = node("button", "is-active");
+    standardMode.type = "button";
+    standardMode.setAttribute("role", "tab");
+    standardMode.setAttribute("aria-selected", "true");
+    standardMode.textContent = "通常の交換";
+    const campaignMode = node("button");
+    campaignMode.type = "button";
+    campaignMode.setAttribute("role", "tab");
+    campaignMode.setAttribute("aria-selected", "false");
+    campaignMode.textContent = "キャンペーン込み";
+    modeSwitch.appendChild(standardMode);
+    modeSwitch.appendChild(campaignMode);
+    standardForm.before(modeSwitch);
+
+    const panel = node("div", "campaign-route-inline");
     panel.id = "campaign-route-panel";
-    panel.setAttribute("aria-labelledby", "campaign-route-title");
-    const heading = node("div", "group-heading");
-    const title = text("h2", "キャンペーン経路の試算");
+    panel.hidden = true;
+    const title = text("h3", "キャンペーン・ポータルを含むルート");
     title.id = "campaign-route-title";
-    heading.appendChild(title);
-    heading.appendChild(text("span", "実験用"));
-    panel.appendChild(heading);
+    panel.setAttribute("aria-labelledby", "campaign-route-title");
+    panel.appendChild(title);
     panel.appendChild(
       text(
         "p",
-        "本体・後日付与・ポータル還元を分けて確認します。抽選は計算しません。",
+        "交換本体と中継先を一本の経路で表示し、後日付与とポータル還元は分けて確認します。抽選は計算しません。",
         "helper",
       ),
     );
@@ -2893,7 +3043,18 @@
     output.setAttribute("aria-live", "polite");
     output.appendChild(text("p", "経路を選んで試算してください。", "helper"));
     panel.appendChild(output);
-    pointResult.parentElement?.after(panel);
+    pointResult.after(panel);
+    const selectMode = (campaignSelected) => {
+      standardMode.classList.toggle("is-active", !campaignSelected);
+      campaignMode.classList.toggle("is-active", campaignSelected);
+      standardMode.setAttribute("aria-selected", String(!campaignSelected));
+      campaignMode.setAttribute("aria-selected", String(campaignSelected));
+      standardForm.hidden = campaignSelected;
+      pointResult.hidden = campaignSelected;
+      panel.hidden = !campaignSelected;
+    };
+    standardMode.addEventListener("click", () => selectMode(false));
+    campaignMode.addEventListener("click", () => selectMode(true));
     const sync = () => {
       const moppy = scenario.value === "moppy_aug_2026";
       adLabel.hidden = !moppy;
