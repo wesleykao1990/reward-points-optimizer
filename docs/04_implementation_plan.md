@@ -53,7 +53,8 @@ Rewards Milestones 0, 1A, 1B, and 2 can proceed independently. Milestone 2.5 req
 - all examples validate structurally and semantically;
 - known and estimated bound negative tests fail correctly;
 - no documentation promises a field absent from the schema/semantic contracts;
-- checksum verification is non-mutating.
+- offline validation is non-mutating and does not depend on a workspace-wide
+  checksum manifest.
 
 ## Milestone 1a — Conservation and reconciliation kernel
 
@@ -851,10 +852,9 @@ result and never resurrects checked-in economics. Dynamic merchant/family IDs
 are bounded canonical identifiers, impossible calendar timestamps fail before
 database access, and lottery claims remain informational links only.
 
-This checkpoint intentionally does not restore `SHA256SUMS.txt` or add a new
-checksum workflow. The maintained integrity gates are schema/adapter tests,
-fresh migration+seed SQL tests, deterministic compiler hashes and the staged
-Supabase migration parity check.
+This checkpoint removes the workspace-wide checksum workflow. The maintained
+integrity gates are schema/adapter tests, fresh migration+seed SQL tests,
+deterministic compiler hashes and the staged Supabase migration parity check.
 
 ## Later milestones
 
