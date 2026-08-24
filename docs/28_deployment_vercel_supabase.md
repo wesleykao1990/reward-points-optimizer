@@ -41,6 +41,12 @@ alpha must not be described as a production consumer release.
   Supabase migration versions. It removes only the supported psql
   `ON_ERROR_STOP` directive and qualifies `pgcrypto.digest` with Supabase's
   hosted `extensions` schema; any other psql meta-command fails the check.
+- Production-native migrations created before the canonical staging workflow
+  was complete are retained under their original Supabase version and name.
+  The staging check requires that recovered history to remain present. Canonical
+  migrations `0022` through `0025` use later deployment versions because they
+  contain hardening and rule-flow changes that must run after that production
+  history; no production migration row is rewritten or falsely marked applied.
 - `db/0018_deployment_runtime_role.sql` grants the runtime only exact reads and
   correction functions. Existing migration files are append-only after their
   first production application.

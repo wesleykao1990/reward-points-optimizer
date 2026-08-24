@@ -8,6 +8,63 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUTPUT = join(ROOT, "supabase", "migrations");
 const mode = process.argv[2] ?? "--check";
 
+const SCHEMA_DESTINATIONS = new Map([
+  [
+    "0022_non_p0_agent_feed_immediate_findings.sql",
+    "20260824053938_non_p0_agent_feed_immediate_findings_v2.sql",
+  ],
+  [
+    "0023_experimental_findings_ui_projection.sql",
+    "20260824053940_experimental_findings_ui_projection_v2.sql",
+  ],
+  [
+    "0024_p0_implementation_rule_facts.sql",
+    "20260824053942_p0_implementation_rule_facts.sql",
+  ],
+  [
+    "0025_agent_feed_typed_rule_materialization.sql",
+    "20260824053944_agent_feed_typed_rule_materialization.sql",
+  ],
+]);
+
+const REQUIRED_PRODUCTION_HISTORY = Object.freeze([
+  "20260823144106_merchant_acceptance_geo_cache.sql",
+  "20260823144429_tokyo_major_merchant_seed.sql",
+  "20260823144445_merchant_acceptance_resolved_projection.sql",
+  "20260823144716_merchant_acceptance_indexes.sql",
+  "20260823153434_osm_runtime_ingest_and_nearby_views.sql",
+  "20260823153548_osm_runtime_preseed_match.sql",
+  "20260823161205_merchant_purchase_context.sql",
+  "20260823162938_merchant_tender_reward_rates.sql",
+  "20260823163136_biccamera_tokyo_purchase_rules.sql",
+  "20260823164020_matsukiyo_tokyo_purchase_rules.sql",
+  "20260823164217_merchant_purchase_context_branch_only.sql",
+  "20260823164548_welcia_tokyo_purchase_rules.sql",
+  "20260823164737_merchant_reward_component_stacking.sql",
+  "20260823164805_matsukiyo_dcard_payment_bonus.sql",
+  "20260823170658_merchant_reward_points_per_spend.sql",
+  "20260823170745_starbucks_tokyo_purchase_rules.sql",
+  "20260823170858_yodobashi_tokyo_purchase_rules.sql",
+  "20260823171022_donquijote_tokyo_purchase_rules.sql",
+  "20260823171234_aeon_tokyo_purchase_rules.sql",
+  "20260823171347_itoyokado_tokyo_purchase_rules.sql",
+  "20260823171506_sukiya_tokyo_purchase_rules.sql",
+  "20260823171619_yoshinoya_tokyo_purchase_rules.sql",
+  "20260823171810_gusto_tokyo_purchase_rules.sql",
+  "20260823172224_kurasushi_tokyo_purchase_rules.sql",
+  "20260823172259_mosburger_tokyo_purchase_rules.sql",
+  "20260823172342_merchant_reward_channel.sql",
+  "20260823172420_merchant_reward_eligibility_variants.sql",
+  "20260823172454_matsuya_tokyo_purchase_rules.sql",
+  "20260823172802_doutor_tokyo_purchase_rules.sql",
+  "20260823175822_add_tokyo_merchant_and_ecosystem_coverage_catalogues_v2.sql",
+  "20260823180200_auto_enrich_ecosystem_backlog_from_merchant_facts.sql",
+  "20260823184754_add_merchant_location_change_signal_api.sql",
+  "20260823205126_non_p0_agent_feed_immediate_findings.sql",
+  "20260823205210_grant_non_p0_experimental_api_access.sql",
+  "20260824014611_experimental_findings_ui_projection.sql",
+]);
+
 if (mode !== "--check" && mode !== "--write") {
   console.error("usage: node scripts/stage_supabase_migrations.mjs [--check|--write]");
   process.exitCode = 2;
@@ -60,7 +117,9 @@ async function main(requestedMode) {
     ...schemaNames.map((name, index) => ({
       source: join(schemaDirectory, name),
       sourceName: `db/${name}`,
-      destination: `${migrationVersion(20260817000000n, index)}_schema_${name}`,
+      destination:
+        SCHEMA_DESTINATIONS.get(name) ??
+        `${migrationVersion(20260817000000n, index)}_schema_${name}`,
     })),
     ...dataNames.map((name, index) => ({
       source: join(dataDirectory, name),
@@ -100,7 +159,10 @@ async function main(requestedMode) {
         throw new Error("supabase_migrations_missing");
       throw error;
     }
-    const expectedNames = staged.map((item) => item.destination).sort();
+    const expectedNames = [
+      ...staged.map((item) => item.destination),
+      ...REQUIRED_PRODUCTION_HISTORY,
+    ].sort();
     if (JSON.stringify(outputNames) !== JSON.stringify(expectedNames))
       throw new Error("supabase_migration_set_mismatch");
     for (const item of staged) {
