@@ -16,7 +16,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgis/postgis:16-3.5-alpine
         env:
           POSTGRES_DB: jro_ci
           POSTGRES_PASSWORD: postgres
@@ -51,7 +51,6 @@ jobs:
 
       - name: Install validation dependencies
         run: python -m pip install -r requirements-dev.txt
-
 
       - name: Verify pinned Agent Feed schema artifact bytes
         run: python scripts/verify_agent_feed_artifact.py
