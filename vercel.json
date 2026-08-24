@@ -22,10 +22,7 @@
     },
     "api/agent-feed.mjs": {
       "maxDuration": 30,
-      "includeFiles": [
-        "fixtures/m3/provisional/**",
-        "registry/**"
-      ]
+      "includeFiles": "{fixtures/m3/provisional/**,registry/**}"
     }
   },
   "headers": [
