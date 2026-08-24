@@ -199,29 +199,46 @@ on conflict (finding_id) do update set
     status = case when app_private.agent_feed_experimental_findings.status in ('disputed','quarantined')
                   then app_private.agent_feed_experimental_findings.status else excluded.status end;
 
-with completed(entity_key,source_url) as (values
-('program.jp.bicpoint','https://www.biccamera.com/bc/c/super/point/bic_point/'),
-('program.jp.doutor-value','https://www.doutor.co.jp/dvc/'),
-('instrument.starbucks.card','https://www.starbucks.co.jp/rewards/'),
-('program.jp.starbucks-stars','https://www.starbucks.co.jp/rewards/'),
-('program.jp.skylark','https://www.skylark.co.jp/skpoint/campaign/'),
-('program.jp.tullys-beans','https://www.tullys.co.jp/service/app/'),
-('program.jp.sugi-point','https://www.sugi-net.jp/service/sugi-point'),
-('program.jp.matsukiyococokara','https://www.matsukiyococokara-online.com/point'),
-('instrument.emoney.id','https://ok-corporation.jp/feature/newcomer.html'),
-('instrument.emoney.quicpay','https://ok-corporation.jp/feature/newcomer.html'),
-('instrument.emoney.transit_ic','https://ok-corporation.jp/feature/newcomer.html'),
-('instrument.emoney.rakuten_edy','https://map.ministop.co.jp/detail/0000000101/'),
-('program.jp.majica','https://www.majica-net.com/guide/point/'),
-('instrument.majica.money','https://www.majica-net.com/guide/point/'))
-update app_private.ecosystem_family_backlog b
-set agent_feed_status='accepted', research_status='covered', first_source_url=completed.source_url,
-    updated_at=now(), metadata=b.metadata || '{"immediate_projection":"active_experimental","user_correction_enabled":true}'::jsonb
-from completed where b.entity_key=completed.entity_key;
+-- `app_private.ecosystem_family_backlog` is not created by this migration
+-- chain; it exists only on the deployment instance.  Referencing it directly
+-- aborts the migration in a fresh database, so the backlog bookkeeping is
+-- skipped when the table is absent.  plpgsql plans a statement only when it is
+-- about to run it, so the statements below are never parsed on the early
+-- return -- and where the table does exist they are unchanged, leaving
+-- deployed behaviour identical.
+do $backlog$
+begin
+    if to_regclass('app_private.ecosystem_family_backlog') is null then
+        raise notice
+            'app_private.ecosystem_family_backlog is absent; skipping backlog bookkeeping';
+        return;
+    end if;
 
-update app_private.ecosystem_family_backlog
-set agent_feed_status='submitted', research_status='partial', updated_at=now(),
-    metadata=metadata || '{"last_error":"official_source_http_403","retryable":true}'::jsonb
-where entity_key='program.jp.yodobashi-goldpoint';
+    with completed(entity_key,source_url) as (values
+    ('program.jp.bicpoint','https://www.biccamera.com/bc/c/super/point/bic_point/'),
+    ('program.jp.doutor-value','https://www.doutor.co.jp/dvc/'),
+    ('instrument.starbucks.card','https://www.starbucks.co.jp/rewards/'),
+    ('program.jp.starbucks-stars','https://www.starbucks.co.jp/rewards/'),
+    ('program.jp.skylark','https://www.skylark.co.jp/skpoint/campaign/'),
+    ('program.jp.tullys-beans','https://www.tullys.co.jp/service/app/'),
+    ('program.jp.sugi-point','https://www.sugi-net.jp/service/sugi-point'),
+    ('program.jp.matsukiyococokara','https://www.matsukiyococokara-online.com/point'),
+    ('instrument.emoney.id','https://ok-corporation.jp/feature/newcomer.html'),
+    ('instrument.emoney.quicpay','https://ok-corporation.jp/feature/newcomer.html'),
+    ('instrument.emoney.transit_ic','https://ok-corporation.jp/feature/newcomer.html'),
+    ('instrument.emoney.rakuten_edy','https://map.ministop.co.jp/detail/0000000101/'),
+    ('program.jp.majica','https://www.majica-net.com/guide/point/'),
+    ('instrument.majica.money','https://www.majica-net.com/guide/point/'))
+    update app_private.ecosystem_family_backlog b
+    set agent_feed_status='accepted', research_status='covered', first_source_url=completed.source_url,
+        updated_at=now(), metadata=b.metadata || '{"immediate_projection":"active_experimental","user_correction_enabled":true}'::jsonb
+    from completed where b.entity_key=completed.entity_key;
+
+    update app_private.ecosystem_family_backlog
+    set agent_feed_status='submitted', research_status='partial', updated_at=now(),
+        metadata=metadata || '{"last_error":"official_source_http_403","retryable":true}'::jsonb
+    where entity_key='program.jp.yodobashi-goldpoint';
+end
+$backlog$;
 
 commit;
