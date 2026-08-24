@@ -1,3 +1,4 @@
+-- Staged from db/0022_non_p0_agent_feed_immediate_findings.sql; edit the canonical source, not this file.
 -- Immediate, user-correctable projection for accepted non-P0 Agent Feed findings.
 -- These records are explicitly experimental and never become canonical rules.
 

@@ -2,6 +2,7 @@
 
 ## Unreleased — 2026-08-23
 
+- Wired active non-P0 Agent Feed findings into the existing `/api/experimental/facts` catalogue consumed by the information UI. The 14 covered families now render with customer labels and their existing error-report action disputes the exact experimental finding immediately.
 - Reflected 12 accepted non-P0 Agent Feed findings across 14 point, stored-value, electronic-money, and transit-IC families immediately as `active_experimental`. Added an authenticated correction RPC that atomically disputes or quarantines a flagged finding; none of these records are canonical. Yodobashi remains partial after the official source returned HTTP 403.
 - Merged the award-wallet front-end revamp and expanded the merchant selector
   from the Seven-Eleven canary to every merchant family currently projected by
