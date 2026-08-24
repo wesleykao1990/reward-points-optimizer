@@ -56,14 +56,10 @@ begin
     if to_regrole('anon') is not null then
         execute 'revoke all on app_private.agent_feed_experimental_findings from anon';
         execute 'revoke all on user_data.agent_feed_finding_corrections from anon';
-        execute 'grant usage on schema app_api to anon';
-        execute 'grant select on app_api.active_agent_feed_experimental_findings to anon';
     end if;
     if to_regrole('authenticated') is not null then
         execute 'revoke all on app_private.agent_feed_experimental_findings from authenticated';
         execute 'revoke all on user_data.agent_feed_finding_corrections from authenticated';
-        execute 'grant usage on schema app_api to authenticated';
-        execute 'grant select on app_api.active_agent_feed_experimental_findings to authenticated';
     end if;
 end;
 $supabase_read_roles$;
@@ -79,6 +75,19 @@ where status = 'active_experimental';
 
 revoke all on app_api.active_agent_feed_experimental_findings from public;
 grant select on app_api.active_agent_feed_experimental_findings to jro_runtime;
+
+do $supabase_view_roles$
+begin
+    if to_regrole('anon') is not null then
+        execute 'grant usage on schema app_api to anon';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to anon';
+    end if;
+    if to_regrole('authenticated') is not null then
+        execute 'grant usage on schema app_api to authenticated';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to authenticated';
+    end if;
+end;
+$supabase_view_roles$;
 
 create or replace function app_api.flag_agent_feed_experimental_finding(
     p_finding_id text,
