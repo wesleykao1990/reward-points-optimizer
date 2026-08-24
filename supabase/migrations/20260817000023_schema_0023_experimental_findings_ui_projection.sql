@@ -40,7 +40,7 @@ create table if not exists app_private.agent_feed_experimental_finding_correctio
 );
 
 revoke all on app_private.agent_feed_experimental_finding_corrections
-    from public, anon, authenticated;
+    from public;
 
 create or replace function app_private.p0_active_implementation_fact_provenance_rows_at(
     p_effective_at timestamptz
