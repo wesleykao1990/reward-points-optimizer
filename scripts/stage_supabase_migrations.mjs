@@ -25,6 +25,10 @@ const SCHEMA_DESTINATIONS = new Map([
     "0025_agent_feed_typed_rule_materialization.sql",
     "20260824053944_agent_feed_typed_rule_materialization.sql",
   ],
+  [
+    "0026_merchant_location_public_rpc.sql",
+    "20260824102433_schema_0026_merchant_location_public_rpc.sql",
+  ],
 ]);
 
 const REQUIRED_PRODUCTION_HISTORY = Object.freeze([
@@ -63,6 +67,12 @@ const REQUIRED_PRODUCTION_HISTORY = Object.freeze([
   "20260823205126_non_p0_agent_feed_immediate_findings.sql",
   "20260823205210_grant_non_p0_experimental_api_access.sql",
   "20260824014611_experimental_findings_ui_projection.sql",
+  "20260824095013_merchant_postgis_nearby_rpc.sql",
+  "20260824095045_fix_nearby_merchants_distance_order.sql",
+  "20260824101009_merchant_location_geocoder_http_extension.sql",
+  "20260824101402_complete_merchant_location_backend.sql",
+  "20260824101949_merchant_location_exception_addresses.sql",
+  "20260824102125_nearby_merchants_public_contract_v1.sql",
 ]);
 
 if (mode !== "--check" && mode !== "--write") {
