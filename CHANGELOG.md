@@ -2,6 +2,7 @@
 
 ## Unreleased — 2026-08-23
 
+- Wired active non-P0 Agent Feed findings into the existing `/api/experimental/facts` catalogue consumed by the information UI. The 14 covered families now render with customer labels and their existing error-report action disputes the exact experimental finding immediately.
 - Reflected 12 accepted non-P0 Agent Feed findings across 14 point, stored-value, electronic-money, and transit-IC families immediately as `active_experimental`. Added an authenticated correction RPC that atomically disputes or quarantines a flagged finding; none of these records are canonical. Yodobashi remains partial after the official source returned HTTP 403.
 
 - The routing graph, the optimizer, and both recommendations now compile from
@@ -10,7 +11,7 @@
   request and the compiled graph is reused only while the snapshot hashes are
   unchanged; a time-based cache would have been simpler and wrong, because it
   would keep serving a rate the database had already corrected.
-- Added `db/0023_p0_implementation_rule_facts.sql`. The browse-only
+- Added `db/0024_p0_implementation_rule_facts.sql`. The browse-only
   `app_api.p0_active_implementation_facts` view exposes fact metadata but not
   `value` or `applicability`, which a compiler needs, so this adds a separate
   private projection that returns them. The widening is deliberately narrow:

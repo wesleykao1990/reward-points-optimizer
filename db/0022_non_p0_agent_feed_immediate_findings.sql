@@ -37,7 +37,7 @@ create index if not exists agent_feed_experimental_findings_active_idx
 create table if not exists user_data.agent_feed_finding_corrections (
     correction_id uuid primary key default gen_random_uuid(),
     finding_id text not null references app_private.agent_feed_experimental_findings(finding_id) on delete restrict,
-    user_id uuid not null default auth.uid(),
+    user_id uuid not null,
     category text not null check (category in (
         'not_accepted','reward_missing','rate_wrong','campaign_ended',
         'registration_required','cap_or_minimum_missing','merchant_wrong',
@@ -48,8 +48,21 @@ create table if not exists user_data.agent_feed_finding_corrections (
 );
 
 alter table user_data.agent_feed_finding_corrections enable row level security;
-revoke all on app_private.agent_feed_experimental_findings from public, anon, authenticated;
-revoke all on user_data.agent_feed_finding_corrections from public, anon, authenticated;
+revoke all on app_private.agent_feed_experimental_findings from public;
+revoke all on user_data.agent_feed_finding_corrections from public;
+
+do $supabase_read_roles$
+begin
+    if to_regrole('anon') is not null then
+        execute 'revoke all on app_private.agent_feed_experimental_findings from anon';
+        execute 'revoke all on user_data.agent_feed_finding_corrections from anon';
+    end if;
+    if to_regrole('authenticated') is not null then
+        execute 'revoke all on app_private.agent_feed_experimental_findings from authenticated';
+        execute 'revoke all on user_data.agent_feed_finding_corrections from authenticated';
+    end if;
+end;
+$supabase_read_roles$;
 
 create or replace view app_api.active_agent_feed_experimental_findings as
 select
@@ -61,8 +74,20 @@ from app_private.agent_feed_experimental_findings
 where status = 'active_experimental';
 
 revoke all on app_api.active_agent_feed_experimental_findings from public;
-grant usage on schema app_api to anon, authenticated;
-grant select on app_api.active_agent_feed_experimental_findings to anon, authenticated, jro_runtime;
+grant select on app_api.active_agent_feed_experimental_findings to jro_runtime;
+
+do $supabase_view_roles$
+begin
+    if to_regrole('anon') is not null then
+        execute 'grant usage on schema app_api to anon';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to anon';
+    end if;
+    if to_regrole('authenticated') is not null then
+        execute 'grant usage on schema app_api to authenticated';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to authenticated';
+    end if;
+end;
+$supabase_view_roles$;
 
 create or replace function app_api.flag_agent_feed_experimental_finding(
     p_finding_id text,
@@ -117,7 +142,13 @@ end;
 $$;
 
 revoke all on function app_api.flag_agent_feed_experimental_finding(text,text,text) from public;
-grant execute on function app_api.flag_agent_feed_experimental_finding(text,text,text) to authenticated;
+do $supabase_correction_role$
+begin
+    if to_regrole('authenticated') is not null then
+        execute 'grant execute on function app_api.flag_agent_feed_experimental_finding(text,text,text) to authenticated';
+    end if;
+end;
+$supabase_correction_role$;
 
 comment on table app_private.agent_feed_experimental_findings is
     'Accepted non-P0 Agent Feed findings reflected immediately as experimental, never canonical, and removable by authenticated correction reports.';
@@ -157,7 +188,10 @@ on conflict (finding_id) do update set
     status = case when app_private.agent_feed_experimental_findings.status in ('disputed','quarantined')
                   then app_private.agent_feed_experimental_findings.status else excluded.status end;
 
-with completed(entity_key,source_url) as (values
+do $optional_backlog_sync$
+begin
+    if to_regclass('app_private.ecosystem_family_backlog') is not null then
+        with completed(entity_key,source_url) as (values
 ('program.jp.bicpoint','https://www.biccamera.com/bc/c/super/point/bic_point/'),
 ('program.jp.doutor-value','https://www.doutor.co.jp/dvc/'),
 ('instrument.starbucks.card','https://www.starbucks.co.jp/rewards/'),
@@ -181,5 +215,8 @@ update app_private.ecosystem_family_backlog
 set agent_feed_status='submitted', research_status='partial', updated_at=now(),
     metadata=metadata || '{"last_error":"official_source_http_403","retryable":true}'::jsonb
 where entity_key='program.jp.yodobashi-goldpoint';
+    end if;
+end;
+$optional_backlog_sync$;
 
 commit;

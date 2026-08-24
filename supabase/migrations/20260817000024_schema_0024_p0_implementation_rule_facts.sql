@@ -1,4 +1,4 @@
--- Staged from db/0023_p0_implementation_rule_facts.sql; edit the canonical source, not this file.
+-- Staged from db/0024_p0_implementation_rule_facts.sql; edit the canonical source, not this file.
 -- Machine-readable projection of current implementation facts, used to compile
 -- the routing graph and the payment layers from the database rather than from
 -- checked-in fixtures.

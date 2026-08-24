@@ -1344,7 +1344,7 @@
         typeof fact === "object" &&
         typeof fact.fact_key === "string" &&
         typeof fact.family_id === "string" &&
-        /^(?:point|wallet|card|emoney|merchant|reg|transit)\.[A-Za-z0-9._:-]{1,127}$/u.test(
+        /^(?:point|wallet|card|emoney|storedvalue|merchant|reg|transit)\.[A-Za-z0-9._:-]{1,127}$/u.test(
           fact.family_id,
         ) &&
         typeof fact.claim_type === "string" &&
