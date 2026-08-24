@@ -18,7 +18,12 @@ import {
   type PointRoutePlan,
   type ValuationProfile,
 } from "@jro/rule-engine";
-import { P0_PRODUCT_FAMILY_IDS, type P0ProductFamilyId } from "./contracts.js";
+import {
+  isCanonicalProductFamilyId,
+  isStrictCanonicalDateTime,
+  P0_PRODUCT_FAMILY_IDS,
+  type P0ProductFamilyId,
+} from "./contracts.js";
 
 const RESEARCH_FILES = Object.freeze([
   "p0-point-rules-a.research.v0.1.json",
@@ -92,7 +97,12 @@ export interface PointSpendBrowserCoverage {
   readonly targets_by_source: readonly PointSpendBrowserCoverageSource[];
 }
 
-export type P0WalletCatalogueKind = "point" | "mobile_pay" | "credit_card";
+export type P0WalletCatalogueKind =
+  | "point"
+  | "mobile_pay"
+  | "credit_card"
+  | "emoney"
+  | "stored_value";
 
 export interface P0WalletCatalogueItem {
   readonly family_id: string;
@@ -224,32 +234,6 @@ function parseRecord(value: unknown): JsonRecord {
   return output;
 }
 
-function canonicalDateTime(value: string): boolean {
-  const match =
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{3})?(?:Z|[+-](\d{2}):(\d{2}))$/u.exec(
-      value,
-    );
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return (
-    year >= 1970 &&
-    month >= 1 &&
-    month <= 12 &&
-    day >= 1 &&
-    day <= (days[month - 1] ?? 0) &&
-    Number(match[4]) <= 23 &&
-    Number(match[5]) <= 59 &&
-    Number(match[6]) <= 59 &&
-    (match[7] === undefined || Number(match[7]) <= 23) &&
-    (match[8] === undefined || Number(match[8]) <= 59) &&
-    Number.isFinite(Date.parse(value))
-  );
-}
-
 export function parsePointSpendBrowserInput(
   value: unknown,
 ): PointSpendBrowserInput {
@@ -278,7 +262,7 @@ export function parsePointSpendBrowserInput(
         unitValue > 1_000_000)) ||
     !POINT_SPEND_OBJECTIVES.includes(objective as PointSpendObjective) ||
     typeof effectiveAt !== "string" ||
-    !canonicalDateTime(effectiveAt) ||
+    !isStrictCanonicalDateTime(effectiveAt) ||
     !Array.isArray(confirmed) ||
     confirmed.length > 32 ||
     !confirmed.every(
@@ -302,7 +286,7 @@ export function parsePointSpendBrowserInput(
 
 const P0_WALLET_FAMILIES: Readonly<
   Record<
-    P0ProductFamilyId,
+    string,
     { readonly label: string; readonly kind: P0WalletCatalogueKind }
   >
 > = Object.freeze({
@@ -329,17 +313,51 @@ const P0_WALLET_FAMILIES: Readonly<
   "card.view": { label: "ビューカード", kind: "credit_card" },
 });
 
+const FAMILY_PREFIX_KIND: Readonly<Record<string, P0WalletCatalogueKind>> =
+  Object.freeze({
+    point: "point",
+    wallet: "mobile_pay",
+    card: "credit_card",
+    emoney: "emoney",
+    storedvalue: "stored_value",
+  });
+
+const FAMILY_PREFIX_LABEL: Readonly<Record<string, string>> = Object.freeze({
+  point: "ポイント",
+  wallet: "ウォレット",
+  card: "カード",
+  emoney: "電子マネー",
+  storedvalue: "電子マネー残高",
+});
+
+function dynamicFamilyDefinition(
+  familyId: string,
+): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {
+  if (!isCanonicalProductFamilyId(familyId)) return null;
+  const prefix = familyId.slice(0, familyId.indexOf("."));
+  const kind = FAMILY_PREFIX_KIND[prefix];
+  const prefixLabel = FAMILY_PREFIX_LABEL[prefix];
+  if (!kind || !prefixLabel) return null;
+  const suffix = familyId.slice(prefix.length + 1);
+  // IDs are canonical ASCII, so this fallback is safe to render in Japanese
+  // without trusting a database-provided label or HTML fragment.
+  return Object.freeze({
+    label: `${prefixLabel}（${suffix}）`,
+    kind,
+  });
+}
+
 export function p0ProductFamilyDefinition(
   familyId: string,
 ): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {
-  return isP0ProductFamilyId(familyId) ? P0_WALLET_FAMILIES[familyId] : null;
+  return P0_WALLET_FAMILIES[familyId] ?? dynamicFamilyDefinition(familyId);
 }
 
 if (Object.keys(P0_WALLET_FAMILIES).length !== P0_PRODUCT_FAMILY_IDS.length)
   throw new Error("p0_wallet_family_catalogue_incomplete");
 
 function isP0ProductFamilyId(value: string): value is P0ProductFamilyId {
-  return (P0_PRODUCT_FAMILY_IDS as readonly string[]).includes(value);
+  return isCanonicalProductFamilyId(value);
 }
 
 const LOTTERY_FAMILY_LABELS: Readonly<Record<string, string>> = Object.freeze({
@@ -478,49 +496,32 @@ async function loadFixtureBundle(
 /**
  * Compile the routing graph and payment layers from the freshest claims.
  *
- * The database is authoritative when a source is supplied and returns claims.
- * The checked-in fixtures remain the fallback so the app still answers when
- * the database is unreachable or has not been seeded — but the response says
- * which it used, because a silently stale graph is worse than a visibly old
- * one.
+ * Supplying a source makes that source authoritative. A source failure, an
+ * empty projection, or a rejected snapshot fails closed; live requests never
+ * resurrect checked-in economics. Calling without a source is an explicit
+ * offline-fixture mode used by focused compiler tests and local examples.
  */
 export async function loadPointSpendBundle(
   source?: RouteGraphSourcePort,
   effectiveAt: string = new Date().toISOString(),
 ): Promise<PointSpendBundle> {
   if (!source) return loadFixtureBundle(null);
-  let loaded: RouteGraphSourceResult;
-  try {
-    loaded = await source.current(effectiveAt);
-  } catch (error) {
-    return loadFixtureBundle(
-      error instanceof Error ? error.message : "route_graph_source_unavailable",
-    );
-  }
+  const loaded: RouteGraphSourceResult = await source.current(effectiveAt);
   if (loaded.artifacts.length === 0)
-    return loadFixtureBundle("route_graph_source_empty");
+    throw new Error("route_graph_source_empty");
   const hashKey = loaded.provenance
     .map((item) => `${item.research_artifact_id}:${item.implementation_hash}`)
     .sort()
     .join("|");
   const cached = compiledByHashKey.get(hashKey);
   if (cached) return cached;
-  let compiled: PointSpendBundle;
-  try {
-    compiled = compileBundle(
-      [...loaded.artifacts],
-      "database",
-      loaded.as_of,
-      loaded.provenance,
-      null,
-    );
-  } catch (error) {
-    // A snapshot the compilers reject must not take the graph down; the
-    // reviewed fixtures answer instead, and the reason is reported.
-    return loadFixtureBundle(
-      error instanceof Error ? error.message : "route_graph_compile_failed",
-    );
-  }
+  const compiled = compileBundle(
+    [...loaded.artifacts],
+    "database",
+    loaded.as_of,
+    loaded.provenance,
+    null,
+  );
   if (compiledByHashKey.size >= MAX_COMPILED_GRAPHS) compiledByHashKey.clear();
   compiledByHashKey.set(hashKey, compiled);
   return compiled;
@@ -626,7 +627,7 @@ function rateParts(
 interface PurchaseRateCandidate {
   readonly claim: P0ResearchClaim;
   readonly rate: ReturnType<typeof rateParts>;
-  readonly source_url: string;
+  readonly source_url?: string;
   readonly checked_at: string;
   readonly d_card_dependency: boolean;
 }
@@ -699,6 +700,7 @@ function purchaseRateCandidates(
   familyId: P0ProductFamilyId,
   claims: readonly P0ResearchClaim[],
   sources: ReadonlyMap<string, P0ResearchSource>,
+  databaseAsOf: string | null,
 ): readonly PurchaseRateCandidate[] {
   const candidates: PurchaseRateCandidate[] = [];
   for (const claim of claims) {
@@ -718,12 +720,13 @@ function purchaseRateCandidates(
       continue;
     }
     const provenance = officialSourceProvenance(claim, sources);
-    if (!provenance) continue;
+    const checkedAt = provenance?.checked_at ?? databaseAsOf;
+    if (checkedAt === null) continue;
     candidates.push({
       claim,
       rate,
-      source_url: provenance.source_url,
-      checked_at: provenance.checked_at,
+      ...(provenance ? { source_url: provenance.source_url } : {}),
+      checked_at: checkedAt,
       d_card_dependency: hasDCardDependency(claim),
     });
   }
@@ -763,12 +766,14 @@ function selectPurchaseRateCandidate(
   return [...eligible].sort(comparePurchaseRates)[0] ?? null;
 }
 
-/** Calculate every selected card/mobile-payment base route from the checked-in
- * structured research. Selection affects the actual candidates, not only the
- * recommendation hash. */
+/** Calculate every selected card/mobile-payment base route from the current
+ * structured research projection. Supplying a source makes PostgreSQL the
+ * sole authority; omission is an explicit offline-fixture mode for tests. */
 export async function calculateSelectedProductPurchases(
   selectedProductIds: readonly P0ProductFamilyId[],
   amountJpy: number,
+  source?: RouteGraphSourcePort,
+  effectiveAt: string = new Date().toISOString(),
 ): Promise<readonly SelectedProductPurchaseCalculation[]> {
   if (
     !Number.isSafeInteger(amountJpy) ||
@@ -777,10 +782,8 @@ export async function calculateSelectedProductPurchases(
   )
     throw new TypeError("p0_purchase_amount_invalid");
   const selected = new Set(selectedProductIds);
-  // Official source URLs come from the artifact source directory, which the
-  // database projection deliberately does not expose, so this calculation
-  // stays on the reviewed fixtures.
-  const { artifacts } = await loadFixtureBundle(null);
+  const bundle = await loadPointSpendBundle(source, effectiveAt);
+  const { artifacts } = bundle;
   const claims = artifacts.flatMap((artifact) => artifact.claims);
   const sources = new Map(
     artifacts
@@ -795,7 +798,7 @@ export async function calculateSelectedProductPurchases(
   );
   const calculations: SelectedProductPurchaseCalculation[] = [];
   for (const familyId of [...selected].sort()) {
-    const definition = P0_WALLET_FAMILIES[familyId];
+    const definition = p0ProductFamilyDefinition(familyId);
     if (
       !definition ||
       (definition.kind !== "credit_card" && definition.kind !== "mobile_pay")
@@ -803,7 +806,7 @@ export async function calculateSelectedProductPurchases(
       continue;
     const candidate = selectPurchaseRateCandidate(
       familyId,
-      purchaseRateCandidates(familyId, claims, sources),
+      purchaseRateCandidates(familyId, claims, sources, bundle.as_of),
       selected,
     );
     // A surfaced family can remain informational until its Agent Feed has a
@@ -824,7 +827,7 @@ export async function calculateSelectedProductPurchases(
             ? `${rate.note}（dカード設定を含む）`
             : rate.note,
         source_claim_id: claim.claim_id,
-        source_url: candidate.source_url,
+        ...(candidate.source_url ? { source_url: candidate.source_url } : {}),
         checked_at: candidate.checked_at,
         calculation_source: "agent_feed_structured",
       }),
@@ -980,7 +983,8 @@ function p0WalletCatalogue(
       .map(([familyId, factCount]) => {
         if (!isP0ProductFamilyId(familyId))
           throw new TypeError("p0_wallet_family_unknown");
-        const definition = P0_WALLET_FAMILIES[familyId];
+        const definition = p0ProductFamilyDefinition(familyId);
+        if (!definition) throw new TypeError("p0_wallet_family_unknown");
         return Object.freeze({
           family_id: familyId,
           label: definition.label,

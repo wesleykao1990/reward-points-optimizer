@@ -151,20 +151,18 @@ describe("dynamic route graph", () => {
     expect(after.winner?.target_amount).toBe("250");
   });
 
-  it("refuses rows that mix two snapshots of one artifact", async () => {
+  it("fails closed when rows mix two snapshots of one artifact", async () => {
     const mixed = rows.map((row, index) =>
       index === 1
         ? { ...row, implementation_hash: `sha256:${"b".repeat(64)}` }
         : row,
     );
-    const result = await recommendPointSpend(
-      input,
-      createPostgresRouteGraphSourcePort(target(mixed)),
-    );
-    expect(result.data_origin).toBe("bundled_fixture");
-    expect(result.data_fallback_reason).toContain(
-      "p0_implementation_fact_snapshot_inconsistent",
-    );
+    await expect(
+      recommendPointSpend(
+        input,
+        createPostgresRouteGraphSourcePort(target(mixed)),
+      ),
+    ).rejects.toThrow("p0_implementation_fact_snapshot_inconsistent");
   });
 
   it("recompiles only when a snapshot hash changes", async () => {
@@ -181,33 +179,29 @@ describe("dynamic route graph", () => {
     expect(second.calls()).toBe(1);
   });
 
-  it("falls back to the fixtures and says why when the database fails", async () => {
+  it("fails closed when the database fails", async () => {
     const failing: RouteGraphSourcePort = {
       async current() {
         throw new Error("connection_refused");
       },
     };
-    const result = await recommendPointSpend(input, failing);
-    expect(result.data_origin).toBe("bundled_fixture");
-    expect(result.data_fallback_reason).toBe("connection_refused");
-    // The answer is still served rather than the surface going dark.
-    expect(result.winner?.target_amount).toBe("500");
+    await expect(recommendPointSpend(input, failing)).rejects.toThrow(
+      "connection_refused",
+    );
   });
 
-  it("falls back when the database holds no facts yet", async () => {
+  it("fails closed when the database holds no facts yet", async () => {
     const empty = createPostgresRouteGraphSourcePort(target([]));
-    const result = await recommendPointSpend(input, empty);
-    expect(result.data_origin).toBe("bundled_fixture");
-    expect(result.data_fallback_reason).toBe("route_graph_source_empty");
+    await expect(recommendPointSpend(input, empty)).rejects.toThrow(
+      "route_graph_source_empty",
+    );
   });
 
-  it("refuses a row that is not what the projection promises", async () => {
+  it("fails closed for a row that is not what the projection promises", async () => {
     const malformed = createPostgresRouteGraphSourcePort(
       target([{ ...rows[0], source_ids: "not-an-array" }]),
     );
-    const result = await recommendPointSpend(input, malformed);
-    expect(result.data_origin).toBe("bundled_fixture");
-    expect(result.data_fallback_reason).toContain(
+    await expect(recommendPointSpend(input, malformed)).rejects.toThrow(
       "p0_implementation_fact_source_ids_invalid",
     );
   });

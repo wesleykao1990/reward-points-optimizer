@@ -418,12 +418,7 @@ export function createActiveRewardCalculationPort(
       const selected = new Set(input.selected_p0_products);
       const relevant = records.filter((record) => {
         const definition = p0ProductFamilyDefinition(record.p0_family_id);
-        return (
-          selected.has(record.p0_family_id as P0ProductFamilyId) &&
-          definition !== null &&
-          (definition.kind === "credit_card" ||
-            definition.kind === "mobile_pay")
-        );
+        return selected.has(record.p0_family_id) && definition !== null;
       });
       if (relevant.length === 0) return Object.freeze([]);
       const coverage = coverageFor(relevant);

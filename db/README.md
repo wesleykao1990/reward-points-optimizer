@@ -65,6 +65,24 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
 19. `0019_p0_implementation_provenance.sql` exposes source URL, immutable
     snapshot check time, and source-declared applicability dates for the
     browser-safe implementation-fact catalogue. Missing URLs remain `NULL`.
+20. `0020_p0_reward_claim_auto_activation.sql` activates complete structured
+    reward claims automatically after deterministic compilation and private
+    persistence; incomplete members remain non-executable without blocking
+    valid siblings.
+21. `0021_active_reward_claim_calculations.sql` exposes current compiled reward
+    candidates to the trusted recommendation host.
+22. `0022_non_p0_agent_feed_immediate_findings.sql` stores bounded exploratory
+    findings outside the canonical P0 lane.
+23. `0023_experimental_findings_ui_projection.sql` provides their browser-safe
+    informational projection.
+24. `0024_p0_implementation_rule_facts.sql` provides machine-readable current
+    implementation claims for database-backed route compilers.
+25. `0025_agent_feed_typed_rule_materialization.sql` assigns every normalized
+    SourceObservation and implementation fact a versioned typed outcome,
+    enumerates all active families, projects the existing merchant database as
+    direct payment authority, and supplies the complete latest 364-fact
+    snapshot to strict route compilers. It creates no checksum gate and no
+    request-time evidence-approval dependency.
 
 It separates:
 

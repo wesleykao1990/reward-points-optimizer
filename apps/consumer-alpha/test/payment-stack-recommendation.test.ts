@@ -165,7 +165,7 @@ describe("P0 payment stack browser route", () => {
     expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
   });
 
-  it("serves the recommendation through the exact localhost API", async () => {
+  it("requires the database graph at the localhost API boundary", async () => {
     const response = await handleRequest({
       method: "POST",
       pathname: "/api/experimental/payment-stack/recommendation",
@@ -176,11 +176,9 @@ describe("P0 payment stack browser route", () => {
       },
       body: JSON.stringify(input),
     });
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(503);
     expect(JSON.parse(response.body)).toMatchObject({
-      status: "ready",
-      experimental: true,
-      current_advice: false,
+      error: { code: "payment_stack_recommendation_unavailable" },
     });
 
     const invalid = await handleRequest({

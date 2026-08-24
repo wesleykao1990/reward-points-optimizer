@@ -823,6 +823,39 @@ point families feed the fixed-ratio spending optimizer. The browser starts
 with neutral general shopping; Seven-Eleven is an explicit merchant choice and
 only that choice adds the Nanaco-specific routes.
 
+### Interim Milestone 7P.14 — Universal Supabase rule and merchant flow
+
+Implementation checkpoint (2026-08-24): Agent Feed normalization now has a
+deterministic database continuation for every observation and every P0
+implementation fact. Each input becomes one versioned typed outcome—arithmetic,
+constraint, cap/minimum/rounding, campaign, transfer/conversion, lifecycle,
+inactive history, informational, or missing parameters. Complete structured
+`reward_claims` continue through the existing automatic compiler/activation
+lane; stored implementation claims feed the direct-purchase, payment-stack and
+point-spend compilers from PostgreSQL. Missing parameters remain explicit and
+never cause arithmetic to be invented.
+
+The merchant catalogue is now the recommendation-time authority for accepted
+payment methods. Exact active provisional acceptance rules and future explicit
+Agent Feed acceptance attributes are projected through one private bounded
+function; the app does not perform a second evidence or proof check for each
+recommendation. Generic card and mobile-payment acceptance categories are
+expanded only to the user's selected database families.
+
+The unified recommendation endpoint no longer composes synthetic or
+Nanaco-specific fallback routes. Active compiled candidates override matching
+implementation-claim calculations, while uncovered selected families are
+calculated from the complete latest Supabase snapshot. A missing, empty,
+malformed or unavailable database graph returns an explicit unavailable/no-route
+result and never resurrects checked-in economics. Dynamic merchant/family IDs
+are bounded canonical identifiers, impossible calendar timestamps fail before
+database access, and lottery claims remain informational links only.
+
+This checkpoint intentionally does not restore `SHA256SUMS.txt` or add a new
+checksum workflow. The maintained integrity gates are schema/adapter tests,
+fresh migration+seed SQL tests, deterministic compiler hashes and the staged
+Supabase migration parity check.
+
 ## Later milestones
 
 - full data-operations console;

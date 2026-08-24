@@ -9,7 +9,6 @@ import {
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { types as nodeTypes } from "node:util";
-import { classifyProvisionalValidity } from "@jro/provisional-rules";
 import { SYNTHETIC_REPLAY_KNOWLEDGE_TIME } from "@jro/test-fixtures";
 import type { ActiveRewardCalculationPort } from "./active-reward-calculation.js";
 import {
@@ -26,12 +25,14 @@ import type {
   ExperimentalRecommendationResult,
   ImplementationFactCataloguePort,
   ImplementationFactCorrectionInput,
+  MerchantAcceptancePort,
   NanacoCreditChargeRecommendationInput,
   NanacoCreditChargeRecommendationPort,
   NanacoCreditChargeRecommendationResult,
 } from "./contracts.js";
 import {
   InputContractError,
+  isCanonicalProductFamilyId,
   isCanonicalRecommendationId,
   MAX_CORRECTION_BODY_BYTES,
   MAX_EVALUATE_BODY_BYTES,
@@ -72,6 +73,7 @@ import {
 } from "./nanaco-credit-charge-recommendation.js";
 import {
   MAX_PAYMENT_STACK_BODY_BYTES,
+  parsePaymentStackBrowserInput,
   recommendPaymentStack,
 } from "./payment-stack-recommendation.js";
 import {
@@ -79,6 +81,8 @@ import {
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   MAX_POINT_SPEND_BODY_BYTES,
+  p0ProductFamilyDefinition,
+  parsePointSpendBrowserInput,
   type RouteGraphSourcePort,
   recommendPointSpend,
 } from "./point-spend-recommendation.js";
@@ -275,6 +279,8 @@ export interface AppDependencies {
   readonly agentFeedIngress?: AgentFeedIngressPort;
   /** Active machine-validated Agent Feed rules used directly by arithmetic. */
   readonly activeRewardCalculations?: ActiveRewardCalculationPort;
+  /** Direct merchant acceptance rows for the selected product families. */
+  readonly merchantAcceptance?: MerchantAcceptancePort;
   /**
    * Current research claims for the routing graph and payment layers.  Absent
    * in the loopback shell, which compiles the checked-in fixtures instead.
@@ -290,6 +296,7 @@ export type AppCatalogueDependency =
   | FactInfluenceGraphPort
   | AgentFeedIngressPort
   | ActiveRewardCalculationPort
+  | MerchantAcceptancePort
   | AppDependencies;
 
 function resolveActiveRewardCalculations(
@@ -302,6 +309,33 @@ function resolveActiveRewardCalculations(
   )
     return dependency.activeRewardCalculations;
   return undefined;
+}
+
+function resolveMerchantAcceptance(
+  dependency: AppCatalogueDependency | undefined,
+): MerchantAcceptancePort | undefined {
+  if (
+    dependency === null ||
+    typeof dependency !== "object" ||
+    (!Object.hasOwn(dependency, "merchantAcceptance") &&
+      !Object.hasOwn(dependency, "listAcceptedFamilies"))
+  )
+    return undefined;
+  if (Object.hasOwn(dependency, "listAcceptedFamilies")) {
+    const direct = dependency as Partial<MerchantAcceptancePort>;
+    if (typeof direct.listAcceptedFamilies !== "function")
+      throw requestError(500, "merchant_acceptance_dependency_invalid");
+    return direct as MerchantAcceptancePort;
+  }
+  const port = (dependency as AppDependencies).merchantAcceptance;
+  if (port === undefined) return undefined;
+  if (
+    port !== null &&
+    typeof port === "object" &&
+    typeof port.listAcceptedFamilies === "function"
+  )
+    return port;
+  throw requestError(500, "merchant_acceptance_dependency_invalid");
 }
 
 function resolveAgentFeedIngress(
@@ -410,9 +444,9 @@ function resolveExperimentalCatalogue(
 /**
  * Resolve the current-claims source, when the host composed one.
  *
- * The loopback shell composes no database, so an absent source is normal
- * rather than an error: the recommendation compiles the checked-in fixtures
- * and says so in its response.
+ * An absent source is permitted only for code paths that do not perform a
+ * live graph calculation. Browser recommendation endpoints call the strict
+ * resolver below and fail closed instead of substituting fixtures.
  */
 function routeGraphSourceOf(
   dependency: AppCatalogueDependency | undefined,
@@ -425,6 +459,15 @@ function routeGraphSourceOf(
     return undefined;
   const source = dependency.routeGraphSource;
   return source === null ? undefined : source;
+}
+
+function requiredRouteGraphSourceOf(
+  dependency: AppCatalogueDependency | undefined,
+): RouteGraphSourcePort {
+  const source = routeGraphSourceOf(dependency);
+  if (source === undefined)
+    throw requestError(503, "route_graph_source_unavailable");
+  return source;
 }
 
 function resolveImplementationCatalogue(
@@ -1118,11 +1161,6 @@ type UnifiedRouteIssue =
   | "no_valid_plan"
   | "recommendation_malformed";
 
-interface UnifiedFactResult {
-  readonly view?: FactInfluenceBrowserView;
-  readonly issue?: "facts_unavailable" | "fact_binding_required";
-}
-
 interface UnifiedRouteRecord {
   readonly route_id: string;
   readonly label: string;
@@ -1214,77 +1252,6 @@ function unifiedRecommendationId(
   return `sha256:${createHash("sha256").update(payload, "utf8").digest("hex")}`;
 }
 
-function issueFromUnknown(error: unknown): UnifiedRouteIssue {
-  if (error instanceof InputContractError) {
-    if (
-      error.code === "experimental_amount_invalid" ||
-      error.code === "experimental_tax_exclusive_amount_invalid" ||
-      error.code === "experimental_balance_invalid" ||
-      error.code === "nanaco_credit_charge_amount_invalid" ||
-      error.code === "nanaco_credit_charge_balance_invalid" ||
-      error.code === "nanaco_credit_charge_ownership_invalid" ||
-      error.code === "nanaco_credit_charge_preregistration_invalid" ||
-      error.code === "nanaco_credit_charge_effective_at_invalid"
-    )
-      return "route_input_invalid";
-  }
-  if (error instanceof ExperimentalRecommendationError) {
-    if (
-      error.code === "selection_not_supported" ||
-      error.code === "amount_invalid" ||
-      error.code === "tax_exclusive_amount_invalid" ||
-      error.code === "balance_invalid" ||
-      error.code === "effective_at_invalid"
-    )
-      return "route_input_invalid";
-    if (error.code === "rule_not_current") return "rule_not_current";
-    if (error.code === "source_unavailable") return "route_unavailable";
-    return "recommendation_malformed";
-  }
-  if (error instanceof NanacoCreditChargeRecommendationError) {
-    if (
-      error.code === "selection_not_supported" ||
-      error.code === "charge_below_minimum" ||
-      error.code === "charge_not_increment" ||
-      error.code === "charge_above_maximum" ||
-      error.code === "balance_limit_exceeded" ||
-      error.code === "balance_invalid" ||
-      error.code === "ownership_required" ||
-      error.code === "preregistration_required" ||
-      error.code === "effective_at_invalid"
-    )
-      return "route_input_invalid";
-    if (error.code === "rule_not_current") return "rule_not_current";
-    if (error.code === "source_unavailable") return "route_unavailable";
-    return "recommendation_malformed";
-  }
-  if (
-    error &&
-    typeof error === "object" &&
-    "code" in error &&
-    typeof (error as { code?: unknown }).code === "string"
-  ) {
-    const code = (error as { code: string }).code;
-    if (code === "experimental_recommendation_unavailable")
-      return "recommendation_malformed";
-    if (code === "nanaco_credit_charge_recommendation_unavailable")
-      return "recommendation_malformed";
-  }
-  return "route_unavailable";
-}
-
-function statusFromExperimentalOutcome(
-  outcome: ExperimentalRecommendationResult["outcome"],
-): UnifiedRouteStatus {
-  return outcome === "definite" ? "eligible" : "no_valid_plan";
-}
-
-function statusFromCreditOutcome(
-  outcome: NanacoCreditChargeRecommendationResult["outcome"],
-): UnifiedRouteStatus {
-  return outcome === "definite" ? "eligible" : "no_valid_plan";
-}
-
 const EXPERIMENTAL_PUBLIC_ASSUMPTIONS = Object.freeze([
   "セブン‐イレブンでのnanaco利用に限定した先行実験です。",
   "入力された総額と税抜対象額をそのまま扱います。税額変換は推測しません。",
@@ -1293,348 +1260,6 @@ const EXPERIMENTAL_PUBLIC_ASSUMPTIONS = Object.freeze([
 const EXPERIMENTAL_PUBLIC_BLOCKER =
   "本番公開の認可情報がないため、情報表示として扱います。";
 const EXPERIMENTAL_PUBLIC_PLAN_ID_PATTERN = /^plan_direct_[0-9a-f]{16}$/u;
-
-function validityState(
-  validFrom: string | null,
-  validTo: string | null,
-  effectiveAt: string,
-): UnifiedValidityState {
-  return classifyProvisionalValidity(
-    { valid_from: validFrom, valid_to: validTo },
-    effectiveAt,
-  ).status;
-}
-
-async function catalogueValidity(
-  dependency: AppCatalogueDependency | undefined,
-  publicationId: string,
-  effectiveAt: string,
-): Promise<{
-  readonly state: UnifiedValidityState;
-  readonly issue?: "catalogue_unavailable";
-}> {
-  try {
-    const snapshot = await listExperimentalCatalogue(
-      resolveExperimentalCatalogue(dependency),
-      effectiveAt,
-    );
-    const card = snapshot.rules.find(
-      (candidate) => candidate.publication_id === publicationId,
-    );
-    if (!card)
-      return Object.freeze({
-        state: "unknown" as const,
-        issue: "catalogue_unavailable" as const,
-      });
-    return Object.freeze({
-      state: validityState(card.valid_from, card.valid_to, effectiveAt),
-    });
-  } catch {
-    return Object.freeze({
-      state: "unknown" as const,
-      issue: "catalogue_unavailable" as const,
-    });
-  }
-}
-
-/**
- * Fact explanations are advisory for a unified result. A graph outage must
- * not hide an otherwise valid numeric result. The exact applied parent
- * claim is different: if it cannot be bound to one active graph node, only
- * that real route is blocked.
- */
-async function unifiedFactInfluence(
-  dependency: AppCatalogueDependency | undefined,
-  effectiveAt: string,
-  context: FactInfluenceGraphContext,
-  appliedParentClaimIds: readonly string[],
-): Promise<UnifiedFactResult> {
-  try {
-    const graph = await resolveFactInfluenceGraph(dependency).load(effectiveAt);
-    if (
-      graph.fact_count !== 364 ||
-      graph.nodes.length !== graph.fact_count ||
-      graph.version !== "p0-fact-influence-graph.v1"
-    )
-      throw new Error("fact_influence_graph_incomplete");
-    return Object.freeze({
-      view: projectFactInfluenceForRecommendation(
-        graph,
-        context,
-        appliedParentClaimIds,
-      ),
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-    if (message.includes("fact_influence_applied_claim"))
-      return Object.freeze({ issue: "fact_binding_required" as const });
-    return Object.freeze({ issue: "facts_unavailable" as const });
-  }
-}
-
-function uniqueIssues(
-  issues: readonly UnifiedRouteIssue[],
-): readonly UnifiedRouteIssue[] {
-  return Object.freeze([...new Set(issues)]);
-}
-
-async function unifiedSyntheticRoute(
-  input: UnifiedRecommendationInput,
-  dependency: AppCatalogueDependency | undefined,
-): Promise<UnifiedRouteRecord> {
-  const issues: UnifiedRouteIssue[] = [];
-  try {
-    const response = evaluateSynthetic({
-      merchant_id: SYNTHETIC_ALPHA_CONFIG.merchant_id,
-      branch_id: SYNTHETIC_ALPHA_CONFIG.branch_id,
-      amount_jpy: input.amount_jpy,
-      owned_instruments: input.owned_instruments,
-      stored_value_use: input.stored_value_use,
-      ...(input.stored_value_usage === undefined
-        ? {}
-        : { stored_value_usage: input.stored_value_usage }),
-      ...(input.stored_value_value_jpy_per_unit === undefined
-        ? {}
-        : {
-            stored_value_value_jpy_per_unit:
-              input.stored_value_value_jpy_per_unit,
-          }),
-      facts: input.facts,
-      caps: input.caps,
-    });
-    const facts = await unifiedFactInfluence(
-      dependency,
-      input.effective_at,
-      {
-        merchant_id: SYNTHETIC_MERCHANT_ID,
-        payment_method: "synthetic_card",
-        family_ids: ["merchant.synthetic"],
-      },
-      [],
-    );
-    if (facts.issue) issues.push(facts.issue);
-    const view = mapRecommendationForBrowser(response, facts.view);
-    const displayable =
-      view.primary !== null &&
-      (view.outcome === "definite" || view.outcome === "conditional");
-    const recommendationId = displayable
-      ? unifiedRecommendationId("synthetic", input)
-      : undefined;
-    if (recommendationId) rememberRecommendationId(recommendationId);
-    const recommendation = recommendationId
-      ? Object.freeze({ ...view, request_id: recommendationId })
-      : view;
-    return Object.freeze({
-      route_id: "synthetic",
-      label: "サンプルストア・カード比較",
-      kind: "calculation",
-      status:
-        view.outcome === "conditional"
-          ? "conditional"
-          : displayable
-            ? "eligible"
-            : view.outcome === "no_valid_plan"
-              ? "no_valid_plan"
-              : "blocked",
-      validity_state: "active",
-      issues: uniqueIssues(issues),
-      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
-      recommendation: recommendation as unknown as Readonly<
-        Record<string, unknown>
-      >,
-      ...(facts.view ? { fact_influence: facts.view } : {}),
-    });
-  } catch {
-    return Object.freeze({
-      route_id: "synthetic",
-      label: "サンプルストア・カード比較",
-      kind: "calculation",
-      status: "unavailable",
-      validity_state: "unknown",
-      issues: Object.freeze(["route_unavailable" as const]),
-    });
-  }
-}
-
-async function unifiedNanacoPurchaseRoute(
-  input: UnifiedRecommendationInput,
-  dependency: AppCatalogueDependency | undefined,
-): Promise<UnifiedRouteRecord> {
-  const issues: UnifiedRouteIssue[] = [];
-  const catalogue = await catalogueValidity(
-    dependency,
-    "candidate_p0_nanaco_shopping_earning_20260821_v0_1",
-    input.effective_at,
-  );
-  if (catalogue.issue) issues.push(catalogue.issue);
-  try {
-    const routeInput = parseExperimentalRecommendation({
-      selection_id: "candidate_p0_nanaco_shopping_earning_20260821_v0_1",
-      amount_jpy: input.amount_jpy,
-      tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
-      nanaco_balance_jpy: input.nanaco_balance_jpy,
-      effective_at: input.effective_at,
-    });
-    const raw =
-      await resolveExperimentalRecommendation(dependency).evaluate(routeInput);
-    const recommendation = safeExperimentalRecommendation(raw, routeInput);
-    if (recommendation.outcome === "no_valid_plan")
-      issues.push("no_valid_plan");
-    if (catalogue.state === "scheduled" || catalogue.state === "expired")
-      issues.push("rule_not_current");
-    const facts: UnifiedFactResult =
-      recommendation.outcome === "definite"
-        ? await unifiedFactInfluence(
-            dependency,
-            input.effective_at,
-            {
-              merchant_id: "merchant.seveneleven",
-              payment_method: "nanaco",
-              family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
-            },
-            [NANACO_PURCHASE_APPLIED_PARENT_CLAIM_ID],
-          )
-        : Object.freeze({});
-    if (facts.issue) issues.push(facts.issue);
-    const status =
-      catalogue.state === "scheduled" || catalogue.state === "expired"
-        ? "blocked"
-        : statusFromExperimentalOutcome(recommendation.outcome);
-    const displayable = status === "eligible";
-    const recommendationId = displayable
-      ? unifiedRecommendationId("nanaco_purchase", input)
-      : undefined;
-    if (recommendationId) rememberRecommendationId(recommendationId);
-    return Object.freeze({
-      route_id: "nanaco_purchase",
-      label: "セブン‐イレブン・nanaco購入",
-      kind: "calculation",
-      status,
-      validity_state: catalogue.state,
-      issues: uniqueIssues(issues),
-      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
-      ...(status === "blocked"
-        ? {}
-        : {
-            recommendation: recommendation as unknown as Readonly<
-              Record<string, unknown>
-            >,
-          }),
-      ...(facts.view ? { fact_influence: facts.view } : {}),
-    });
-  } catch (error) {
-    const issue = issueFromUnknown(error);
-    issues.push(issue);
-    const status: UnifiedRouteStatus =
-      issue === "route_input_invalid" || issue === "no_valid_plan"
-        ? "no_valid_plan"
-        : issue === "rule_not_current"
-          ? "blocked"
-          : "unavailable";
-    return Object.freeze({
-      route_id: "nanaco_purchase",
-      label: "セブン‐イレブン・nanaco購入",
-      kind: "calculation",
-      status,
-      validity_state: catalogue.state,
-      issues: uniqueIssues(issues),
-    });
-  }
-}
-
-async function unifiedNanacoCreditChargeRoute(
-  input: UnifiedRecommendationInput,
-  dependency: AppCatalogueDependency | undefined,
-): Promise<UnifiedRouteRecord> {
-  const issues: UnifiedRouteIssue[] = [];
-  const catalogue = await catalogueValidity(
-    dependency,
-    "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
-    input.effective_at,
-  );
-  if (catalogue.issue) issues.push(catalogue.issue);
-  try {
-    const routeInput = parseNanacoCreditChargeRecommendation({
-      selection_id: "candidate_p0_nanaco_sevencard_credit_charge_20260822_v0_1",
-      charge_amount_jpy: input.charge_amount_jpy,
-      nanaco_balance_jpy: input.nanaco_credit_charge_balance_jpy,
-      seven_card_plus_owned: input.seven_card_plus_owned,
-      nanaco_credit_charge_preregistered:
-        input.nanaco_credit_charge_preregistered,
-      effective_at: input.effective_at,
-    });
-    const raw =
-      await resolveNanacoCreditChargeRecommendation(dependency).evaluate(
-        routeInput,
-      );
-    const recommendation = safeNanacoCreditChargeRecommendation(
-      raw,
-      routeInput,
-    );
-    if (recommendation.outcome === "no_valid_plan")
-      issues.push("no_valid_plan");
-    if (catalogue.state === "scheduled" || catalogue.state === "expired")
-      issues.push("rule_not_current");
-    const facts: UnifiedFactResult =
-      recommendation.outcome === "definite"
-        ? await unifiedFactInfluence(
-            dependency,
-            input.effective_at,
-            {
-              merchant_id: "merchant.seveneleven",
-              payment_method: "seven_card_plus",
-              family_ids: ["point.nanaco", "emoney.nanaco", "merchant.7eleven"],
-            },
-            [NANACO_CREDIT_CHARGE_APPLIED_PARENT_CLAIM_ID],
-          )
-        : Object.freeze({});
-    if (facts.issue) issues.push(facts.issue);
-    const status =
-      catalogue.state === "scheduled" || catalogue.state === "expired"
-        ? "blocked"
-        : statusFromCreditOutcome(recommendation.outcome);
-    const displayable = status === "eligible";
-    const recommendationId = displayable
-      ? unifiedRecommendationId("nanaco_credit_charge", input)
-      : undefined;
-    if (recommendationId) rememberRecommendationId(recommendationId);
-    return Object.freeze({
-      route_id: "nanaco_credit_charge",
-      label: "セブンカード・プラス→nanacoチャージ",
-      kind: "calculation",
-      status,
-      validity_state: catalogue.state,
-      issues: uniqueIssues(issues),
-      ...(recommendationId ? { recommendation_id: recommendationId } : {}),
-      ...(status === "blocked"
-        ? {}
-        : {
-            recommendation: recommendation as unknown as Readonly<
-              Record<string, unknown>
-            >,
-          }),
-      ...(facts.view ? { fact_influence: facts.view } : {}),
-    });
-  } catch (error) {
-    const issue = issueFromUnknown(error);
-    issues.push(issue);
-    const status: UnifiedRouteStatus =
-      issue === "route_input_invalid" || issue === "no_valid_plan"
-        ? "no_valid_plan"
-        : issue === "rule_not_current"
-          ? "blocked"
-          : "unavailable";
-    return Object.freeze({
-      route_id: "nanaco_credit_charge",
-      label: "セブンカード・プラス→nanacoチャージ",
-      kind: "calculation",
-      status,
-      validity_state: catalogue.state,
-      issues: uniqueIssues(issues),
-    });
-  }
-}
-
 const REWARD_ASSET_BY_LABEL: Readonly<Record<string, string>> = Object.freeze({
   dポイント: "point.d",
   "JRE POINT": "point.jre",
@@ -1927,43 +1552,187 @@ async function unifiedRecommendations(
   input: UnifiedRecommendationInput,
   dependency: AppCatalogueDependency | undefined,
 ): Promise<UnifiedRecommendationsResult> {
-  // Keep each route isolated: an invalid top-up must not remove a valid
-  // purchase neighbour, and an explanation outage must remain visible only on
-  // the affected route.
-  const fallbackCalculations = await calculateSelectedProductPurchases(
-    input.selected_p0_products,
-    input.amount_jpy,
-  );
-  let activeCalculations = Object.freeze([]) as Awaited<
-    ReturnType<ActiveRewardCalculationPort["calculate"]>
-  >;
+  const selected = Object.freeze([...input.selected_p0_products]);
   const activePort = resolveActiveRewardCalculations(dependency);
+  const acceptancePort = resolveMerchantAcceptance(dependency);
+
+  const unavailableRoute = (
+    routeId: string,
+    label: string,
+    issue: UnifiedRouteIssue = "route_unavailable",
+  ): UnifiedRouteRecord =>
+    Object.freeze({
+      route_id: routeId,
+      label,
+      kind: "calculation" as const,
+      status: "unavailable" as const,
+      validity_state: "unknown" as const,
+      issues: Object.freeze([issue]),
+    });
+
+  const noValidRoute = (routeId: string, label: string): UnifiedRouteRecord =>
+    Object.freeze({
+      route_id: routeId,
+      label,
+      kind: "calculation" as const,
+      status: "no_valid_plan" as const,
+      validity_state: "active" as const,
+      issues: Object.freeze(["no_valid_plan" as const]),
+    });
+
+  const emptyRoutes = (
+    status: "unavailable" | "no_valid_plan",
+    issue: UnifiedRouteIssue,
+  ): readonly UnifiedRouteRecord[] => {
+    if (selected.length === 0)
+      return Object.freeze([
+        status === "unavailable"
+          ? unavailableRoute(
+              "active_reward_calculations",
+              "現在の支払いルート",
+              issue,
+            )
+          : noValidRoute("active_reward_calculations", "現在の支払いルート"),
+      ]);
+    return Object.freeze(
+      selected.map((familyId) => {
+        const definition = p0ProductFamilyDefinition(familyId);
+        const label = definition?.label ?? familyId;
+        return status === "unavailable"
+          ? unavailableRoute(`selected_product_${familyId}`, label, issue)
+          : noValidRoute(`selected_product_${familyId}`, label);
+      }),
+    );
+  };
+
+  const routeResult = async (
+    routes: readonly UnifiedRouteRecord[],
+  ): Promise<UnifiedRecommendationsResult> => {
+    const enriched = routes.map(enrichUnifiedRoute);
+    const comparison = rankUnifiedRoutes(
+      enriched.flatMap((item) => (item.candidate ? [item.candidate] : [])),
+    );
+    const purchaseRoutes = enriched
+      .filter((item) => item.route.comparison_role !== "funding")
+      .map((item) => item.route);
+    const supplementalRoutes = enriched
+      .filter((item) => item.route.comparison_role === "funding")
+      .map((item) => item.route);
+    const compacted = compactUnifiedFactInfluence([
+      ...purchaseRoutes,
+      ...supplementalRoutes,
+    ]);
+    const compactByRouteId = new Map(
+      compacted.routes.map((route) => [route.route_id, route]),
+    );
+    return Object.freeze({
+      routes: Object.freeze(
+        rankRouteOrder(purchaseRoutes, comparison).map(
+          (route) => compactByRouteId.get(route.route_id) ?? route,
+        ) as readonly UnifiedCompactRouteRecord[],
+      ),
+      supplemental_routes: Object.freeze(
+        supplementalRoutes.map(
+          (route) => compactByRouteId.get(route.route_id) ?? route,
+        ) as readonly UnifiedCompactRouteRecord[],
+      ),
+      comparison,
+      fact_influence_shared: compacted.shared,
+      questions: Object.freeze([]) as readonly string[],
+    });
+  };
+
+  // A real merchant must have a host-composed acceptance view. Synthetic is
+  // retained only as a development merchant; it never supplies economics.
+  if (input.merchant_id !== SYNTHETIC_MERCHANT_ID && !acceptancePort)
+    return routeResult(emptyRoutes("unavailable", "catalogue_unavailable"));
+
+  let accepted: ReadonlySet<string> | null = null;
+  if (acceptancePort) {
+    try {
+      const acceptedIds = await acceptancePort.listAcceptedFamilies({
+        merchant_id: input.merchant_id,
+        branch_id: input.branch_id,
+        family_ids: selected,
+        effective_at: input.effective_at,
+      });
+      if (
+        !Array.isArray(acceptedIds) ||
+        acceptedIds.length > 128 ||
+        !acceptedIds.every((familyId) => isCanonicalProductFamilyId(familyId))
+      )
+        throw new Error("merchant_acceptance_result_invalid");
+      accepted = new Set(
+        acceptedIds.filter((familyId) => selected.includes(familyId)),
+      );
+    } catch (error) {
+      reportDeploymentFailure("merchant_acceptance", error);
+      return routeResult(emptyRoutes("unavailable", "catalogue_unavailable"));
+    }
+  }
+
+  if (!activePort)
+    reportDeploymentFailure(
+      "active_reward_calculation",
+      new Error("active_reward_calculation_unavailable"),
+    );
+
+  let activeCalculations: Awaited<
+    ReturnType<ActiveRewardCalculationPort["calculate"]>
+  > = [];
   if (activePort) {
     try {
       activeCalculations = await activePort.calculate({
-        selected_p0_products: input.selected_p0_products,
+        selected_p0_products: selected,
         merchant_id: input.merchant_id,
         branch_id: input.branch_id,
         amount_jpy: input.amount_jpy,
         tax_exclusive_amount_jpy: input.tax_exclusive_amount_jpy,
         effective_at: input.effective_at,
       });
+      if (!Array.isArray(activeCalculations))
+        throw new Error("active_reward_calculation_result_invalid");
     } catch (error) {
       reportDeploymentFailure("active_reward_calculation", error);
+      return routeResult(emptyRoutes("unavailable", "route_unavailable"));
     }
   }
-  // Active feed rules replace the checked-in bootstrap claim per family. A
-  // database outage retains the bootstrap result, but there is no promotion
-  // or UI approval between an active row and this calculation.
-  const calculationsByFamily = new Map(
-    fallbackCalculations.map((calculation) => [
+
+  const byFamily = new Map(
+    activeCalculations.map((calculation) => [
       calculation.family_id,
       calculation,
     ]),
   );
-  for (const calculation of activeCalculations)
-    calculationsByFamily.set(calculation.family_id, calculation);
-  const calculations = [...calculationsByFamily.values()];
+  const uncovered = selected.filter((familyId) => !byFamily.has(familyId));
+  if (uncovered.length > 0) {
+    let databaseCalculations: Awaited<
+      ReturnType<ActiveRewardCalculationPort["calculate"]>
+    >;
+    try {
+      databaseCalculations = await calculateSelectedProductPurchases(
+        uncovered,
+        input.amount_jpy,
+        requiredRouteGraphSourceOf(dependency),
+        input.effective_at,
+      );
+    } catch (error) {
+      reportDeploymentFailure("route_graph_calculation", error);
+      return routeResult(emptyRoutes("unavailable", "route_unavailable"));
+    }
+    for (const calculation of databaseCalculations)
+      byFamily.set(calculation.family_id, calculation);
+  }
+
+  const calculations = [...byFamily.values()].filter(
+    (calculation) =>
+      isCanonicalProductFamilyId(calculation.family_id) &&
+      selected.includes(calculation.family_id) &&
+      (accepted === null || accepted.has(calculation.family_id)),
+  );
+  if (calculations.length === 0)
+    return routeResult(emptyRoutes("no_valid_plan", "no_valid_plan"));
+
   const selectedRoutes = calculations.map((calculation) => {
     const routeId = `selected_product_${calculation.family_id}`;
     const recommendationId = unifiedRecommendationId(routeId, input);
@@ -1995,58 +1764,7 @@ async function unifiedRecommendations(
       }),
     });
   });
-  const includeLegacyRoutes =
-    input.merchant_id === SYNTHETIC_MERCHANT_ID && selectedRoutes.length === 0;
-  const nanacoRoutes =
-    input.merchant_id === "merchant.seveneleven" || includeLegacyRoutes
-      ? [
-          unifiedNanacoPurchaseRoute(input, dependency),
-          unifiedNanacoCreditChargeRoute(input, dependency),
-        ]
-      : [];
-  const resolvedNanacoRoutes = await Promise.all(nanacoRoutes);
-  const routes =
-    input.merchant_id === "merchant.seveneleven"
-      ? [...selectedRoutes, ...resolvedNanacoRoutes]
-      : selectedRoutes.length > 0
-        ? [...selectedRoutes]
-        : [
-            await unifiedSyntheticRoute(input, dependency),
-            ...selectedRoutes,
-            ...resolvedNanacoRoutes,
-          ];
-  const enriched = routes.map(enrichUnifiedRoute);
-  const comparison = rankUnifiedRoutes(
-    enriched.flatMap((item) => (item.candidate ? [item.candidate] : [])),
-  );
-  const purchaseRoutes = enriched
-    .filter((item) => item.route.comparison_role !== "funding")
-    .map((item) => item.route);
-  const supplementalRoutes = enriched
-    .filter((item) => item.route.comparison_role === "funding")
-    .map((item) => item.route);
-  const compacted = compactUnifiedFactInfluence([
-    ...purchaseRoutes,
-    ...supplementalRoutes,
-  ]);
-  const compactByRouteId = new Map(
-    compacted.routes.map((route) => [route.route_id, route]),
-  );
-  return Object.freeze({
-    routes: Object.freeze(
-      rankRouteOrder(purchaseRoutes, comparison).map(
-        (route) => compactByRouteId.get(route.route_id) ?? route,
-      ) as readonly UnifiedCompactRouteRecord[],
-    ),
-    supplemental_routes: Object.freeze(
-      supplementalRoutes.map(
-        (route) => compactByRouteId.get(route.route_id) ?? route,
-      ) as readonly UnifiedCompactRouteRecord[],
-    ),
-    comparison,
-    fact_influence_shared: compacted.shared,
-    questions: Object.freeze([]) as readonly string[],
-  });
+  return routeResult(selectedRoutes);
 }
 
 function contentTypeIsJson(
@@ -2359,7 +2077,7 @@ export async function handleRequest(
           return jsonResponse(
             200,
             (await listPointSpendBrowserOptions(
-              routeGraphSourceOf(dependency),
+              requiredRouteGraphSourceOf(dependency),
             )) as unknown as Readonly<Record<string, unknown>>,
           );
         } catch {
@@ -2468,12 +2186,14 @@ export async function handleRequest(
         );
       }
       try {
-        const input = parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES);
+        const input = parsePointSpendBrowserInput(
+          parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES),
+        );
         return jsonResponse(
           200,
           (await recommendPointSpend(
             input,
-            routeGraphSourceOf(dependency),
+            requiredRouteGraphSourceOf(dependency),
           )) as unknown as Readonly<Record<string, unknown>>,
         );
       } catch (error) {
@@ -2490,12 +2210,14 @@ export async function handleRequest(
         );
       }
       try {
-        const input = parseJsonBody(request, MAX_PAYMENT_STACK_BODY_BYTES);
+        const input = parsePaymentStackBrowserInput(
+          parseJsonBody(request, MAX_PAYMENT_STACK_BODY_BYTES),
+        );
         return jsonResponse(
           200,
           (await recommendPaymentStack(
             input,
-            routeGraphSourceOf(dependency),
+            requiredRouteGraphSourceOf(dependency),
           )) as unknown as Readonly<Record<string, unknown>>,
         );
       } catch (error) {

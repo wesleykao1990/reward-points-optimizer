@@ -5,11 +5,42 @@ import type {
 } from "@jro/agent-feed-postgres";
 import { describe, expect, it } from "vitest";
 import {
+  createPostgresAppDependencies,
   createPostgresPoolConfig,
   createRoleScopedQueryPool,
 } from "../src/runtime.js";
 
 describe("consumer-alpha PostgreSQL runtime configuration", () => {
+  it("wires merchant acceptance from the private typed-rule projection", async () => {
+    const target = {
+      async query<Row = unknown>() {
+        return {
+          rows: [
+            {
+              merchant_id: "merchant.lawson",
+              payment_family: "category.credit_card",
+              accepted: true,
+              rule_id: `atr_${"a".repeat(64)}`,
+              rule_version: 1,
+              source_kind: "source_observation",
+              source_id: "11111111-1111-4111-8111-111111111111",
+              observed_at: "2026-08-24T00:00:00.000Z",
+            },
+          ] as Row[],
+        };
+      },
+    };
+    const port = createPostgresAppDependencies(target).merchantAcceptance;
+    await expect(
+      port?.listAcceptedFamilies({
+        merchant_id: "merchant.lawson",
+        branch_id: "location.lawson.representative",
+        family_ids: ["card.rakuten", "wallet.paypay"],
+        effective_at: "2026-08-24T12:00:00+09:00",
+      }),
+    ).resolves.toEqual(["card.rakuten"]);
+  });
+
   it("uses one bounded connection without unsafe pooler session options", () => {
     const config = createPostgresPoolConfig(
       "postgresql://postgres.example:secret@pooler.example:6543/postgres?sslmode=require",

@@ -69,3 +69,14 @@ does not contain claim identity, full asset definitions, or principal graph
 edges, the trusted host must provide those immutable bindings explicitly.
 Missing, inactive, corrected, drifted, hostile, unsupported, or incomplete
 rows are returned as deterministic issues and never become Rule IR records.
+
+`createPostgresAgentFeedTypedRuleRecordStore(target)` reads the bounded private
+universal-rule projections. Every normalized SourceObservation and immutable
+implementation fact is represented as a versioned typed outcome, including
+informational or incomplete rows (`calculable: false`); no arithmetic is
+inferred from prose or missing fields. `listMerchantPaymentAcceptance` reads
+the Rewards-owned merchant authority relation, populated only from explicit
+structured `merchant_id`, payment-family, and boolean `accepted` attributes.
+Recommendation-time reads do not require an evidence or manual-approval query.
+Active records and family enumeration remain correction-, quarantine-, and
+applicability-sensitive inside PostgreSQL.

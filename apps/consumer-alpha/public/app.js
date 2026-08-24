@@ -46,12 +46,15 @@
 
   const paymentLogo = (familyId) => {
     const frame = node("span", "payment-logo");
-    const image = node("img");
-    image.src = paymentLogoSources[familyId];
-    image.alt = "";
-    image.loading = "lazy";
-    image.decoding = "async";
-    frame.appendChild(image);
+    const source = paymentLogoSources[familyId];
+    if (source) {
+      const image = node("img");
+      image.src = source;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+      frame.appendChild(image);
+    }
     return frame;
   };
 
@@ -70,7 +73,9 @@
       .filter(
         (familyId) =>
           typeof familyId === "string" &&
-          /^(?:point|wallet|card)\.[a-z0-9.-]{1,64}$/u.test(familyId),
+          /^(?:point|wallet|card|emoney|storedvalue)\.[a-z0-9._-]{1,95}$/u.test(
+            familyId,
+          ),
       )
       .slice(0, 32);
   };
@@ -744,7 +749,7 @@
       (familyId) =>
         pointSpendOptions.walletCatalogue.find(
           (item) => item.family_id === familyId,
-        ).label,
+        )?.label || familyId,
     );
     if (selectedProducts.length)
       hero.appendChild(
@@ -776,11 +781,11 @@
         );
     }
     const list = node("div", "unified-route-list");
-    routes.forEach((route, index) => {
+    routes.forEach((route) => {
       const ranked = comparison?.ranked_routes?.find(
         (item) => item.route_id === route.route_id,
       );
-      renderUnifiedRoute(list, route, ranked?.rank || index + 1);
+      renderUnifiedRoute(list, route, ranked?.rank || null);
     });
     stagger(list.children);
     result.appendChild(list);
@@ -2058,11 +2063,19 @@
       if (
         !item ||
         typeof item.family_id !== "string" ||
-        !/^(?:point|wallet|card)\.[a-z0-9.-]{1,64}$/u.test(item.family_id) ||
+        !/^(?:point|wallet|card|emoney|storedvalue)\.[a-z0-9._-]{1,95}$/u.test(
+          item.family_id,
+        ) ||
         typeof item.label !== "string" ||
         item.label.length < 1 ||
         item.label.length > 48 ||
-        !["point", "mobile_pay", "credit_card"].includes(item.kind) ||
+        ![
+          "point",
+          "mobile_pay",
+          "credit_card",
+          "emoney",
+          "stored_value",
+        ].includes(item.kind) ||
         !Number.isSafeInteger(item.fact_count) ||
         item.fact_count < 1 ||
         !["spend_route", "information_only"].includes(item.calculation_status)
@@ -2205,6 +2218,7 @@
     },
     {
       kind: "point",
+      kinds: ["point", "emoney", "stored_value"],
       containerId: "p0-point-picker",
     },
   ]);
@@ -2280,7 +2294,9 @@
       const container = document.getElementById(definition.containerId);
       clear(container);
       pointSpendOptions.walletCatalogue
-        .filter((item) => item.kind === definition.kind)
+        .filter((item) =>
+          (definition.kinds || [definition.kind]).includes(item.kind),
+        )
         .forEach((item) => {
           const label = node("label", "p0-product-option");
           const checkbox = node("input");

@@ -9,7 +9,7 @@ import {
   synthesizePaymentStacks,
   type ValuationProfile,
 } from "@jro/rule-engine";
-
+import { isStrictCanonicalDateTime } from "./contracts.js";
 import {
   loadPointSpendBundle,
   p0ProductFamilyDefinition,
@@ -131,16 +131,6 @@ function parseRecord(value: unknown): JsonRecord {
   return output;
 }
 
-function canonicalDateTime(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/u.test(
-      value,
-    ) &&
-    Number.isFinite(Date.parse(value))
-  );
-}
-
 export function parsePaymentStackBrowserInput(
   value: unknown,
 ): PaymentStackBrowserInput {
@@ -161,7 +151,7 @@ export function parsePaymentStackBrowserInput(
     !owned.every(
       (item) => typeof item === "string" && FAMILY_ID_PATTERN.test(item),
     ) ||
-    !canonicalDateTime(effectiveAt) ||
+    !isStrictCanonicalDateTime(effectiveAt) ||
     !Array.isArray(confirmed) ||
     confirmed.length > 32 ||
     !confirmed.every(

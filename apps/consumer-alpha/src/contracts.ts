@@ -62,7 +62,27 @@ export const P0_PRODUCT_FAMILY_IDS = Object.freeze([
   "card.smbc",
   "card.view",
 ] as const);
-export type P0ProductFamilyId = (typeof P0_PRODUCT_FAMILY_IDS)[number];
+/**
+ * The checked-in ids above are labels/assets for the alpha UI, not the
+ * admission list. Active database rows may introduce another canonical
+ * family without requiring a redeploy, so the runtime type is intentionally
+ * an opaque bounded id rather than a closed union.
+ */
+export type P0ProductFamilyId = string;
+
+const CANONICAL_FAMILY_ID_PATTERN =
+  /^(?:point|card|wallet|emoney|storedvalue)\.[a-z0-9][a-z0-9._-]{0,95}$/u;
+
+/** Strict, bounded family ids accepted from a database-backed catalogue. */
+export function isCanonicalProductFamilyId(
+  value: unknown,
+): value is P0ProductFamilyId {
+  return (
+    typeof value === "string" &&
+    value.length <= 128 &&
+    CANONICAL_FAMILY_ID_PATTERN.test(value)
+  );
+}
 
 export const STORED_VALUE_USE = ["yes", "no", "unknown"] as const;
 export type StoredValueUse = (typeof STORED_VALUE_USE)[number];
@@ -430,7 +450,21 @@ export const UNIFIED_MERCHANT_IDS = Object.freeze([
   "merchant.yodobashi",
 ] as const);
 
-export type UnifiedMerchantId = (typeof UNIFIED_MERCHANT_IDS)[number];
+/** Checked-in merchant ids remain useful for labels and browser defaults. */
+export type UnifiedMerchantId = string;
+
+const CANONICAL_MERCHANT_ID_PATTERN = /^merchant\.[a-z0-9][a-z0-9._-]{0,95}$/u;
+
+/** Strict, bounded merchant ids accepted from a database-backed catalogue. */
+export function isCanonicalUnifiedMerchantId(
+  value: unknown,
+): value is UnifiedMerchantId {
+  return (
+    typeof value === "string" &&
+    value.length <= 128 &&
+    CANONICAL_MERCHANT_ID_PATTERN.test(value)
+  );
+}
 export type UnifiedBranchId =
   | typeof SYNTHETIC_BRANCH_ID
   | `location.${string}.representative`;
@@ -441,6 +475,29 @@ export function representativeBranchId(
   return merchantId === SYNTHETIC_MERCHANT_ID
     ? SYNTHETIC_BRANCH_ID
     : (`location.${merchantId.slice("merchant.".length)}.representative` as const);
+}
+
+/** Shared strict effective-at validation for every browser-facing route. */
+export function isStrictCanonicalDateTime(value: unknown): value is string {
+  return isCanonicalProvisionalDateTime(value);
+}
+
+export interface MerchantAcceptanceQuery {
+  readonly merchant_id: UnifiedMerchantId;
+  readonly branch_id: UnifiedBranchId;
+  readonly family_ids: readonly P0ProductFamilyId[];
+  readonly effective_at: string;
+}
+
+/**
+ * Direct merchant acceptance is authoritative when a host composes this
+ * port. Only accepted family ids cross this boundary; proof/evidence fields
+ * remain server-owned and are deliberately absent from the contract.
+ */
+export interface MerchantAcceptancePort {
+  listAcceptedFamilies(
+    input: MerchantAcceptanceQuery,
+  ): Promise<readonly P0ProductFamilyId[]>;
 }
 
 /** Browser-safe, host-owned input for `/api/recommendations`. */
@@ -971,7 +1028,7 @@ export function parseUnifiedRecommendation(
 
   const merchant =
     value.merchant_id === undefined ? SYNTHETIC_MERCHANT_ID : value.merchant_id;
-  if (!(UNIFIED_MERCHANT_IDS as readonly unknown[]).includes(merchant))
+  if (!isCanonicalUnifiedMerchantId(merchant))
     throw new InputContractError("merchant_id_invalid");
   const expectedBranch = representativeBranchId(merchant as UnifiedMerchantId);
   const branch =
@@ -1056,12 +1113,8 @@ export function parseUnifiedRecommendation(
     value.selected_p0_products === undefined ? [] : value.selected_p0_products;
   if (
     !Array.isArray(selectedRaw) ||
-    selectedRaw.length > P0_PRODUCT_FAMILY_IDS.length ||
-    !selectedRaw.every(
-      (item) =>
-        typeof item === "string" &&
-        (P0_PRODUCT_FAMILY_IDS as readonly string[]).includes(item),
-    )
+    selectedRaw.length > 128 ||
+    !selectedRaw.every((item) => isCanonicalProductFamilyId(item))
   )
     throw new InputContractError("selected_p0_products_invalid");
   const selectedProducts = [...new Set(selectedRaw)] as P0ProductFamilyId[];
@@ -1108,7 +1161,7 @@ export function parseUnifiedRecommendation(
     value.effective_at === undefined
       ? "2026-08-17T12:30:00+09:00"
       : value.effective_at;
-  if (!isCanonicalProvisionalDateTime(effectiveAt))
+  if (!isStrictCanonicalDateTime(effectiveAt))
     throw new InputContractError("effective_at_invalid");
 
   return Object.freeze({

@@ -132,7 +132,7 @@ describe("P0 point spending browser route", () => {
       label: "楽天ポイント",
       kind: "reward_point",
     });
-    expect(result.wallet_catalogue).toHaveLength(21);
+    expect(result.wallet_catalogue).toHaveLength(23);
     expect(
       result.wallet_catalogue.filter((item) => item.kind === "point"),
     ).toHaveLength(8);
@@ -310,16 +310,15 @@ describe("P0 point spending browser route", () => {
     ).rejects.toThrow("point_spend_asset_unknown");
   });
 
-  it("serves options and recommendations through exact localhost APIs", async () => {
+  it("requires the database graph for localhost economic endpoints", async () => {
     const options = await handleRequest({
       method: "GET",
       pathname: "/api/experimental/point-spend/options",
       headers: { host: "127.0.0.1:3010" },
     });
-    expect(options.status).toBe(200);
+    expect(options.status).toBe(503);
     expect(JSON.parse(options.body)).toMatchObject({
-      rule_count: 23,
-      wallet_catalogue: expect.any(Array),
+      error: { code: "point_spend_options_unavailable" },
     });
 
     const lotteries = await handleRequest({
@@ -343,10 +342,9 @@ describe("P0 point spending browser route", () => {
       },
       body: JSON.stringify(input),
     });
-    expect(recommendation.status).toBe(200);
+    expect(recommendation.status).toBe(503);
     expect(JSON.parse(recommendation.body)).toMatchObject({
-      status: "ready",
-      winner: { target_amount: "500" },
+      error: { code: "point_spend_recommendation_unavailable" },
     });
 
     const invalid = await handleRequest({

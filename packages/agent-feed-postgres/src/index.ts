@@ -197,4 +197,36 @@ export {
   P0_RULE_IR_ROW_KEYS,
   parseP0EconomicCandidateRow,
 } from "./rule-ir.js";
+export type {
+  AgentFeedActiveRuleFamily,
+  AgentFeedMerchantPaymentAcceptance,
+  AgentFeedTypedRuleRecord,
+  AgentFeedTypedRuleRecordStore,
+  TypedRuleClass,
+  TypedRuleSourceKind,
+  TypedRuleSubject,
+} from "./typed-rule-records.js";
+export {
+  ACTIVE_MERCHANT_PAYMENT_ACCEPTANCE_FUNCTION,
+  ACTIVE_MERCHANT_PAYMENT_ACCEPTANCE_QUERY,
+  ACTIVE_RULE_FAMILIES_FUNCTION,
+  ACTIVE_RULE_FAMILIES_QUERY,
+  AGENT_FEED_ACTIVE_MERCHANT_PAYMENT_ACCEPTANCE_FUNCTION,
+  AGENT_FEED_ACTIVE_MERCHANT_PAYMENT_ACCEPTANCE_QUERY,
+  AGENT_FEED_ACTIVE_RULE_FAMILIES_FUNCTION,
+  AGENT_FEED_ACTIVE_RULE_FAMILIES_QUERY,
+  AGENT_FEED_TYPED_RULE_RECORDS_FUNCTION,
+  AGENT_FEED_TYPED_RULE_RECORDS_QUERY,
+  createPostgresAgentFeedTypedRuleRecordStore,
+  createPostgresAgentFeedTypedRuleStore,
+  createPostgresTypedRuleRecordStore,
+  MAX_AGENT_FEED_ACTIVE_RULE_FAMILIES,
+  MAX_AGENT_FEED_MERCHANT_PAYMENT_ACCEPTANCE,
+  MAX_AGENT_FEED_TYPED_RULE_RECORDS,
+  reduceAgentFeedActiveRuleFamily,
+  reduceAgentFeedMerchantPaymentAcceptance,
+  reduceAgentFeedTypedRuleRecord,
+  TYPED_RULE_RECORDS_FUNCTION,
+  TYPED_RULE_RECORDS_QUERY,
+} from "./typed-rule-records.js";
 export type * from "./types.js";
