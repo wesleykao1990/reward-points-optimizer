@@ -74,6 +74,11 @@ declare
     v_rows integer;
     v_value jsonb;
 begin
+    -- Snapshot and fact rows are append-only and DB-owned; the write context
+    -- is what the persistence routine sets, and the gate uses the same door
+    -- rather than working around the trigger.
+    perform set_config('app_private.p0_implementation_write_context', 'snapshot', true);
+
     insert into app_private.p0_implementation_snapshots (
         implementation_version, implementation_hash, artifact_type,
         research_artifact_id, research_artifact_hash, coverage_index_version,
@@ -168,6 +173,7 @@ begin
     select fact_id into v_fact
       from app_private.p0_implementation_facts
      where snapshot_id = v_new and parent_claim_id = 'claim.gate.rate.001';
+    perform set_config('app_private.p0_implementation_write_context', 'correction', true);
     insert into app_private.p0_implementation_fact_corrections (
         correction_id, fact_id, snapshot_id, implementation_version,
         implementation_hash, parent_claim_id, fact_version, reason,
