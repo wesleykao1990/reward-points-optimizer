@@ -31,18 +31,18 @@ const SCHEMA_DESTINATIONS = new Map([
   ],
   [
     "0027_p0_route_graph_source_identity.sql",
-    "20260825120000_schema_0027_p0_route_graph_source_identity.sql",
+    "20260824172021_schema_0027_p0_route_graph_source_identity.sql",
   ],
   [
     "0028_p0_route_graph_open_ended_windows.sql",
-    "20260825120001_schema_0028_p0_route_graph_open_ended_windows.sql",
+    "20260824172039_schema_0028_p0_route_graph_open_ended_windows.sql",
   ],
 ]);
 
 const DATA_DESTINATIONS = new Map([
   [
     "012_p0_complex_route_benchmark_implementation.sql",
-    "20260825120002_released_data_012_p0_complex_route_benchmark_implementation.sql",
+    "20260824172106_released_data_012_p0_complex_route_benchmark_implementation.sql",
   ],
 ]);
 
@@ -88,6 +88,10 @@ const REQUIRED_PRODUCTION_HISTORY = Object.freeze([
   "20260824101402_complete_merchant_location_backend.sql",
   "20260824101949_merchant_location_exception_addresses.sql",
   "20260824102125_nearby_merchants_public_contract_v1.sql",
+  "20260824153206_standardize_credit_card_identity_resolution.sql",
+  "20260824153544_restrict_credit_card_identity_map_to_active_canonical_cards.sql",
+  "20260824170224_credit_card_catalogue_optimization_coverage.sql",
+  "20260824171114_credit_card_catalogue_attributes.sql",
 ]);
 
 if (mode !== "--check" && mode !== "--write") {

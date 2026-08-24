@@ -10,6 +10,7 @@
     "build": "turbo run build",
     "challenge:validate": "pnpm --filter @jro/challenge-track challenge:validate",
     "deploy:supabase:check": "node scripts/stage_supabase_migrations.mjs --check",
+    "deploy:production:smoke": "node scripts/verify_consumer_production.mjs",
     "lint": "biome check .",
     "merchant:geocode": "bash scripts/geocode_merchant_locations.sh",
     "publication:m3:authorize-check": "node scripts/m3_publication.mjs --authorize-check",

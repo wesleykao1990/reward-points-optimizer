@@ -88,6 +88,14 @@ The generated `supabase/migrations/*.sql` files are committed deployment
 artifacts. Canonical edits remain under `db/`; CI verifies that staging remains
 deterministic.
 
+Do not apply a production migration from the dashboard, CLI, or management API
+without committing the same immutable `<version>_<name>.sql` file. Supabase
+refuses all later GitHub deployments when a version exists remotely but is
+missing from the checkout. If an emergency migration is unavoidable, recover
+its exact SQL from `supabase_migrations.schema_migrations`, commit it under the
+recorded version and name, and verify that the local and hosted filename sets
+are identical before the next release.
+
 Enable **Deploy to production** in the Supabase GitHub integration, set the
 working directory to `.` and the production branch to `main`. Supabase then
 applies committed migrations after each merge to `main`.
@@ -128,6 +136,12 @@ Backend releases use Supabase's native GitHub production deployment. The
 integration watches `main`, applies pending files under `supabase/migrations`,
 and uses Supabase's migration history to skip versions already applied.
 
+The `Production consumer smoke` workflow runs after successful `main` CI and
+hourly. It verifies the live database-backed facts and point-spend option paths
+without pinning their growing row counts. A missing migration, 503 response,
+empty graph, or missing card/mobile-pay/point category therefore becomes a
+visible GitHub Actions failure instead of an indefinitely loading UI.
+
 Never edit or renumber an applied `db/NNNN_*.sql` or released-data seed. Add a
 new numbered migration instead. Never repair production migration history or
 reset the linked database without a separately reviewed recovery decision.
@@ -151,6 +165,8 @@ After both projects are live:
 6. Merge a harmless follow-up through a pull request and confirm Vercel deploys
    the new `main` commit while the Supabase production deployment reports the
    database is up to date.
+7. Run `pnpm deploy:production:smoke` and confirm both database-backed consumer
+   endpoints pass.
 
 The volatile recommendation/correction session remains process-local. A
 serverless instance change can invalidate that optional draft action; durable
