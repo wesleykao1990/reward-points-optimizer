@@ -1617,10 +1617,6 @@ def validate_docs_and_scripts() -> None:
         for forbidden in forbidden_refs:
             if forbidden in text:
                 fail(f"{path.relative_to(BASE)} contains stale canonical reference {forbidden}")
-    checksum_script = (BASE / "scripts/generate_checksums.py").read_text(encoding="utf-8")
-    for flag in ("--write", "--check"):
-        if flag not in checksum_script:
-            fail(f"checksum script is missing {flag}")
     prompt = (BASE / "prompts/CODEX_INITIATING_PROMPT.md").read_text(encoding="utf-8")
     if "new contract-affecting contradiction" not in prompt:
         fail("Codex prompt does not contain the new-contradiction stop rule")

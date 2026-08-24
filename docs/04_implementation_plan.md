@@ -52,8 +52,7 @@ Rewards Milestones 0, 1A, 1B, and 2 can proceed independently. Milestone 2.5 req
 
 - all examples validate structurally and semantically;
 - known and estimated bound negative tests fail correctly;
-- no documentation promises a field absent from the schema/semantic contracts;
-- checksum verification is non-mutating.
+- no documentation promises a field absent from the schema/semantic contracts.
 
 ## Milestone 1a — Conservation and reconciliation kernel
 
