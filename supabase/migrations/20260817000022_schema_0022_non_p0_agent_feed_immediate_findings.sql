@@ -49,8 +49,21 @@ create table if not exists user_data.agent_feed_finding_corrections (
 );
 
 alter table user_data.agent_feed_finding_corrections enable row level security;
-revoke all on app_private.agent_feed_experimental_findings from public, anon, authenticated;
-revoke all on user_data.agent_feed_finding_corrections from public, anon, authenticated;
+revoke all on app_private.agent_feed_experimental_findings from public;
+revoke all on user_data.agent_feed_finding_corrections from public;
+
+do $supabase_read_roles$
+begin
+    if to_regrole('anon') is not null then
+        execute 'revoke all on app_private.agent_feed_experimental_findings from anon';
+        execute 'revoke all on user_data.agent_feed_finding_corrections from anon';
+    end if;
+    if to_regrole('authenticated') is not null then
+        execute 'revoke all on app_private.agent_feed_experimental_findings from authenticated';
+        execute 'revoke all on user_data.agent_feed_finding_corrections from authenticated';
+    end if;
+end;
+$supabase_read_roles$;
 
 create or replace view app_api.active_agent_feed_experimental_findings as
 select
@@ -62,8 +75,20 @@ from app_private.agent_feed_experimental_findings
 where status = 'active_experimental';
 
 revoke all on app_api.active_agent_feed_experimental_findings from public;
-grant usage on schema app_api to anon, authenticated;
-grant select on app_api.active_agent_feed_experimental_findings to anon, authenticated, jro_runtime;
+grant select on app_api.active_agent_feed_experimental_findings to jro_runtime;
+
+do $supabase_view_roles$
+begin
+    if to_regrole('anon') is not null then
+        execute 'grant usage on schema app_api to anon';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to anon';
+    end if;
+    if to_regrole('authenticated') is not null then
+        execute 'grant usage on schema app_api to authenticated';
+        execute 'grant select on app_api.active_agent_feed_experimental_findings to authenticated';
+    end if;
+end;
+$supabase_view_roles$;
 
 create or replace function app_api.flag_agent_feed_experimental_finding(
     p_finding_id text,
@@ -118,7 +143,13 @@ end;
 $$;
 
 revoke all on function app_api.flag_agent_feed_experimental_finding(text,text,text) from public;
-grant execute on function app_api.flag_agent_feed_experimental_finding(text,text,text) to authenticated;
+do $supabase_correction_role$
+begin
+    if to_regrole('authenticated') is not null then
+        execute 'grant execute on function app_api.flag_agent_feed_experimental_finding(text,text,text) to authenticated';
+    end if;
+end;
+$supabase_correction_role$;
 
 comment on table app_private.agent_feed_experimental_findings is
     'Accepted non-P0 Agent Feed findings reflected immediately as experimental, never canonical, and removable by authenticated correction reports.';
