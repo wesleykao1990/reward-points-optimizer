@@ -37,7 +37,7 @@ create index if not exists agent_feed_experimental_findings_active_idx
 create table if not exists user_data.agent_feed_finding_corrections (
     correction_id uuid primary key default gen_random_uuid(),
     finding_id text not null references app_private.agent_feed_experimental_findings(finding_id) on delete restrict,
-    user_id uuid not null default auth.uid(),
+    user_id uuid not null,
     category text not null check (category in (
         'not_accepted','reward_missing','rate_wrong','campaign_ended',
         'registration_required','cap_or_minimum_missing','merchant_wrong',
