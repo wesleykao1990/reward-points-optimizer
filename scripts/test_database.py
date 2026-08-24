@@ -35,6 +35,29 @@ def run_sql(psql: str, database_url: str, path: Path) -> None:
     )
 
 
+def bootstrap_supabase_test_roles(psql: str, database_url: str) -> None:
+    """Create the NOLOGIN API roles used by Supabase grants and security tests."""
+    query(
+        psql,
+        database_url,
+        """
+        do $roles$
+        begin
+          if not exists (select 1 from pg_roles where rolname = 'anon') then
+            create role anon nologin;
+          end if;
+          if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+            create role authenticated nologin;
+          end if;
+          if not exists (select 1 from pg_roles where rolname = 'service_role') then
+            create role service_role nologin;
+          end if;
+        end
+        $roles$;
+        """,
+    )
+
+
 def main() -> int:
     database_url = os.environ.get("JRO_TEST_DATABASE_URL")
     if not database_url:
@@ -90,6 +113,7 @@ def main() -> int:
         return 2
 
     try:
+        bootstrap_supabase_test_roles(psql, database_url)
         for migration in MIGRATIONS:
             run_sql(psql, database_url, migration)
         for seed in SEEDS:
