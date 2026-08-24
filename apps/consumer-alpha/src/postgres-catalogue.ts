@@ -2,6 +2,7 @@ import {
   createPostgresExperimentalCatalogueStore,
   createPostgresNanacoCreditChargeRouteStore,
   loadCurrentP0EconomicRuleIRs,
+  loadCurrentP0ImplementationArtifacts,
   type NanacoCreditChargeRouteRecord,
   P0_EXPERIMENTAL_CATALOGUE_QUERY,
   type P0ExperimentalCatalogueRecord,
@@ -26,7 +27,26 @@ import {
   NANACO_CREDIT_CHARGE_PUBLICATION_ID,
   type NanacoCreditChargeRuleSource,
 } from "./nanaco-credit-charge-recommendation.js";
+import type { RouteGraphSourcePort } from "./point-spend-recommendation.js";
 import { normalizeExperimentalCatalogueSnapshot } from "./provisional-catalog.js";
+
+/**
+ * Serve the routing graph and payment layers from the current database facts.
+ *
+ * The claims are read on every request so a refreshed snapshot takes effect
+ * without a deploy; the caller decides what to do when the read fails, and
+ * this port neither caches nor falls back on its own.
+ */
+export function createPostgresRouteGraphSourcePort(
+  target: QueryTarget,
+): RouteGraphSourcePort {
+  return Object.freeze({
+    async current(effectiveAt: string) {
+      return loadCurrentP0ImplementationArtifacts(target, effectiveAt);
+    },
+  });
+}
+
 import {
   createNanacoExperimentalRecommendationPort,
   getNanacoExperimentalRuleIRMaterial,

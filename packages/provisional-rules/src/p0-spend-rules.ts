@@ -16,7 +16,12 @@ export interface P0SpendAsset {
   readonly asset_id: string;
   readonly asset_kind: P0SpendAssetKind;
   readonly program_id: string | null;
-  readonly reward_class: "normal" | null;
+  readonly reward_class:
+    | "normal"
+    | "limited_period"
+    | "usage_limited"
+    | "promotional"
+    | null;
   readonly scale: 0;
   readonly label_ja: string;
 }
@@ -35,7 +40,13 @@ export interface P0SpendRule {
   readonly increment_source_units: string | null;
   readonly maximum_source_units_per_request: string | null;
   readonly maximum_source_units_per_period: string | null;
-  readonly maximum_period: "year" | "campaign_period" | null;
+  readonly maximum_period:
+    | "day"
+    | "month"
+    | "year"
+    | "campaign_period"
+    | "lifetime"
+    | null;
   readonly fee_source_units: string;
   readonly processing_time_days_min: number | null;
   readonly processing_time_days_max: number | null;
@@ -44,6 +55,12 @@ export interface P0SpendRule {
   readonly valid_to: string | null;
   readonly timezone: "Asia/Tokyo";
   readonly required_conditions_ja: readonly string[];
+  /**
+   * The rule only applies to units held directly in the source program.
+   * Campaign uplifts are commonly withdrawn when the units arrived through an
+   * intermediary, so routing eligibility depends on the path travelled.
+   */
+  readonly requires_direct_source: boolean;
   readonly status: "active_experimental";
 }
 
@@ -323,6 +340,7 @@ function rule(
     | "valid_to"
     | "timezone"
     | "required_conditions_ja"
+    | "requires_direct_source"
     | "status"
   > &
     Partial<
@@ -336,6 +354,7 @@ function rule(
         | "processing_time_days_max"
         | "cancellation_policy"
         | "required_conditions_ja"
+        | "requires_direct_source"
       >
     >,
 ): P0SpendRule {
@@ -358,6 +377,7 @@ function rule(
     cancellation_policy: input.cancellation_policy ?? "provider_defined",
     ...validity(primaryClaim),
     required_conditions_ja: input.required_conditions_ja ?? Object.freeze([]),
+    requires_direct_source: input.requires_direct_source ?? false,
     status: "active_experimental",
   };
 }
@@ -378,7 +398,13 @@ function fixed(
     readonly processing?: readonly [number, number];
     readonly cancel?: "not_cancelable" | "provider_defined";
     readonly periodSourceMaximum?: string;
-    readonly maximumPeriod?: "year" | "campaign_period";
+    readonly maximumPeriod?:
+      | "day"
+      | "month"
+      | "year"
+      | "campaign_period"
+      | "lifetime";
+    readonly requiresDirectSource?: boolean;
   },
 ): RuleDraft {
   return {
@@ -413,6 +439,9 @@ function fixed(
         ...(config.cancel === undefined
           ? {}
           : { cancellation_policy: config.cancel }),
+        ...(config.requiresDirectSource === undefined
+          ? {}
+          : { requires_direct_source: config.requiresDirectSource }),
         ...(config.periodSourceMaximum === undefined
           ? {}
           : {

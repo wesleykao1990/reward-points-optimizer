@@ -4,6 +4,105 @@
 
 - Wired active non-P0 Agent Feed findings into the existing `/api/experimental/facts` catalogue consumed by the information UI. The 14 covered families now render with customer labels and their existing error-report action disputes the exact experimental finding immediately.
 - Reflected 12 accepted non-P0 Agent Feed findings across 14 point, stored-value, electronic-money, and transit-IC families immediately as `active_experimental`. Added an authenticated correction RPC that atomically disputes or quarantines a flagged finding; none of these records are canonical. Yodobashi remains partial after the official source returned HTTP 403.
+
+- The routing graph, the optimizer, and both recommendations now compile from
+  the current database facts instead of only from the checked-in fixtures, so
+  a refreshed rate takes effect without a redeploy. Claims are read on every
+  request and the compiled graph is reused only while the snapshot hashes are
+  unchanged; a time-based cache would have been simpler and wrong, because it
+  would keep serving a rate the database had already corrected.
+- Added `db/0024_p0_implementation_rule_facts.sql`. The browse-only
+  `app_api.p0_active_implementation_facts` view exposes fact metadata but not
+  `value` or `applicability`, which a compiler needs, so this adds a separate
+  private projection that returns them. The widening is deliberately narrow:
+  bounded, granted only to the runtime role, correction-sensitive and
+  window-active on the same terms as the browse view, and restricted to the
+  newest snapshot of each research artifact. It publishes nothing.
+- Every response now says where its rates came from — `database` with the
+  snapshot's `as_of`, or `bundled_fixture` with the reason the database claims
+  were not used — and the browser states it. A stale graph that looks fresh is
+  worse than one that says how old it is.
+- The fixtures remain the fallback when the database is unreachable, holds no
+  facts yet, or returns a snapshot the compilers reject, so the surface keeps
+  answering rather than going dark.
+- Rows that mix two snapshots of one research artifact are refused. That
+  cannot arise from the projection as written, but compiling such a mixture
+  would produce a graph belonging to no snapshot while carrying a provenance
+  hash describing only part of it.
+- Official source URLs stay on the reviewed fixtures. They come from the
+  artifact source directory, which this projection deliberately does not
+  widen, so the selected-product calculation and the lottery links are
+  unchanged.
+
+- Compiled merchant presentment programmes into the `loyalty` layer, which
+  had produced zero options. Every stack the app could build therefore
+  stopped at charge plus payment, understating the rate wherever showing a
+  point card also earns. Two mechanical gaps caused it: merchant families
+  had no declared reward-asset binding, and the rate reader did not know the
+  tax-qualified `yen_including_tax` / `yen_excluding_tax` keys these claims
+  use. A presentment rate published as a flat percentage is now also read,
+  but only in the loyalty pass, so a card's headline campaign percentage
+  cannot become its ordinary payment rate.
+- Presentment options are scoped to the merchant that published them. The
+  payment surface previously scoped a merchant-bound option to whichever
+  merchant was being asked about, which would have let one chain's rate
+  follow the buyer to another.
+- A rate that applies only to named tenders, or that changes at a time of
+  day, is refused with that reason rather than flattened to whichever figure
+  is larger. Each such claim now records why it was refused instead of
+  falling through to a generic disposition.
+- Added the `SYN-P1-ROUTE-SHAPES` synthetic fixture. Real P0 evidence carries
+  no transfer fee, no per-day or per-lifetime cap, and no restricted reward
+  class, so those kernel paths only ever ran against assertions written
+  beside them. The fixture states the shapes explicitly — including a fee
+  that must be carried back through the capacity calculation, which no other
+  test covered — and never counts as evidence, coverage, or a published rule.
+
+- Added `point-route-optimizer.v2`, a value-maximising replacement for the
+  single-route point optimizer. It ranks by declared JPY value rather than by
+  native units, so routes that end in different assets are comparable and the
+  destination may be left open ("what is this balance best turned into").
+  `point-spend-optimizer.v1` is unchanged; its results are hash-bound.
+- Route capacity is now propagated backwards through each ratio before any
+  flow is committed. Feeding a whole balance into a route whose final hop is
+  capped converted the excess into an intermediate currency and abandoned it
+  there, which reads as a good rate while destroying most of the balance. The
+  optimizer now sends only what the tightest hop can absorb and offers the
+  rest to the next-best route, against a shared cap ledger. The split is
+  labelled greedy rather than presented as optimal, because transfer minimums
+  make a route's throughput a step function.
+- Transfer caps accept `day`, `month`, and `lifetime` periods. Monthly and
+  daily limits are what actually bind published multi-hop routes; the schema
+  previously carried only `year` and `campaign_period`.
+- The remainder stranded at every hop is reported, not just the first. A
+  coarse increment deep in a route silently destroyed value before.
+- Each hop is validated on the date it would actually be initiated rather than
+  today, so a route taking weeks is checked against the rules in force when it
+  arrives. A hop that closes first is reported as such.
+- Rules that only apply to directly held units stay out of later hops, which
+  no shortest-path formulation can express.
+- Added `point-valuation-profile.v1`. An asset is worth the best published
+  exit it has; yen-denominated balances are worth their face by definition;
+  an asset with neither is reported unvalued rather than assumed to be worth
+  one yen, and is never ranked above a priced alternative. A value the buyer
+  supplies for their destination replaces the derived one.
+- Added `payment-stack-synthesizer.v1` and
+  `POST /api/experimental/payment-stack/recommendation`. Paying well is
+  usually a stack rather than one instrument — a card funds a wallet, the
+  wallet pays, a loyalty identifier is shown — and the engine could already
+  price such a plan but nothing generated the combinations, so the caller had
+  to know the answer to ask the question. A charge only counts when the
+  purchase is paid from what it filled.
+- Added the P0 payment-layer compiler. It reads only the claim shapes that
+  state a rate exactly; a maximum, a range, or a conditional step rate gets a
+  non-executable disposition instead of a guess. Issuer statements that
+  charging a wallet earns nothing are compiled as first-class records and
+  shown as warnings, since several issuers are currently withdrawing those
+  rewards.
+- The conversion tool now reports the yen value and effective rate of a route,
+  the split when a cap forces one, the units stranded partway through, the
+  date each hop would start, and the destinations it cannot price.
+
 - Merged the award-wallet front-end revamp and expanded the merchant selector
   from the Seven-Eleven canary to every merchant family currently projected by
   the P0 catalogue.

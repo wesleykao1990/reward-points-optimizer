@@ -16,6 +16,7 @@ const input = {
   objective: "maximize_target" as const,
   effective_at: "2026-08-23T12:00:00+09:00",
   confirmed_rule_ids: ["p0.transfer.rakuten.ana"],
+  unit_value_jpy: null,
 };
 
 describe("P0 point spending browser route", () => {
@@ -227,6 +228,7 @@ describe("P0 point spending browser route", () => {
       objective: "maximize_target",
       effective_at: input.effective_at,
       confirmed_rule_ids: [],
+      unit_value_jpy: null,
     });
     expect(belowMinimum).toMatchObject({
       status: "no_route",
@@ -237,6 +239,47 @@ describe("P0 point spending browser route", () => {
       },
     });
     expect(belowMinimum.message).toContain("最低500単位");
+  });
+
+  it("ranks every exit by value when no destination is chosen", async () => {
+    const result = await recommendPointSpend({
+      source_asset_id: "asset.point.nanaco",
+      target_asset_id: null,
+      balance: 10_000,
+      objective: "maximize_value",
+      effective_at: input.effective_at,
+      confirmed_rule_ids: [],
+      unit_value_jpy: null,
+    });
+    expect(result.status).toBe("ready");
+    // Yen-denominated destinations are priced from their own definition, so
+    // the best exit is stated in yen rather than in units of one chosen target.
+    expect(result.winner?.value_jpy).toBe("10000");
+    expect(result.winner?.effective_rate_percent).toBe("100");
+    // Miles have no published redemption in this wave, so they are named as
+    // unpriced instead of being ranked at an invented value.
+    expect(result.unvalued_asset_labels).toContain("ANAマイル");
+  });
+
+  it("uses the value the buyer supplies for the destination", async () => {
+    const supplied = await recommendPointSpend({ ...input, unit_value_jpy: 2 });
+    expect(supplied.winner?.target_amount).toBe("500");
+    expect(supplied.winner?.value_jpy).toBe("1000");
+    expect(supplied.winner?.value_note).toContain("入力した1単位の価値");
+
+    const withoutValue = await recommendPointSpend(input);
+    expect(withoutValue.winner?.value_jpy).toBeNull();
+  });
+
+  it("reports each hop's start date, limit, and stranded remainder", async () => {
+    const result = await recommendPointSpend(input);
+    const step = result.winner?.steps[0];
+    expect(step?.stranded_amount).toBe("0");
+    expect(step?.start_date).toBe("2026-08-23");
+    expect(result.winner?.legs).toHaveLength(1);
+    expect(result.winner?.split_note).toBeNull();
+    expect(result.winner?.stranded_note).toBeNull();
+    expect(result.winner?.source_amount_used).toBe("1000");
   });
 
   it("rejects unknown fields, accessors, and unknown assets", async () => {

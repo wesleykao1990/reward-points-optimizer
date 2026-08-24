@@ -1,5 +1,6 @@
 export * from "./bitemporal.js";
 export * from "./engine.js";
+export * from "./input-guard.js";
 export type {
   CalculationCondition,
   CalculationStatus,
@@ -69,6 +70,9 @@ export {
   separateProbabilisticValue,
 } from "./m1b-uncertainty.js";
 export * from "./math.js";
+export * from "./payment-stack-synthesizer.js";
+export * from "./point-route-optimizer.js";
 export * from "./point-spend-optimizer.js";
+export * from "./point-valuation.js";
 export * from "./types.js";
 export * from "./validation.js";

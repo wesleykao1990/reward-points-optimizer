@@ -101,6 +101,14 @@ export {
   P0_IMPLEMENTATION_FACT_INFLUENCE_GRAPH_FUNCTION,
 } from "./implementation-graph.js";
 export type {
+  P0ImplementationArtifactLoad,
+  P0ImplementationArtifactProvenance,
+} from "./implementation-rule-facts.js";
+export {
+  loadCurrentP0ImplementationArtifacts,
+  P0_IMPLEMENTATION_RULE_FACTS_QUERY,
+} from "./implementation-rule-facts.js";
+export type {
   NanacoCreditChargeRouteRecord,
   NanacoCreditChargeRouteStore,
 } from "./nanaco-credit-charge.js";

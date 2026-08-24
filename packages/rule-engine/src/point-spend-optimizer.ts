@@ -1,5 +1,9 @@
-import { types as nodeTypes } from "node:util";
-
+import {
+  exactKeys,
+  type PlainRecord,
+  plainInput,
+  validDateTime,
+} from "./input-guard.js";
 import {
   evaluateTransfer,
   type TransferCalculationSpec,
@@ -89,113 +93,6 @@ export interface PointSpendOptimizationResult {
   readonly routes: readonly PointSpendRoute[];
   readonly skipped: readonly { rule_id: string; reason_code: string }[];
   readonly result_hash: `sha256:${string}`;
-}
-
-type PlainRecord = Record<string, unknown>;
-
-function plain(
-  value: unknown,
-  active: WeakSet<object> = new WeakSet(),
-  depth = 0,
-): unknown {
-  if (
-    value === null ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (typeof value === "number" && Number.isFinite(value))
-  )
-    return value;
-  if (typeof value !== "object" || depth > 24 || nodeTypes.isProxy(value))
-    throw new TypeError("point_spend_input_invalid");
-  if (active.has(value)) throw new TypeError("point_spend_input_invalid");
-  active.add(value);
-  const descriptors = Object.getOwnPropertyDescriptors(value);
-  if (Object.getOwnPropertySymbols(value).length > 0)
-    throw new TypeError("point_spend_input_invalid");
-  if (Array.isArray(value)) {
-    if (
-      Reflect.ownKeys(descriptors).length !== value.length + 1 ||
-      value.length > 512
-    )
-      throw new TypeError("point_spend_input_invalid");
-    const output: unknown[] = [];
-    for (let index = 0; index < value.length; index += 1) {
-      const descriptor = descriptors[String(index)];
-      if (
-        !descriptor ||
-        descriptor.enumerable !== true ||
-        !("value" in descriptor)
-      )
-        throw new TypeError("point_spend_input_invalid");
-      output.push(plain(descriptor.value, active, depth + 1));
-    }
-    active.delete(value);
-    return output;
-  }
-  const prototype = Object.getPrototypeOf(value);
-  if (prototype !== Object.prototype && prototype !== null)
-    throw new TypeError("point_spend_input_invalid");
-  const output = Object.create(null) as PlainRecord;
-  for (const key of Object.keys(descriptors)) {
-    const descriptor = descriptors[key];
-    if (
-      !descriptor ||
-      descriptor.enumerable !== true ||
-      !("value" in descriptor) ||
-      key === "__proto__" ||
-      key === "constructor" ||
-      key === "prototype"
-    )
-      throw new TypeError("point_spend_input_invalid");
-    output[key] = plain(descriptor.value, active, depth + 1);
-  }
-  active.delete(value);
-  return output;
-}
-
-function exactKeys(
-  record: PlainRecord,
-  keys: readonly string[],
-  code: string,
-): void {
-  const actual = Object.keys(record).sort();
-  const expected = [...keys].sort();
-  if (
-    actual.length !== expected.length ||
-    actual.some((key, index) => key !== expected[index])
-  )
-    throw new TypeError(code);
-}
-
-function validDateTime(value: string): boolean {
-  const match =
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{3})?(?:Z|[+-](\d{2}):(\d{2}))$/u.exec(
-      value,
-    );
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const hour = Number(match[4]);
-  const minute = Number(match[5]);
-  const second = Number(match[6]);
-  const offsetHour = match[7] === undefined ? 0 : Number(match[7]);
-  const offsetMinute = match[8] === undefined ? 0 : Number(match[8]);
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return (
-    year >= 1970 &&
-    month >= 1 &&
-    month <= 12 &&
-    day >= 1 &&
-    day <= (days[month - 1] ?? 0) &&
-    hour <= 23 &&
-    minute <= 59 &&
-    second <= 59 &&
-    offsetHour <= 23 &&
-    offsetMinute <= 59 &&
-    Number.isFinite(Date.parse(value))
-  );
 }
 
 const ASSET_KEYS = [
@@ -458,7 +355,10 @@ function compareRoutes(
 export function optimizePointSpend(
   raw: PointSpendRequest,
 ): PointSpendOptimizationResult {
-  const input = plain(raw) as PointSpendRequest;
+  const input = plainInput(
+    raw,
+    "point_spend_input_invalid",
+  ) as PointSpendRequest;
   exactKeys(
     input as unknown as PlainRecord,
     [
