@@ -2192,9 +2192,8 @@ export async function handleRequest(
         );
       }
       try {
-        const input = parsePointSpendBrowserInput(
-          parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES),
-        );
+        const input = parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES);
+        parsePointSpendBrowserInput(input);
         return jsonResponse(
           200,
           (await recommendPointSpend(

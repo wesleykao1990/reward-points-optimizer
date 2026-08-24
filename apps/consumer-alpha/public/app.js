@@ -2159,7 +2159,16 @@
           (target) =>
             !target ||
             typeof target.asset_id !== "string" ||
-            typeof target.label !== "string",
+            typeof target.label !== "string" ||
+            !Array.isArray(target.conditional_rule_ids) ||
+            target.conditional_rule_ids.length > 32 ||
+            new Set(target.conditional_rule_ids).size !==
+              target.conditional_rule_ids.length ||
+            target.conditional_rule_ids.some(
+              (ruleId) =>
+                typeof ruleId !== "string" ||
+                !/^p0\.[a-z0-9.-]{2,100}$/u.test(ruleId),
+            ),
         )
       )
         throw new Error("point_spend_options_invalid");
@@ -2169,6 +2178,7 @@
         targets: source.targets.map((target) => ({
           asset_id: target.asset_id,
           label: target.label,
+          conditional_rule_ids: [...target.conditional_rule_ids],
         })),
       };
     });
@@ -2419,8 +2429,21 @@
     clear(container);
     if (!pointSpendOptions) return;
     const source = document.getElementById("point-spend-source").value;
-    const relevant = pointSpendOptions.conditionalRules.filter(
-      (rule) => rule.source_asset_id === source,
+    const selectedTarget = targetAssetId();
+    const sourceCoverage = pointSpendOptions.coverage.targetsBySource.find(
+      (item) => item.asset_id === source,
+    );
+    const relevantRuleIds = new Set(
+      selectedTarget === null
+        ? (sourceCoverage?.targets || []).flatMap(
+            (target) => target.conditional_rule_ids,
+          )
+        : sourceCoverage?.targets.find(
+            (target) => target.asset_id === selectedTarget,
+          )?.conditional_rule_ids || [],
+    );
+    const relevant = pointSpendOptions.conditionalRules.filter((rule) =>
+      relevantRuleIds.has(rule.rule_id),
     );
     if (relevant.length === 0) return;
     container.appendChild(text("strong", "追加条件の確認"));

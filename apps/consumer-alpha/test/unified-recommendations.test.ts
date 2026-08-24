@@ -162,6 +162,8 @@ describe("unified merchant recommendation journey", () => {
     expect(app).toContain("renderRouteChain(leg.steps");
     expect(app).toContain("renderRouteChain(body.winner.steps");
     expect(app).toContain("routeNodeLogo(reward.asset_id");
+    expect(app).toContain("target.conditional_rule_ids");
+    expect(app).toContain("relevantRuleIds.has(rule.rule_id)");
     expect(styles).toContain(".route-chain-node");
     expect(styles).toContain(".route-mode-switch");
   });

@@ -84,6 +84,8 @@ export interface PointSpendBrowserAsset {
 export interface PointSpendBrowserCoverageTarget {
   readonly asset_id: string;
   readonly label: string;
+  /** Conditional edges that can participate in a route to this target. */
+  readonly conditional_rule_ids: readonly string[];
 }
 
 export interface PointSpendBrowserCoverageSource {
@@ -961,6 +963,16 @@ function pointSpendCoverage(
       ...(adjacency.get(rule.source_asset.asset_id) ?? []),
       rule,
     ]);
+  const conditionalRuleIds = new Set(
+    ruleSet.rules
+      .filter(
+        (rule) =>
+          rule.required_conditions_ja.length > 0 ||
+          (rule.requires_rule_ids?.length ?? 0) > 0 ||
+          rule.maximum_source_units_per_period !== null,
+      )
+      .map((rule) => rule.rule_id),
+  );
 
   const sources = allAssets.map((source) => {
     const targets = new Set<string>();
@@ -994,6 +1006,11 @@ function pointSpendCoverage(
             Object.freeze({
               asset_id: assetId,
               label: labelByAsset.get(assetId) ?? "交換先",
+              conditional_rule_ids: Object.freeze(
+                [...potentialRouteRuleIds(source.asset_id, assetId, ruleSet)]
+                  .filter((ruleId) => conditionalRuleIds.has(ruleId))
+                  .sort(),
+              ),
             }),
           ),
       ),

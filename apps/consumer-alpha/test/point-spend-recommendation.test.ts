@@ -119,8 +119,14 @@ describe("P0 point spending browser route", () => {
     );
     expect(rakutenCoverage?.targets).toEqual(
       expect.arrayContaining([
-        { asset_id: "asset.mile.ana", label: "ANAマイル" },
-        { asset_id: "asset.value.jpy-redemption", label: "支払い充当価値" },
+        expect.objectContaining({
+          asset_id: "asset.mile.ana",
+          label: "ANAマイル",
+        }),
+        expect.objectContaining({
+          asset_id: "asset.value.jpy-redemption",
+          label: "支払い充当価値",
+        }),
       ]),
     );
     expect(rakutenCoverage?.targets).not.toContainEqual({
@@ -150,6 +156,17 @@ describe("P0 point spending browser route", () => {
       calculation_status: "information_only",
     });
     expect(JSON.stringify(result)).not.toMatch(/claim\.|source_ids|evidence/u);
+    const vToAna = result.coverage.targets_by_source
+      .find((source) => source.asset_id === "asset.point.v")
+      ?.targets.find((target) => target.asset_id === "asset.mile.ana");
+    expect(vToAna?.conditional_rule_ids).toEqual(
+      expect.arrayContaining([
+        "p0.transfer.jr-kyupo-to-saison-permanent",
+        "p0.transfer.saison-permanent-to-ana-mizuho",
+        "p0.transfer.v-to-ana-ana-card",
+        "p0.transfer.v.ana",
+      ]),
+    );
   });
 
   it("keeps lotteries informational and exposes only bounded official links", async () => {
@@ -250,6 +267,22 @@ describe("P0 point spending browser route", () => {
       confirmed_prerequisite_ids: ["prereq.ana-smbc-card"],
     });
     expect(eligible.winner?.target_amount).toBe("6000");
+  });
+
+  it("accepts browser numeric cap usage for a capped transfer", async () => {
+    const result = await recommendPointSpend({
+      source_asset_id: "asset.point.v",
+      target_asset_id: "asset.mile.ana",
+      balance: 10_000,
+      objective: "maximize_target",
+      effective_at: "2026-08-24T12:00:00+09:00",
+      confirmed_rule_ids: ["p0.transfer.v.ana"],
+      confirmed_prerequisite_ids: [],
+      period_source_used_by_rule: { "p0.transfer.v.ana": 0 },
+      unit_value_jpy: null,
+    });
+    expect(result.status).toBe("ready");
+    expect(result.winner?.target_amount).toBe("5000");
   });
 
   it("explains uncovered, conditional, and minimum-balance no-route states", async () => {
