@@ -21,6 +21,7 @@ import {
   createPostgresExperimentalCataloguePort,
   createPostgresNanacoCreditChargeRecommendationPort,
   createPostgresNanacoExperimentalRecommendationPort,
+  createPostgresRouteGraphSourcePort,
 } from "./postgres-catalogue.js";
 import type { AppDependencies } from "./server.js";
 
@@ -236,6 +237,7 @@ export function createPostgresAppDependencies(
       createPostgresActiveRewardClaimStore(target),
     ),
     experimentalCatalogue: createPostgresExperimentalCataloguePort(target),
+    routeGraphSource: createPostgresRouteGraphSourcePort(target),
     experimentalRecommendation:
       createPostgresNanacoExperimentalRecommendationPort(target),
     experimentalNanacoCreditChargeRecommendation:

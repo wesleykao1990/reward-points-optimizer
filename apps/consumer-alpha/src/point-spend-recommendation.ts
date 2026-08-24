@@ -179,6 +179,11 @@ export interface PointSpendBrowserResult {
   readonly no_route_details: PointSpendNoRouteDetails | null;
   /** Destinations that are reachable but have no declared yen value. */
   readonly unvalued_asset_labels: readonly string[];
+  /** Whether these rates came from the database or the checked-in fixtures. */
+  readonly data_origin: RouteGraphOrigin;
+  readonly data_as_of: string | null;
+  /** Present when the database claims could not be used. */
+  readonly data_fallback_reason: string | null;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -373,13 +378,50 @@ interface P0ResearchArtifact {
   readonly sources: readonly P0ResearchSource[];
 }
 
+export interface RouteGraphProvenance {
+  readonly research_artifact_id: string;
+  readonly implementation_version: string;
+  readonly implementation_hash: string;
+  readonly as_of: string;
+  readonly claim_count: number;
+}
+
+export interface RouteGraphSourceResult {
+  readonly artifacts: readonly unknown[];
+  readonly provenance: readonly RouteGraphProvenance[];
+  readonly as_of: string | null;
+}
+
+/** Supplies the current research claims, normally from the database. */
+export interface RouteGraphSourcePort {
+  current(effectiveAt: string): Promise<RouteGraphSourceResult>;
+}
+
+export type RouteGraphOrigin = "database" | "bundled_fixture";
+
 interface PointSpendBundle {
   readonly ruleSet: P0SpendRuleSet;
   readonly paymentLayers: P0PaymentLayerSet;
   readonly artifacts: readonly P0ResearchArtifact[];
+  readonly origin: RouteGraphOrigin;
+  readonly as_of: string | null;
+  readonly provenance: readonly RouteGraphProvenance[];
+  /** Why the database claims were not used, when they were not. */
+  readonly fallback_reason: string | null;
 }
 
-let bundlePromise: Promise<PointSpendBundle> | undefined;
+let fixturePromise: Promise<PointSpendBundle> | undefined;
+
+/**
+ * Compiled graphs, keyed by the snapshot hashes they were built from.
+ *
+ * The claims are queried on every request so an updated snapshot takes effect
+ * immediately, but compiling is only redone when those hashes actually change.
+ * A time-based cache would have been simpler and wrong: it would keep serving
+ * a rate the database had already corrected.
+ */
+const compiledByHashKey = new Map<string, PointSpendBundle>();
+const MAX_COMPILED_GRAPHS = 8;
 
 function researchArtifacts(value: unknown[]): readonly P0ResearchArtifact[] {
   return value.map((artifact) => {
@@ -392,13 +434,29 @@ function researchArtifacts(value: unknown[]): readonly P0ResearchArtifact[] {
   });
 }
 
-export async function loadPointSpendBundle(): Promise<PointSpendBundle> {
-  return loadBundle();
+function compileBundle(
+  rawArtifacts: unknown[],
+  origin: RouteGraphOrigin,
+  asOf: string | null,
+  provenance: readonly RouteGraphProvenance[],
+  fallbackReason: string | null,
+): PointSpendBundle {
+  return {
+    ruleSet: compileP0SpendRuleSet(rawArtifacts),
+    paymentLayers: compileP0PaymentLayerSet(rawArtifacts),
+    artifacts: researchArtifacts(rawArtifacts),
+    origin,
+    as_of: asOf,
+    provenance,
+    fallback_reason: fallbackReason,
+  };
 }
 
-async function loadBundle(): Promise<PointSpendBundle> {
-  if (!bundlePromise) {
-    bundlePromise = Promise.all(
+async function loadFixtureBundle(
+  fallbackReason: string | null,
+): Promise<PointSpendBundle> {
+  if (!fixturePromise) {
+    fixturePromise = Promise.all(
       RESEARCH_FILES.map(async (name) =>
         JSON.parse(
           await fs.readFile(
@@ -407,17 +465,65 @@ async function loadBundle(): Promise<PointSpendBundle> {
           ),
         ),
       ),
-    ).then((rawArtifacts) => ({
-      ruleSet: compileP0SpendRuleSet(rawArtifacts),
-      paymentLayers: compileP0PaymentLayerSet(rawArtifacts),
-      artifacts: researchArtifacts(rawArtifacts),
-    }));
+    ).then((rawArtifacts) =>
+      compileBundle(rawArtifacts, "bundled_fixture", null, [], null),
+    );
   }
-  return bundlePromise;
+  const bundle = await fixturePromise;
+  return fallbackReason === null
+    ? bundle
+    : { ...bundle, fallback_reason: fallbackReason };
 }
 
-async function loadRuleSet(): Promise<P0SpendRuleSet> {
-  return (await loadBundle()).ruleSet;
+/**
+ * Compile the routing graph and payment layers from the freshest claims.
+ *
+ * The database is authoritative when a source is supplied and returns claims.
+ * The checked-in fixtures remain the fallback so the app still answers when
+ * the database is unreachable or has not been seeded — but the response says
+ * which it used, because a silently stale graph is worse than a visibly old
+ * one.
+ */
+export async function loadPointSpendBundle(
+  source?: RouteGraphSourcePort,
+  effectiveAt: string = new Date().toISOString(),
+): Promise<PointSpendBundle> {
+  if (!source) return loadFixtureBundle(null);
+  let loaded: RouteGraphSourceResult;
+  try {
+    loaded = await source.current(effectiveAt);
+  } catch (error) {
+    return loadFixtureBundle(
+      error instanceof Error ? error.message : "route_graph_source_unavailable",
+    );
+  }
+  if (loaded.artifacts.length === 0)
+    return loadFixtureBundle("route_graph_source_empty");
+  const hashKey = loaded.provenance
+    .map((item) => `${item.research_artifact_id}:${item.implementation_hash}`)
+    .sort()
+    .join("|");
+  const cached = compiledByHashKey.get(hashKey);
+  if (cached) return cached;
+  let compiled: PointSpendBundle;
+  try {
+    compiled = compileBundle(
+      [...loaded.artifacts],
+      "database",
+      loaded.as_of,
+      loaded.provenance,
+      null,
+    );
+  } catch (error) {
+    // A snapshot the compilers reject must not take the graph down; the
+    // reviewed fixtures answer instead, and the reason is reported.
+    return loadFixtureBundle(
+      error instanceof Error ? error.message : "route_graph_compile_failed",
+    );
+  }
+  if (compiledByHashKey.size >= MAX_COMPILED_GRAPHS) compiledByHashKey.clear();
+  compiledByHashKey.set(hashKey, compiled);
+  return compiled;
 }
 
 export interface SelectedProductPurchaseCalculation {
@@ -671,7 +777,10 @@ export async function calculateSelectedProductPurchases(
   )
     throw new TypeError("p0_purchase_amount_invalid");
   const selected = new Set(selectedProductIds);
-  const { artifacts } = await loadBundle();
+  // Official source URLs come from the artifact source directory, which the
+  // database projection deliberately does not expose, so this calculation
+  // stays on the reviewed fixtures.
+  const { artifacts } = await loadFixtureBundle(null);
   const claims = artifacts.flatMap((artifact) => artifact.claims);
   const sources = new Map(
     artifacts
@@ -997,7 +1106,7 @@ export async function listP0LotteryBrowserLinks(
 }> {
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(effectiveDate))
     throw new TypeError("p0_lottery_effective_date_invalid");
-  const { artifacts } = await loadBundle();
+  const { artifacts } = await loadFixtureBundle(null);
   const sourceById = new Map<string, P0ResearchSource>();
   for (const artifact of artifacts)
     for (const rawSource of artifact.sources) {
@@ -1036,9 +1145,14 @@ export async function listP0LotteryBrowserLinks(
   });
 }
 
-export async function listPointSpendBrowserOptions(): Promise<{
+export async function listPointSpendBrowserOptions(
+  source?: RouteGraphSourcePort,
+): Promise<{
   readonly version: "p0-point-spend-options.v2";
   readonly experimental: true;
+  /** Whether the graph was compiled from the database or the fixtures. */
+  readonly data_origin: RouteGraphOrigin;
+  readonly data_as_of: string | null;
   readonly rule_count: number;
   readonly coverage: PointSpendBrowserCoverage;
   readonly assets: readonly PointSpendBrowserAsset[];
@@ -1051,10 +1165,13 @@ export async function listPointSpendBrowserOptions(): Promise<{
     readonly conditions: readonly string[];
   }[];
 }> {
-  const { ruleSet, artifacts } = await loadBundle();
+  const bundle = await loadPointSpendBundle(source);
+  const { ruleSet, artifacts } = bundle;
   const allAssets = assets(ruleSet);
   return {
     version: "p0-point-spend-options.v2",
+    data_origin: bundle.origin,
+    data_as_of: bundle.as_of,
     experimental: true,
     rule_count: ruleSet.rule_count,
     coverage: pointSpendCoverage(ruleSet, allAssets),
@@ -1415,9 +1532,11 @@ function noRouteMessage(
 
 export async function recommendPointSpend(
   raw: unknown,
+  source?: RouteGraphSourcePort,
 ): Promise<PointSpendBrowserResult> {
   const input = parsePointSpendBrowserInput(raw);
-  const { ruleSet, paymentLayers } = await loadBundle();
+  const bundle = await loadPointSpendBundle(source, input.effective_at);
+  const { ruleSet, paymentLayers } = bundle;
   const allAssets = assets(ruleSet);
   const sourceAsset = allAssets.find(
     (candidate) => candidate.asset_id === input.source_asset_id,
@@ -1488,6 +1607,9 @@ export async function recommendPointSpend(
     rule_count: ruleSet.rule_count,
     no_route_reason: noRoute?.reason ?? null,
     no_route_details: noRoute?.details ?? null,
+    data_origin: bundle.origin,
+    data_as_of: bundle.as_of,
+    data_fallback_reason: bundle.fallback_reason,
     unvalued_asset_labels: Object.freeze(
       result.unvalued_asset_ids
         .map((id) => labels.get(id.split("#")[0] ?? id) ?? null)

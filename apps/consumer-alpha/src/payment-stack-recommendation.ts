@@ -14,6 +14,8 @@ import {
   loadPointSpendBundle,
   p0ProductFamilyDefinition,
   pointValuationProfile,
+  type RouteGraphOrigin,
+  type RouteGraphSourcePort,
 } from "./point-spend-recommendation.js";
 
 /**
@@ -84,6 +86,10 @@ export interface PaymentStackBrowserResult {
   readonly option_count: number;
   /** Merchants whose presentment programme this result could have used. */
   readonly merchants: readonly PaymentStackMerchant[];
+  /** Whether these rates came from the database or the checked-in fixtures. */
+  readonly data_origin: RouteGraphOrigin;
+  readonly data_as_of: string | null;
+  readonly data_fallback_reason: string | null;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -195,12 +201,9 @@ export interface PaymentStackMerchant {
   readonly label: string;
 }
 
-/** Merchants with a presentment programme the buyer can be asked about. */
-export async function listPaymentStackMerchants(): Promise<{
-  readonly version: "p0-payment-stack-merchants.v1";
-  readonly merchants: readonly PaymentStackMerchant[];
-}> {
-  const { paymentLayers } = await loadPointSpendBundle();
+function merchantsOf(
+  paymentLayers: P0PaymentLayerSet,
+): readonly PaymentStackMerchant[] {
   const merchants = new Map<string, PaymentStackMerchant>();
   for (const option of paymentLayers.options) {
     if (option.merchant_scope === null) continue;
@@ -209,11 +212,22 @@ export async function listPaymentStackMerchants(): Promise<{
       label: familyLabel(option.family_id),
     });
   }
+  return [...merchants.values()].sort((left, right) =>
+    left.label.localeCompare(right.label, "ja"),
+  );
+}
+
+/** Merchants with a presentment programme the buyer can be asked about. */
+export async function listPaymentStackMerchants(
+  source?: RouteGraphSourcePort,
+): Promise<{
+  readonly version: "p0-payment-stack-merchants.v1";
+  readonly merchants: readonly PaymentStackMerchant[];
+}> {
+  const { paymentLayers } = await loadPointSpendBundle(source);
   return {
     version: "p0-payment-stack-merchants.v1",
-    merchants: [...merchants.values()].sort((left, right) =>
-      left.label.localeCompare(right.label, "ja"),
-    ),
+    merchants: merchantsOf(paymentLayers),
   };
 }
 
@@ -356,9 +370,11 @@ function browserPlan(
  */
 export async function recommendPaymentStack(
   raw: unknown,
+  source?: RouteGraphSourcePort,
 ): Promise<PaymentStackBrowserResult> {
   const input = parsePaymentStackBrowserInput(raw);
-  const { ruleSet, paymentLayers } = await loadPointSpendBundle();
+  const bundle = await loadPointSpendBundle(source, input.effective_at);
+  const { ruleSet, paymentLayers } = bundle;
   const compiled = ownedOptions(paymentLayers, input.owned_family_ids);
   const valuation: ValuationProfile = pointValuationProfile(
     ruleSet,
@@ -396,6 +412,9 @@ export async function recommendPaymentStack(
       input.owned_family_ids,
     ),
     option_count: compiled.length,
-    merchants: (await listPaymentStackMerchants()).merchants,
+    merchants: merchantsOf(paymentLayers),
+    data_origin: bundle.origin,
+    data_as_of: bundle.as_of,
+    data_fallback_reason: bundle.fallback_reason,
   };
 }

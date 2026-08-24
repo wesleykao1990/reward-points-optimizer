@@ -79,6 +79,7 @@ import {
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   MAX_POINT_SPEND_BODY_BYTES,
+  type RouteGraphSourcePort,
   recommendPointSpend,
 } from "./point-spend-recommendation.js";
 import {
@@ -274,6 +275,11 @@ export interface AppDependencies {
   readonly agentFeedIngress?: AgentFeedIngressPort;
   /** Active machine-validated Agent Feed rules used directly by arithmetic. */
   readonly activeRewardCalculations?: ActiveRewardCalculationPort;
+  /**
+   * Current research claims for the routing graph and payment layers.  Absent
+   * in the loopback shell, which compiles the checked-in fixtures instead.
+   */
+  readonly routeGraphSource?: RouteGraphSourcePort;
 }
 
 export type AppCatalogueDependency =
@@ -399,6 +405,26 @@ function resolveExperimentalCatalogue(
       return port;
   }
   throw requestError(500, "experimental_catalogue_dependency_invalid");
+}
+
+/**
+ * Resolve the current-claims source, when the host composed one.
+ *
+ * The loopback shell composes no database, so an absent source is normal
+ * rather than an error: the recommendation compiles the checked-in fixtures
+ * and says so in its response.
+ */
+function routeGraphSourceOf(
+  dependency: AppCatalogueDependency | undefined,
+): RouteGraphSourcePort | undefined {
+  if (
+    typeof dependency !== "object" ||
+    dependency === null ||
+    !("routeGraphSource" in dependency)
+  )
+    return undefined;
+  const source = dependency.routeGraphSource;
+  return source === null ? undefined : source;
 }
 
 function resolveImplementationCatalogue(
@@ -2332,9 +2358,9 @@ export async function handleRequest(
         try {
           return jsonResponse(
             200,
-            (await listPointSpendBrowserOptions()) as unknown as Readonly<
-              Record<string, unknown>
-            >,
+            (await listPointSpendBrowserOptions(
+              routeGraphSourceOf(dependency),
+            )) as unknown as Readonly<Record<string, unknown>>,
           );
         } catch {
           throw requestError(503, "point_spend_options_unavailable");
@@ -2445,9 +2471,10 @@ export async function handleRequest(
         const input = parseJsonBody(request, MAX_POINT_SPEND_BODY_BYTES);
         return jsonResponse(
           200,
-          (await recommendPointSpend(input)) as unknown as Readonly<
-            Record<string, unknown>
-          >,
+          (await recommendPointSpend(
+            input,
+            routeGraphSourceOf(dependency),
+          )) as unknown as Readonly<Record<string, unknown>>,
         );
       } catch (error) {
         if (error instanceof TypeError)
@@ -2466,9 +2493,10 @@ export async function handleRequest(
         const input = parseJsonBody(request, MAX_PAYMENT_STACK_BODY_BYTES);
         return jsonResponse(
           200,
-          (await recommendPaymentStack(input)) as unknown as Readonly<
-            Record<string, unknown>
-          >,
+          (await recommendPaymentStack(
+            input,
+            routeGraphSourceOf(dependency),
+          )) as unknown as Readonly<Record<string, unknown>>,
         );
       } catch (error) {
         if (error instanceof TypeError)

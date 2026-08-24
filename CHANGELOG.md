@@ -2,6 +2,35 @@
 
 ## Unreleased — 2026-08-23
 
+- The routing graph, the optimizer, and both recommendations now compile from
+  the current database facts instead of only from the checked-in fixtures, so
+  a refreshed rate takes effect without a redeploy. Claims are read on every
+  request and the compiled graph is reused only while the snapshot hashes are
+  unchanged; a time-based cache would have been simpler and wrong, because it
+  would keep serving a rate the database had already corrected.
+- Added `db/0022_p0_implementation_rule_facts.sql`. The browse-only
+  `app_api.p0_active_implementation_facts` view exposes fact metadata but not
+  `value` or `applicability`, which a compiler needs, so this adds a separate
+  private projection that returns them. The widening is deliberately narrow:
+  bounded, granted only to the runtime role, correction-sensitive and
+  window-active on the same terms as the browse view, and restricted to the
+  newest snapshot of each research artifact. It publishes nothing.
+- Every response now says where its rates came from — `database` with the
+  snapshot's `as_of`, or `bundled_fixture` with the reason the database claims
+  were not used — and the browser states it. A stale graph that looks fresh is
+  worse than one that says how old it is.
+- The fixtures remain the fallback when the database is unreachable, holds no
+  facts yet, or returns a snapshot the compilers reject, so the surface keeps
+  answering rather than going dark.
+- Rows that mix two snapshots of one research artifact are refused. That
+  cannot arise from the projection as written, but compiling such a mixture
+  would produce a graph belonging to no snapshot while carrying a provenance
+  hash describing only part of it.
+- Official source URLs stay on the reviewed fixtures. They come from the
+  artifact source directory, which this projection deliberately does not
+  widen, so the selected-product calculation and the lottery links are
+  unchanged.
+
 - Compiled merchant presentment programmes into the `loyalty` layer, which
   had produced zero options. Every stack the app could build therefore
   stopped at charge plus payment, understating the rate wherever showing a

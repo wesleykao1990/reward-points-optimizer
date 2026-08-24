@@ -106,6 +106,8 @@ A finding is not a fact, and submitted evidence is not canonical evidence.
 | `packages/rule-engine/src/payment-stack-synthesizer.ts` | Enumerates and prices funding/charge/payment/loyalty combinations through the stacking resolver |
 | `packages/provisional-rules/src/p0-payment-layers.ts` | Compiles payment layers, charge exclusions, and redemption values from exact claim shapes only |
 | `apps/consumer-alpha/src/payment-stack-recommendation.ts` | Browser surface for "how should I pay", scoped to what the buyer holds |
+| `db/0022_p0_implementation_rule_facts.sql` | Bounded private machine-readable fact projection used to compile the graph from current data |
+| `packages/agent-feed-postgres/src/implementation-rule-facts.ts` | Driver-free loader turning current facts back into research-artifact documents |
 
 The source registry remains data version v0.3. Its research cutoff is now 2026-08-20 and it includes the exact first-party pages used by the manual alpha slice.
 

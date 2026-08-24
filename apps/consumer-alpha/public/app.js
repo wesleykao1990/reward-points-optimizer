@@ -2418,6 +2418,22 @@
       : null;
   };
 
+  // A stale graph that looks fresh is worse than one that says how old it is,
+  // so every result states where its rates came from.
+  const dataOriginNote = (body) => {
+    if (body.data_origin === "database") {
+      const asOf = body.data_as_of
+        ? new Date(body.data_as_of).toLocaleDateString("ja-JP")
+        : null;
+      return asOf
+        ? `${asOf}時点の登録データで計算しています。`
+        : "登録済みの最新データで計算しています。";
+    }
+    return body.data_fallback_reason
+      ? "最新データを取得できなかったため、同梱のレートで計算しています。"
+      : "同梱のレートで計算しています。";
+  };
+
   const renderPointSpendStep = (step) => {
     const item = node("li");
     item.appendChild(text("strong", step.label));
@@ -2563,6 +2579,7 @@
               "helper",
             ),
           );
+        result.appendChild(text("p", dataOriginNote(body), "helper"));
         result.appendChild(text("p", body.message, "helper"));
       } catch {
         clear(result);
@@ -2713,6 +2730,7 @@
             text("p", `${warning.label}：${warning.note}`, "point-spend-limit"),
           );
         });
+        result.appendChild(text("p", dataOriginNote(body), "helper"));
         result.appendChild(text("p", body.message, "helper"));
       } catch {
         clear(result);
