@@ -188,7 +188,10 @@ on conflict (finding_id) do update set
     status = case when app_private.agent_feed_experimental_findings.status in ('disputed','quarantined')
                   then app_private.agent_feed_experimental_findings.status else excluded.status end;
 
-with completed(entity_key,source_url) as (values
+do $optional_backlog_sync$
+begin
+    if to_regclass('app_private.ecosystem_family_backlog') is not null then
+        with completed(entity_key,source_url) as (values
 ('program.jp.bicpoint','https://www.biccamera.com/bc/c/super/point/bic_point/'),
 ('program.jp.doutor-value','https://www.doutor.co.jp/dvc/'),
 ('instrument.starbucks.card','https://www.starbucks.co.jp/rewards/'),
@@ -212,5 +215,8 @@ update app_private.ecosystem_family_backlog
 set agent_feed_status='submitted', research_status='partial', updated_at=now(),
     metadata=metadata || '{"last_error":"official_source_http_403","retryable":true}'::jsonb
 where entity_key='program.jp.yodobashi-goldpoint';
+    end if;
+end;
+$optional_backlog_sync$;
 
 commit;
