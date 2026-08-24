@@ -7,6 +7,10 @@
   "regions": ["hnd1"],
   "rewrites": [
     {
+      "source": "/internal/agent-feed/events",
+      "destination": "/api/agent-feed"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -15,6 +19,13 @@
     "api/handler.mjs": {
       "maxDuration": 30,
       "includeFiles": "fixtures/m3/provisional/**"
+    },
+    "api/agent-feed.mjs": {
+      "maxDuration": 30,
+      "includeFiles": [
+        "fixtures/m3/provisional/**",
+        "registry/**"
+      ]
     }
   },
   "headers": [
