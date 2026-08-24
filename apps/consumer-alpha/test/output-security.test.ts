@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
 import type {
   CorrectionDraftInput,
   ManualAlphaState,
@@ -89,6 +90,16 @@ describe("M6 browser output security boundary", () => {
       expect(view.freshness).toEqual({ status: "blocked" });
     },
   );
+
+  it("admits stored-value catalogue families at the browser boundary", async () => {
+    const browserApp = await readFile(
+      new URL("../public/app.js", import.meta.url),
+      "utf8",
+    );
+    expect(browserApp).toContain(
+      "point|wallet|card|emoney|storedvalue|merchant|reg|transit",
+    );
+  });
 
   it("requires a host-bound recommendation id and honors admission denial", () => {
     expect(() => mapCorrectionDraftForBrowser(validCorrection(), null)).toThrow(
