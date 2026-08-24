@@ -7,6 +7,14 @@
   "regions": ["hnd1"],
   "rewrites": [
     {
+      "source": "/internal/agent-feed/events",
+      "destination": "/api/agent-feed"
+    },
+    {
+      "source": "/catalogue-coverage",
+      "destination": "/api/coverage"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -15,6 +23,13 @@
     "api/handler.mjs": {
       "maxDuration": 30,
       "includeFiles": "fixtures/m3/provisional/**"
+    },
+    "api/agent-feed.mjs": {
+      "maxDuration": 30,
+      "includeFiles": "{fixtures/m3/provisional/**,registry/**}"
+    },
+    "api/coverage.mjs": {
+      "maxDuration": 15
     }
   },
   "headers": [
