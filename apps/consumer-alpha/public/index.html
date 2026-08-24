@@ -65,48 +65,9 @@
         <section class="wallet-group" aria-labelledby="lot-list-title">
           <div class="group-heading">
             <h2 id="lot-list-title">保有ポイント</h2>
-            <span id="lot-list-count">—</span>
           </div>
           <p class="helper">タップすると内訳が開きます。通常・期間限定・用途限定は別々の残高として扱い、それぞれの期限で並べています。</p>
           <div id="lot-list" class="lot-list" aria-live="polite"></div>
-        </section>
-
-        <section class="wallet-group" aria-labelledby="capture-title">
-          <div class="group-heading">
-            <h2 id="capture-title">残高の更新</h2>
-            <span>月1回でOK</span>
-          </div>
-          <p class="helper">口座やログイン情報は預かりません。各アプリの残高画面から取り込むか、手で入力します。</p>
-          <div class="capture-grid">
-            <button type="button" class="capture-option">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"></rect><circle cx="12" cy="12" r="3.2"></circle><path d="M8 5.5 9.2 3.5h5.6L16 5.5"></path></svg>
-              <strong>スクショから読み取る</strong>
-              <small>残高画面を1枚。端末の中だけで処理します</small>
-              <em>準備中</em>
-            </button>
-            <button type="button" class="capture-option">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="12" height="16" rx="2"></rect><path d="M5 8v10a2 2 0 0 0 2 2h8"></path><path d="M10.5 9h5M10.5 12.5h5"></path></svg>
-              <strong>通帳を貼り付け</strong>
-              <small>ポイント履歴のテキストをそのまま貼れます</small>
-              <em>準備中</em>
-            </button>
-            <button type="button" class="capture-option">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8l4.5 4.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V9H19"></path><path d="M8.5 15.5h6"></path></svg>
-              <strong>CSVを取り込む</strong>
-              <small>公式サイトの明細ダウンロードに対応予定</small>
-              <em>準備中</em>
-            </button>
-            <button type="button" class="capture-option" data-tab-target="settings">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="m5.5 16.5 9.2-9.2 3 3-9.2 9.2H5.5z"></path><path d="m14 6 2.5-2.5 3 3L17 9"></path></svg>
-              <strong>手で入力する</strong>
-              <small>期限が不明なら、収録ルールから推定します</small>
-              <em>準備中</em>
-            </button>
-          </div>
-          <div class="nudge">
-            <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
-            <p id="capture-nudge">—</p>
-          </div>
         </section>
 
         <button type="button" class="catalogue-link-card" data-tab-target="information">
@@ -159,20 +120,13 @@
               <label>支払う金額（円）<input id="payment-stack-amount" type="number" min="1" max="10000000" step="1" value="10000" inputmode="numeric" required></label>
               <label>お店<select id="payment-stack-merchant"><option value="merchant.any">指定しない</option></select></label>
             </div>
-            <div id="payment-stack-owned" class="point-spend-conditions" aria-live="polite"></div>
+            <div id="payment-stack-owned" class="payment-stack-groups" aria-live="polite"></div>
             <button id="payment-stack-submit" type="submit" class="primary wide">支払い方法を比較する</button>
             <p class="helper">収録した還元条件による試算です。支払う前に提供元の条件を確認してください。</p>
           </form>
           <div id="payment-stack-result" class="point-spend-result" aria-live="polite"><p class="helper">決済手段を読み込んでいます…</p></div>
         </section>
 
-        <section class="wallet-group" aria-labelledby="spend-catalogue-title">
-          <div class="group-heading"><h2 id="spend-catalogue-title">対応サービス一覧</h2><button type="button" data-tab-target="information">詳しい情報</button></div>
-          <p class="helper">収録済みのポイント、モバイル決済、クレジットカードです。現在の保有状況は保存しません。</p>
-          <div id="p0-wallet-catalogue" class="p0-wallet-catalogue" aria-live="polite"><p class="helper">サービス一覧を読み込んでいます…</p></div>
-          <p id="wallet-route-summary" class="helper">サービス情報を読み込んでいます</p>
-          <p class="helper" hidden><span id="wallet-count">—</span></p>
-        </section>
       </section>
 
       <section id="tab-earn" class="tab-panel" data-tab-panel="earn" role="tabpanel" aria-labelledby="tab-button-earn" tabindex="-1" hidden>
@@ -292,15 +246,15 @@
         </section>
 
         <section class="wallet-group" aria-labelledby="earn-history-title">
-          <div class="group-heading"><h2 id="earn-history-title">このセッションの控え</h2><span id="history-count">0</span></div>
+          <div class="group-heading"><h2 id="earn-history-title">比較検索の履歴</h2><span id="history-count">0</span></div>
           <p class="helper">ページを閉じると消えます。端末には保存しません。</p>
           <div id="session-history" class="history-list">
             <div class="empty-state">
               <span class="empty-mark" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v6h6M12 7v6l4 2"></path></svg>
               </span>
-              <strong>控えはまだありません</strong>
-              <p>支払い方を比べると、この画面に控えが一時的に積まれます。</p>
+              <strong>履歴はまだありません</strong>
+              <p>支払い方を比べると、比較検索の履歴がここに表示されます。</p>
             </div>
           </div>
         </section>
@@ -317,9 +271,9 @@
 
         <section class="information-intro" aria-labelledby="information-title">
           <div class="section-title-row">
-            <div><p class="section-kicker">SERVICE GUIDE</p><h2 id="information-title">サービス・ポイント情報</h2></div>
+            <div><h2 id="information-title">サービス・ポイント情報</h2></div>
           </div>
-          <p>各サービスの還元率、使い方、対象条件、実施中の企画を一つにまとめて表示します。</p>
+          <p>還元レートと実施中のキャンペーンを、サービスごとに表示します。</p>
         </section>
 
         <section class="information-controls" aria-label="ポイント情報の検索と絞り込み">
@@ -331,8 +285,7 @@
           </div>
         </section>
 
-        <section class="information-list-section" aria-labelledby="information-list-title">
-          <div class="group-heading"><h2 id="information-list-title">サービス一覧</h2><button type="button" id="information-reload">読み直す</button></div>
+        <section class="information-list-section" aria-label="サービス一覧">
           <div id="information-facts" class="information-list" aria-live="polite"><p class="helper">情報を読み込んでいます…</p></div>
         </section>
       </section>
@@ -346,34 +299,12 @@
           <span class="demo-chip">端末保存</span>
         </header>
 
-        <section class="settings-group" aria-labelledby="privacy-title">
-          <h2 id="privacy-title">預からないもの</h2>
+        <section class="settings-group" aria-labelledby="device-data-title">
+          <h2 id="device-data-title">この端末のデータ</h2>
           <div class="settings-card">
-            <div class="settings-row"><span><strong>ログイン情報</strong><small>各ポイントサービスのID・パスワード</small></span><em class="safe-state">預かりません</em></div>
-            <div class="settings-row"><span><strong>銀行・カード明細</strong><small>口座やカードの利用履歴</small></span><em class="safe-state">接続しません</em></div>
-            <div class="settings-row"><span><strong>ブラウザ保存</strong><small id="wallet-save-status">選んだサービスだけ、この端末に保存します</small></span><em class="safe-state">選択のみ</em></div>
-            <div class="settings-row"><span><strong>残高の扱い</strong><small>自分で入力した数字</small></span><em class="safe-state">端末の中だけ</em></div>
+            <div class="settings-row"><span><strong>選択した支払い方法</strong><small id="wallet-save-status">選んだサービスだけ、この端末に保存します</small></span></div>
           </div>
           <button id="wallet-reset-button" type="button" class="secondary">保存したサービス選択を削除</button>
-        </section>
-
-        <section class="settings-group" aria-labelledby="notifications-title">
-          <h2 id="notifications-title">これから作るもの</h2>
-          <div class="settings-card disabled-settings">
-            <div class="settings-row"><span><strong>失効アラート</strong><small>30日前・7日前・前日に通知</small></span><em>準備中</em></div>
-            <div class="settings-row"><span><strong>延長できる通知</strong><small>あと1回の買い物で期限が延びるとき</small></span><em>準備中</em></div>
-            <div class="settings-row"><span><strong>残高の取り込み</strong><small>スクショ・貼り付け・CSV</small></span><em>準備中</em></div>
-            <div class="settings-row"><span><strong>アカウント</strong><small>複数端末での同期</small></span><em>準備中</em></div>
-          </div>
-        </section>
-
-        <section class="settings-group" aria-labelledby="about-title">
-          <h2 id="about-title">数字の出どころ</h2>
-          <div class="settings-card">
-            <div class="settings-row"><span><strong>期限のルール</strong><small>公式ページを出典として記録</small></span><em class="safe-state">出典あり</em></div>
-            <div class="settings-row"><span><strong>価値の換算</strong><small>各画面の「この前提で計算」から確認</small></span><em class="safe-state">前提を明示</em></div>
-            <div class="settings-row"><span><strong>残高と失効日</strong><small>この画面ではデモ用の仮の数字</small></span><em>デモ</em></div>
-          </div>
         </section>
       </section>
 

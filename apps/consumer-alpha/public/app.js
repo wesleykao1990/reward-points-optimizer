@@ -44,9 +44,20 @@
     "card.view": "/assets/payment-logos/viewcard.gif",
   });
 
-  const paymentLogo = (familyId) => {
+  const paymentLogoSource = (familyId) => {
+    if (paymentLogoSources[familyId]) return paymentLogoSources[familyId];
+    const parts = String(familyId).split(".");
+    while (parts.length > 2) {
+      parts.pop();
+      const parent = parts.join(".");
+      if (paymentLogoSources[parent]) return paymentLogoSources[parent];
+    }
+    return null;
+  };
+
+  const paymentLogo = (familyId, label = "") => {
     const frame = node("span", "payment-logo");
-    const source = paymentLogoSources[familyId];
+    const source = paymentLogoSource(familyId);
     if (source) {
       const image = node("img");
       image.src = source;
@@ -54,6 +65,16 @@
       image.loading = "lazy";
       image.decoding = "async";
       frame.appendChild(image);
+    } else {
+      frame.appendChild(
+        text(
+          "span",
+          String(label || familyId)
+            .trim()
+            .slice(0, 1),
+          "payment-logo-fallback",
+        ),
+      );
     }
     return frame;
   };
@@ -603,7 +624,7 @@
           typeof plan.reward_points === "string" ? plan.reward_points : "0";
         planBox.appendChild(text("strong", `nanacoポイント ${reward}ポイント`));
         planBox.appendChild(
-          text("span", "収録情報にもとづくルートです。金額換算はしません。"),
+          text("span", "登録済みの条件で計算しています。金額換算はしません。"),
         );
         card.appendChild(planBox);
       }
@@ -1526,13 +1547,12 @@
   ]);
 
   function allCatalogueFamilies() {
-    return [
-      ...new Set([
-        ...informationFacts.map((fact) => fact.family),
-        ...catalogueRules.map(catalogueRuleFamily),
-        ...campaignLinks.map((item) => item.family),
-      ]),
-    ].filter((family) => !hiddenCatalogueFamilies.has(family));
+    return catalogueGroups()
+      .filter(
+        (group) =>
+          catalogueRates(group).length > 0 || group.campaigns.length > 0,
+      )
+      .map((group) => group.family);
   }
 
   const catalogueGroups = () => {
@@ -1584,12 +1604,7 @@
     );
   };
 
-  const customerRuleSummary = (summary) =>
-    String(summary)
-      .replace(/という先行公開情報です。/gu, "という情報です。")
-      .replace(/先行公開/gu, "");
-
-  function officialSourceLink(sourceUrl, checkedAt) {
+  function officialSourceLink(sourceUrl) {
     if (typeof sourceUrl !== "string") return null;
     try {
       const url = new URL(sourceUrl);
@@ -1606,12 +1621,8 @@
       link.href = url.href;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = "公式の出典";
+      link.textContent = "公式HP";
       wrapper.appendChild(link);
-      if (checkedAt)
-        wrapper.appendChild(
-          text("small", `最終確認 ${formatExperimentalDate(checkedAt)}`),
-        );
       return wrapper;
     } catch {
       return null;
@@ -1633,7 +1644,7 @@
       link.href = item.official_url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = "公式ページを見る";
+      link.textContent = "公式HP";
       campaign.appendChild(link);
       list.appendChild(campaign);
     });
@@ -1641,126 +1652,100 @@
     card.appendChild(section);
   };
 
-  const appendRuleSection = (card, rules) => {
-    if (!rules.length) return;
-    const section = node("section", "service-rule-section");
-    section.appendChild(text("h4", "支払い・還元の情報"));
-    const paymentRules = rules.filter(
-      (rule) => rule.kind === "payment_acceptance",
-    );
-    if (paymentRules.length) {
-      const methods = node("div", "service-payment-methods");
-      methods.appendChild(text("strong", "利用できる支払い方法"));
-      const list = node("ul");
-      paymentRules.forEach((rule) => {
-        const item = text("li", paymentAcceptanceLabel(rule));
-        const provenance = officialSourceLink(rule.source_url, rule.checked_at);
-        if (provenance) item.appendChild(provenance);
-        list.appendChild(item);
-      });
-      methods.appendChild(list);
-      section.appendChild(methods);
-    }
-    rules
-      .filter((rule) => rule.kind !== "payment_acceptance")
-      .forEach((rule) => {
-        const item = node("article", "service-rule-item");
-        item.appendChild(text("strong", rule.title));
-        item.appendChild(text("p", customerRuleSummary(rule.summary)));
-        const provenance = officialSourceLink(rule.source_url, rule.checked_at);
-        if (provenance) item.appendChild(provenance);
-        section.appendChild(item);
-      });
-    card.appendChild(section);
+  const japaneseNumber = (value) => {
+    const digits = Object.freeze({
+      一: 1,
+      二: 2,
+      三: 3,
+      四: 4,
+      五: 5,
+      六: 6,
+      七: 7,
+      八: 8,
+      九: 9,
+    });
+    if (!value.includes("十")) return digits[value] || value;
+    const [tens, ones] = value.split("十");
+    return (digits[tens] || 1) * 10 + (digits[ones] || 0);
   };
 
-  const claimPriority = Object.freeze([
-    "利用時の価値",
-    "貯まる条件",
-    "使い方",
-    "利用できる条件",
-    "利用できるお店",
-    "付与時期",
-    "有効期限",
-    "対象外条件",
-  ]);
-
-  const highlightedFacts = (facts) => {
-    const selected = [];
-    for (const claim of claimPriority) {
-      const fact = facts.find(
-        (candidate) =>
-          candidate.claim === claim &&
-          !selected.some(
-            (item) =>
-              item.subject === candidate.subject &&
-              item.summary === candidate.summary,
-          ),
+  const compactRateValue = (summary) => {
+    const sentences = String(summary)
+      .split(/[。\n]/u)
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const patterns = [
+      /(?:税込|税抜)?\s*(?:[¥￥]\s*)?[0-9][0-9,]*(?:\.[0-9]+)?円?(?:ごと|につき)(?:に)?[^。]{0,32}?[0-9][0-9,]*(?:\.[0-9]+)?(?:ポイント|pt)/iu,
+      /[0-9][0-9,]*(?:\.[0-9]+)?(?:ポイント|pt)\s*(?:=|＝|は)\s*[0-9][0-9,]*(?:\.[0-9]+)?円/iu,
+      /[0-9]+(?:\.[0-9]+)?\s*%/u,
+    ];
+    for (const sentence of sentences) {
+      const normalized = sentence.replace(
+        /([一二三四五六七八九十]+)(?=\s*[^\s。、]{0,16}(?:POINT|ポイント))/giu,
+        (value) => String(japaneseNumber(value)),
       );
-      if (fact) selected.push(fact);
-      if (selected.length === 2) break;
+      for (const pattern of patterns) {
+        const match = normalized.match(pattern);
+        if (match)
+          return match[0]
+            .replace(/[¥￥]\s*([0-9][0-9,]*(?:\.[0-9]+)?)/u, "$1円")
+            .replace(/\s+/gu, " ")
+            .trim();
+      }
     }
-    return selected;
+    return null;
   };
 
-  const appendServiceHighlights = (card, facts) => {
-    const highlights = highlightedFacts(facts);
-    if (!highlights.length) return [];
-    const list = node("div", "service-highlight-list");
-    highlights.forEach((fact) => {
-      const item = node("article", "service-highlight-item");
-      item.appendChild(text("strong", fact.subject));
-      item.appendChild(text("p", fact.summary));
-      const provenance = officialSourceLink(fact.source_url, fact.checked_at);
+  const catalogueRates = (group) => {
+    const candidates = [
+      ...group.rules
+        .filter((rule) => rule.kind === "reward_rate")
+        .map((rule) => ({
+          label: rule.title,
+          summary: rule.summary,
+          source_url: rule.source_url,
+        })),
+      ...group.facts
+        .filter((fact) => fact.claim_type === "earn_rule")
+        .map((fact) => ({
+          label: fact.subject,
+          summary: fact.summary,
+          source_url: fact.source_url,
+        })),
+    ];
+    const seen = new Set();
+    const rates = [];
+    candidates.forEach((candidate) => {
+      const value = compactRateValue(candidate.summary);
+      const fingerprint = `${candidate.label}\u0000${value}`;
+      if (!value || seen.has(fingerprint)) return;
+      seen.add(fingerprint);
+      rates.push({
+        label: candidate.label,
+        value,
+        source_url: candidate.source_url,
+      });
+    });
+    return rates.slice(0, 4);
+  };
+
+  const appendRateSection = (card, rates) => {
+    if (!rates.length) return;
+    const section = node("section", "service-rate-section");
+    const list = node("div", "service-rate-list");
+    rates.forEach((rate) => {
+      const item = node("div", "service-rate-item");
+      const copy = node("span");
+      copy.appendChild(text("strong", "レート"));
+      copy.appendChild(text("span", rate.value));
+      if (rate.label) copy.appendChild(text("small", rate.label));
+      item.appendChild(copy);
+      const provenance = officialSourceLink(rate.source_url);
       if (provenance) item.appendChild(provenance);
       list.appendChild(item);
     });
-    card.appendChild(list);
-    return highlights.map((fact) => fact.fact_key);
-  };
-
-  const appendFactSection = (card, facts, expanded, highlightedFactKeys) => {
-    const remainingFacts = facts.filter(
-      (fact) => !highlightedFactKeys.includes(fact.fact_key),
-    );
-    if (!remainingFacts.length) return;
-    const details = node("details", "service-fact-details");
-    details.open = expanded;
-    details.appendChild(text("summary", "その他のサービス情報を見る"));
-    const claims = new Map();
-    remainingFacts.forEach((fact) => {
-      if (!claims.has(fact.claim)) claims.set(fact.claim, []);
-      claims.get(fact.claim).push(fact);
-    });
-    [...claims.entries()]
-      .sort(([left], [right]) => {
-        const leftIndex = claimPriority.indexOf(left);
-        const rightIndex = claimPriority.indexOf(right);
-        return (
-          (leftIndex < 0 ? claimPriority.length : leftIndex) -
-            (rightIndex < 0 ? claimPriority.length : rightIndex) ||
-          left.localeCompare(right, "ja")
-        );
-      })
-      .forEach(([claim, items]) => {
-        const section = node("section", "service-fact-group");
-        section.appendChild(text("h4", claim));
-        const list = node("ul");
-        items.forEach((fact) => {
-          const item = node("li");
-          item.appendChild(text("strong", fact.subject));
-          item.appendChild(text("p", fact.summary));
-          const provenance = officialSourceLink(
-            fact.source_url,
-            fact.checked_at,
-          );
-          if (provenance) item.appendChild(provenance);
-          list.appendChild(item);
-        });
-        section.appendChild(list);
-        details.appendChild(section);
-      });
-    card.appendChild(details);
+    section.appendChild(list);
+    card.appendChild(section);
   };
 
   const appendServiceReportControls = (card, facts) => {
@@ -1830,11 +1815,14 @@
       .value.trim()
       .toLocaleLowerCase("ja-JP");
     const family = document.getElementById("information-family-filter").value;
-    const visible = catalogueGroups().filter(
-      (group) =>
-        (!family || group.family === family) &&
-        groupMatchesSearch(group, search),
-    );
+    const visible = catalogueGroups()
+      .map((group) => ({ ...group, compactRates: catalogueRates(group) }))
+      .filter(
+        (group) =>
+          (group.compactRates.length > 0 || group.campaigns.length > 0) &&
+          (!family || group.family === family) &&
+          groupMatchesSearch(group, search),
+      );
     clear(list);
     if (visible.length === 0) {
       list.appendChild(
@@ -1851,15 +1839,8 @@
     visible.forEach((group) => {
       const card = node("article", "information-card service-information-card");
       card.appendChild(text("h3", group.family, "service-information-title"));
+      appendRateSection(card, group.compactRates);
       appendCampaignSection(card, group.campaigns);
-      appendRuleSection(card, group.rules);
-      const highlightedFactKeys = appendServiceHighlights(card, group.facts);
-      appendFactSection(
-        card,
-        group.facts,
-        Boolean(search || family),
-        highlightedFactKeys,
-      );
       appendServiceReportControls(card, group.facts);
       list.appendChild(card);
     });
@@ -2128,18 +2109,7 @@
     };
   };
 
-  const renderP0WalletCatalogue = () => {
-    if (!pointSpendOptions) {
-      document.getElementById("wallet-route-summary").textContent =
-        "サービス情報を読み込めませんでした";
-      return;
-    }
-    document.getElementById("wallet-count").textContent = String(
-      pointSpendOptions.walletCatalogue.length,
-    );
-    document.getElementById("wallet-route-summary").textContent =
-      "選んだサービスの比較とポイント交換の試算に使います";
-  };
+  const renderP0WalletCatalogue = () => {};
 
   const updateWalletStorageStatus = (selectedCount) => {
     const status = document.getElementById("wallet-save-status");
@@ -2223,6 +2193,28 @@
     },
   ]);
 
+  const cardIssuers = Object.freeze([
+    ["card.smbc", "三井住友カード"],
+    ["card.aeon", "イオンカード"],
+    ["card.aupay", "auフィナンシャルサービス"],
+    ["card.d", "NTTドコモ"],
+    ["card.paypay", "PayPayカード"],
+    ["card.rakuten", "楽天カード"],
+    ["card.view", "ビューカード"],
+  ]);
+
+  const cardIssuer = (item) => {
+    const match = cardIssuers.find(([prefix]) =>
+      item.family_id.startsWith(prefix),
+    );
+    return match?.[1] || item.label;
+  };
+
+  const walletItemSort = (left, right) => {
+    const issuerOrder = cardIssuer(left).localeCompare(cardIssuer(right), "ja");
+    return issuerOrder || left.label.localeCompare(right.label, "ja");
+  };
+
   const selectedP0Products = (required = false) => {
     const selected = [...document.querySelectorAll("[data-p0-product]:checked")]
       .filter((input) => !input.disabled)
@@ -2284,6 +2276,7 @@
     if (walletHydrated && !suppressWalletPersistence) {
       writeStoredWalletIds(selected);
     }
+    syncPaymentStackOwnedState(selected);
     renderHomeWalletSummary();
     updateWalletStorageStatus(selected.length);
   };
@@ -2297,6 +2290,11 @@
         .filter((item) =>
           (definition.kinds || [definition.kind]).includes(item.kind),
         )
+        .sort(
+          definition.kind === "credit_card"
+            ? walletItemSort
+            : (left, right) => left.label.localeCompare(right.label, "ja"),
+        )
         .forEach((item) => {
           const label = node("label", "p0-product-option");
           const checkbox = node("input");
@@ -2305,8 +2303,15 @@
           checkbox.dataset.p0Product = "true";
           checkbox.addEventListener("change", syncP0ProductPickers);
           const copy = node("span", "p0-product-identity");
-          copy.appendChild(paymentLogo(item.family_id));
-          copy.appendChild(text("strong", item.label));
+          copy.appendChild(paymentLogo(item.family_id, item.label));
+          const name = node("span", "p0-product-name");
+          name.appendChild(text("strong", item.label));
+          if (
+            definition.kind === "credit_card" &&
+            cardIssuer(item) !== item.label
+          )
+            name.appendChild(text("small", cardIssuer(item)));
+          copy.appendChild(name);
           label.appendChild(checkbox);
           label.appendChild(copy);
           const tick = node("span", "p0-product-check");
@@ -2398,17 +2403,13 @@
         : pointSpendOptions.assets[0]?.asset_id || "";
       renderPointSpendTargets("asset.mile.ana");
       document.getElementById("point-spend-coverage").textContent =
-        `${pointSpendOptions.coverage.asset_count}種類・${pointSpendOptions.coverage.reachable_pair_count}通りの交換先を収録しています。`;
+        "交換元と交換先を選ぶと、利用できるルートを比較します。";
       renderP0WalletCatalogue();
       renderP0ProductPickers();
       renderPointSpendConditions();
       clear(result);
       result.appendChild(
-        text(
-          "p",
-          `${pointSpendOptions.rule_count}件の固定比率ルートを比較できます。`,
-          "helper",
-        ),
+        text("p", "交換元・交換先・残高を選んでください。", "helper"),
       );
     } catch {
       pointSpendOptions = null;
@@ -2618,19 +2619,78 @@
     const container = document.getElementById("payment-stack-owned");
     clear(container);
     if (!pointSpendOptions) return;
-    container.appendChild(text("strong", "持っている決済手段"));
-    pointSpendOptions.walletCatalogue.forEach((item) => {
-      const label = node("label", "point-spend-check");
-      const checkbox = node("input");
-      checkbox.type = "checkbox";
-      checkbox.value = item.family_id;
-      checkbox.dataset.paymentStackOwned = "true";
-      const copy = node("span");
-      copy.appendChild(text("b", item.label));
-      label.appendChild(checkbox);
-      label.appendChild(copy);
-      container.appendChild(label);
+    const selected = new Set(selectedP0Products());
+    const categories = [
+      {
+        label: "クレジットカード（発行会社順）",
+        accepts: (item) => item.kind === "credit_card",
+        sort: walletItemSort,
+      },
+      {
+        label: "モバイル決済",
+        accepts: (item) => item.kind === "mobile_pay",
+        sort: (left, right) => left.label.localeCompare(right.label, "ja"),
+      },
+      {
+        label: "ポイント・電子マネー",
+        accepts: (item) =>
+          ["point", "emoney", "stored_value"].includes(item.kind),
+        sort: (left, right) => left.label.localeCompare(right.label, "ja"),
+      },
+    ];
+
+    categories.forEach((category) => {
+      const items = pointSpendOptions.walletCatalogue
+        .filter(category.accepts)
+        .sort(category.sort);
+      if (!items.length) return;
+      const section = node("section", "payment-stack-group");
+      const heading = node("div", "payment-stack-group-heading");
+      heading.appendChild(text("strong", category.label));
+      heading.appendChild(text("small", "タップして選択"));
+      section.appendChild(heading);
+      const picker = node("div", "p0-product-picker payment-stack-picker");
+      items.forEach((item) => {
+        const option = node("label", "p0-product-option");
+        const checkbox = node("input");
+        checkbox.type = "checkbox";
+        checkbox.value = item.family_id;
+        checkbox.checked = selected.has(item.family_id);
+        checkbox.dataset.paymentStackOwned = "true";
+        checkbox.addEventListener("change", () => {
+          const mirror = [
+            ...document.querySelectorAll("[data-p0-product]"),
+          ].find((candidate) => candidate.value === item.family_id);
+          if (!mirror) return;
+          mirror.checked = checkbox.checked;
+          syncP0ProductPickers();
+        });
+        const copy = node("span", "p0-product-identity");
+        copy.appendChild(paymentLogo(item.family_id, item.label));
+        const name = node("span", "p0-product-name");
+        name.appendChild(text("strong", item.label));
+        if (item.kind === "credit_card" && cardIssuer(item) !== item.label)
+          name.appendChild(text("small", cardIssuer(item)));
+        copy.appendChild(name);
+        const tick = node("span", "p0-product-check");
+        tick.appendChild(icon("check"));
+        option.appendChild(checkbox);
+        option.appendChild(copy);
+        option.appendChild(tick);
+        picker.appendChild(option);
+      });
+      section.appendChild(picker);
+      container.appendChild(section);
     });
+  };
+
+  const syncPaymentStackOwnedState = (selected) => {
+    const selectedIds = new Set(selected);
+    document
+      .querySelectorAll('[data-payment-stack-owned="true"]')
+      .forEach((input) => {
+        input.checked = selectedIds.has(input.value);
+      });
   };
 
   // The merchant list arrives with the result rather than from a separate
@@ -3068,11 +3128,6 @@
       addChip("ok", `${yen(savableValue)} は行動すれば延長できます`);
     if (estimated.length) addChip("warn", `${estimated.length}件が推定値`);
     stagger(chips.children);
-
-    document.getElementById("lot-list-count").textContent =
-      `${walletDemo.programs.length}プログラム・${entries.length}ロット`;
-    document.getElementById("capture-nudge").textContent =
-      `残高の更新から${walletDemo.updated_days_ago}日たちました。月に1回でも直すと、失効の予測がずれにくくなります。`;
   };
 
   const renderValuation = () => {
@@ -3216,7 +3271,7 @@
 
   const renderLotCard = (list, program) => {
     const card = node("article", "lot-card");
-    card.dataset.open = "true";
+    card.dataset.open = "false";
     const value = program.lots.reduce(
       (sum, lot) => sum + lotValue(program, lot),
       0,
@@ -3224,11 +3279,11 @@
 
     const head = node("button", "lot-card-head");
     head.type = "button";
-    head.setAttribute("aria-expanded", "true");
+    head.setAttribute("aria-expanded", "false");
     head.appendChild(paymentLogo(program.family_id));
     const identity = node("div", "lot-identity");
     identity.appendChild(text("strong", program.label));
-    identity.appendChild(text("small", `${program.lots.length}件の内訳`));
+    identity.appendChild(text("small", "タップして内訳を見る"));
     head.appendChild(identity);
     const total = node("span", "lot-total");
     total.appendChild(text("b", yen(value)));
@@ -3270,6 +3325,23 @@
       inner.appendChild(text("p", program.move.detail, "lot-note"));
     }
 
+    const update = node("button", "lot-update");
+    update.type = "button";
+    update.disabled = true;
+    update.setAttribute(
+      "aria-label",
+      `${program.label}をスクショで更新・準備中`,
+    );
+    const updateCopy = node("span");
+    updateCopy.appendChild(text("strong", "スクショで残高を更新"));
+    updateCopy.appendChild(
+      text("small", `${program.label}の残高画面を使います`),
+    );
+    update.appendChild(updateCopy);
+    const updateState = text("em", "準備中");
+    update.appendChild(updateState);
+    inner.appendChild(update);
+
     const source = node("div", "lot-source");
     const referenceFact = referenceFactForProgram(program.family_id);
     const sourceCopy = node("div", "lot-source-copy");
@@ -3290,24 +3362,9 @@
       );
       if (provenance) sourceCopy.appendChild(provenance);
     } else {
-      sourceCopy.appendChild(
-        text(
-          "span",
-          `デモ参照元 ${program.source}・${program.checked_days_ago}日前に確認`,
-        ),
-      );
+      sourceCopy.appendChild(text("span", `参照元：${program.source}`));
     }
     source.appendChild(sourceCopy);
-    const lookup = node("button");
-    lookup.type = "button";
-    lookup.textContent = "収録情報";
-    lookup.addEventListener("click", () => {
-      const search = document.getElementById("information-search");
-      search.value = program.label.replace("ポイント", "");
-      document.getElementById("information-family-filter").value = "";
-      activateTab("information");
-    });
-    source.appendChild(lookup);
     inner.appendChild(source);
 
     body.appendChild(inner);
@@ -3481,13 +3538,6 @@
   document
     .getElementById("information-family-filter")
     .addEventListener("change", renderInformationFacts);
-  document
-    .getElementById("information-reload")
-    .addEventListener("click", () => {
-      void loadExperimentalRules(true);
-      void loadInformationFacts(true);
-      void loadLotteryLinks(true);
-    });
   document
     .getElementById("wallet-reset-button")
     .addEventListener("click", () => {

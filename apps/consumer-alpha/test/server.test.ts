@@ -574,7 +574,7 @@ describe("M6 localhost consumer shell", () => {
     );
     expect(html).toContain("サービス・ポイント情報を見る");
     expect(html).toContain("サービス・ポイント情報");
-    expect(html).toContain("還元率、使い方、対象条件");
+    expect(html).toContain("還元レートと実施中のキャンペーン");
     expect(html).not.toContain('id="experimental-section"');
     expect(html).not.toContain('id="lottery-links"');
     expect(html).not.toContain('id="information-claim-filter"');
@@ -588,8 +588,13 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain("交換計算対応");
     expect(source).not.toContain("情報掲載");
     expect(html).toContain("比較するサービス");
-    expect(html).toContain("対応サービス一覧");
+    expect(html).not.toContain("対応サービス一覧");
     expect(source).toContain("実施中のキャンペーン");
+    expect(source).toContain('link.textContent = "公式HP"');
+    expect(source).not.toContain('link.textContent = "公式の出典"');
+    expect(source).not.toContain("最終確認 ");
+    expect(source).not.toContain('lookup.textContent = "収録情報"');
+    expect(source).toContain("appendRateSection");
     expect(source).toContain("paymentLogoSources");
     expect(source).toContain('node("img")');
     expect(source).not.toContain("使い方と交換先を確認");
@@ -605,6 +610,10 @@ describe("M6 localhost consumer shell", () => {
     expect(html).toContain("カードをタップして選択");
     expect(html).toContain("サービスをタップして選択");
     expect(html).toContain("保有するポイントをタップして選択");
+    expect(html).toContain('id="payment-stack-owned"');
+    expect(source).toContain("クレジットカード（発行会社順）");
+    expect(source).toContain('node("label", "p0-product-option")');
+    expect(source).toContain("paymentLogo(item.family_id, item.label)");
     expect(html).not.toContain("電子マネーの使い方");
     expect(html).not.toContain("今回使いたいですか？");
     expect(html).not.toContain('value="synthetic_stored_value"');
@@ -642,6 +651,14 @@ describe("M6 localhost consumer shell", () => {
     expect(source).not.toContain('"上限キー"');
     expect(source).not.toContain('"先行公開"');
     expect(source).not.toContain("先行実験");
+    expect(html).toContain("比較検索の履歴");
+    expect(html).not.toContain("このセッションの控え");
+    expect(html).not.toContain("預からないもの");
+    expect(html).not.toContain("数字の出どころ");
+    expect(html).not.toContain("通帳を貼り付け");
+    expect(html).not.toContain("CSVを取り込む");
+    expect(source).toContain('card.dataset.open = "false"');
+    expect(source).toContain("スクショで残高を更新");
     expect(source).toContain("textContent");
     expect(source).not.toContain("innerHTML");
     expect(source).toContain(
