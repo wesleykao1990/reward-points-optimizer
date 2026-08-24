@@ -5,7 +5,6 @@ import type {
   P0FactInfluenceGraphSnapshot,
   P0FactInfluenceGraphStore,
 } from "@jro/agent-feed-postgres";
-import { P0_FACT_INFLUENCE_GRAPH_FACT_COUNT } from "@jro/agent-feed-postgres";
 import { NANACO_CREDIT_CHARGE_CLAIM_IDS } from "@jro/provisional-rules";
 import {
   localizeImplementationPredicate,
@@ -162,6 +161,13 @@ const FAMILY_LABELS: Readonly<Record<string, string>> = Object.freeze({
   "reg.jp.fsa.payments": "金融庁（決済）",
   "reg.jp.ppc.privacy": "個人情報保護委員会",
   "transit.suica": "Suica・JRE POINT",
+  "point.moppy": "モッピーポイント",
+  "point.saison": "セゾン永久不滅ポイント",
+  "portal.jal-mileage-park": "JALマイレージパーク",
+  "transit.jrkyushu": "JRキューポ",
+  "wallet.anapay": "ANA Pay",
+  "wallet.kyash": "Kyash",
+  "wallet.revolut-jp": "Revolut",
 });
 
 const CLAIM_LABELS: Readonly<Record<string, string>> = Object.freeze({
@@ -833,10 +839,7 @@ export function projectFactInfluenceForRecommendation(
   context: FactInfluenceGraphContext,
   appliedParentClaimIds: readonly string[] = [],
 ): FactInfluenceBrowserView {
-  if (
-    graph.fact_count !== P0_FACT_INFLUENCE_GRAPH_FACT_COUNT ||
-    graph.nodes.length !== P0_FACT_INFLUENCE_GRAPH_FACT_COUNT
-  )
+  if (graph.fact_count < 1 || graph.nodes.length !== graph.fact_count)
     throw new Error("fact_influence_graph_count_invalid");
   const appliedClaims = new Set<string>();
   for (const claimId of appliedParentClaimIds) {
@@ -909,9 +912,10 @@ function sourceFacts(
   if (
     !value ||
     value.version !== FACT_INFLUENCE_GRAPH_SOURCE_VERSION ||
-    value.fact_count !== P0_FACT_INFLUENCE_GRAPH_FACT_COUNT ||
+    !Number.isSafeInteger(value.fact_count) ||
+    value.fact_count < 1 ||
     !Array.isArray(value.facts) ||
-    value.facts.length !== P0_FACT_INFLUENCE_GRAPH_FACT_COUNT
+    value.facts.length !== value.fact_count
   )
     throw new TypeError("fact_influence_graph_source_invalid");
   return value.facts;
@@ -936,6 +940,7 @@ const FIXTURE_FILES = Object.freeze([
   "p0-point-rules-b.implementation.v0.4.json",
   "p0-wallet-card-rules.implementation.v0.5.json",
   "p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
+  "p0-complex-route-benchmark.implementation.v0.7.json",
 ] as const);
 const FIXTURE_ROOT = "../../../fixtures/m3/provisional/";
 
@@ -1004,7 +1009,7 @@ async function loadFixtureFacts(): Promise<
       }),
     ).then((documents) => {
       const facts = documents.flat();
-      if (facts.length !== P0_FACT_INFLUENCE_GRAPH_FACT_COUNT)
+      if (facts.length < 1)
         throw new Error("fact_influence_fixture_count_invalid");
       return Object.freeze(facts);
     });
@@ -1012,7 +1017,7 @@ async function loadFixtureFacts(): Promise<
   return fixturePromise;
 }
 
-/** The no-database localhost port still builds the complete 364-node graph. */
+/** The no-database localhost port still builds the complete fixture graph. */
 export function getDefaultFactInfluenceGraphPort(): FactInfluenceGraphPort {
   return Object.freeze({
     async load(

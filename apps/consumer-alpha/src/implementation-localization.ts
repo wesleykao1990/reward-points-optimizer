@@ -9,6 +9,20 @@
  */
 
 const PREDICATE_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  campaign_jal_bonus_posting: "JAL増量分の付与予定",
+  campaign_moppy_rebate_posting: "モッピー還元分の付与予定",
+  campaign_principal_exchange: "キャンペーン本体の交換",
+  charge_has_no_kyash_reward: "Kyashチャージ還元の対象外",
+  converts_at_fixed_ratio: "固定比率での交換",
+  funds_at_face_value_with_rolling_cap: "等価入金と期間上限",
+  portal_earn_rate_and_posting: "ポータル経由の付与率と時期",
+  requires_eligible_ana_card_holder: "対象ANAカード会員の条件",
+  requires_existing_holder: "既存会員の保有条件",
+  requires_jq_card_saison_and_permanent_point_card: "JQ CARDセゾン等の保有条件",
+  requires_revolut_card_payment_to_ana_pay:
+    "RevolutカードによるANA Pay決済条件",
+  route_is_unavailable: "利用できない経路",
+  route_suspended: "停止中の経路",
   awards_points_per_amount: "金額ごとのポイント付与",
   uses_minimum_unit_and_truncates: "単位計算と端数切り捨て",
   has_service_specific_timing_and_card_exclusion:
@@ -336,6 +350,25 @@ export const IMPLEMENTATION_PREDICATE_LABEL_COUNT =
   Object.keys(PREDICATE_LABELS).length;
 
 const SUBJECT_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  "Moppy → JALマイル（20%増量分）": "モッピー → JALマイル（20%増量分）",
+  "Moppy JALドリームキャンペーン スカイボーナス":
+    "モッピー JALドリームキャンペーン スカイボーナス",
+  "Moppy → JALマイル（本体交換）": "モッピー → JALマイル（本体交換）",
+  "ANA Pay → 楽天Edy": "ANA Pay → 楽天Edy",
+  "ANA Pay → Revolut": "ANA PayからRevolut",
+  "JALマイレージパーク → Amazon.co.jp": "JALマイレージパーク → Amazon.co.jp",
+  "JALマイレージパーク → 楽天市場": "JALマイレージパーク → 楽天市場",
+  "JRキューポ → セゾン永久不滅ポイント": "JRキューポ → セゾン永久不滅ポイント",
+  "Kyash → ANA Pay": "KyashからANA Pay",
+  ANAカード会員向けVポイント交換コース: "ANAカード会員向けVポイント交換コース",
+  "JQ CARDセゾン": "JQ CARDセゾン",
+  "みずほマイレージクラブカード/ANA": "みずほマイレージクラブカード/ANA",
+  "RevolutカードによるANA Pay決済": "RevolutカードによるANA Pay決済",
+  "Revolut → ANA Pay": "RevolutからANA Pay",
+  "セゾン永久不滅ポイント → ANAマイル": "セゾン永久不滅ポイント → ANAマイル",
+  "Vポイント → ANAマイル（ANAカード会員コース）":
+    "Vポイント → ANAマイル（ANAカード会員コース）",
+  "Vポイント → JRキューポ": "Vポイント → JRキューポ",
   "JRE POINT family transfer": "JRE POINTの家族間移行",
   "JRE POINT use routes": "JRE POINTの利用先",
   "JRE POINT": "JRE POINTサービス",
@@ -2059,6 +2092,78 @@ const SUMMARY_TRANSLATION_ENTRIES = [
   [
     "JR East describes rail/Mobile Suica earning and listed uses.",
     "JR東日本は、鉄道・モバイルSuicaでの獲得と記載された利用先を案内しています。",
+  ],
+  [
+    "JALの20%増量分1,200マイルは6,000マイルの本体交換とは分離した後日積算の研究データであり、抽選は算術対象外です。",
+    "JALの20%増量分1,200マイルは6,000マイルの本体交換とは分離した後日積算の研究データであり、抽選は算術対象外です。",
+  ],
+  [
+    "条件付きのモッピー4,500ポイントは本体交換と別の月1回リベートとして保持し、抽選は計算しません。",
+    "条件付きのモッピー4,500ポイントは本体交換と別の月1回リベートとして保持し、抽選は計算しません。",
+  ],
+  [
+    "本体はモッピーポイント12,000をJALマイル6,000へ交換する研究データとして保存し、増量・リベート・抽選を別扱いにします。",
+    "本体はモッピーポイント12,000をJALマイル6,000へ交換する研究データとして保存し、増量・リベート・抽選を別扱いにします。",
+  ],
+  [
+    "ANA Payから楽天Edyへの経路は利用不可の情報エッジであり、変換ルールにはしません。",
+    "ANA Payから楽天Edyへの経路は利用不可の情報エッジであり、変換ルールにはしません。",
+  ],
+  [
+    "ANA PayからRevolutへの経路は利用不可の情報エッジであり、RevolutからANA Payへのカード決済とは方向が異なります。",
+    "ANA PayからRevolutへの経路は利用不可の情報エッジであり、RevolutからANA Payへのカード決済とは方向が異なります。",
+  ],
+  [
+    "JALマイレージパークのAmazon routeは2026年6月12日から停止中です。",
+    "JALマイレージパークのAmazon routeは2026年6月12日から停止中です。",
+  ],
+  [
+    "楽天市場はJALマイレージパーク経由で300円ごとに1マイル、積算は約3〜4か月後ですが、直前のポータル遷移が必要です。",
+    "楽天市場はJALマイレージパーク経由で300円ごとに1マイル、積算は約3〜4か月後ですが、直前のポータル遷移が必要です。",
+  ],
+  [
+    "JRキューポ10,000ポイントをセゾン永久不滅ポイント2,000ポイントへ交換します。JQ CARDセゾンが必要です。",
+    "JRキューポ10,000ポイントをセゾン永久不滅ポイント2,000ポイントへ交換します。JQ CARDセゾンが必要です。",
+  ],
+  [
+    "ANA PayへのチャージはKyashポイント還元対象外であり、報酬を計算しません。",
+    "ANA PayへのチャージはKyashポイント還元対象外であり、報酬を計算しません。",
+  ],
+  [
+    "Kyash VisaからANA Payへの経路は利用不可として扱い、実行ルールにはしません。",
+    "Kyash VisaからANA Payへの経路は利用不可として扱い、実行ルールにはしません。",
+  ],
+  [
+    "直接Vポイント交換は対象ANAカード会員の専用コースに限ります。",
+    "直接Vポイント交換は対象ANAカード会員の専用コースに限ります。",
+  ],
+  [
+    "JRキューポと永久不滅ポイントの交換にはJQ CARDセゾン等の明示条件があります。",
+    "JRキューポと永久不滅ポイントの交換にはJQ CARDセゾン等の明示条件があります。",
+  ],
+  [
+    "ANA交換の前提は既存の対象カード保有者であり、新規申込可否は推測しません。",
+    "ANA交換の前提は既存の対象カード保有者であり、新規申込可否は推測しません。",
+  ],
+  [
+    "このベンチマーク辺はRevolutカードを使うANA Pay決済に限り、保有資格を推測せず明示条件として扱います。",
+    "このベンチマーク辺はRevolutカードを使うANA Pay決済に限り、保有資格を推測せず明示条件として扱います。",
+  ],
+  [
+    "RevolutカードからANA Pay残高への額面1:1のfunding edgeとして表現し、報酬は算出しません。30日間合計10万円を超える決済は全体が失敗するためpartial_consumptionはfalseです。",
+    "RevolutカードからANA Pay残高への額面1:1のfunding edgeとして表現し、報酬は算出しません。30日間合計10万円を超える決済は全体が失敗するためpartial_consumptionはfalseです。",
+  ],
+  [
+    "みずほマイレージクラブカード/ANA向けに永久不滅ポイント2,000をANAマイル7,000へ交換します。",
+    "みずほマイレージクラブカード/ANA向けに永久不滅ポイント2,000をANAマイル7,000へ交換します。",
+  ],
+  [
+    "対象ANAカード会員のVポイントは5ポイントから5ポイント単位で5→3 ANAマイルです。",
+    "対象ANAカード会員のVポイントは5ポイントから5ポイント単位で5→3 ANAマイルです。",
+  ],
+  [
+    "Vポイント10,000をJRキューポ10,000へ交換するベンチマーク辺です。",
+    "Vポイント10,000をJRキューポ10,000へ交換するベンチマーク辺です。",
   ],
 ] as const;
 

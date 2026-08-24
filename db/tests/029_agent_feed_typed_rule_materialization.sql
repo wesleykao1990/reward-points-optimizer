@@ -10,8 +10,8 @@ begin
       from app_private.p0_implementation_rule_facts_at(
           '2026-08-24T12:00:00+09:00'::timestamptz
       );
-    if v_count <> 364 then
-        raise exception 'route compiler did not receive the complete 364-fact snapshot: %', v_count;
+    if v_count <> (select count(*) from app_private.p0_implementation_facts) then
+        raise exception 'route compiler did not receive the complete implementation fact snapshot: %', v_count;
     end if;
 end
 $complete_route_snapshot$;

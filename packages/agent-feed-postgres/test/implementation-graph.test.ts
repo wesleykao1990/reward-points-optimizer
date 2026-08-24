@@ -47,11 +47,12 @@ function graphRow(overrides: JsonRecord = {}): JsonRecord {
     },
     active_at: true,
     corrected: false,
+    total_count: 5,
     ...overrides,
   };
 }
 
-function completeRows(count = 364): JsonRecord[] {
+function completeRows(count = 5, reportedTotal = count): JsonRecord[] {
   return Array.from({ length: count }, (_, index) => {
     const suffix = (index + 1).toString(16).padStart(12, "0");
     const hashHex = (index + 1).toString(16).padStart(64, "0");
@@ -61,6 +62,7 @@ function completeRows(count = 364): JsonRecord[] {
       fact_id: `00000000-0000-4000-8000-${suffix}`,
       implementation_hash: `sha256:${hashHex}`,
       parent_claim_id: claim,
+      total_count: reportedTotal,
     });
   });
 }
@@ -93,9 +95,9 @@ describe("PostgreSQL P0 fact influence graph adapter", () => {
     const result = await createPostgresP0FactInfluenceGraphStore(target, {
       clock: () => new Date("2026-08-21T00:00:00.000Z"),
     }).list();
-    expect(valuesSeen).toEqual(["2026-08-21T00:00:00.000Z", 365]);
+    expect(valuesSeen).toEqual(["2026-08-21T00:00:00.000Z", 4097]);
     expect(result.version).toBe("p0-fact-influence-graph-source.v1");
-    expect(result.fact_count).toBe(364);
+    expect(result.fact_count).toBe(rows.length);
     expect(result.facts.map((fact) => fact.graph_order)).toEqual([
       second.graph_order,
       first.graph_order,
@@ -118,16 +120,16 @@ describe("PostgreSQL P0 fact influence graph adapter", () => {
     const result = await createPostgresP0FactInfluenceGraphStore(target).list(
       "2026-08-21T00:00:00.000Z",
     );
-    expect(result.facts).toHaveLength(364);
+    expect(result.facts).toHaveLength(rows.length);
     expect(result.facts.find((fact) => fact.corrected)).toMatchObject({
       active_at: false,
       corrected: true,
     });
   });
 
-  it("rejects truncated one- and 363-row material before normalization", async () => {
-    for (const count of [1, 363]) {
-      const target = clientFor(() => ({ rows: completeRows(count) }));
+  it("rejects truncated material against the SQL-reported total", async () => {
+    for (const count of [1, 4]) {
+      const target = clientFor(() => ({ rows: completeRows(count, 5) }));
       await expect(
         createPostgresP0FactInfluenceGraphStore(target).list(),
       ).rejects.toThrow("p0_fact_influence_graph_incomplete");
@@ -136,7 +138,7 @@ describe("PostgreSQL P0 fact influence graph adapter", () => {
 
   it("fails closed when the bounded query overflows or repeats identity", async () => {
     const overflow = clientFor(() => ({
-      rows: completeRows(366),
+      rows: completeRows(4097),
     }));
     await expect(
       createPostgresP0FactInfluenceGraphStore(overflow).list(),

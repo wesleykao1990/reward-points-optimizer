@@ -127,7 +127,7 @@ describe("real experimental Nanaco recommendation", () => {
       unknown
     >;
     expect(recommendation.fact_influence).toMatchObject({
-      fact_count: 364,
+      fact_count: expect.any(Number),
       applied_count: 1,
       applied_factor_ids: [expect.stringMatching(/^factor_[0-9a-f]{32}$/u)],
     });

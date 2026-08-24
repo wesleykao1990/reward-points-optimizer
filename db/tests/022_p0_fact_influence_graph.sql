@@ -15,13 +15,13 @@ begin
       from app_private.p0_implementation_fact_influence_graph_rows(
           '2026-08-22T00:00:00+09:00'::timestamptz
       );
-    if v_before <> 364 then
-        raise exception 'P0 influence graph did not retain all 364 facts: %', v_before;
+    if v_before <> (select count(*) from app_private.p0_implementation_facts) then
+        raise exception 'P0 influence graph did not retain all implementation facts: %', v_before;
     end if;
     if (select count(distinct graph_order)
           from app_private.p0_implementation_fact_influence_graph_rows(
               '2026-08-22T00:00:00+09:00'::timestamptz
-          )) <> 364
+          )) <> v_before
     then
         raise exception 'P0 influence graph identity/order is not deterministic and unique';
     end if;
@@ -92,7 +92,7 @@ begin
           '2026-08-22T00:00:00+09:00'::timestamptz
       )
      where fact_id = v_fact_id;
-    if v_after <> 364 or v_corrected is not true then
+    if v_after <> v_before or v_corrected is not true then
         raise exception 'P0 influence graph dropped or failed to flag corrected history';
     end if;
 

@@ -7,19 +7,16 @@ export const P0_FACT_INFLUENCE_GRAPH_FUNCTION =
 export const P0_IMPLEMENTATION_FACT_INFLUENCE_GRAPH_FUNCTION =
   P0_FACT_INFLUENCE_GRAPH_FUNCTION;
 
-/** One bounded query is enough for the current 364-fact wave, with one extra
- * row reserved to fail closed if a future seed silently grows the graph. */
-export const MAX_P0_FACT_INFLUENCE_GRAPH_FACTS = 364 as const;
-export const P0_FACT_INFLUENCE_GRAPH_FACT_COUNT = 364 as const;
-export const P0_IMPLEMENTATION_FACT_INFLUENCE_GRAPH_FACT_COUNT =
-  P0_FACT_INFLUENCE_GRAPH_FACT_COUNT;
+/** Resource ceiling, not an expected data count. The SQL-reported total is
+ * reconciled dynamically so additive snapshots do not require code edits. */
+export const MAX_P0_FACT_INFLUENCE_GRAPH_FACTS = 4096 as const;
 export const P0_FACT_INFLUENCE_GRAPH_QUERY = `
 select graph_order, fact_id, implementation_version, implementation_hash,
        fact_version, parent_claim_id, family_id, source_role_id, source_ids,
        source_identity, claim_type, subject, predicate, value, applicability,
        exclusions, evidence_locator, short_paraphrase, disposition,
        derived_rule_ids, reason, reason_detail, fact_payload, active_at,
-       corrected
+       corrected, (count(*) over ())::integer as total_count
   from ${P0_FACT_INFLUENCE_GRAPH_FUNCTION}($1::timestamptz)
  order by graph_order asc
  limit $2::integer
@@ -113,6 +110,7 @@ const ROW_KEYS = Object.freeze([
   "fact_payload",
   "active_at",
   "corrected",
+  "total_count",
 ] as const);
 
 const UUID_PATTERN =
@@ -436,6 +434,17 @@ function row(rawRow: unknown): P0FactInfluenceGraphFact {
   });
 }
 
+function reportedTotal(rawRow: unknown): number {
+  const input = exactRecord(rawRow);
+  if (
+    typeof input.total_count !== "number" ||
+    !Number.isSafeInteger(input.total_count) ||
+    input.total_count < 1
+  )
+    throw new TypeError("p0_fact_influence_graph_total_count_invalid");
+  return input.total_count;
+}
+
 function rowsOf(result: QueryResult<unknown>): readonly unknown[] {
   if (!result || !Array.isArray(result.rows))
     throw new TypeError("p0_fact_influence_graph_query_result_invalid");
@@ -453,8 +462,8 @@ function effectiveAt(
   return date.toISOString();
 }
 
-/** Construct the server-only adapter.  It never exposes this material as a
- * browser DTO and always requests one extra row to detect truncation. */
+/** Construct the server-only adapter. It reconciles the returned rows against
+ * the SQL window total, while retaining a separate resource ceiling. */
 export function createPostgresP0FactInfluenceGraphStore(
   target: QueryTarget,
   options: P0FactInfluenceGraphOptions = {},
@@ -470,9 +479,20 @@ export function createPostgresP0FactInfluenceGraphStore(
         MAX_P0_FACT_INFLUENCE_GRAPH_FACTS + 1,
       ]);
       const rawRows = rowsOf(result);
-      if (rawRows.length > MAX_P0_FACT_INFLUENCE_GRAPH_FACTS)
+      if (rawRows.length === 0)
+        throw new Error("p0_fact_influence_graph_incomplete");
+      const totals = new Set(rawRows.map(reportedTotal));
+      if (totals.size !== 1)
+        throw new Error("p0_fact_influence_graph_total_count_mismatch");
+      const total = [...totals][0];
+      if (total === undefined)
+        throw new Error("p0_fact_influence_graph_incomplete");
+      if (
+        total > MAX_P0_FACT_INFLUENCE_GRAPH_FACTS ||
+        rawRows.length > MAX_P0_FACT_INFLUENCE_GRAPH_FACTS
+      )
         throw new Error("p0_fact_influence_graph_too_many_rows");
-      if (rawRows.length !== MAX_P0_FACT_INFLUENCE_GRAPH_FACTS)
+      if (rawRows.length !== total)
         throw new Error("p0_fact_influence_graph_incomplete");
       const facts = rawRows.map(row);
       facts.sort((left, right) =>

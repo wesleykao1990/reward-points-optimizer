@@ -579,7 +579,7 @@ async function factInfluenceForRecommendation(
   try {
     const graph = await resolveFactInfluenceGraph(dependency).load(effectiveAt);
     if (
-      graph.fact_count !== 364 ||
+      graph.fact_count < 1 ||
       graph.nodes.length !== graph.fact_count ||
       graph.version !== "p0-fact-influence-graph.v1"
     )

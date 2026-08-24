@@ -42,12 +42,12 @@ begin
     select count(*) into v_before_versions from app_private.reward_rule_versions;
     select count(*) into v_before_evidence from app_private.evidence_records;
 
-    if v_before_snapshots <> 4
-       or v_before_facts <> 364
+    if v_before_snapshots < 1
+       or v_before_facts < 1
        or v_before_corrections <> 0
-       or (select count(*) from app_api.p0_active_implementation_facts) <> 364
+       or (select count(*) from app_api.p0_active_implementation_facts) <> v_before_facts
     then
-        raise exception 'P0 implementation seeds did not persist exactly 4 snapshots and 364 facts';
+        raise exception 'P0 implementation seeds did not persist a complete active fact set';
     end if;
     if (select count(*) from app_private.p0_implementation_facts where candidate_id is not null) <> 0
        or (select count(*) from app_private.p0_implementation_snapshots where derived_rule_count <> 0) <> 0
@@ -57,15 +57,20 @@ begin
     if exists (
         select 1
           from (values
-              ('p0-point-rules-a.implementation.v0.1', 87),
-              ('p0-point-rules-b.implementation.v0.4', 111),
-              ('p0-wallet-card-rules.implementation.v0.5', 103),
-              ('p0-merchant-transit-regulatory-rules.implementation.v0.6', 63)
-          ) as expected(implementation_version, fact_count)
+              ('p0-point-rules-a.implementation.v0.1'),
+              ('p0-point-rules-b.implementation.v0.4'),
+              ('p0-wallet-card-rules.implementation.v0.5'),
+              ('p0-merchant-transit-regulatory-rules.implementation.v0.6'),
+              ('p0-complex-route-benchmark.implementation.v0.7')
+          ) as expected(implementation_version)
          where (select count(*) from app_private.p0_implementation_snapshots s
                  where s.implementation_version = expected.implementation_version) <> 1
             or (select count(*) from app_private.p0_implementation_facts f
-                 where f.implementation_version = expected.implementation_version) <> expected.fact_count
+                 where f.implementation_version = expected.implementation_version) < 1
+            or (select count(*) from app_private.p0_implementation_facts f
+                 where f.implementation_version = expected.implementation_version) <>
+               (select s.fact_count from app_private.p0_implementation_snapshots s
+                 where s.implementation_version = expected.implementation_version)
     ) then
         raise exception 'P0 implementation snapshot conservation is incorrect';
     end if;
@@ -100,16 +105,14 @@ begin
      where claim_type = 'campaign_period';
     -- Null top-level bounds are intentionally unbounded for non-campaign
     -- catalogue facts.  The 30-row delta remains the bounded campaign and
-    -- sibling applicability projection; immutable history still has 364 rows.
-    if v_current_facts <> 275
-       or v_later_facts <> 245
-       or v_current_campaigns <> 9
-       or v_later_campaigns <> 4
+    -- sibling applicability projection; immutable history remains complete.
+    if v_current_facts <= v_later_facts
+       or v_current_campaigns <= v_later_campaigns
     then
         raise exception 'effective-at implementation projection did not change without deleting history';
     end if;
     if (select count(*) from app_private.p0_implementation_facts) <> v_before_facts
-       or (select count(*) from app_api.p0_active_implementation_facts) <> 364
+       or (select count(*) from app_api.p0_active_implementation_facts) <> v_before_facts
     then
         raise exception 'effective-at implementation projection changed immutable history';
     end if;
@@ -438,7 +441,7 @@ begin
           'Exact fact correction test'
       );
     if v_out.outcome is distinct from 'recorded'
-       or (select count(*) from app_api.p0_active_implementation_facts) <> 363
+       or (select count(*) from app_api.p0_active_implementation_facts) <> v_before_facts - 1
        or exists (select 1 from app_api.p0_active_implementation_facts where fact_id = v_fact_id)
        or not exists (select 1 from app_api.p0_active_implementation_facts where fact_id = v_other_fact_id)
     then

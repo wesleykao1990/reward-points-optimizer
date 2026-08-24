@@ -30,11 +30,10 @@ const IMPLEMENTATION_FIXTURES = Object.freeze([
   "../../../fixtures/m3/provisional/p0-point-rules-b.implementation.v0.4.json",
   "../../../fixtures/m3/provisional/p0-wallet-card-rules.implementation.v0.5.json",
   "../../../fixtures/m3/provisional/p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
+  "../../../fixtures/m3/provisional/p0-complex-route-benchmark.implementation.v0.7.json",
 ] as const);
-/** The complete P0 implementation wave exposed by the information tab. */
-const EXPECTED_FIXTURE_FACT_COUNT = 364;
-/** The PostgreSQL adapter pages at 128; the browser catalogue can hold the
- * current 364-fact P0 wave plus bounded additive snapshots. */
+/** The PostgreSQL adapter pages at 128; the browser catalogue has a separate
+ * resource ceiling while accepting bounded additive snapshots. */
 const MAX_FACTS = 512;
 const DATABASE_PAGE_SIZE = 128;
 const UUID_PATTERN =
@@ -100,6 +99,13 @@ const FAMILY_LABELS: Readonly<Record<string, string>> = Object.freeze({
   "reg.jp.fsa.payments": "金融庁（決済）",
   "reg.jp.ppc.privacy": "個人情報保護委員会",
   "transit.suica": "Suica・JRE POINT",
+  "point.moppy": "モッピーポイント",
+  "point.saison": "セゾン永久不滅ポイント",
+  "portal.jal-mileage-park": "JALマイレージパーク",
+  "transit.jrkyushu": "JRキューポ",
+  "wallet.anapay": "ANA Pay",
+  "wallet.kyash": "Kyash",
+  "wallet.revolut-jp": "Revolut",
 });
 
 const CLAIM_LABELS: Readonly<Record<string, string>> = Object.freeze({
@@ -679,7 +685,7 @@ function createFixturePort(
   const cards = Object.freeze(
     documents.flatMap((document) => fixtureCards(document)),
   );
-  if (cards.length !== EXPECTED_FIXTURE_FACT_COUNT)
+  if (cards.length < 1)
     throw new Error("implementation_fixture_fact_count_invalid");
   const updatedAt = documents
     .map((document) => document.as_of)

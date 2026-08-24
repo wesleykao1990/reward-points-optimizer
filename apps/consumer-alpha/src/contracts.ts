@@ -291,7 +291,7 @@ export interface ExperimentalCataloguePort {
 /**
  * The bounded real-data experiment accepts only a host-owned catalogue
  * selection and explicit economic inputs.  It is intentionally separate from
- * the synthetic manual state and from the 364 implementation facts.
+ * the synthetic manual state and from the current implementation facts.
  */
 export const EXPERIMENTAL_NANACO_SELECTION_ID =
   "candidate_p0_nanaco_shopping_earning_20260821_v0_1" as const;
