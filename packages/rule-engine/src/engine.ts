@@ -379,6 +379,12 @@ function ruleMatchesOperation(
 
   const match = rule.eligibility.operation_match;
   if (
+    operation.operation_type === "merchant_purchase" &&
+    match.must_present_before_payment === true &&
+    !hasPriorPortalAttribution(operation, plan)
+  )
+    return "portal_attribution_missing";
+  if (
     match.allowed_payment_instrument_ids &&
     match.allowed_payment_instrument_ids.length > 0 &&
     (!operation.payment_instrument_id ||
@@ -594,6 +600,31 @@ function eligibleSpend(operation: Operation, rule: RewardRule): bigint {
   return BigInt(operation.amount_jpy ?? 0);
 }
 
+function hasPriorPortalAttribution(
+  operation: Operation,
+  plan: PurchasePlan,
+): boolean {
+  const operationsById = new Map(
+    plan.operations.map((candidate) => [candidate.operation_id, candidate]),
+  );
+  return plan.dependencies.some((dependency) => {
+    if (
+      dependency.to_operation_id !== operation.operation_id ||
+      dependency.dependency_type !== "attribution"
+    )
+      return false;
+    const predecessor = operationsById.get(dependency.from_operation_id);
+    return (
+      predecessor?.operation_type === "portal_clickout" &&
+      predecessor.sequence < operation.sequence &&
+      predecessor.merchant_id === operation.merchant_id &&
+      typeof operation.portal_id === "string" &&
+      operation.portal_id.length > 0 &&
+      predecessor.portal_id === operation.portal_id
+    );
+  });
+}
+
 function applySpendQuantum(
   spend: bigint,
   quantum: number | null | undefined,
@@ -767,6 +798,364 @@ function rewardComponentFromRule(
     clawback: clone(output.clawback),
     calculation_trace: { eligible_basis: "", rounding_stage: "" },
   };
+}
+
+interface RewardProcessingOptions {
+  /** Explicit transfer bonus bindings; omitted means all applicable rules. */
+  bonusRuleIds?: readonly string[];
+  /** Transfer principal rules are handled by processTransferOperation. */
+  excludeTransferRules?: boolean;
+}
+
+interface RewardProcessingResult {
+  operationRuleIds: string[];
+  valid: boolean;
+}
+
+/**
+ * Evaluate non-transfer reward rules without touching the principal ledger.
+ * Keeping this path shared is important: transfer bonuses use exactly the
+ * same cap reservation and stacking resolution as ordinary operations.
+ */
+function processRewardRules(
+  operation: Operation,
+  plan: PurchasePlan,
+  context: InternalContext,
+  ledger: NativeLedger,
+  planCapProgress: Record<string, CapProgressState>,
+  options: RewardProcessingOptions = {},
+): RewardProcessingResult {
+  const operationCapProgress = clone(planCapProgress);
+  const operationRuleIds: string[] = [];
+  const allowedRuleIds =
+    options.bonusRuleIds === undefined ? null : new Set(options.bonusRuleIds);
+  const rules =
+    context.rules.length > 0
+      ? selectRulesForEvaluation(
+          context.rules,
+          operation.occurred_at,
+          context.replayKnowledgeAt,
+          context.ruleEvaluationPolicy,
+        ).filter(
+          (rule) =>
+            (allowedRuleIds === null || allowedRuleIds.has(rule.rule_id)) &&
+            !(
+              options.excludeTransferRules &&
+              rule.calculation?.model === "transfer_ratio"
+            ),
+        )
+      : [];
+  const candidateRewards: Array<{
+    rule: RewardRule;
+    units: bigint;
+    trace: Record<string, unknown>;
+  }> = [];
+  const multiplierRules: RewardRule[] = [];
+  const suppressedRuleIds = new Set<string>();
+  const suppressedStackGroups = new Set<string>();
+  let valid = true;
+  for (const exclusion of rules) {
+    const matchReason = ruleMatchesOperation(
+      exclusion,
+      operation,
+      plan,
+      context,
+    );
+    if (
+      matchReason ||
+      exclusion.effect?.decision !== "deny" ||
+      exclusion.effect.effect_target !== "reward_earning"
+    )
+      continue;
+    const targetRuleIds = exclusion.effect.target_rule_ids;
+    const targetStackGroups = exclusion.effect.target_stack_groups;
+    if (targetRuleIds.length === 0 && targetStackGroups.length === 0) {
+      addRejection(ledger, {
+        code: "rule_excluded",
+        message: `${exclusion.rule_id}: reward_earning exclusion has no supported target`,
+        operation_id: operation.operation_id,
+        rule_id: exclusion.rule_id,
+      });
+      valid = false;
+      continue;
+    }
+    for (const target of targetRuleIds) suppressedRuleIds.add(target);
+    for (const target of targetStackGroups) suppressedStackGroups.add(target);
+    addAppliedRule(ledger, exclusion.rule_id);
+  }
+  for (const rule of rules) {
+    const matchReason = ruleMatchesOperation(rule, operation, plan, context);
+    if (matchReason) {
+      if (
+        rule.rule_type === "payment_acceptance" ||
+        rule.rule_type === "exclusion"
+      )
+        addRejection(ledger, {
+          code: "rule_excluded",
+          message: `${rule.rule_id}: ${matchReason}`,
+          operation_id: operation.operation_id,
+          rule_id: rule.rule_id,
+        });
+      continue;
+    }
+    if (rule.effect?.decision === "deny") {
+      addRejection(ledger, {
+        code:
+          rule.effect.effect_target === "operation_eligibility"
+            ? "rule_excluded"
+            : "rule_condition_failed",
+        message: `${rule.rule_id}: ${rule.effect.reason_code}`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      if (rule.effect.effect_target === "operation_eligibility") valid = false;
+      continue;
+    }
+    if (
+      suppressedRuleIds.has(rule.rule_id) ||
+      suppressedStackGroups.has(rule.stacking.stack_group)
+    ) {
+      addRejection(ledger, {
+        code: "rule_excluded",
+        message: `${rule.rule_id}: reward_earning exclusion suppressed this rule`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    if (
+      rule.rule_type === "payment_acceptance" ||
+      rule.rule_type === "exclusion"
+    ) {
+      addAppliedRule(ledger, rule.rule_id);
+      continue;
+    }
+    if (!rule.calculation) {
+      addRejection(ledger, {
+        code: "unsupported_calculation",
+        message: `${rule.rule_id}: financial rule has no calculation`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    if (rule.calculation.model === "transfer_ratio") {
+      addRejection(ledger, {
+        code: "unsupported_calculation",
+        message: `${rule.rule_id}: transfer ratios apply only to transfer/redemption operations`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    if (rule.calculation.rounding.aggregation_scope !== "per_operation") {
+      addRejection(ledger, {
+        code: "unsupported_aggregation_scope",
+        message: `${rule.rule_id}: ${rule.calculation.rounding.aggregation_scope} aggregation is outside Milestone 1a`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    if (!rule.output) {
+      addRejection(ledger, {
+        code: "rule_condition_failed",
+        message: `${rule.rule_id}: reward output is missing`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    if (rule.calculation.model === "multiplier") {
+      multiplierRules.push(rule);
+      continue;
+    }
+    try {
+      const calculation = calculateRewardUnits(rule, operation, context);
+      if (!calculation || calculation.units <= 0n) {
+        addAppliedRule(ledger, rule.rule_id);
+        continue;
+      }
+      candidateRewards.push({ rule, ...calculation });
+    } catch (error) {
+      addRejection(ledger, {
+        code: "rule_condition_failed",
+        message: error instanceof Error ? error.message : String(error),
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+    }
+  }
+  for (const rule of multiplierRules) {
+    const calculation = rule.calculation;
+    if (calculation?.model !== "multiplier" || !rule.output) continue;
+    const baseUnits = candidateRewards
+      .filter(
+        (candidate) =>
+          candidate.rule.stacking.stack_group ===
+          calculation.applies_to_stack_group,
+      )
+      .reduce((sum, candidate) => sum + candidate.units, 0n);
+    const result = evaluateMultiplierReward(calculation, {
+      base_units: baseUnits > 0n ? baseUnits : null,
+      asset_scale: rule.output.asset.scale,
+      output_mode: "increment",
+    });
+    if (result.status !== "applied" || !result.units || result.units <= 0n) {
+      addRejection(ledger, {
+        code: "rule_condition_failed",
+        message: `${rule.rule_id}: ${result.conditions.map((item) => item.code).join(",")}`,
+        operation_id: operation.operation_id,
+        rule_id: rule.rule_id,
+      });
+      continue;
+    }
+    candidateRewards.push({
+      rule,
+      units: result.units,
+      trace: {
+        eligible_basis: calculation.applies_to_stack_group,
+        rounding_stage: calculation.rounding.aggregation_scope,
+        calculation_model: "multiplier",
+        multiplier_milli: calculation.multiplier_milli,
+        base_units: result.base_units?.toString() ?? null,
+        multiplied_units: result.multiplied_units?.toString() ?? null,
+        increment_units: result.increment_units?.toString() ?? null,
+      },
+    });
+  }
+  const cappedCandidates = candidateRewards.flatMap((candidate) => {
+    if (candidate.rule.caps.length === 0) return [candidate];
+    const scale = candidate.rule.output?.asset.scale ?? 0;
+    const requestedAmount = amountFromUnits(candidate.units, scale);
+    const caps = evaluateCaps({
+      caps: candidate.rule.caps,
+      progress: operationCapProgress,
+      candidate: {
+        reward_units: requestedAmount,
+        eligible_spend_jpy: Number(eligibleSpend(operation, candidate.rule)),
+      },
+      operation_timestamp: operation.occurred_at,
+    });
+    const allowed = unitsFromAmount(
+      caps.allowed_reward_units.minimum,
+      scale,
+      "exact",
+    );
+    const trace = {
+      ...candidate.trace,
+      cap_ids: caps.cap_ids,
+      cap_state: caps.state,
+      cap_reward_minimum: caps.allowed_reward_units.minimum,
+      cap_reward_maximum: caps.allowed_reward_units.maximum,
+    };
+    if (allowed <= 0n) {
+      addRejection(ledger, {
+        code: caps.uncertain
+          ? "rule_condition_unknown"
+          : "rule_condition_failed",
+        message: `${candidate.rule.rule_id}: cap ${caps.state}`,
+        operation_id: operation.operation_id,
+        rule_id: candidate.rule.rule_id,
+      });
+      return [];
+    }
+    return [{ ...candidate, units: allowed, trace }];
+  });
+  const stacking = resolveStacking(
+    cappedCandidates.map((candidate) => ({
+      rule_id: candidate.rule.rule_id,
+      stack_group: candidate.rule.stacking.stack_group,
+      mode: candidate.rule.stacking.mode,
+      precedence: candidate.rule.stacking.precedence,
+      value: candidate.units,
+      reward_units: candidate.units,
+      base_reward_included:
+        candidate.rule.stacking.mode === "includes_base" ||
+        ((candidate.rule.calculation?.model === "percentage" ||
+          candidate.rule.calculation?.model === "points_per_unit") &&
+          candidate.rule.calculation.base_reward_included === true),
+      is_base_reward: candidate.rule.rule_type === "base_reward",
+      requires_rule_ids: candidate.rule.stacking.requires_rule_ids,
+      conflicts_with_rule_ids: candidate.rule.stacking.conflicts_with_rule_ids,
+    })),
+  );
+  for (const rejection of stacking.rejected) {
+    if (!rejection.rule_id) continue;
+    addRejection(ledger, {
+      code: "rule_excluded",
+      message: `${rejection.rule_id}: stacking ${rejection.reason}`,
+      operation_id: operation.operation_id,
+      rule_id: rejection.rule_id,
+    });
+  }
+  const selectedIds = new Set(stacking.applied_rule_ids);
+  for (const candidate of cappedCandidates) {
+    if (!selectedIds.has(candidate.rule.rule_id)) continue;
+    let selectedUnits = candidate.units;
+    let selectedTrace = candidate.trace;
+    if (candidate.rule.caps.length > 0) {
+      const scale = candidate.rule.output?.asset.scale ?? 0;
+      const caps = evaluateCaps({
+        caps: candidate.rule.caps,
+        progress: operationCapProgress,
+        candidate: {
+          reward_units: amountFromUnits(candidate.units, scale),
+          eligible_spend_jpy: Number(eligibleSpend(operation, candidate.rule)),
+        },
+        operation_timestamp: operation.occurred_at,
+      });
+      selectedUnits = unitsFromAmount(
+        caps.allowed_reward_units.minimum,
+        scale,
+        "exact",
+      );
+      selectedTrace = {
+        ...selectedTrace,
+        cap_ids: caps.cap_ids,
+        cap_state:
+          selectedTrace.cap_state === "partial" || caps.state === "partial"
+            ? "partial"
+            : caps.state,
+        cap_reward_minimum: caps.allowed_reward_units.minimum,
+        cap_reward_maximum: caps.allowed_reward_units.maximum,
+      };
+      if (selectedUnits <= 0n) {
+        addRejection(ledger, {
+          code: caps.uncertain
+            ? "rule_condition_unknown"
+            : "rule_condition_failed",
+          message: `${candidate.rule.rule_id}: cap ${caps.state}`,
+          operation_id: operation.operation_id,
+          rule_id: candidate.rule.rule_id,
+        });
+        continue;
+      }
+      reserveCapProgress(
+        operationCapProgress,
+        planCapProgress,
+        candidate.rule.caps,
+        amountFromUnits(selectedUnits, scale),
+        Number(eligibleSpend(operation, candidate.rule)),
+      );
+    }
+    const component = rewardComponentFromRule(
+      candidate.rule,
+      operation,
+      selectedUnits,
+      context,
+      ledger.rewards.length,
+    );
+    component.calculation_trace = {
+      ...component.calculation_trace,
+      ...selectedTrace,
+      stacking_mode: candidate.rule.stacking.mode,
+    };
+    ledger.rewards.push(component);
+    operationRuleIds.push(candidate.rule.rule_id);
+    addAppliedRule(ledger, candidate.rule.rule_id);
+  }
+  return { operationRuleIds, valid };
 }
 
 function zeroLedger(): NativeLedger {
@@ -1162,6 +1551,7 @@ function processTransferOperation(
   openingLotIds: Set<string>,
   ledger: NativeLedger,
   movementIndex: { value: number },
+  planCapProgress: Record<string, CapProgressState>,
   visitedAssetIds: Set<string>,
 ): boolean {
   const selected = selectRulesForEvaluation(
@@ -1455,6 +1845,43 @@ function processTransferOperation(
   }
   visitedAssetIds.add(calculation.source_asset.asset_id);
   addAppliedRule(ledger, rule.rule_id);
+  if (
+    calculation.bonus_rule_ids === undefined ||
+    calculation.bonus_rule_ids.length === 0
+  )
+    return true;
+  const bonusResult = processRewardRules(
+    operation,
+    plan,
+    context,
+    ledger,
+    planCapProgress,
+    {
+      bonusRuleIds: calculation.bonus_rule_ids,
+      excludeTransferRules: true,
+    },
+  );
+  return bonusResult.valid;
+}
+
+/** A clickout records attribution only; it is never a principal ledger step. */
+function processPortalClickoutOperation(
+  operation: Operation,
+  ledger: NativeLedger,
+): boolean {
+  if (
+    operation.amount_jpy !== null ||
+    operation.asset_inputs.length > 0 ||
+    operation.output_requests.length > 0
+  ) {
+    addRejection(ledger, {
+      code: "invalid_plan",
+      message:
+        "portal clickout is non-financial and cannot consume or create assets",
+      operation_id: operation.operation_id,
+    });
+    return false;
+  }
   return true;
 }
 
@@ -1768,8 +2195,13 @@ export function evaluateNativePlan(
           openingLotIds,
           ledger,
           movementIndex,
+          planCapProgress,
           transferVisitedAssetIds,
         ) && valid;
+      continue;
+    }
+    if (operation.operation_type === "portal_clickout") {
+      valid = processPortalClickoutOperation(operation, ledger) && valid;
       continue;
     }
     if (
@@ -1800,7 +2232,6 @@ export function evaluateNativePlan(
       valid = false;
       continue;
     }
-    const operationCapProgress = clone(planCapProgress);
     let externalFundingForOperation = 0n;
     for (const input of operation.asset_inputs) {
       let consumed = true;
@@ -1906,329 +2337,15 @@ export function evaluateNativePlan(
       }
     }
 
-    const rules =
-      context.rules.length > 0
-        ? selectRulesForEvaluation(
-            context.rules,
-            operation.occurred_at,
-            context.replayKnowledgeAt,
-            context.ruleEvaluationPolicy,
-          )
-        : [];
-    const operationRuleIds: string[] = [];
-    const candidateRewards: Array<{
-      rule: RewardRule;
-      units: bigint;
-      trace: Record<string, unknown>;
-    }> = [];
-    const multiplierRules: RewardRule[] = [];
-    const suppressedRuleIds = new Set<string>();
-    const suppressedStackGroups = new Set<string>();
-    for (const exclusion of rules) {
-      const matchReason = ruleMatchesOperation(
-        exclusion,
-        operation,
-        plan,
-        context,
-      );
-      if (
-        matchReason ||
-        exclusion.effect?.decision !== "deny" ||
-        exclusion.effect.effect_target !== "reward_earning"
-      )
-        continue;
-      const targetRuleIds = exclusion.effect.target_rule_ids;
-      const targetStackGroups = exclusion.effect.target_stack_groups;
-      if (targetRuleIds.length === 0 && targetStackGroups.length === 0) {
-        addRejection(ledger, {
-          code: "rule_excluded",
-          message: `${exclusion.rule_id}: reward_earning exclusion has no supported target`,
-          operation_id: operation.operation_id,
-          rule_id: exclusion.rule_id,
-        });
-        valid = false;
-        continue;
-      }
-      for (const target of targetRuleIds) suppressedRuleIds.add(target);
-      for (const target of targetStackGroups) suppressedStackGroups.add(target);
-      addAppliedRule(ledger, exclusion.rule_id);
-    }
-    for (const rule of rules) {
-      const matchReason = ruleMatchesOperation(rule, operation, plan, context);
-      if (matchReason) {
-        if (
-          rule.rule_type === "payment_acceptance" ||
-          rule.rule_type === "exclusion"
-        )
-          addRejection(ledger, {
-            code: "rule_excluded",
-            message: `${rule.rule_id}: ${matchReason}`,
-            operation_id: operation.operation_id,
-            rule_id: rule.rule_id,
-          });
-        continue;
-      }
-      if (rule.effect?.decision === "deny") {
-        addRejection(ledger, {
-          code:
-            rule.effect.effect_target === "operation_eligibility"
-              ? "rule_excluded"
-              : "rule_condition_failed",
-          message: `${rule.rule_id}: ${rule.effect.reason_code}`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        if (rule.effect.effect_target === "operation_eligibility")
-          valid = false;
-        continue;
-      }
-      if (
-        suppressedRuleIds.has(rule.rule_id) ||
-        suppressedStackGroups.has(rule.stacking.stack_group)
-      ) {
-        addRejection(ledger, {
-          code: "rule_excluded",
-          message: `${rule.rule_id}: reward_earning exclusion suppressed this rule`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      if (
-        rule.rule_type === "payment_acceptance" ||
-        rule.rule_type === "exclusion"
-      ) {
-        addAppliedRule(ledger, rule.rule_id);
-        continue;
-      }
-      if (!rule.calculation) {
-        addRejection(ledger, {
-          code: "unsupported_calculation",
-          message: `${rule.rule_id}: financial rule has no calculation`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      if (rule.calculation.model === "transfer_ratio") {
-        addRejection(ledger, {
-          code: "unsupported_calculation",
-          message: `${rule.rule_id}: transfer ratios apply only to transfer/redemption operations`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      if (rule.calculation.rounding.aggregation_scope !== "per_operation") {
-        addRejection(ledger, {
-          code: "unsupported_aggregation_scope",
-          message: `${rule.rule_id}: ${rule.calculation.rounding.aggregation_scope} aggregation is outside Milestone 1a`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      if (!rule.output) {
-        addRejection(ledger, {
-          code: "rule_condition_failed",
-          message: `${rule.rule_id}: reward output is missing`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      if (rule.calculation.model === "multiplier") {
-        multiplierRules.push(rule);
-        continue;
-      }
-      try {
-        const calculation = calculateRewardUnits(rule, operation, context);
-        if (!calculation || calculation.units <= 0n) {
-          addAppliedRule(ledger, rule.rule_id);
-          continue;
-        }
-        candidateRewards.push({ rule, ...calculation });
-      } catch (error) {
-        addRejection(ledger, {
-          code: "rule_condition_failed",
-          message: error instanceof Error ? error.message : String(error),
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-      }
-    }
-    for (const rule of multiplierRules) {
-      const calculation = rule.calculation;
-      if (calculation?.model !== "multiplier" || !rule.output) continue;
-      const baseUnits = candidateRewards
-        .filter(
-          (candidate) =>
-            candidate.rule.stacking.stack_group ===
-            calculation.applies_to_stack_group,
-        )
-        .reduce((sum, candidate) => sum + candidate.units, 0n);
-      const result = evaluateMultiplierReward(calculation, {
-        base_units: baseUnits > 0n ? baseUnits : null,
-        asset_scale: rule.output.asset.scale,
-        output_mode: "increment",
-      });
-      if (result.status !== "applied" || !result.units || result.units <= 0n) {
-        addRejection(ledger, {
-          code: "rule_condition_failed",
-          message: `${rule.rule_id}: ${result.conditions.map((item) => item.code).join(",")}`,
-          operation_id: operation.operation_id,
-          rule_id: rule.rule_id,
-        });
-        continue;
-      }
-      candidateRewards.push({
-        rule,
-        units: result.units,
-        trace: {
-          eligible_basis: calculation.applies_to_stack_group,
-          rounding_stage: calculation.rounding.aggregation_scope,
-          calculation_model: "multiplier",
-          multiplier_milli: calculation.multiplier_milli,
-          base_units: result.base_units?.toString() ?? null,
-          multiplied_units: result.multiplied_units?.toString() ?? null,
-          increment_units: result.increment_units?.toString() ?? null,
-        },
-      });
-    }
-    const cappedCandidates = candidateRewards.flatMap((candidate) => {
-      if (candidate.rule.caps.length === 0) return [candidate];
-      const scale = candidate.rule.output?.asset.scale ?? 0;
-      const requestedAmount = amountFromUnits(candidate.units, scale);
-      const caps = evaluateCaps({
-        caps: candidate.rule.caps,
-        progress: operationCapProgress,
-        candidate: {
-          reward_units: requestedAmount,
-          eligible_spend_jpy: Number(eligibleSpend(operation, candidate.rule)),
-        },
-        operation_timestamp: operation.occurred_at,
-      });
-      const allowed = unitsFromAmount(
-        caps.allowed_reward_units.minimum,
-        scale,
-        "exact",
-      );
-      const trace = {
-        ...candidate.trace,
-        cap_ids: caps.cap_ids,
-        cap_state: caps.state,
-        cap_reward_minimum: caps.allowed_reward_units.minimum,
-        cap_reward_maximum: caps.allowed_reward_units.maximum,
-      };
-      if (allowed <= 0n) {
-        addRejection(ledger, {
-          code: caps.uncertain
-            ? "rule_condition_unknown"
-            : "rule_condition_failed",
-          message: `${candidate.rule.rule_id}: cap ${caps.state}`,
-          operation_id: operation.operation_id,
-          rule_id: candidate.rule.rule_id,
-        });
-        return [];
-      }
-      return [{ ...candidate, units: allowed, trace }];
-    });
-    const stacking = resolveStacking(
-      cappedCandidates.map((candidate) => ({
-        rule_id: candidate.rule.rule_id,
-        stack_group: candidate.rule.stacking.stack_group,
-        mode: candidate.rule.stacking.mode,
-        precedence: candidate.rule.stacking.precedence,
-        value: candidate.units,
-        reward_units: candidate.units,
-        base_reward_included:
-          candidate.rule.stacking.mode === "includes_base" ||
-          ((candidate.rule.calculation?.model === "percentage" ||
-            candidate.rule.calculation?.model === "points_per_unit") &&
-            candidate.rule.calculation.base_reward_included === true),
-        is_base_reward: candidate.rule.rule_type === "base_reward",
-        requires_rule_ids: candidate.rule.stacking.requires_rule_ids,
-        conflicts_with_rule_ids:
-          candidate.rule.stacking.conflicts_with_rule_ids,
-      })),
+    const rewardResult = processRewardRules(
+      operation,
+      plan,
+      context,
+      ledger,
+      planCapProgress,
     );
-    for (const rejection of stacking.rejected) {
-      if (!rejection.rule_id) continue;
-      addRejection(ledger, {
-        code: "rule_excluded",
-        message: `${rejection.rule_id}: stacking ${rejection.reason}`,
-        operation_id: operation.operation_id,
-        rule_id: rejection.rule_id,
-      });
-    }
-    const selectedIds = new Set(stacking.applied_rule_ids);
-    for (const candidate of cappedCandidates) {
-      if (!selectedIds.has(candidate.rule.rule_id)) continue;
-      let selectedUnits = candidate.units;
-      let selectedTrace = candidate.trace;
-      if (candidate.rule.caps.length > 0) {
-        const scale = candidate.rule.output?.asset.scale ?? 0;
-        const caps = evaluateCaps({
-          caps: candidate.rule.caps,
-          progress: operationCapProgress,
-          candidate: {
-            reward_units: amountFromUnits(candidate.units, scale),
-            eligible_spend_jpy: Number(
-              eligibleSpend(operation, candidate.rule),
-            ),
-          },
-          operation_timestamp: operation.occurred_at,
-        });
-        selectedUnits = unitsFromAmount(
-          caps.allowed_reward_units.minimum,
-          scale,
-          "exact",
-        );
-        selectedTrace = {
-          ...selectedTrace,
-          cap_ids: caps.cap_ids,
-          cap_state:
-            selectedTrace.cap_state === "partial" || caps.state === "partial"
-              ? "partial"
-              : caps.state,
-          cap_reward_minimum: caps.allowed_reward_units.minimum,
-          cap_reward_maximum: caps.allowed_reward_units.maximum,
-        };
-        if (selectedUnits <= 0n) {
-          addRejection(ledger, {
-            code: caps.uncertain
-              ? "rule_condition_unknown"
-              : "rule_condition_failed",
-            message: `${candidate.rule.rule_id}: cap ${caps.state}`,
-            operation_id: operation.operation_id,
-            rule_id: candidate.rule.rule_id,
-          });
-          continue;
-        }
-        reserveCapProgress(
-          operationCapProgress,
-          planCapProgress,
-          candidate.rule.caps,
-          amountFromUnits(selectedUnits, scale),
-          Number(eligibleSpend(operation, candidate.rule)),
-        );
-      }
-      const component = rewardComponentFromRule(
-        candidate.rule,
-        operation,
-        selectedUnits,
-        context,
-        ledger.rewards.length,
-      );
-      component.calculation_trace = {
-        ...component.calculation_trace,
-        ...selectedTrace,
-        stacking_mode: candidate.rule.stacking.mode,
-      };
-      ledger.rewards.push(component);
-      operationRuleIds.push(candidate.rule.rule_id);
-      addAppliedRule(ledger, candidate.rule.rule_id);
-    }
+    const operationRuleIds = rewardResult.operationRuleIds;
+    valid = rewardResult.valid && valid;
     for (const request of operation.output_requests) {
       const outputAdded = addOutput(
         operation,

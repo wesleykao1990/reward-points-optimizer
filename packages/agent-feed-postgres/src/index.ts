@@ -103,10 +103,16 @@ export {
 export type {
   P0ImplementationArtifactLoad,
   P0ImplementationArtifactProvenance,
+  P0ImplementationSourceDescriptor,
 } from "./implementation-rule-facts.js";
 export {
   loadCurrentP0ImplementationArtifacts,
+  MAX_P0_IMPLEMENTATION_RULE_FACT_ROWS,
+  MAX_P0_ROUTE_GRAPH_FACT_ROWS,
+  P0_IMPLEMENTATION_RULE_FACTS_FUNCTION,
   P0_IMPLEMENTATION_RULE_FACTS_QUERY,
+  P0_ROUTE_GRAPH_FACTS_FUNCTION,
+  P0_ROUTE_GRAPH_FACTS_QUERY,
 } from "./implementation-rule-facts.js";
 export type {
   NanacoCreditChargeRouteRecord,

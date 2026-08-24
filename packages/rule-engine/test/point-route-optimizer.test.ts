@@ -209,6 +209,84 @@ describe("point route optimizer", () => {
     });
   });
 
+  it("treats valid_to as an exclusive date boundary", () => {
+    const endingToday = edge("p0.direct", SITE, MILE, "1000", "333", {
+      valid_to: "2026-08-23",
+    });
+    const result = optimizePointRoute(request({ edges: [endingToday] }));
+    expect(result.winner).toBeNull();
+    expect(result.skipped).toContainEqual({
+      rule_id: "p0.direct",
+      reason_code: "closes_before_hop_is_reached",
+    });
+  });
+
+  it("requires confirmed structured rule prerequisites", () => {
+    const direct = edge("p0.direct", SITE, MILE, "1000", "333", {
+      requires_rule_ids: ["prerequisite.direct-entry"],
+    });
+    const blocked = optimizePointRoute(request({ edges: [direct] }));
+    expect(blocked.winner).toBeNull();
+    expect(blocked.skipped).toContainEqual({
+      rule_id: "p0.direct",
+      reason_code: "prerequisite_confirmation_required",
+    });
+
+    const confirmed = optimizePointRoute(
+      request({
+        edges: [direct],
+        confirmed_prerequisite_ids: ["prerequisite.direct-entry"],
+      }),
+    );
+    expect(confirmed.winner?.target_amount).toBe("3330");
+  });
+
+  it("does not require duplicate rule confirmation for structured prerequisites", () => {
+    const direct = edge("p0.direct", SITE, MILE, "1000", "333", {
+      required_conditions_ja: ["対象カードを保有していること"],
+      requires_rule_ids: ["prerequisite.direct-entry"],
+    });
+    const confirmed = optimizePointRoute(
+      request({
+        edges: [direct],
+        confirmed_prerequisite_ids: ["prerequisite.direct-entry"],
+      }),
+    );
+    expect(confirmed.winner?.target_amount).toBe("3330");
+    expect(confirmed.skipped).toEqual([]);
+  });
+
+  it("rejects unbounded or non-canonical confirmation identifiers", () => {
+    expect(() =>
+      optimizePointRoute(
+        request({ confirmed_prerequisite_ids: ["x".repeat(1_000_000)] }),
+      ),
+    ).toThrow("point_route_prerequisite_state_invalid");
+    expect(() =>
+      optimizePointRoute(request({ confirmed_rule_ids: ["not_valid"] })),
+    ).toThrow("point_route_state_invalid");
+  });
+
+  it("rejects an over-cap rolling request instead of truncating it", () => {
+    const rolling = edge("p0.direct", SITE, MILE, "1", "1", {
+      maximum_source_units_per_period: "100000",
+      maximum_period: "rolling_30_day",
+      partial_consumption: false,
+    });
+    const result = optimizePointRoute(
+      request({
+        balances: [{ asset: SITE, amount: "20000", expires_at: null }],
+        edges: [rolling],
+        period_source_used_by_rule: { "p0.direct": "90000" },
+      }),
+    );
+    expect(result.winner).toBeNull();
+    expect(result.skipped).toContainEqual({
+      rule_id: "p0.direct",
+      reason_code: "transfer_period_maximum_exceeded",
+    });
+  });
+
   it("keeps a directly-held-units rule out of every later hop", () => {
     const directOnly = edge("p0.hop-c", TRANSIT, MILE, "1000", "700", {
       requires_direct_source: true,

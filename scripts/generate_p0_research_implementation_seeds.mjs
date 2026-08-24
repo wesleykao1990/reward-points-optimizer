@@ -30,6 +30,13 @@ const jobs = [
       "fixtures/m3/provisional/p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
     seed: "db/seeds/008_p0_merchant_transit_regulatory_implementation.sql",
   },
+  {
+    research:
+      "fixtures/m3/agent-feed/p0-complex-route-benchmark.research.v0.1.json",
+    implementation:
+      "fixtures/m3/provisional/p0-complex-route-benchmark.implementation.v0.7.json",
+    seed: "db/seeds/012_p0_complex_route_benchmark_implementation.sql",
+  },
 ];
 
 function sqlText(value) {
@@ -87,6 +94,8 @@ for (const job of rendered) {
       "p0-coverage-index.v0.5.json",
     "p0-merchant-transit-regulatory-rules.implementation.v0.6.json":
       "p0-coverage-index.v0.6.json",
+    "p0-complex-route-benchmark.implementation.v0.7.json":
+      "p0-coverage-index.v0.7.json",
   };
   const coverageName = coverageNames[job.implementation.split("/").pop()];
   if (!coverageName) throw new Error(`coverage name missing for ${job.implementation}`);

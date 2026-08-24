@@ -4,6 +4,7 @@ import {
   makeDirectPurchasePlan,
   makeEngineContext,
   makeOpeningWalletLot,
+  makeOperation,
   makePercentageRule,
   makePointsPerUnitRule,
   makeRewardRule,
@@ -850,6 +851,212 @@ describe("Milestone 1B integrated engine adapters", () => {
         testCase.name,
       ).toBe(false);
     }
+  });
+
+  it("applies separately bound transfer bonuses after the principal transfer", () => {
+    const fixture = transferFixture();
+    const calculation = fixture.rule.calculation;
+    if (calculation?.model !== "transfer_ratio")
+      throw new Error("transfer fixture calculation missing");
+    calculation.source_units = "2";
+    calculation.destination_units = "1";
+    calculation.maximum_source_units_per_request = "20000";
+
+    fixture.opening.quantity.amount = "12000";
+    transferInput(fixture, 0).quantity.amount = "12000";
+    transferOutput(fixture).requested_amount = "6000";
+
+    const pending = {
+      status: "pending" as const,
+      expected_posting_from: "2026-08-18T12:00:00.000Z",
+      expected_posting_to: "2026-08-20T12:00:00.000Z",
+      posted_at: null,
+    };
+    const jalBonus = makeRewardRule({
+      ruleId: "rr_m1b_transfer_bonus_jal",
+      operationTypes: ["point_transfer"],
+      channel: "transfer",
+      ruleType: "campaign_bonus",
+      calculation: {
+        model: "fixed",
+        reward_units: "1200",
+        rounding: {
+          aggregation_scope: "per_operation",
+          reward_rounding_mode: "exact",
+        },
+      },
+      outputAsset: fixture.destinationAsset,
+    });
+    const sourceRebate = makeRewardRule({
+      ruleId: "rr_m1b_transfer_rebate_source",
+      operationTypes: ["point_transfer"],
+      channel: "transfer",
+      ruleType: "campaign_bonus",
+      calculation: {
+        model: "fixed",
+        reward_units: "4500",
+        rounding: {
+          aggregation_scope: "per_operation",
+          reward_rounding_mode: "exact",
+        },
+      },
+      outputAsset: fixture.sourceAsset,
+    });
+    for (const rule of [jalBonus, sourceRebate]) {
+      rule.scope.merchant_ids = [];
+      if (!rule.output) throw new Error("transfer bonus output missing");
+      rule.output.settlement = pending;
+    }
+    calculation.bonus_rule_ids = [jalBonus.rule_id, sourceRebate.rule_id];
+
+    const result = evaluateNativePlan(
+      fixture.plan,
+      makeEngineContext("1", {
+        rules: [fixture.rule, jalBonus, sourceRebate],
+        opening_asset_lots: [fixture.opening, fixture.feeOpening],
+      }),
+    );
+
+    expect(result.eligible).toBe(true);
+    expect(result.asset_movements.map((item) => item.movement_role)).toEqual([
+      "transfer",
+      "fee",
+      "transfer",
+    ]);
+    expect(result.ending_asset_lots).toHaveLength(1);
+    expect(result.ending_asset_lots[0]?.quantity).toEqual({
+      asset: fixture.destinationAsset,
+      amount: "6000",
+    });
+    expect(
+      result.reward_components.map((component) => ({
+        rule_id: component.rule_id,
+        amount: component.quantity.amount,
+        asset_id: component.quantity.asset.asset_id,
+        settlement: component.settlement.status,
+      })),
+    ).toEqual([
+      {
+        rule_id: jalBonus.rule_id,
+        amount: "1200",
+        asset_id: fixture.destinationAsset.asset_id,
+        settlement: "pending",
+      },
+      {
+        rule_id: sourceRebate.rule_id,
+        amount: "4500",
+        asset_id: fixture.sourceAsset.asset_id,
+        settlement: "pending",
+      },
+    ]);
+  });
+
+  it("does not apply unbound reward rules to an ordinary transfer", () => {
+    const fixture = transferFixture();
+    const unrelated = makeRewardRule({
+      ruleId: "rr_m1b_unbound_transfer_bonus",
+      operationTypes: ["point_transfer"],
+      channel: "transfer",
+      ruleType: "campaign_bonus",
+      calculation: {
+        model: "fixed",
+        reward_units: "999",
+        rounding: {
+          aggregation_scope: "per_operation",
+          reward_rounding_mode: "exact",
+        },
+      },
+      outputAsset: fixture.destinationAsset,
+    });
+    unrelated.scope.merchant_ids = [];
+
+    const result = evaluateNativePlan(
+      fixture.plan,
+      makeEngineContext("1", {
+        rules: [fixture.rule, unrelated],
+        opening_asset_lots: [fixture.opening, fixture.feeOpening],
+      }),
+    );
+
+    expect(result.eligible).toBe(true);
+    expect(result.reward_components).toHaveLength(0);
+    expect(result.applied_rule_ids).not.toContain(unrelated.rule_id);
+  });
+
+  it("binds a portal reward only through a prior attribution dependency", () => {
+    const plan = makeDirectPurchasePlan(30_000);
+    const purchase = plan.operations[0];
+    if (!purchase) throw new Error("purchase operation missing");
+    purchase.sequence = 2;
+    purchase.occurred_at = "2026-08-17T12:01:00+09:00";
+    purchase.channel = "online";
+    purchase.interface = "web_checkout";
+    purchase.portal_id = "portal.synthetic";
+    const portal = makeOperation({
+      operation_id: "op_synthetic_portal_clickout",
+      sequence: 1,
+      occurred_at: "2026-08-17T12:00:00+09:00",
+      operation_type: "portal_clickout",
+      merchant_id: "merchant.synthetic",
+      portal_id: "portal.synthetic",
+      channel: "portal_clickout",
+      interface: "portal_redirect",
+      amount_jpy: null,
+      asset_inputs: [],
+      output_requests: [],
+      line_items: [],
+    });
+    plan.operations.unshift(portal);
+    plan.dependencies = [
+      {
+        from_operation_id: portal.operation_id,
+        to_operation_id: purchase.operation_id,
+        dependency_type: "attribution",
+      },
+    ];
+
+    const rule = makePointsPerUnitRule(
+      "rr_m1b_portal_jal",
+      300,
+      "1",
+      normalPointAsset,
+    );
+    rule.scope.channels = ["online"];
+    rule.eligibility.operation_match.must_present_before_payment = true;
+    if (!rule.output) throw new Error("portal reward output missing");
+    rule.output.settlement = {
+      status: "pending",
+      expected_posting_from: "2026-08-18T12:01:00.000Z",
+      expected_posting_to: "2026-08-20T12:01:00.000Z",
+      posted_at: null,
+    };
+
+    const context = makeEngineContext("1", { rules: [rule] });
+    const result = evaluateNativePlan(plan, context);
+    expect(result.eligible).toBe(true);
+    expect(result.asset_movements).toHaveLength(1);
+    expect(result.reward_components).toHaveLength(1);
+    expect(result.reward_components[0]).toMatchObject({
+      operation_id: purchase.operation_id,
+      rule_id: rule.rule_id,
+      quantity: { amount: "100", asset: normalPointAsset },
+      settlement: { status: "pending" },
+    });
+
+    const broken = structuredClone(plan);
+    broken.dependencies = [];
+    const brokenResult = evaluateNativePlan(broken, context);
+    expect(brokenResult.eligible).toBe(true);
+    expect(brokenResult.asset_movements).toHaveLength(1);
+    expect(brokenResult.reward_components).toHaveLength(0);
+
+    const wrongPortal = structuredClone(plan);
+    const wrongPortalClickout = wrongPortal.operations[0];
+    if (!wrongPortalClickout) throw new Error("portal operation missing");
+    wrongPortalClickout.portal_id = "portal.unrelated";
+    const wrongPortalResult = evaluateNativePlan(wrongPortal, context);
+    expect(wrongPortalResult.eligible).toBe(true);
+    expect(wrongPortalResult.reward_components).toHaveLength(0);
   });
 
   it("returns refund principal and emits a proportional reward clawback", () => {

@@ -50,6 +50,30 @@ function coverageSnapshot(): JsonRecord {
   ) as JsonRecord;
 }
 
+function implementationSnapshotNamed(name: string): JsonRecord {
+  return JSON.parse(
+    readFileSync(
+      new URL(
+        `../../../fixtures/m3/provisional/${name}.implementation.v0.7.json`,
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ) as JsonRecord;
+}
+
+function coverageSnapshotNamed(version: string): JsonRecord {
+  return JSON.parse(
+    readFileSync(
+      new URL(
+        `../../../fixtures/m3/provisional/${version}.json`,
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ) as JsonRecord;
+}
+
 function artifact(name: string): JsonRecord {
   return JSON.parse(
     readFileSync(
@@ -333,6 +357,7 @@ describe("generic P0 research implementation ledger", () => {
       "p0-point-rules-b",
       "p0-wallet-card-rules",
       "p0-merchant-transit-regulatory-rules",
+      "p0-complex-route-benchmark",
     ]) {
       const input = artifact(name);
       const first = compileP0ResearchImplementation(input);
@@ -480,6 +505,91 @@ describe("generic P0 research implementation ledger", () => {
           "claim.point.waon.campaign.charge-period.001",
       )?.reason,
     ).toBe("non_calculable_fact");
+  });
+
+  it("compiles the complex benchmark descriptor without dropping optional envelope fields", () => {
+    const input = artifact("p0-complex-route-benchmark");
+    const result = compileP0ResearchImplementation(input);
+
+    expect(result.ok).toBe(true);
+    expect(result.entries).toHaveLength(18);
+    expect(result.artifact?.version).toBe(
+      "p0-complex-route-benchmark.implementation.v0.7",
+    );
+    expect(result.artifact?.parent_claim_count).toBe(18);
+    expect(result.artifact?.derived_rule_count).toBe(0);
+    expect(result.derived_rules).toHaveLength(0);
+    expect(result.issues).toHaveLength(18);
+    expect(result.coverage?.version).toBe("p0-coverage-index.v0.7");
+    expect(result.coverage?.entries).toHaveLength(13);
+    expect(result.artifact?.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          parent_claim_id: "claim.route.revolut.ana-pay.001",
+          value: expect.objectContaining({ transfer: expect.any(Object) }),
+          disposition: "catalogue_fact",
+        }),
+        expect.objectContaining({
+          parent_claim_id: "claim.campaign.moppy-jal.principal.001",
+          value: expect.objectContaining({ campaign: expect.any(Object) }),
+          disposition: "catalogue_fact",
+        }),
+      ]),
+    );
+    expect(result.artifact).toEqual(
+      implementationSnapshotNamed("p0-complex-route-benchmark"),
+    );
+    expect(result.coverage).toEqual(
+      coverageSnapshotNamed("p0-coverage-index.v0.7"),
+    );
+  });
+
+  it("validates complex optional fields only for their descriptor", () => {
+    const invalidDate = artifact("p0-complex-route-benchmark");
+    (
+      (invalidDate.metadata as JsonRecord).bounded_run as JsonRecord
+    ).retrieval_cutoff = "2026-02-30";
+    const invalidDateResult = compileP0ResearchImplementation(invalidDate);
+    expect(invalidDateResult.ok).toBe(false);
+    expect(invalidDateResult.issues).toContainEqual(
+      expect.objectContaining({
+        code: "research_shape_invalid",
+        path: "/metadata/bounded_run/retrieval_cutoff",
+      }),
+    );
+
+    const duplicateFields = artifact("p0-complex-route-benchmark");
+    (duplicateFields.schema as JsonRecord).structured_transfer_required_fields =
+      ["route_id", "route_id"];
+    const duplicateFieldsResult =
+      compileP0ResearchImplementation(duplicateFields);
+    expect(duplicateFieldsResult.ok).toBe(false);
+    expect(duplicateFieldsResult.issues).toContainEqual(
+      expect.objectContaining({
+        code: "research_shape_invalid",
+        path: "/schema/structured_transfer_required_fields",
+      }),
+    );
+
+    const legacy = cloneArtifact();
+    (legacy.schema as JsonRecord).structured_transfer_required_fields = [
+      "route_id",
+    ];
+    (
+      (legacy.metadata as JsonRecord).bounded_run as JsonRecord
+    ).retrieval_cutoff = "2026-08-24";
+    const legacyResult = compileP0ResearchImplementation(legacy);
+    expect(legacyResult.ok).toBe(false);
+    expect(legacyResult.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "/schema/structured_transfer_required_fields",
+        }),
+        expect.objectContaining({
+          path: "/metadata/bounded_run/retrieval_cutoff",
+        }),
+      ]),
+    );
   });
 
   it("rejects a source-role mismatch after normalization", () => {

@@ -4,7 +4,7 @@
   "research_cutoff": "2026-08-20",
   "status": "p0_atomic_agent_feed_adapter_with_exact_nanaco_candidate_unpublished",
   "counts": {
-    "trusted_sources": 176,
+    "trusted_sources": 190,
     "source_access_observations": 5,
     "seed_scenario_blueprints": 10,
     "planned_scenarios": 100,

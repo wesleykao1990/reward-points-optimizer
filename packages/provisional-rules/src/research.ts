@@ -19,6 +19,10 @@ export interface P0ResearchImplementationDescriptor {
   readonly research_schema_id: string;
   readonly implementation_version: string;
   readonly coverage_index_version: string;
+  /** Descriptor-scoped optional keys permitted in the research schema. */
+  readonly optional_schema_keys?: readonly string[];
+  /** Descriptor-scoped optional keys permitted in bounded_run metadata. */
+  readonly optional_bounded_run_keys?: readonly string[];
 }
 
 export const P0_RESEARCH_IMPLEMENTATION_DESCRIPTORS = Object.freeze([
@@ -50,6 +54,15 @@ export const P0_RESEARCH_IMPLEMENTATION_DESCRIPTORS = Object.freeze([
     implementation_version:
       "p0-merchant-transit-regulatory-rules.implementation.v0.6",
     coverage_index_version: "p0-coverage-index.v0.6",
+  }),
+  Object.freeze({
+    research_artifact_id: "p0-complex-route-benchmark.research.v0.1",
+    research_artifact_type: "p0_complex_route_benchmark_research",
+    research_schema_id: "p0-complex-route-benchmark-research-v0.1",
+    implementation_version: "p0-complex-route-benchmark.implementation.v0.7",
+    coverage_index_version: "p0-coverage-index.v0.7",
+    optional_schema_keys: ["structured_transfer_required_fields"],
+    optional_bounded_run_keys: ["retrieval_cutoff"],
   }),
 ] as const);
 
@@ -166,6 +179,9 @@ const METADATA_ROLE_KEYS = Object.freeze([
   "regulatory_roles",
 ] as const);
 
+const OPTIONAL_SCHEMA_KEYS = new Set(["structured_transfer_required_fields"]);
+const OPTIONAL_BOUNDED_RUN_KEYS = new Set(["retrieval_cutoff"]);
+
 function descriptorForArtifact(
   artifactId: string,
   requested?: P0ResearchImplementationDescriptor,
@@ -220,7 +236,28 @@ function descriptorValid(
     typeof descriptor.coverage_index_version === "string" &&
     /^p0-coverage-index\.v[0-9]+(?:\.[0-9]+)*$/u.test(
       descriptor.coverage_index_version,
+    ) &&
+    descriptorKeyListValid(
+      descriptor.optional_schema_keys,
+      OPTIONAL_SCHEMA_KEYS,
+    ) &&
+    descriptorKeyListValid(
+      descriptor.optional_bounded_run_keys,
+      OPTIONAL_BOUNDED_RUN_KEYS,
     )
+  );
+}
+
+function descriptorKeyListValid(
+  value: readonly string[] | undefined,
+  allowed: ReadonlySet<string>,
+): boolean {
+  return (
+    value === undefined ||
+    (Array.isArray(value) &&
+      value.length > 0 &&
+      new Set(value).size === value.length &&
+      value.every((item) => typeof item === "string" && allowed.has(item)))
   );
 }
 
@@ -392,9 +429,12 @@ function exactKeys(
   expected: ReadonlySet<string>,
   path: string,
   issues: ResearchImplementationIssue[],
+  optional: ReadonlySet<string> = new Set(),
 ): void {
+  const allowed =
+    optional.size === 0 ? expected : new Set([...expected, ...optional]);
   for (const key of Object.keys(value)) {
-    if (!expected.has(key))
+    if (!allowed.has(key))
       issues.push(
         issue("research_shape_invalid", `${path}/${key}`, "unknown field"),
       );
@@ -412,6 +452,22 @@ function strings(value: unknown): value is readonly string[] {
 function nonEmptyStrings(value: unknown): value is readonly string[] {
   return (
     strings(value) && value.length > 0 && value.every((item) => item.length > 0)
+  );
+}
+
+function isCanonicalDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(value))
+    return false;
+  const [yearText, monthText, dayText] = value.split("-");
+  if (!yearText || !monthText || !dayText) return false;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
   );
 }
 
@@ -611,7 +667,25 @@ function validateArtifact(
     return { normalized: null, descriptor, issues: sortedIssues(issues) };
 
   const schema = root.schema as UnknownRecord;
-  exactKeys(schema, SCHEMA_KEYS, "/schema", issues);
+  exactKeys(
+    schema,
+    SCHEMA_KEYS,
+    "/schema",
+    issues,
+    new Set(descriptor.optional_schema_keys ?? []),
+  );
+  if (
+    descriptor.optional_schema_keys?.includes(
+      "structured_transfer_required_fields",
+    ) &&
+    Object.hasOwn(schema, "structured_transfer_required_fields") &&
+    !nonEmptyStrings(schema.structured_transfer_required_fields)
+  )
+    addShapeIssue(
+      issues,
+      "/schema/structured_transfer_required_fields",
+      "structured_transfer_required_fields must be a unique non-empty string array",
+    );
   if (schema.id !== descriptor.research_schema_id)
     addShapeIssue(issues, "/schema/id", "unsupported P0 research schema id");
   const metadata = root.metadata as UnknownRecord;
@@ -665,13 +739,25 @@ function validateArtifact(
       "/metadata/bounded_run",
       "bounded_run must be an object",
     );
-  else
+  else {
     exactKeys(
       metadata.bounded_run,
       BOUNDED_RUN_KEYS,
       "/metadata/bounded_run",
       issues,
+      new Set(descriptor.optional_bounded_run_keys ?? []),
     );
+    if (
+      descriptor.optional_bounded_run_keys?.includes("retrieval_cutoff") &&
+      Object.hasOwn(metadata.bounded_run, "retrieval_cutoff") &&
+      !isCanonicalDate(metadata.bounded_run.retrieval_cutoff)
+    )
+      addShapeIssue(
+        issues,
+        "/metadata/bounded_run/retrieval_cutoff",
+        "retrieval_cutoff must be a canonical YYYY-MM-DD date",
+      );
+  }
   if (isRecord(metadata.bounded_run)) {
     for (const key of [
       "started_at",

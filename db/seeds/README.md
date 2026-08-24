@@ -54,3 +54,10 @@ node scripts/generate_p0_research_implementation_seeds.mjs --check
 Apply the numbered seeds only after all numbered migrations. The database
 integration runner applies every numbered seed automatically to a confirmed
 disposable database before running the SQL tests.
+
+`012_p0_complex_route_benchmark_implementation.sql` is generated from the
+bounded complex-route benchmark implementation and coverage snapshots. It
+persists exactly 18 source-bound catalogue facts, including the explicit
+Revolut-to-ANA Pay cap and research-only campaign/exclusion facts, with zero
+derived rules or canonical publication rows. Regenerate and check it with the
+same descriptor-driven command above.

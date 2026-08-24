@@ -30,6 +30,7 @@ const RESEARCH_FILES = Object.freeze([
   "p0-point-rules-b.research.v0.1.json",
   "p0-wallet-card-rules.research.v0.1.json",
   "p0-merchant-transit-regulatory-rules.research.v0.1.json",
+  "p0-complex-route-benchmark.research.v0.1.json",
 ] as const);
 
 export const MAX_POINT_SPEND_BODY_BYTES = 4_096;
@@ -61,6 +62,10 @@ export interface PointSpendBrowserInput {
   readonly objective: PointSpendObjective;
   readonly effective_at: string;
   readonly confirmed_rule_ids: readonly string[];
+  /** Host-confirmed product/account prerequisites used by structured edges. */
+  readonly confirmed_prerequisite_ids: readonly string[];
+  /** Source units already used in the provider's declared cap window. */
+  readonly period_source_used_by_rule: Readonly<Record<string, string>>;
   /**
    * What one unit of the destination is worth to this person.
    *
@@ -165,6 +170,7 @@ export interface PointSpendBrowserRoute {
 export type PointSpendNoRouteReason =
   | "source_target_not_covered"
   | "condition_confirmation_required"
+  | "period_usage_required_or_exceeded"
   | "balance_below_minimum"
   | "outside_validity_window"
   | "route_unavailable";
@@ -198,7 +204,7 @@ export interface PointSpendBrowserResult {
 
 type JsonRecord = Record<string, unknown>;
 
-const REQUEST_KEYS = Object.freeze([
+const REQUEST_REQUIRED_KEYS = Object.freeze([
   "source_asset_id",
   "target_asset_id",
   "balance",
@@ -208,15 +214,26 @@ const REQUEST_KEYS = Object.freeze([
   "unit_value_jpy",
 ] as const);
 
+const REQUEST_OPTIONAL_KEYS = Object.freeze([
+  "confirmed_prerequisite_ids",
+  "period_source_used_by_rule",
+] as const);
+
+const POINT_ROUTE_ID = /^[a-z0-9][a-z0-9.-]{1,119}$/u;
+
 function parseRecord(value: unknown): JsonRecord {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new TypeError("point_spend_request_invalid");
   const descriptors = Object.getOwnPropertyDescriptors(value);
   const keys = Object.keys(descriptors).sort();
-  const expected = [...REQUEST_KEYS].sort();
+  const required = new Set<string>(REQUEST_REQUIRED_KEYS);
+  const allowed = new Set<string>([
+    ...REQUEST_REQUIRED_KEYS,
+    ...REQUEST_OPTIONAL_KEYS,
+  ]);
   if (
-    keys.length !== expected.length ||
-    keys.some((key, index) => key !== expected[index]) ||
+    keys.some((key) => !allowed.has(key)) ||
+    [...required].some((key) => !keys.includes(key)) ||
     Object.getOwnPropertySymbols(value).length > 0
   )
     throw new TypeError("point_spend_request_invalid");
@@ -234,6 +251,42 @@ function parseRecord(value: unknown): JsonRecord {
   return output;
 }
 
+function parseConfirmationIds(value: unknown): readonly string[] {
+  if (
+    !Array.isArray(value) ||
+    value.length > 64 ||
+    new Set(value).size !== value.length ||
+    value.some((item) => typeof item !== "string" || !POINT_ROUTE_ID.test(item))
+  )
+    throw new TypeError("point_spend_request_invalid");
+  return Object.freeze([...value].sort());
+}
+
+function parsePeriodUsage(value: unknown): Readonly<Record<string, string>> {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new TypeError("point_spend_request_invalid");
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Object.keys(descriptors).sort();
+  if (keys.length > 64 || Object.getOwnPropertySymbols(value).length > 0)
+    throw new TypeError("point_spend_request_invalid");
+  const output = Object.create(null) as Record<string, string>;
+  for (const key of keys) {
+    const descriptor = descriptors[key];
+    if (
+      !POINT_ROUTE_ID.test(key) ||
+      !descriptor ||
+      descriptor.enumerable !== true ||
+      !("value" in descriptor) ||
+      !Number.isSafeInteger(descriptor.value) ||
+      Number(descriptor.value) < 0 ||
+      Number(descriptor.value) > 1_000_000_000
+    )
+      throw new TypeError("point_spend_request_invalid");
+    output[key] = String(descriptor.value);
+  }
+  return Object.freeze(output);
+}
+
 export function parsePointSpendBrowserInput(
   value: unknown,
 ): PointSpendBrowserInput {
@@ -244,6 +297,8 @@ export function parsePointSpendBrowserInput(
   const objective = record.objective;
   const effectiveAt = record.effective_at;
   const confirmed = record.confirmed_rule_ids;
+  const confirmedPrerequisites = record.confirmed_prerequisite_ids ?? [];
+  const periodUsage = record.period_source_used_by_rule ?? {};
   const unitValue = record.unit_value_jpy;
   if (
     typeof source !== "string" ||
@@ -263,12 +318,7 @@ export function parsePointSpendBrowserInput(
     !POINT_SPEND_OBJECTIVES.includes(objective as PointSpendObjective) ||
     typeof effectiveAt !== "string" ||
     !isStrictCanonicalDateTime(effectiveAt) ||
-    !Array.isArray(confirmed) ||
-    confirmed.length > 32 ||
-    !confirmed.every(
-      (item) =>
-        typeof item === "string" && /^p0\.[a-z0-9.-]{2,100}$/u.test(item),
-    )
+    !Array.isArray(confirmed)
   )
     throw new TypeError("point_spend_request_invalid");
   return {
@@ -277,7 +327,9 @@ export function parsePointSpendBrowserInput(
     balance: Number(balance),
     objective: objective as PointSpendObjective,
     effective_at: effectiveAt,
-    confirmed_rule_ids: Object.freeze([...confirmed].sort()),
+    confirmed_rule_ids: parseConfirmationIds(confirmed),
+    confirmed_prerequisite_ids: parseConfirmationIds(confirmedPrerequisites),
+    period_source_used_by_rule: parsePeriodUsage(periodUsage),
     // Rounded to sen so a long float cannot perturb the canonical hash.
     unit_value_jpy:
       unitValue === null ? null : Math.round(Number(unitValue) * 100) / 100,
@@ -873,6 +925,12 @@ function edge(rule: P0SpendRule): PointRouteEdge {
     valid_from: rule.valid_from,
     valid_to: rule.valid_to,
     required_conditions_ja: rule.required_conditions_ja,
+    ...(rule.requires_rule_ids === undefined
+      ? {}
+      : { requires_rule_ids: rule.requires_rule_ids }),
+    ...(rule.partial_consumption === undefined
+      ? {}
+      : { partial_consumption: rule.partial_consumption }),
     requires_direct_source: rule.requires_direct_source,
   };
 }
@@ -1186,13 +1244,27 @@ export async function listPointSpendBrowserOptions(
     })),
     wallet_catalogue: p0WalletCatalogue(artifacts, ruleSet),
     conditional_rules: ruleSet.rules
-      .filter((rule) => rule.required_conditions_ja.length > 0)
+      .filter(
+        (rule) =>
+          rule.required_conditions_ja.length > 0 ||
+          (rule.requires_rule_ids?.length ?? 0) > 0 ||
+          rule.maximum_source_units_per_period !== null,
+      )
       .map((rule) => ({
         rule_id: rule.rule_id,
         label: rule.label_ja,
         source_asset_id: rule.source_asset.asset_id,
         destination_asset_id: rule.destination_asset.asset_id,
         conditions: rule.required_conditions_ja,
+        prerequisite_ids: rule.requires_rule_ids ?? [],
+        period_cap:
+          rule.maximum_source_units_per_period === null
+            ? null
+            : {
+                maximum_source_units: rule.maximum_source_units_per_period,
+                period: rule.maximum_period,
+                partial_consumption: rule.partial_consumption ?? true,
+              },
       })),
   };
 }
@@ -1467,7 +1539,8 @@ function noRouteInfo(
       .filter(
         (item) =>
           relevantRuleIds.has(item.rule_id) &&
-          item.reason_code === "condition_confirmation_required",
+          (item.reason_code === "condition_confirmation_required" ||
+            item.reason_code === "prerequisite_confirmation_required"),
       )
       .map((item) => item.rule_id),
   );
@@ -1475,7 +1548,11 @@ function noRouteInfo(
     ...new Set(
       ruleSet.rules
         .filter((rule) => conditionRuleIds.has(rule.rule_id))
-        .flatMap((rule) => rule.required_conditions_ja),
+        .flatMap((rule) =>
+          rule.required_conditions_ja.length > 0
+            ? rule.required_conditions_ja
+            : [`${rule.label_ja}に必要なカード・会員資格を確認してください`],
+        ),
     ),
   ].sort((left, right) => left.localeCompare(right, "ja"));
   if (conditions.length > 0)
@@ -1507,6 +1584,16 @@ function noRouteInfo(
       details: { minimum_source_amount: null, conditions: [] },
     };
 
+  if (
+    skippedByReason.has("transfer_period_usage_unknown") ||
+    skippedByReason.has("transfer_period_maximum_exceeded") ||
+    skippedByReason.has("period_cap_exhausted")
+  )
+    return {
+      reason: "period_usage_required_or_exceeded",
+      details: { minimum_source_amount: null, conditions: [] },
+    };
+
   return {
     reason: "route_unavailable",
     details: { minimum_source_amount: null, conditions: [] },
@@ -1531,6 +1618,8 @@ function noRouteMessage(
       : `現在の残高では交換条件を満たしません。最低${details.minimum_source_amount}単位から交換できます。`;
   if (reason === "outside_validity_window")
     return "指定した日時に利用できる交換条件を確認できません。";
+  if (reason === "period_usage_required_or_exceeded")
+    return "対象期間の利用済み金額を確認してください。上限を超える交換は実行できません。";
   return "この残高・交換先で計算できるルートを確認できませんでした。";
 }
 
@@ -1570,10 +1659,9 @@ export async function recommendPointSpend(
     ],
     edges: ruleSet.rules.map(edge),
     confirmed_rule_ids: input.confirmed_rule_ids,
-    // No stored per-period usage exists in this lane, so a capped rule is
-    // reported as needing that figure rather than assumed to be unused.
-    period_source_used_by_rule: {},
-    max_steps: 4,
+    confirmed_prerequisite_ids: input.confirmed_prerequisite_ids,
+    period_source_used_by_rule: input.period_source_used_by_rule,
+    max_steps: 6,
     max_legs: 3,
     valuation,
   });

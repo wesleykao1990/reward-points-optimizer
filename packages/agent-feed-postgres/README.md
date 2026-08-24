@@ -80,3 +80,11 @@ structured `merchant_id`, payment-family, and boolean `accepted` attributes.
 Recommendation-time reads do not require an evidence or manual-approval query.
 Active records and family enumeration remain correction-, quarantine-, and
 applicability-sensitive inside PostgreSQL.
+
+`loadCurrentP0ImplementationArtifacts(target, effectiveAt)` reads the additive
+private `p0_route_graph_facts_at` projection. It rebuilds each artifact's
+descriptor-first `sources` directory from the exact stored source identity,
+deduplicating only identical descriptors and preserving claim exclusions.
+Malformed, mixed-snapshot, missing, or conflicting source identity fails the
+whole load; no source or evidence URL is emitted as a browser DTO by this
+adapter.

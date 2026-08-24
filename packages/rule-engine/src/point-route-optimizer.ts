@@ -60,7 +60,9 @@ export type CapPeriod =
   | "month"
   | "year"
   | "campaign_period"
-  | "lifetime";
+  | "lifetime"
+  /** A caller-supplied usage value over the provider's trailing 30-day window. */
+  | "rolling_30_day";
 
 export type PointRouteObjective =
   /** Rank by declared JPY value of the resulting holdings. */
@@ -90,6 +92,13 @@ export interface PointRouteEdge {
   readonly valid_from: string | null;
   readonly valid_to: string | null;
   readonly required_conditions_ja: readonly string[];
+  /** Structured rule dependencies.  Every id must be explicitly confirmed. */
+  readonly requires_rule_ids?: readonly string[];
+  /**
+   * Whether a request may consume the remaining cap when it does not fit in
+   * full.  Omitted preserves the historical partial-consumption behaviour.
+   */
+  readonly partial_consumption?: boolean;
   /**
    * The rule only applies to units held directly in the source program.
    *
@@ -114,6 +123,8 @@ export interface PointRouteRequest {
   readonly balances: readonly PointRouteBalance[];
   readonly edges: readonly PointRouteEdge[];
   readonly confirmed_rule_ids: readonly string[];
+  /** Optional separate confirmation channel for structured prerequisites. */
+  readonly confirmed_prerequisite_ids?: readonly string[];
   readonly period_source_used_by_rule: Readonly<Record<string, string>>;
   readonly max_steps: number;
   readonly max_legs: number;
@@ -260,6 +271,11 @@ const EDGE_KEYS = [
   "requires_direct_source",
 ] as const;
 
+const EDGE_OPTIONAL_KEYS = [
+  "requires_rule_ids",
+  "partial_consumption",
+] as const;
+
 const REQUEST_KEYS = [
   "effective_at",
   "objective",
@@ -273,13 +289,19 @@ const REQUEST_KEYS = [
   "valuation",
 ] as const;
 
+const REQUEST_OPTIONAL_KEYS = ["confirmed_prerequisite_ids"] as const;
+
 const CAP_PERIODS: readonly CapPeriod[] = [
   "day",
   "month",
   "year",
   "campaign_period",
   "lifetime",
+  "rolling_30_day",
 ];
+
+const CONFIRMATION_ID = /^[a-z0-9][a-z0-9.-]{1,119}$/u;
+const MAX_CONFIRMATION_IDS = 64;
 
 const OBJECTIVES: readonly PointRouteObjective[] = [
   "maximize_value",
@@ -287,6 +309,29 @@ const OBJECTIVES: readonly PointRouteObjective[] = [
   "fastest",
   "preserve_expiring",
 ];
+
+/**
+ * Validate a legacy exact shape while allowing explicitly additive fields.
+ *
+ * `exactKeys` remains the authoritative primitive for fixed shapes.  Route
+ * edges and requests predate structured prerequisites and cap policy, so they
+ * need this narrow compatibility wrapper rather than a broad index signature.
+ */
+function exactKeysWithOptional(
+  record: PlainRecord,
+  required: readonly string[],
+  optional: readonly string[],
+  code: string,
+): void {
+  const allowed = new Set([...required, ...optional]);
+  const actual = Object.keys(record);
+  if (
+    actual.length !== new Set(actual).size ||
+    actual.some((key) => !allowed.has(key)) ||
+    required.some((key) => !Object.hasOwn(record, key))
+  )
+    throw new TypeError(code);
+}
 
 function assertAsset(value: unknown): asserts value is AssetRef {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -351,9 +396,15 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new TypeError("point_route_edge_invalid");
   const record = value as PlainRecord;
-  exactKeys(record, EDGE_KEYS, "point_route_edge_shape_invalid");
+  exactKeysWithOptional(
+    record,
+    EDGE_KEYS,
+    EDGE_OPTIONAL_KEYS,
+    "point_route_edge_shape_invalid",
+  );
   assertAsset(record.source_asset);
   assertAsset(record.destination_asset);
+  const requiresRuleIds = record.requires_rule_ids;
   if (
     typeof record.rule_id !== "string" ||
     !/^[a-z0-9][a-z0-9.-]{1,119}$/u.test(record.rule_id) ||
@@ -384,6 +435,14 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
     !record.required_conditions_ja.every(
       (item) => typeof item === "string" && item.length <= 120,
     ) ||
+    (requiresRuleIds !== undefined &&
+      (!Array.isArray(requiresRuleIds) ||
+        new Set(requiresRuleIds).size !== requiresRuleIds.length ||
+        !requiresRuleIds.every(
+          (item) => typeof item === "string" && CONFIRMATION_ID.test(item),
+        ))) ||
+    (record.partial_consumption !== undefined &&
+      typeof record.partial_consumption !== "boolean") ||
     typeof record.requires_direct_source !== "boolean"
   )
     throw new TypeError("point_route_edge_invalid");
@@ -401,6 +460,12 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
     record.processing_time_days_min > record.processing_time_days_max
   )
     throw new TypeError("point_route_edge_processing_time_inverted");
+  if (
+    typeof record.valid_from === "string" &&
+    typeof record.valid_to === "string" &&
+    record.valid_to <= record.valid_from
+  )
+    throw new TypeError("point_route_edge_validity_inverted");
 }
 
 function transferSpec(edge: PointRouteEdge): TransferCalculationSpec {
@@ -414,7 +479,12 @@ function transferSpec(edge: PointRouteEdge): TransferCalculationSpec {
     increment_source_units: edge.increment_source_units,
     maximum_source_units_per_request: edge.maximum_source_units_per_request,
     maximum_source_units_per_period: edge.maximum_source_units_per_period,
-    maximum_period: edge.maximum_period,
+    // The transfer kernel only needs a cap-present/absent distinction.  For
+    // a rolling 30-day window the caller's supplied usage is already the
+    // authoritative trailing-window aggregate, so retain the public period
+    // label on the route while using the kernel's compatible day token.
+    maximum_period:
+      edge.maximum_period === "rolling_30_day" ? "day" : edge.maximum_period,
     fee:
       edge.fee_source_units === "0"
         ? null
@@ -434,7 +504,9 @@ function transferSpec(edge: PointRouteEdge): TransferCalculationSpec {
 function activeOn(edge: PointRouteEdge, date: string): boolean {
   return (
     (edge.valid_from === null || edge.valid_from <= date) &&
-    (edge.valid_to === null || edge.valid_to >= date)
+    // RewardRule validity is half-open: valid_to is the first date on which
+    // the rule no longer applies.
+    (edge.valid_to === null || date < edge.valid_to)
   );
 }
 
@@ -567,6 +639,71 @@ interface LegFailure {
   readonly reason_code: string;
 }
 
+/**
+ * Check all-or-nothing cap rules before backward capacity can truncate input.
+ *
+ * Backward capacity is deliberately allowed for the historical partial-cap
+ * mode: it is what makes a capped route split cleanly onto a fallback route.
+ * A provider may instead reject a request that exceeds either the request cap
+ * or the remaining rolling/period cap.  In that mode, seeing only the
+ * backward-propagated 10,000 would incorrectly turn a 20,000 request into a
+ * successful partial transfer.  This preflight walks the untruncated request
+ * through prior partial hops and fails at the first non-partial cap.
+ */
+function nonPartialCapFailure(
+  path: readonly PointRouteEdge[],
+  input: Decimal,
+  ledger: CapLedger,
+): LegFailure | null {
+  let amount = input;
+  for (let index = 0; index < path.length; index += 1) {
+    const edge = path[index] as PointRouteEdge;
+    const fee = decimalString(edge.fee_source_units);
+    if (fee.gt(amount)) return null;
+    const spendable = amount.minus(fee);
+    if (edge.partial_consumption === false) {
+      if (
+        edge.maximum_source_units_per_request !== null &&
+        spendable.gt(decimalString(edge.maximum_source_units_per_request))
+      )
+        return {
+          rule_id: edge.rule_id,
+          reason_code: "transfer_request_maximum_exceeded",
+        };
+      const remaining = capRemaining(ledger, edge);
+      if (remaining !== null && spendable.gt(remaining))
+        return {
+          rule_id: edge.rule_id,
+          reason_code: "transfer_period_maximum_exceeded",
+        };
+    }
+
+    const remaining = capRemaining(ledger, edge);
+    const alignment = alignSource(edge, amount, remaining);
+    if (alignment === null) return null;
+    const sourceAmount = canonicalDecimal(alignment.source);
+    const evaluated = evaluateTransfer(transferSpec(edge), {
+      source_amount: sourceAmount,
+      visited_asset_ids: path
+        .slice(0, index)
+        .map((item) => item.source_asset.asset_id),
+      ...(edge.maximum_source_units_per_period === null
+        ? {}
+        : {
+            period_source_used: canonicalDecimal(
+              decimalString(edge.maximum_source_units_per_period).minus(
+                remaining ?? D(0),
+              ),
+            ),
+          }),
+    });
+    if (evaluated.status !== "applied" || evaluated.destination_amount === null)
+      return null;
+    amount = decimalString(evaluated.destination_amount);
+  }
+  return null;
+}
+
 function addDays(current: number | null, next: number | null): number | null {
   return current === null || next === null ? null : current + next;
 }
@@ -584,8 +721,10 @@ function evaluateLeg(
   effectiveDate: string,
   balanceExpiresOn: string | null,
 ): LegEvaluation | LegFailure {
+  const nonPartialFailure = nonPartialCapFailure(path, input, ledger);
+  if (nonPartialFailure) return nonPartialFailure;
   const capacity = backwardCapacity(path, ledger);
-  let amount = capacity !== null && capacity.lt(input) ? capacity : input;
+  let amount = capacity?.lt(input) ? capacity : input;
   let minDays: number | null = 0;
   let maxDays: number | null = 0;
   let irreversible = 0;
@@ -604,7 +743,7 @@ function evaluateLeg(
       return {
         rule_id: edge.rule_id,
         reason_code:
-          edge.valid_to !== null && edge.valid_to < initiatedOn
+          edge.valid_to !== null && edge.valid_to <= initiatedOn
             ? "closes_before_hop_is_reached"
             : "outside_validity_window",
       };
@@ -621,10 +760,9 @@ function evaluateLeg(
     if (alignment === null)
       return {
         rule_id: edge.rule_id,
-        reason_code:
-          remaining !== null && remaining.lte(0)
-            ? "period_cap_exhausted"
-            : "insufficient_or_unaligned_balance",
+        reason_code: remaining?.lte(0)
+          ? "period_cap_exhausted"
+          : "insufficient_or_unaligned_balance",
       };
 
     const sourceAmount = canonicalDecimal(alignment.source);
@@ -959,9 +1097,10 @@ function comparePlans(
 }
 
 function assertRequest(input: PointRouteRequest): void {
-  exactKeys(
+  exactKeysWithOptional(
     input as unknown as PlainRecord,
     REQUEST_KEYS,
+    REQUEST_OPTIONAL_KEYS,
     "point_route_request_shape_invalid",
   );
   if (!validDateTime(input.effective_at))
@@ -998,14 +1137,28 @@ function assertRequest(input: PointRouteRequest): void {
   input.edges.forEach(assertEdge);
   if (
     !Array.isArray(input.confirmed_rule_ids) ||
+    input.confirmed_rule_ids.length > MAX_CONFIRMATION_IDS ||
     new Set(input.confirmed_rule_ids).size !==
       input.confirmed_rule_ids.length ||
-    input.confirmed_rule_ids.some((item) => typeof item !== "string") ||
+    input.confirmed_rule_ids.some(
+      (item) => typeof item !== "string" || !CONFIRMATION_ID.test(item),
+    ) ||
     !input.period_source_used_by_rule ||
     typeof input.period_source_used_by_rule !== "object" ||
     Array.isArray(input.period_source_used_by_rule)
   )
     throw new TypeError("point_route_state_invalid");
+  if (
+    input.confirmed_prerequisite_ids !== undefined &&
+    (!Array.isArray(input.confirmed_prerequisite_ids) ||
+      input.confirmed_prerequisite_ids.length > MAX_CONFIRMATION_IDS ||
+      new Set(input.confirmed_prerequisite_ids).size !==
+        input.confirmed_prerequisite_ids.length ||
+      input.confirmed_prerequisite_ids.some(
+        (item) => typeof item !== "string" || !CONFIRMATION_ID.test(item),
+      ))
+  )
+    throw new TypeError("point_route_prerequisite_state_invalid");
   for (const value of Object.values(input.period_source_used_by_rule))
     decimalString(value);
   if (
@@ -1038,12 +1191,23 @@ export function optimizePointRoute(
 
   const effectiveDate = input.effective_at.slice(0, 10);
   const confirmed = new Set(input.confirmed_rule_ids);
+  for (const prerequisiteId of input.confirmed_prerequisite_ids ?? [])
+    confirmed.add(prerequisiteId);
   const skipped = new Map<string, string>();
   const usedRuleIds = new Set<string>();
 
   const usableEdges = input.edges.filter((edge) => {
+    const requiredRuleIds = edge.requires_rule_ids ?? [];
+    const missingPrerequisite = requiredRuleIds.find(
+      (required) => !confirmed.has(required),
+    );
+    if (missingPrerequisite !== undefined) {
+      skipped.set(edge.rule_id, "prerequisite_confirmation_required");
+      return false;
+    }
     if (
       edge.required_conditions_ja.length > 0 &&
+      requiredRuleIds.length === 0 &&
       !confirmed.has(edge.rule_id)
     ) {
       skipped.set(edge.rule_id, "condition_confirmation_required");

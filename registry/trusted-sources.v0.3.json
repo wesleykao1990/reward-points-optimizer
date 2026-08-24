@@ -6253,6 +6253,518 @@
         "status": "registered",
         "notes": ""
       }
+    },
+    {
+      "id": "jp.jrkyushu.point-exchange",
+      "name": "JR Kyushu point exchange directory",
+      "publisher": "九州旅客鉄道株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.jrkyushu.co.jp/point/exchange/",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "eligibility",
+        "processing_time"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official exchange table used only for the bounded benchmark slice."
+      }
+    },
+    {
+      "id": "jp.saison.jq-card-faq",
+      "name": "JQ CARD Saison exchange FAQ",
+      "publisher": "株式会社クレディセゾン",
+      "category": "transfer_rules",
+      "tier": "T2_OFFICIAL_SUPPORT",
+      "publication_use": "corroborating",
+      "source_url": "https://faq.saisoncard.co.jp/saison/detail?id=6277&site=OA5LHO14",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "eligibility",
+        "processing_time"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official FAQ used to bind the JQ CARD Saison prerequisite and exchange ratio."
+      }
+    },
+    {
+      "id": "jp.saison.storee-ana",
+      "name": "STOREE SAISON ANA mileage exchange",
+      "publisher": "株式会社クレディセゾン",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://storee.saisoncard.co.jp/shop/g/gCA0001-LP0004-P/",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "processing_time",
+        "cancellation_policy"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official STOREE item used for the Mizuho Mileage Club Card/ANA exchange leg."
+      }
+    },
+    {
+      "id": "jp.mizuho.mileage-card-application",
+      "name": "Mizuho Mileage Club Card application guidance",
+      "publisher": "株式会社みずほ銀行",
+      "category": "card_product",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.mizuhobank.co.jp/card/saison/internet_order.html",
+      "authority_scope": [
+        "eligibility",
+        "application_status",
+        "renewal_status"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "monthly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Application-state source; do not use it as the ANA mileage conversion-rate source."
+      }
+    },
+    {
+      "id": "jp.mizuho.mileage-card-ana",
+      "name": "Mizuho Mileage Club Card ANA product features",
+      "publisher": "株式会社みずほ銀行",
+      "category": "card_product",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.mizuhobank.co.jp/card/saison/index.html",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "eligibility",
+        "application_status",
+        "renewal_status"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "monthly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Economic source for the 100 permanent points to 350 ANA miles rate and 200-point minimum."
+      }
+    },
+    {
+      "id": "jp.smbc.ana-vpoint-transfer",
+      "name": "SMBC Card ANA V-point mileage transfer",
+      "publisher": "三井住友カード株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.smbc-card.com/mem/cardinfo/pop/cardinfo4010442.jsp",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "eligibility"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "monthly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official ANA-card member source for the direct V-point exchange course."
+      }
+    },
+    {
+      "id": "jp.ana.pay-terms",
+      "name": "ANA Pay charge and usage terms",
+      "publisher": "全日本空輸株式会社",
+      "category": "payment_reward_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.ana.co.jp/ja/jp/amc/ana-pay/",
+      "authority_scope": [
+        "program_terms",
+        "charge_rules",
+        "route_exclusion"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official ANA Pay page used only for explicit funding and e-money exclusions."
+      }
+    },
+    {
+      "id": "jp.kyash.points",
+      "name": "Kyash point earning terms",
+      "publisher": "Kyash株式会社",
+      "category": "payment_reward_rules",
+      "tier": "T2_OFFICIAL_SUPPORT",
+      "publication_use": "corroborating",
+      "source_url": "https://support.kyash.co/hc/ja/articles/360033212772-Kyash%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88",
+      "authority_scope": [
+        "reward_exclusion",
+        "charge_rules"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "monthly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official support article used only to mark the ANA Pay reward exclusion."
+      }
+    },
+    {
+      "id": "jp.kyash.visa-exclusions",
+      "name": "Kyash Visa unavailable merchant guidance",
+      "publisher": "Kyash株式会社",
+      "category": "payment_reward_rules",
+      "tier": "T2_OFFICIAL_SUPPORT",
+      "publication_use": "corroborating",
+      "source_url": "https://support.kyash.co/hc/ja/articles/115004500767-%E5%88%A9%E7%94%A8%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84Visa%E5%8A%A0%E7%9B%9F%E5%BA%97%E3%81%8C%E3%81%82%E3%82%8A%E3%81%BE%E3%81%97%E3%81%9F",
+      "authority_scope": [
+        "merchant_acceptance",
+        "route_exclusion"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "monthly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official support article used only to mark Kyash Visa to ANA Pay as unavailable."
+      }
+    },
+    {
+      "id": "jp.jal.mileage-park-amazon-suspension",
+      "name": "JAL Mileage Park Amazon suspension notice",
+      "publisher": "日本航空株式会社",
+      "category": "change_notice",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://partner.jal.co.jp/jmb/partner/feature/200186/?Ma=5",
+      "authority_scope": [
+        "route_status",
+        "validity"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "very_high",
+      "recommended_check_cadence": "daily",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official portal notice used to classify the Amazon route inactive from 2026-06-12."
+      }
+    },
+    {
+      "id": "jp.jal.mileage-park-rakuten-market",
+      "name": "JAL Mileage Park Rakuten Market partner terms",
+      "publisher": "日本航空株式会社",
+      "category": "cashback_portal",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://partner.jal.co.jp/shop/?tp=15268",
+      "authority_scope": [
+        "portal_rates",
+        "processing_time",
+        "portal_traversal",
+        "merchant_exclusions"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "very_high",
+      "recommended_check_cadence": "daily",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official partner page used as an informational portal fact requiring fresh traversal."
+      }
+    },
+    {
+      "id": "jp.revolut.ana-pay-payment-limit",
+      "name": "Revolut ANA Pay payment limit",
+      "publisher": "Revolut Ltd",
+      "category": "payment_reward_rules",
+      "tier": "T2_OFFICIAL_SUPPORT",
+      "publication_use": "corroborating",
+      "source_url": "https://help.revolut.com/ja-JP/help/card-payments-withdrawals/more-help-with-transactions-atms/limits-for-paying-to-ana-pay/",
+      "authority_scope": [
+        "card_payment_acceptance",
+        "conversion_limit",
+        "whole_payment_rejection",
+        "validity"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official Revolut Help source for the 2025-05-27 ANA Pay cap and whole-payment rejection behavior."
+      }
+    },
+    {
+      "id": "jp.moppy.jal-dream-campaign",
+      "name": "Moppy JAL Dream Campaign August 2026",
+      "publisher": "株式会社セレス",
+      "category": "campaign_directory",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/campaign/special/jalmile.php",
+      "authority_scope": [
+        "campaign_validity",
+        "conversion_ratio",
+        "bonus_conditions",
+        "rebate_timing",
+        "frequency_limits",
+        "lottery"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "very_high",
+      "recommended_check_cadence": "daily",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official Moppy campaign page for the bounded August 2026 JAL exchange, Sky Bonus rebate, conditions, posting timing and lottery exclusion."
+      }
+    },
+    {
+      "id": "jp.jal.moppy-summer-rate-up",
+      "name": "JAL Moppy Summer Mileage Rate-Up Festival 2026",
+      "publisher": "日本航空株式会社",
+      "category": "campaign_directory",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.jal.co.jp/jp/ja/121campaign/2026/moppy/",
+      "authority_scope": [
+        "campaign_validity",
+        "conversion_ratio",
+        "bonus_timing",
+        "lottery"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "very_high",
+      "recommended_check_cadence": "daily",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-24",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official JAL campaign page for the 20% August 2026 mileage uplift, posting timing and lottery exclusion."
+      }
     }
   ]
 }

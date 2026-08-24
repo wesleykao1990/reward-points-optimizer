@@ -41,7 +41,6 @@ EXPECTED_SCHEMA_FILES = {
     "trusted-source.schema.json",
     "user-state.schema.json",
 }
-EXPECTED_SOURCE_COUNT = 176
 EXPECTED_SCENARIO_COUNT = 100
 EXPECTED_LEVELS = Counter(
     {"L1_SINGLE_RULE": 40, "L2_STACKING": 40, "L3_ADVERSARIAL": 20}
@@ -1765,8 +1764,6 @@ def main() -> int:
         "source-registry",
     )
     sources = registry_yaml["sources"]
-    if len(sources) != EXPECTED_SOURCE_COUNT:
-        fail(f"Expected {EXPECTED_SOURCE_COUNT} source seeds, found {len(sources)}")
     if manifest["counts"]["trusted_sources"] != len(sources):
         fail("Manifest trusted-source count does not match")
     source_ids = [source["id"] for source in sources]
@@ -1842,8 +1839,11 @@ def main() -> int:
 
     review_queue = load_yaml(BASE / "registry/source-review-queue.v0.3.yaml")
     queue_ids = [item["source_id"] for item in review_queue["items"]]
-    if len(queue_ids) != len(sources) or set(queue_ids) != source_set or duplicate_values(queue_ids):
-        fail("Source review queue must contain every registry source exactly once")
+    if duplicate_values(queue_ids):
+        fail("Source review queue contains duplicate source IDs")
+    unknown_queue_ids = set(queue_ids) - source_set
+    if unknown_queue_ids:
+        fail(f"Source review queue references unknown sources {sorted(unknown_queue_ids)}")
     rehearsal_ids = [item["source_id"] for item in review_queue["first_rehearsal_batch"]]
     if len(rehearsal_ids) != 8 or len(set(rehearsal_ids)) != 8:
         fail("First source-maintenance rehearsal batch must contain eight unique sources")

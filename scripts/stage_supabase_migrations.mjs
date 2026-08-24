@@ -29,6 +29,14 @@ const SCHEMA_DESTINATIONS = new Map([
     "0026_merchant_location_public_rpc.sql",
     "20260824102433_schema_0026_merchant_location_public_rpc.sql",
   ],
+  [
+    "0027_p0_route_graph_source_identity.sql",
+    "20260824102434_schema_0027_p0_route_graph_source_identity.sql",
+  ],
+  [
+    "0028_p0_route_graph_open_ended_windows.sql",
+    "20260825120000_schema_0028_p0_route_graph_open_ended_windows.sql",
+  ],
 ]);
 
 const REQUIRED_PRODUCTION_HISTORY = Object.freeze([

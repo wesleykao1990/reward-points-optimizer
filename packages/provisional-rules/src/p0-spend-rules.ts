@@ -46,6 +46,7 @@ export interface P0SpendRule {
     | "year"
     | "campaign_period"
     | "lifetime"
+    | "rolling_30_day"
     | null;
   readonly fee_source_units: string;
   readonly processing_time_days_min: number | null;
@@ -55,6 +56,10 @@ export interface P0SpendRule {
   readonly valid_to: string | null;
   readonly timezone: "Asia/Tokyo";
   readonly required_conditions_ja: readonly string[];
+  /** Structured prerequisite IDs consumed by the point-route kernel. */
+  readonly requires_rule_ids?: readonly string[];
+  /** Whether an aligned request may consume a partial available balance. */
+  readonly partial_consumption?: boolean;
   /**
    * The rule only applies to units held directly in the source program.
    * Campaign uplifts are commonly withdrawn when the units arrived through an
@@ -152,12 +157,14 @@ function clonePlainResearchValue(
 interface Claim {
   readonly claim_id: string;
   readonly family_id: string;
+  readonly source_role_id: string;
   readonly source_ids: readonly string[];
   readonly subject: string;
   readonly predicate: string;
   readonly claim_type: string;
   readonly value: unknown;
   readonly applicability: JsonRecord;
+  readonly exclusions: readonly string[];
 }
 
 interface RuleDraft {
@@ -189,6 +196,12 @@ const ASSETS = Object.freeze({
     "program.ana-mileage-club",
     "ANAマイル",
   ),
+  anaPay: asset(
+    "asset.value.ana-pay",
+    "stored_value",
+    "program.ana-pay",
+    "ANA Pay残高",
+  ),
   anaSkyCoin: asset(
     "asset.value.ana-sky-coin",
     "stored_value",
@@ -208,6 +221,12 @@ const ASSETS = Object.freeze({
     "program.jal-mileage-bank",
     "JALマイル",
   ),
+  jalCampaignBonus: asset(
+    "asset.mile.jal-campaign-bonus",
+    "airline_mile",
+    "program.jal-mileage-bank",
+    "JALキャンペーン増量マイル",
+  ),
   jpyValue: asset(
     "asset.value.jpy-redemption",
     "discount",
@@ -219,6 +238,18 @@ const ASSETS = Object.freeze({
     "reward_point",
     "program.jre-point",
     "JRE POINT",
+  ),
+  moppy: asset(
+    "asset.point.moppy",
+    "reward_point",
+    "program.moppy",
+    "モッピーポイント",
+  ),
+  moppyCampaignRebate: asset(
+    "asset.point.moppy-campaign-rebate",
+    "reward_point",
+    "program.moppy",
+    "モッピー スカイボーナス",
   ),
   nanaco: asset(
     "asset.point.nanaco",
@@ -256,6 +287,12 @@ const ASSETS = Object.freeze({
     "program.recruit-point",
     "リクルートポイント",
   ),
+  revolutJpy: asset(
+    "asset.value.revolut-jpy",
+    "stored_value",
+    "program.revolut-jp",
+    "Revolut残高（日本円）",
+  ),
   sevenMile: asset(
     "asset.point.seven-mile",
     "reward_point",
@@ -267,6 +304,18 @@ const ASSETS = Object.freeze({
     "stored_value",
     "program.suica",
     "Suica残高",
+  ),
+  jrKyupo: asset(
+    "asset.point.jr-kyupo",
+    "reward_point",
+    "program.jr-kyupo",
+    "JRキューポ",
+  ),
+  saisonPermanent: asset(
+    "asset.point.saison-permanent",
+    "reward_point",
+    "program.saison-permanent",
+    "セゾン永久不滅ポイント",
   ),
   v: asset("asset.point.v", "reward_point", "program.v-point", "Vポイント"),
   waon: asset(
@@ -282,6 +331,19 @@ const ASSETS = Object.freeze({
     "電子マネーWAON",
   ),
 });
+
+/**
+ * Structured transfer claims refer to declared asset IDs rather than naming
+ * an asset in compiler code for every new route.  Keeping the catalog here
+ * still makes the binding closed-world: an artifact cannot inject a new
+ * programme or silently attach a known rate to another balance.
+ */
+const STRUCTURED_ASSET_CATALOG: Readonly<Record<string, P0SpendAsset>> =
+  Object.freeze(
+    Object.fromEntries(
+      Object.values(ASSETS).map((item) => [item.asset_id, item]),
+    ),
+  );
 
 function stringValue(record: JsonRecord, key: string): string | null {
   const value = record[key];
@@ -340,6 +402,8 @@ function rule(
     | "valid_to"
     | "timezone"
     | "required_conditions_ja"
+    | "requires_rule_ids"
+    | "partial_consumption"
     | "requires_direct_source"
     | "status"
   > &
@@ -353,6 +417,10 @@ function rule(
         | "processing_time_days_min"
         | "processing_time_days_max"
         | "cancellation_policy"
+        | "valid_from"
+        | "valid_to"
+        | "requires_rule_ids"
+        | "partial_consumption"
         | "required_conditions_ja"
         | "requires_direct_source"
       >
@@ -375,8 +443,24 @@ function rule(
     processing_time_days_min: input.processing_time_days_min ?? null,
     processing_time_days_max: input.processing_time_days_max ?? null,
     cancellation_policy: input.cancellation_policy ?? "provider_defined",
-    ...validity(primaryClaim),
+    valid_from:
+      input.valid_from !== undefined
+        ? input.valid_from
+        : validity(primaryClaim).valid_from,
+    valid_to:
+      input.valid_to !== undefined
+        ? input.valid_to
+        : validity(primaryClaim).valid_to,
+    timezone: "Asia/Tokyo",
     required_conditions_ja: input.required_conditions_ja ?? Object.freeze([]),
+    ...(input.requires_rule_ids === undefined
+      ? {}
+      : {
+          requires_rule_ids: Object.freeze([...input.requires_rule_ids].sort()),
+        }),
+    ...(input.partial_consumption === undefined
+      ? {}
+      : { partial_consumption: input.partial_consumption }),
     requires_direct_source: input.requires_direct_source ?? false,
     status: "active_experimental",
   };
@@ -767,6 +851,545 @@ const DRAFTS: readonly RuleDraft[] = Object.freeze([
   },
 ]);
 
+const STRUCTURED_TRANSFER_REQUIRED_KEYS = Object.freeze([
+  "route_id",
+  "operation",
+  "source_asset_ref",
+  "destination_asset_ref",
+  "source_units",
+  "destination_units",
+  "minimum_source_units",
+  "increment_source_units",
+  "maximum_source_units_per_request",
+  "maximum_source_units_per_period",
+  "maximum_period",
+  "fee_source_units",
+  "processing_time_days_min",
+  "processing_time_days_max",
+  "cancellation_policy",
+  "validity",
+  "prerequisite_ids",
+  "requires_rule_ids",
+  "required_conditions_ja",
+  "requires_direct_source",
+  "partial_consumption",
+] as const);
+
+interface StructuredTransferForm {
+  readonly route_id: string;
+  readonly source_asset: P0SpendAsset;
+  readonly destination_asset: P0SpendAsset;
+  readonly source_units: string;
+  readonly destination_units: string;
+  readonly minimum_source_units: string | null;
+  readonly increment_source_units: string | null;
+  readonly maximum_source_units_per_request: string | null;
+  readonly maximum_source_units_per_period: string | null;
+  readonly maximum_period: P0SpendRule["maximum_period"];
+  readonly fee_source_units: string;
+  readonly processing_time_days_min: number | null;
+  readonly processing_time_days_max: number | null;
+  readonly cancellation_policy: P0SpendRule["cancellation_policy"];
+  readonly valid_from: string | null;
+  readonly valid_to: string | null;
+  readonly prerequisite_ids: readonly string[];
+  readonly requires_rule_ids: readonly string[];
+  readonly required_conditions_ja: readonly string[];
+  readonly requires_direct_source: boolean;
+  readonly partial_consumption: boolean;
+}
+
+interface StructuredTransferCheck {
+  readonly form: StructuredTransferForm | null;
+  readonly prerequisite_claim_ids: readonly string[];
+  readonly status: P0SpendDispositionStatus | null;
+  readonly reason: string | null;
+}
+
+interface SourceBinding {
+  readonly family_id: string;
+  readonly roles: ReadonlySet<string>;
+}
+
+function hasOwn(record: JsonRecord, key: string): boolean {
+  return Object.hasOwn(record, key);
+}
+
+function nonNegativeIntegerValue(value: unknown, field: string): string | null {
+  if (value === null) return null;
+  if (!Number.isSafeInteger(value) || Number(value) < 0)
+    throw new TypeError(`p0_spend_structured_${field}_invalid`);
+  return String(value);
+}
+
+function positiveIntegerValue(value: unknown, field: string): string {
+  if (!Number.isSafeInteger(value) || Number(value) <= 0)
+    throw new TypeError(`p0_spend_structured_${field}_invalid`);
+  return String(value);
+}
+
+function structuredForm(record: JsonRecord): JsonRecord | null {
+  const form = record.transfer;
+  return form && typeof form === "object" && !Array.isArray(form)
+    ? (form as JsonRecord)
+    : null;
+}
+
+function structuredInvalid(
+  status: P0SpendDispositionStatus,
+  reason: string,
+): StructuredTransferCheck {
+  return {
+    form: null,
+    prerequisite_claim_ids: Object.freeze([]),
+    status,
+    reason,
+  };
+}
+
+function sourceRoleMatches(
+  claim: Claim,
+  sourceBindings: ReadonlyMap<string, SourceBinding>,
+): boolean {
+  return claim.source_ids.every(
+    (sourceId) =>
+      sourceBindings.get(sourceId)?.roles.has(claim.source_role_id) === true,
+  );
+}
+
+function checkStructuredTransfer(
+  claim: Claim,
+  claims: ReadonlyMap<string, Claim>,
+  sourceBindings: ReadonlyMap<string, SourceBinding>,
+): StructuredTransferCheck {
+  const value = claimValue(claim);
+  const raw = structuredForm(value);
+  if (!raw)
+    return structuredInvalid(
+      "information_only",
+      "structured transfer form is missing",
+    );
+
+  if (!sourceRoleMatches(claim, sourceBindings))
+    return structuredInvalid(
+      "information_only",
+      "official source-role membership is not exact",
+    );
+  if (new Set(claim.source_ids).size !== claim.source_ids.length)
+    return structuredInvalid(
+      "information_only",
+      "structured transfer source IDs must be unique",
+    );
+
+  const missing = STRUCTURED_TRANSFER_REQUIRED_KEYS.find(
+    (key) => !hasOwn(raw, key),
+  );
+  if (missing)
+    return structuredInvalid(
+      "information_only",
+      `structured transfer parameter is missing: ${missing}`,
+    );
+  if (claim.exclusions.length > 0)
+    return structuredInvalid(
+      "information_only",
+      "claim has an explicit exclusion and cannot become executable",
+    );
+  if (claim.claim_type !== "transfer_rule")
+    return structuredInvalid(
+      "information_only",
+      "only transfer_rule claims can become executable transfer rules",
+    );
+
+  if (raw.operation !== "transfer" && raw.operation !== "conversion")
+    return structuredInvalid(
+      "information_only",
+      "structured operation is not a transfer or conversion",
+    );
+  const routeId = raw.route_id;
+  if (
+    typeof routeId !== "string" ||
+    !/^[a-z0-9][a-z0-9.-]{1,119}$/u.test(routeId)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured route ID is invalid",
+    );
+  const sourceAssetRef = raw.source_asset_ref;
+  const destinationAssetRef = raw.destination_asset_ref;
+  if (
+    typeof sourceAssetRef !== "string" ||
+    typeof destinationAssetRef !== "string"
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured asset references are invalid",
+    );
+  const sourceAsset = STRUCTURED_ASSET_CATALOG[sourceAssetRef];
+  const destinationAsset = STRUCTURED_ASSET_CATALOG[destinationAssetRef];
+  if (!sourceAsset || !destinationAsset)
+    return structuredInvalid(
+      "information_only",
+      "structured asset reference is not declared",
+    );
+
+  let sourceUnits: string;
+  let destinationUnits: string;
+  let minimum: string | null;
+  let increment: string | null;
+  let requestMaximum: string | null;
+  let periodMaximum: string | null;
+  let fee: string | null;
+  try {
+    sourceUnits = positiveIntegerValue(raw.source_units, "source_units");
+    destinationUnits = positiveIntegerValue(
+      raw.destination_units,
+      "destination_units",
+    );
+    minimum = nonNegativeIntegerValue(
+      raw.minimum_source_units,
+      "minimum_source_units",
+    );
+    increment = nonNegativeIntegerValue(
+      raw.increment_source_units,
+      "increment_source_units",
+    );
+    requestMaximum = nonNegativeIntegerValue(
+      raw.maximum_source_units_per_request,
+      "maximum_source_units_per_request",
+    );
+    periodMaximum = nonNegativeIntegerValue(
+      raw.maximum_source_units_per_period,
+      "maximum_source_units_per_period",
+    );
+    fee = nonNegativeIntegerValue(raw.fee_source_units, "fee_source_units");
+  } catch {
+    return structuredInvalid(
+      "information_only",
+      "structured quantity or fee is invalid",
+    );
+  }
+  if (fee === null)
+    return structuredInvalid(
+      "information_only",
+      "structured fee must be explicit, including zero",
+    );
+  const maximumPeriod = raw.maximum_period;
+  if (
+    maximumPeriod !== null &&
+    maximumPeriod !== "day" &&
+    maximumPeriod !== "month" &&
+    maximumPeriod !== "year" &&
+    maximumPeriod !== "campaign_period" &&
+    maximumPeriod !== "lifetime" &&
+    maximumPeriod !== "rolling_30_day"
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured maximum period is invalid",
+    );
+  if ((periodMaximum === null) !== (maximumPeriod === null))
+    return structuredInvalid(
+      "information_only",
+      "structured period maximum and period must be both present or both null",
+    );
+  if (
+    minimum !== null &&
+    increment !== null &&
+    (Number(minimum) <= 0 || Number(increment) <= 0)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured minimum and increment must be positive when supplied",
+    );
+
+  const processingMin =
+    raw.processing_time_days_min === null
+      ? null
+      : Number.isSafeInteger(raw.processing_time_days_min) &&
+          Number(raw.processing_time_days_min) >= 0
+        ? Number(raw.processing_time_days_min)
+        : undefined;
+  const processingMax =
+    raw.processing_time_days_max === null
+      ? null
+      : Number.isSafeInteger(raw.processing_time_days_max) &&
+          Number(raw.processing_time_days_max) >= 0
+        ? Number(raw.processing_time_days_max)
+        : undefined;
+  if (
+    processingMin === undefined ||
+    processingMax === undefined ||
+    (processingMin !== null &&
+      processingMax !== null &&
+      processingMin > processingMax)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured processing window is invalid",
+    );
+  if (
+    raw.cancellation_policy !== "not_cancelable" &&
+    raw.cancellation_policy !== "provider_defined"
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured cancellation policy is invalid",
+    );
+
+  const validityValue = raw.validity;
+  if (
+    !validityValue ||
+    typeof validityValue !== "object" ||
+    Array.isArray(validityValue)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured validity is missing",
+    );
+  const validityRecord = validityValue as JsonRecord;
+  if (
+    !hasOwn(validityRecord, "valid_from") ||
+    !hasOwn(validityRecord, "valid_to") ||
+    !hasOwn(validityRecord, "timezone")
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured validity fields must be explicit",
+    );
+  const validFrom = validityRecord.valid_from;
+  const validTo = validityRecord.valid_to;
+  if (
+    (validFrom !== null &&
+      (typeof validFrom !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/u.test(validFrom))) ||
+    (validTo !== null &&
+      (typeof validTo !== "string" || !/^\d{4}-\d{2}-\d{2}$/u.test(validTo))) ||
+    validityRecord.timezone !== "Asia/Tokyo" ||
+    (typeof validFrom === "string" &&
+      typeof validTo === "string" &&
+      validTo <= validFrom)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured validity is invalid",
+    );
+  const claimValidFrom =
+    typeof claim.applicability.effective_from === "string"
+      ? claim.applicability.effective_from
+      : null;
+  const claimValidTo =
+    typeof claim.applicability.effective_to === "string"
+      ? claim.applicability.effective_to
+      : null;
+  if (validFrom !== claimValidFrom || validTo !== claimValidTo)
+    return structuredInvalid(
+      "information_only",
+      "structured validity must match claim applicability",
+    );
+
+  const prerequisiteIds = raw.prerequisite_ids;
+  const requiresRuleIds = raw.requires_rule_ids;
+  if (
+    !Array.isArray(prerequisiteIds) ||
+    !Array.isArray(requiresRuleIds) ||
+    !prerequisiteIds.every(
+      (item) => typeof item === "string" && item.length > 0,
+    ) ||
+    !requiresRuleIds.every(
+      (item) =>
+        typeof item === "string" && /^[a-z0-9][a-z0-9.-]{1,119}$/u.test(item),
+    ) ||
+    new Set(prerequisiteIds).size !== prerequisiteIds.length ||
+    new Set(requiresRuleIds).size !== requiresRuleIds.length ||
+    prerequisiteIds.length !== requiresRuleIds.length
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured prerequisite IDs must be explicit, unique and paired",
+    );
+  const prerequisiteClaims: Claim[] = [];
+  for (let index = 0; index < prerequisiteIds.length; index += 1) {
+    const prerequisiteId = prerequisiteIds[index] as string;
+    const prerequisite = claims.get(prerequisiteId);
+    if (!prerequisite)
+      return structuredInvalid(
+        "state_required",
+        `structured prerequisite claim is missing: ${prerequisiteId}`,
+      );
+    if (!sourceRoleMatches(prerequisite, sourceBindings))
+      return structuredInvalid(
+        "information_only",
+        `prerequisite source-role membership is not exact: ${prerequisiteId}`,
+      );
+    if (
+      !prerequisite.value ||
+      typeof prerequisite.value !== "object" ||
+      Array.isArray(prerequisite.value)
+    )
+      return structuredInvalid(
+        "information_only",
+        `prerequisite claim is incomplete: ${prerequisiteId}`,
+      );
+    const prerequisiteValue = prerequisite.value as JsonRecord;
+    const declaredPrerequisiteId = prerequisiteValue.prerequisite_id;
+    const condition = prerequisiteValue.condition_ja;
+    if (
+      declaredPrerequisiteId !== requiresRuleIds[index] ||
+      typeof condition !== "string" ||
+      condition.length === 0
+    )
+      return structuredInvalid(
+        "information_only",
+        `prerequisite claim is incomplete: ${prerequisiteId}`,
+      );
+    prerequisiteClaims.push(prerequisite);
+  }
+  if (
+    !Array.isArray(raw.required_conditions_ja) ||
+    !raw.required_conditions_ja.every(
+      (item) => typeof item === "string" && item.length <= 120,
+    ) ||
+    typeof raw.requires_direct_source !== "boolean" ||
+    typeof raw.partial_consumption !== "boolean"
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured conditions and consumption policy must be explicit",
+    );
+
+  return {
+    form: {
+      route_id: routeId,
+      source_asset: sourceAsset,
+      destination_asset: destinationAsset,
+      source_units: sourceUnits,
+      destination_units: destinationUnits,
+      minimum_source_units: minimum,
+      increment_source_units: increment,
+      maximum_source_units_per_request: requestMaximum,
+      maximum_source_units_per_period: periodMaximum,
+      maximum_period: maximumPeriod,
+      fee_source_units: fee,
+      processing_time_days_min: processingMin,
+      processing_time_days_max: processingMax,
+      cancellation_policy: raw.cancellation_policy,
+      valid_from: validFrom,
+      valid_to: validTo,
+      prerequisite_ids: Object.freeze([...prerequisiteIds]),
+      requires_rule_ids: Object.freeze([...requiresRuleIds]),
+      required_conditions_ja: Object.freeze([...raw.required_conditions_ja]),
+      requires_direct_source: raw.requires_direct_source,
+      partial_consumption: raw.partial_consumption,
+    },
+    prerequisite_claim_ids: Object.freeze(
+      prerequisiteClaims.map((item) => item.claim_id),
+    ),
+    status: null,
+    reason: null,
+  };
+}
+
+function structuredTransferDrafts(
+  claims: ReadonlyMap<string, Claim>,
+  sourceBindings: ReadonlyMap<string, SourceBinding>,
+): {
+  readonly drafts: readonly RuleDraft[];
+  readonly dispositions: ReadonlyMap<string, P0SpendClaimDisposition>;
+  readonly companionClaimIds: ReadonlySet<string>;
+} {
+  const drafts: RuleDraft[] = [];
+  const dispositions = new Map<string, P0SpendClaimDisposition>();
+  const companionClaimIds = new Set<string>();
+  const routeIds = new Set<string>();
+  const ordered = [...claims.values()].sort((left, right) =>
+    left.claim_id.localeCompare(right.claim_id),
+  );
+  for (const claim of ordered) {
+    if (
+      !claim.value ||
+      typeof claim.value !== "object" ||
+      Array.isArray(claim.value)
+    )
+      continue;
+    const value = claim.value as JsonRecord;
+    if (!structuredForm(value)) continue;
+    if (claim.applicability.status === "ended") continue;
+    const checked = checkStructuredTransfer(claim, claims, sourceBindings);
+    if (!checked.form) {
+      if (checked.status && checked.reason)
+        dispositions.set(claim.claim_id, {
+          claim_id: claim.claim_id,
+          status: checked.status,
+          reason: checked.reason,
+          derived_rule_ids: Object.freeze([]),
+        });
+      continue;
+    }
+    const form = checked.form;
+    if (routeIds.has(form.route_id))
+      throw new TypeError(
+        `p0_spend_structured_route_duplicate:${form.route_id}`,
+      );
+    routeIds.add(form.route_id);
+    for (const prerequisiteId of checked.prerequisite_claim_ids)
+      companionClaimIds.add(prerequisiteId);
+    const claimIds = Object.freeze([
+      claim.claim_id,
+      ...checked.prerequisite_claim_ids,
+    ]);
+    drafts.push({
+      claimIds,
+      build(claimMap) {
+        const routeClaim = claimMap.get(claim.claim_id);
+        const prerequisiteClaims = checked.prerequisite_claim_ids.map((id) =>
+          claimMap.get(id),
+        );
+        if (!routeClaim || prerequisiteClaims.some((item) => !item))
+          throw new TypeError(
+            `p0_spend_structured_claim_missing:${claim.claim_id}`,
+          );
+        const conditionClaims = prerequisiteClaims as Claim[];
+        const conditions = [
+          ...form.required_conditions_ja,
+          ...conditionClaims.map(
+            (item) => claimValue(item).condition_ja as string,
+          ),
+        ];
+        return rule([routeClaim, ...conditionClaims], {
+          rule_id: `p0.transfer.${form.route_id}`,
+          kind: "transfer",
+          label_ja: routeClaim.subject,
+          source_asset: form.source_asset,
+          destination_asset: form.destination_asset,
+          source_units: form.source_units,
+          destination_units: form.destination_units,
+          minimum_source_units: form.minimum_source_units,
+          increment_source_units: form.increment_source_units,
+          maximum_source_units_per_request:
+            form.maximum_source_units_per_request,
+          maximum_source_units_per_period: form.maximum_source_units_per_period,
+          maximum_period: form.maximum_period,
+          fee_source_units: form.fee_source_units,
+          processing_time_days_min: form.processing_time_days_min,
+          processing_time_days_max: form.processing_time_days_max,
+          cancellation_policy: form.cancellation_policy,
+          valid_from: form.valid_from,
+          valid_to: form.valid_to,
+          required_conditions_ja: conditions,
+          requires_rule_ids: form.requires_rule_ids,
+          partial_consumption: form.partial_consumption,
+          requires_direct_source: form.requires_direct_source,
+        });
+      },
+    });
+  }
+  return {
+    drafts: Object.freeze(drafts),
+    dispositions,
+    companionClaimIds,
+  };
+}
+
 const COMPANION_CLAIM_IDS = new Set([
   "claim.point.ponta.transfer.jal-unit-timing.001",
   "claim.emoney.nanaco.service.001",
@@ -778,15 +1401,18 @@ function claimRecord(value: unknown): Claim {
   const record = value as JsonRecord;
   const claimId = stringValue(record, "claim_id");
   const familyId = stringValue(record, "family_id");
+  const sourceRoleId = stringValue(record, "source_role_id");
   const subject = stringValue(record, "subject");
   const predicate = stringValue(record, "predicate");
   const claimType = stringValue(record, "claim_type");
   const valueRecord = record.value;
   const applicability = record.applicability;
   const ids = record.source_ids;
+  const exclusions = record.exclusions ?? [];
   if (
     !claimId ||
     !familyId ||
+    !sourceRoleId ||
     !subject ||
     !predicate ||
     !claimType ||
@@ -796,18 +1422,22 @@ function claimRecord(value: unknown): Claim {
     Array.isArray(applicability) ||
     !Array.isArray(ids) ||
     ids.length === 0 ||
-    !ids.every((id) => typeof id === "string" && id.length > 0)
+    !ids.every((id) => typeof id === "string" && id.length > 0) ||
+    !Array.isArray(exclusions) ||
+    !exclusions.every((item) => typeof item === "string")
   )
     throw new TypeError(`p0_spend_claim_invalid:${claimId ?? "unknown"}`);
   return {
     claim_id: claimId,
     family_id: familyId,
+    source_role_id: sourceRoleId,
     source_ids: Object.freeze([...ids].sort()),
     subject,
     predicate,
     claim_type: claimType,
     value: valueRecord,
     applicability: applicability as JsonRecord,
+    exclusions: Object.freeze([...exclusions]),
   };
 }
 
@@ -854,6 +1484,7 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
   const artifacts = cloned as unknown[];
   const claims = new Map<string, Claim>();
   const artifactIds: string[] = [];
+  const sourceBindings = new Map<string, SourceBinding>();
   for (const artifact of artifacts) {
     if (!artifact || typeof artifact !== "object" || Array.isArray(artifact))
       throw new TypeError("p0_spend_artifact_invalid");
@@ -866,6 +1497,35 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
     if (!artifactId || !Array.isArray(record.claims))
       throw new TypeError("p0_spend_artifact_invalid");
     artifactIds.push(artifactId);
+    if (Array.isArray(record.sources))
+      for (const rawSource of record.sources) {
+        if (
+          !rawSource ||
+          typeof rawSource !== "object" ||
+          Array.isArray(rawSource)
+        )
+          throw new TypeError("p0_spend_source_invalid");
+        const source = rawSource as JsonRecord;
+        const sourceId = stringValue(source, "source_id");
+        const familyId = stringValue(source, "family_id");
+        const roles = source.roles;
+        if (
+          !sourceId ||
+          !familyId ||
+          !Array.isArray(roles) ||
+          roles.length === 0 ||
+          !roles.every((role) => typeof role === "string" && role.length > 0)
+        )
+          throw new TypeError(
+            `p0_spend_source_invalid:${sourceId ?? "unknown"}`,
+          );
+        if (sourceBindings.has(sourceId))
+          throw new TypeError(`p0_spend_source_duplicate:${sourceId}`);
+        sourceBindings.set(sourceId, {
+          family_id: familyId,
+          roles: new Set(roles as string[]),
+        });
+      }
     for (const rawClaim of record.claims) {
       const claim = claimRecord(rawClaim);
       if (claims.has(claim.claim_id))
@@ -874,9 +1534,11 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
     }
   }
 
-  const rules = DRAFTS.map((draft) => draft.build(claims)).sort((left, right) =>
-    left.rule_id.localeCompare(right.rule_id),
-  );
+  const structured = structuredTransferDrafts(claims, sourceBindings);
+  const drafts = [...DRAFTS, ...structured.drafts];
+  const rules = drafts
+    .map((draft) => draft.build(claims))
+    .sort((left, right) => left.rule_id.localeCompare(right.rule_id));
   const ruleByClaim = new Map<string, string[]>();
   for (const item of rules)
     for (const claimId of item.source_claim_ids)
@@ -887,18 +1549,23 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
   const dispositions = [...claims.values()]
     .map((claim): P0SpendClaimDisposition => {
       const ids = ruleByClaim.get(claim.claim_id);
+      const structuredDisposition = structured.dispositions.get(claim.claim_id);
       return ids
         ? {
             claim_id: claim.claim_id,
-            status: COMPANION_CLAIM_IDS.has(claim.claim_id)
-              ? "companion_constraint"
-              : "executable",
-            reason: COMPANION_CLAIM_IDS.has(claim.claim_id)
-              ? "互換性のある固定比率ルールへ条件を統合しました"
-              : "明示された固定比率を計算できます",
+            status:
+              COMPANION_CLAIM_IDS.has(claim.claim_id) ||
+              structured.companionClaimIds.has(claim.claim_id)
+                ? "companion_constraint"
+                : "executable",
+            reason:
+              COMPANION_CLAIM_IDS.has(claim.claim_id) ||
+              structured.companionClaimIds.has(claim.claim_id)
+                ? "互換性のある固定比率ルールへ条件を統合しました"
+                : "明示された固定比率を計算できます",
             derived_rule_ids: Object.freeze(ids.sort()),
           }
-        : defaultDisposition(claim);
+        : (structuredDisposition ?? defaultDisposition(claim));
     })
     .sort((left, right) => left.claim_id.localeCompare(right.claim_id));
   const projection = {

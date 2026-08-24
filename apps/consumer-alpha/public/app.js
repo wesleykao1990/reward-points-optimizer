@@ -2033,7 +2033,26 @@
         !rule.conditions.every(
           (condition) =>
             typeof condition === "string" && condition.length <= 120,
-        )
+        ) ||
+        !Array.isArray(rule.prerequisite_ids) ||
+        rule.prerequisite_ids.length > 8 ||
+        !rule.prerequisite_ids.every(
+          (id) =>
+            typeof id === "string" && /^[a-z0-9][a-z0-9.-]{1,119}$/u.test(id),
+        ) ||
+        (rule.period_cap !== null &&
+          (!rule.period_cap ||
+            typeof rule.period_cap.maximum_source_units !== "string" ||
+            !/^[0-9]+$/u.test(rule.period_cap.maximum_source_units) ||
+            ![
+              "day",
+              "month",
+              "year",
+              "campaign_period",
+              "lifetime",
+              "rolling_30_day",
+            ].includes(rule.period_cap.period) ||
+            typeof rule.period_cap.partial_consumption !== "boolean"))
       )
         throw new Error("point_spend_options_invalid");
       return {
@@ -2042,6 +2061,15 @@
         source_asset_id: rule.source_asset_id,
         destination_asset_id: rule.destination_asset_id,
         conditions: [...rule.conditions],
+        prerequisite_ids: [...rule.prerequisite_ids],
+        period_cap:
+          rule.period_cap === null
+            ? null
+            : {
+                maximum_source_units: rule.period_cap.maximum_source_units,
+                period: rule.period_cap.period,
+                partial_consumption: rule.period_cap.partial_consumption,
+              },
       };
     });
     const walletCatalogue = body.wallet_catalogue.map((item) => {
@@ -2351,17 +2379,49 @@
     if (relevant.length === 0) return;
     container.appendChild(text("strong", "追加条件の確認"));
     relevant.forEach((rule) => {
-      const label = node("label", "point-spend-check");
-      const checkbox = node("input");
-      checkbox.type = "checkbox";
-      checkbox.value = rule.rule_id;
-      checkbox.dataset.pointSpendConfirmation = "true";
-      const copy = node("span");
-      copy.appendChild(text("b", rule.label));
-      copy.appendChild(text("small", rule.conditions.join("・")));
-      label.appendChild(checkbox);
-      label.appendChild(copy);
-      container.appendChild(label);
+      if (rule.conditions.length > 0 || rule.prerequisite_ids.length > 0) {
+        const label = node("label", "point-spend-check");
+        const checkbox = node("input");
+        checkbox.type = "checkbox";
+        checkbox.value = rule.rule_id;
+        checkbox.dataset.pointSpendConfirmation = "true";
+        const copy = node("span");
+        copy.appendChild(text("b", rule.label));
+        copy.appendChild(
+          text(
+            "small",
+            rule.conditions.length > 0
+              ? rule.conditions.join("・")
+              : "この交換に必要なカード・会員資格を保有しています",
+          ),
+        );
+        label.appendChild(checkbox);
+        label.appendChild(copy);
+        container.appendChild(label);
+      }
+      if (rule.period_cap) {
+        const label = node("label");
+        const period =
+          rule.period_cap.period === "rolling_30_day"
+            ? "過去30日間"
+            : "対象期間";
+        label.appendChild(
+          text(
+            "span",
+            `${rule.label}：${period}にすでに利用した数量（上限 ${rule.period_cap.maximum_source_units}）`,
+          ),
+        );
+        const input = node("input");
+        input.type = "number";
+        input.min = "0";
+        input.max = "1000000000";
+        input.step = "1";
+        input.value = "0";
+        input.inputMode = "numeric";
+        input.dataset.pointSpendUsageRule = rule.rule_id;
+        label.appendChild(input);
+        container.appendChild(label);
+      }
     });
   };
 
@@ -2561,6 +2621,21 @@
             'input[data-point-spend-confirmation="true"]:checked',
           ),
         ].map((checkbox) => checkbox.value);
+        const confirmedPrerequisites = [
+          ...new Set(
+            pointSpendOptions.conditionalRules
+              .filter((rule) => confirmed.includes(rule.rule_id))
+              .flatMap((rule) => rule.prerequisite_ids),
+          ),
+        ].sort();
+        const periodUsage = Object.fromEntries(
+          [
+            ...document.querySelectorAll("input[data-point-spend-usage-rule]"),
+          ].map((input) => [
+            input.dataset.pointSpendUsageRule,
+            Number(input.value),
+          ]),
+        );
         const body = await postJson(
           "/api/experimental/point-spend/recommendation",
           {
@@ -2575,6 +2650,8 @@
               "maximize_value",
             effective_at: new Date().toISOString(),
             confirmed_rule_ids: confirmed,
+            confirmed_prerequisite_ids: confirmedPrerequisites,
+            period_source_used_by_rule: periodUsage,
             unit_value_jpy: unitValueJpy(),
           },
         );
@@ -2611,6 +2688,267 @@
         button.disabled = false;
       }
     });
+
+  // ---------------------------------------------------------------------
+  // Campaign route benchmark.
+  //
+  // This small surface lives immediately after the fixed-ratio spend result.
+  // It submits only bounded scenario state; all campaign claims, engine
+  // plans, and source bindings remain on the trusted host.
+  // ---------------------------------------------------------------------
+  const campaignRouteStatusLabels = Object.freeze({
+    eligible: "条件を満たすルート",
+    conditional: "確認が必要なルート",
+    no_valid_plan: "有効なルートなし",
+  });
+
+  const safeCampaignRoute = (body) => {
+    if (
+      !body ||
+      body.version !== "campaign-route-recommendation.v1" ||
+      body.experimental !== true ||
+      body.current_advice !== false ||
+      !["moppy_aug_2026", "jal_mileage_park_rakuten"].includes(body.scenario) ||
+      !["eligible", "conditional", "no_valid_plan"].includes(body.status) ||
+      body.status !== body.outcome ||
+      (body.winner !== null &&
+        (!body.winner ||
+          typeof body.winner !== "object" ||
+          !Array.isArray(body.winner.rewards) ||
+          !Array.isArray(body.winner.prerequisites)))
+    )
+      throw new Error("campaign_route_invalid");
+    if (body.winner) {
+      if (body.winner.rewards.length > 4)
+        throw new Error("campaign_route_invalid");
+      body.winner.rewards.forEach((reward) => {
+        if (
+          !reward ||
+          !["principal", "bonus", "rebate", "portal_reward"].includes(
+            reward.kind,
+          ) ||
+          typeof reward.label !== "string" ||
+          typeof reward.asset_label !== "string" ||
+          typeof reward.amount !== "string" ||
+          !/^[0-9]+$/u.test(reward.amount) ||
+          !["posted", "pending"].includes(reward.settlement) ||
+          typeof reward.posting !== "string" ||
+          (!Number.isSafeInteger(reward.processing_days_min) &&
+            reward.processing_days_min !== null) ||
+          (!Number.isSafeInteger(reward.processing_days_max) &&
+            reward.processing_days_max !== null)
+        )
+          throw new Error("campaign_route_invalid");
+      });
+      body.winner.prerequisites.forEach((prerequisite) => {
+        if (
+          !prerequisite ||
+          typeof prerequisite.label !== "string" ||
+          !["satisfied", "missing", "not_satisfied"].includes(
+            prerequisite.status,
+          )
+        )
+          throw new Error("campaign_route_invalid");
+      });
+    }
+    return body;
+  };
+
+  const renderCampaignRoute = (container, body) => {
+    clear(container);
+    const status = node("p", "status");
+    status.textContent = campaignRouteStatusLabels[body.status] || "結果";
+    container.appendChild(status);
+    if (!body.winner) {
+      container.appendChild(text("p", body.message, "helper"));
+      return;
+    }
+    container.appendChild(text("h3", body.winner.label));
+    const cards = node("div", "campaign-route-rewards");
+    body.winner.rewards.forEach((reward) => {
+      const card = node("article", "campaign-reward-card");
+      card.appendChild(text("strong", reward.label));
+      card.appendChild(
+        text(
+          "p",
+          `${Number(reward.amount).toLocaleString("ja-JP")} ${reward.asset_label}`,
+          "campaign-reward-amount",
+        ),
+      );
+      card.appendChild(
+        text(
+          "small",
+          `${reward.settlement === "pending" ? "後日付与" : "本体"}・${reward.posting}`,
+        ),
+      );
+      cards.appendChild(card);
+    });
+    container.appendChild(cards);
+    if (body.winner.prerequisites.length) {
+      const conditions = node("ul", "campaign-route-conditions");
+      body.winner.prerequisites.forEach((prerequisite) => {
+        const statusLabel =
+          prerequisite.status === "satisfied"
+            ? "確認済み"
+            : prerequisite.status === "not_satisfied"
+              ? "未達"
+              : "確認が必要";
+        conditions.appendChild(
+          text("li", `${statusLabel}：${prerequisite.label}`),
+        );
+      });
+      container.appendChild(conditions);
+    }
+    container.appendChild(text("p", body.winner.note, "helper"));
+    container.appendChild(text("p", body.message, "helper"));
+  };
+
+  const insertCampaignRoutePanel = () => {
+    const pointResult = document.getElementById("point-spend-result");
+    if (!pointResult || document.getElementById("campaign-route-panel")) return;
+    const panel = node("section", "wallet-group campaign-route-group");
+    panel.id = "campaign-route-panel";
+    panel.setAttribute("aria-labelledby", "campaign-route-title");
+    const heading = node("div", "group-heading");
+    const title = text("h2", "キャンペーン経路の試算");
+    title.id = "campaign-route-title";
+    heading.appendChild(title);
+    heading.appendChild(text("span", "実験用"));
+    panel.appendChild(heading);
+    panel.appendChild(
+      text(
+        "p",
+        "本体・後日付与・ポータル還元を分けて確認します。抽選は計算しません。",
+        "helper",
+      ),
+    );
+    const form = node("form", "point-spend-card");
+    form.id = "campaign-route-form";
+    const grid = node("div", "point-spend-grid");
+    const scenarioLabel = node("label");
+    scenarioLabel.appendChild(text("span", "試算する経路"));
+    const scenario = selectField([
+      { value: "moppy_aug_2026", label: "モッピー→JAL（2026年8月）" },
+      {
+        value: "jal_mileage_park_rakuten",
+        label: "JALマイレージパーク→楽天市場",
+      },
+    ]);
+    scenario.id = "campaign-route-scenario";
+    scenarioLabel.appendChild(scenario);
+    grid.appendChild(scenarioLabel);
+    const adLabel = node("label");
+    adLabel.id = "campaign-route-ad-earned-label";
+    adLabel.appendChild(text("span", "広告利用で獲得したモッピー（任意）"));
+    const adEarned = node("input");
+    adEarned.id = "campaign-route-ad-earned";
+    adEarned.type = "number";
+    adEarned.min = "0";
+    adEarned.step = "1";
+    adEarned.placeholder = "例：10000";
+    adLabel.appendChild(adEarned);
+    grid.appendChild(adLabel);
+    const monthlyLabel = node("label");
+    monthlyLabel.id = "campaign-route-monthly-label";
+    monthlyLabel.appendChild(text("span", "今月の交換回数（任意）"));
+    const monthly = node("input");
+    monthly.id = "campaign-route-monthly-count";
+    monthly.type = "number";
+    monthly.min = "0";
+    monthly.step = "1";
+    monthly.placeholder = "例：0";
+    monthlyLabel.appendChild(monthly);
+    grid.appendChild(monthlyLabel);
+    const amountLabel = node("label");
+    amountLabel.id = "campaign-route-amount-label";
+    amountLabel.hidden = true;
+    amountLabel.appendChild(text("span", "楽天市場の購入金額"));
+    const amount = node("input");
+    amount.id = "campaign-route-purchase-amount";
+    amount.type = "number";
+    amount.min = "1";
+    amount.step = "1";
+    amount.value = "30000";
+    amountLabel.appendChild(amount);
+    grid.appendChild(amountLabel);
+    const traversalLabel = node("label");
+    traversalLabel.id = "campaign-route-traversal-label";
+    traversalLabel.hidden = true;
+    const traversal = node("input");
+    traversal.id = "campaign-route-traversal";
+    traversal.type = "checkbox";
+    traversalLabel.appendChild(traversal);
+    traversalLabel.appendChild(
+      text("span", "購入直前にJALマイレージパークから遷移した"),
+    );
+    grid.appendChild(traversalLabel);
+    form.appendChild(grid);
+    const submit = node("button", "primary wide");
+    submit.type = "submit";
+    submit.textContent = "キャンペーン経路を試算する";
+    form.appendChild(submit);
+    panel.appendChild(form);
+    const output = node("div", "point-spend-result");
+    output.id = "campaign-route-result";
+    output.setAttribute("aria-live", "polite");
+    output.appendChild(text("p", "経路を選んで試算してください。", "helper"));
+    panel.appendChild(output);
+    pointResult.parentElement?.after(panel);
+    const sync = () => {
+      const moppy = scenario.value === "moppy_aug_2026";
+      adLabel.hidden = !moppy;
+      monthlyLabel.hidden = !moppy;
+      amountLabel.hidden = moppy;
+      traversalLabel.hidden = moppy;
+    };
+    scenario.addEventListener("change", sync);
+    sync();
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      clear(output);
+      output.appendChild(
+        text("p", "キャンペーン経路を確認しています…", "helper"),
+      );
+      const moppy = scenario.value === "moppy_aug_2026";
+      const numberOrNull = (input) => {
+        const value = Number(input.value);
+        return input.value === "" || !Number.isSafeInteger(value)
+          ? null
+          : value;
+      };
+      try {
+        const body = await postJson(
+          "/api/experimental/campaign-routes/recommendation",
+          {
+            scenario: scenario.value,
+            effective_at: new Date().toISOString(),
+            ...(moppy
+              ? {
+                  moppy_balance_points: 12000,
+                  ad_earned_points: numberOrNull(adEarned),
+                  monthly_exchange_count: numberOrNull(monthly),
+                }
+              : {
+                  purchase_amount_jpy: numberOrNull(amount),
+                  portal_traversal_confirmed: traversal.checked,
+                }),
+          },
+        );
+        renderCampaignRoute(output, safeCampaignRoute(body));
+      } catch {
+        clear(output);
+        output.appendChild(
+          text("p", "キャンペーン経路を計算できませんでした。", "error-panel"),
+        );
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  };
+
+  insertCampaignRoutePanel();
+
   // ---------------------------------------------------------------------
   // Payment stack comparison.
   //

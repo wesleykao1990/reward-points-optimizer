@@ -66,8 +66,6 @@ if (!semantic.valid)
   );
 
 const sources = registry.sources;
-if (sources.length !== 176)
-  throw new Error(`Expected 176 source seeds, found ${sources.length}`);
 if (new Set(sources.map((source) => source.id)).size !== sources.length)
   throw new Error("Duplicate source IDs");
 if (new Set(sources.map((source) => source.source_url)).size !== sources.length)

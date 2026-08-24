@@ -22,7 +22,17 @@ const RESEARCH_FILES = [
   "p0-point-rules-b.research.v0.1.json",
   "p0-wallet-card-rules.research.v0.1.json",
   "p0-merchant-transit-regulatory-rules.research.v0.1.json",
+  "p0-complex-route-benchmark.research.v0.1.json",
 ] as const;
+
+interface Source {
+  readonly source_id: string;
+  readonly family_id: string;
+  readonly roles: readonly string[];
+  readonly url: string;
+  readonly publisher: string;
+  readonly official_domain: string;
+}
 
 interface Claim {
   readonly claim_id: string;
@@ -34,31 +44,54 @@ interface Claim {
   readonly source_ids: readonly string[];
   readonly value: unknown;
   readonly applicability: unknown;
+  readonly exclusions?: readonly string[];
 }
 
 let rows: Record<string, unknown>[] = [];
 
 /** Project the fixtures into the exact shape the SQL projection returns. */
 function factRows(
-  artifacts: readonly { metadata: { artifact_id: string }; claims: Claim[] }[],
+  artifacts: readonly {
+    metadata: { artifact_id: string };
+    sources: Source[];
+    claims: Claim[];
+  }[],
 ): Record<string, unknown>[] {
   return artifacts.flatMap((artifact, index) =>
-    artifact.claims.map((claim) => ({
-      claim_id: claim.claim_id,
-      family_id: claim.family_id,
-      source_role_id: claim.source_role_id,
-      claim_type: claim.claim_type,
-      subject: claim.subject,
-      predicate: claim.predicate,
-      source_ids: claim.source_ids,
-      value: claim.value,
-      applicability: claim.applicability,
-      research_artifact_id: artifact.metadata.artifact_id,
-      implementation_version: `p0-set-${index}.implementation.v1`,
-      implementation_hash: `sha256:${String(index).repeat(64).slice(0, 64)}`,
-      // node-postgres hands back a Date for timestamptz.
-      as_of: new Date("2026-08-22T00:20:17+09:00"),
-    })),
+    artifact.claims.map((claim) => {
+      const sources = new Map(
+        artifact.sources.map((source) => [source.source_id, source]),
+      );
+      return {
+        claim_id: claim.claim_id,
+        family_id: claim.family_id,
+        source_role_id: claim.source_role_id,
+        claim_type: claim.claim_type,
+        subject: claim.subject,
+        predicate: claim.predicate,
+        source_ids: claim.source_ids,
+        source_identity: claim.source_ids.map((sourceId) => {
+          const source = sources.get(sourceId);
+          if (!source) throw new Error(`fixture source missing: ${sourceId}`);
+          return {
+            source_id: source.source_id,
+            family_id: source.family_id,
+            roles: source.roles,
+            url: source.url,
+            publisher: source.publisher,
+            official_domain: source.official_domain,
+          };
+        }),
+        value: claim.value,
+        applicability: claim.applicability,
+        exclusions: claim.exclusions ?? [],
+        research_artifact_id: artifact.metadata.artifact_id,
+        implementation_version: `p0-set-${index}.implementation.v1`,
+        implementation_hash: `sha256:${String(index).repeat(64).slice(0, 64)}`,
+        // node-postgres hands back a Date for timestamptz.
+        as_of: new Date("2026-08-22T00:20:17+09:00"),
+      };
+    }),
   );
 }
 
