@@ -27,15 +27,22 @@ const SCHEMA_DESTINATIONS = new Map([
   ],
   [
     "0026_merchant_location_public_rpc.sql",
-    "20260824102433_schema_0026_merchant_location_public_rpc.sql",
+    "20260824102910_schema_0026_merchant_location_public_rpc.sql",
   ],
   [
     "0027_p0_route_graph_source_identity.sql",
-    "20260824102434_schema_0027_p0_route_graph_source_identity.sql",
+    "20260825120000_schema_0027_p0_route_graph_source_identity.sql",
   ],
   [
     "0028_p0_route_graph_open_ended_windows.sql",
-    "20260825120000_schema_0028_p0_route_graph_open_ended_windows.sql",
+    "20260825120001_schema_0028_p0_route_graph_open_ended_windows.sql",
+  ],
+]);
+
+const DATA_DESTINATIONS = new Map([
+  [
+    "012_p0_complex_route_benchmark_implementation.sql",
+    "20260825120002_released_data_012_p0_complex_route_benchmark_implementation.sql",
   ],
 ]);
 
@@ -107,6 +114,22 @@ function migrationVersion(base, index) {
   return (base + BigInt(index + 1)).toString();
 }
 
+function schemaDestination(name, index) {
+  const explicit = SCHEMA_DESTINATIONS.get(name);
+  if (explicit !== undefined) return explicit;
+  if (index >= 21)
+    throw new Error(`supabase_schema_destination_required:${name}`);
+  return `${migrationVersion(20260817000000n, index)}_schema_${name}`;
+}
+
+function dataDestination(name, index) {
+  const explicit = DATA_DESTINATIONS.get(name);
+  if (explicit !== undefined) return explicit;
+  if (index >= 11)
+    throw new Error(`supabase_data_destination_required:${name}`);
+  return `${migrationVersion(20260818000000n, index)}_released_data_${name}`;
+}
+
 function postgresSql(source, sourceName) {
   const lines = source
     .split(/\r?\n/u)
@@ -135,14 +158,12 @@ async function main(requestedMode) {
     ...schemaNames.map((name, index) => ({
       source: join(schemaDirectory, name),
       sourceName: `db/${name}`,
-      destination:
-        SCHEMA_DESTINATIONS.get(name) ??
-        `${migrationVersion(20260817000000n, index)}_schema_${name}`,
+      destination: schemaDestination(name, index),
     })),
     ...dataNames.map((name, index) => ({
       source: join(dataDirectory, name),
       sourceName: `db/seeds/${name}`,
-      destination: `${migrationVersion(20260818000000n, index)}_released_data_${name}`,
+      destination: dataDestination(name, index),
     })),
   ];
   const destinations = new Set(inputs.map((item) => item.destination));
