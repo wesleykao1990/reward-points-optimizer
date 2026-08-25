@@ -1,4 +1,4 @@
--- Staged from db/0029_production_exchange_directory_reconciliation.sql; edit the canonical source, not this file.
+-- Staged from db/0046_production_exchange_directory_reconciliation.sql; edit the canonical source, not this file.
 -- Automatic Agent Feed exchange-directory reconciliation.
 --
 -- A signed rewards.transfer_change finding may carry one complete or partial

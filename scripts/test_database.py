@@ -11,7 +11,22 @@ from pathlib import Path
 
 
 BASE = Path(__file__).resolve().parents[1]
-MIGRATIONS = sorted((BASE / "db").glob("[0-9][0-9][0-9][0-9]_*.sql"))
+# These migrations bind Rewards to schemas/tables deployed by the co-located
+# Agent Feed and credit-card catalogue. The standalone Rewards CI database does
+# not install those external owners; their exact hosted files are instead
+# checked by deploy:supabase:check and exercised in the live deployment gate.
+HOSTED_INTEGRATION_MIGRATIONS = {
+    "0031_agent_feed_canonical_hash.sql",
+    "0032_agent_feed_native_experimental_projection.sql",
+    "0033_agent_feed_native_bounded_ingress.sql",
+    "0034_agent_feed_outbox_pgcrypto_schema.sql",
+    "0036_asset_source_catalogue.sql",
+}
+MIGRATIONS = [
+    path
+    for path in sorted((BASE / "db").glob("[0-9][0-9][0-9][0-9]_*.sql"))
+    if path.name not in HOSTED_INTEGRATION_MIGRATIONS
+]
 SEEDS = sorted((BASE / "db" / "seeds").glob("[0-9][0-9][0-9]_*.sql"))
 TESTS = sorted((BASE / "db" / "tests").glob("[0-9][0-9][0-9]_*.sql"))
 

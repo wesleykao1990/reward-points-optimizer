@@ -83,6 +83,11 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     direct payment authority, and supplies the complete latest 364-fact
     snapshot to strict route compilers. It creates no checksum gate and no
    request-time evidence-approval dependency.
+36. `0036_asset_source_catalogue.sql` restores the hosted, browser-safe asset
+    identity/source-page projection as a canonical migration.
+42–45. The online-commerce schema, golden catalogue/facts, and purchase-context
+    API preserve the hosted combined migration while remaining independently
+    testable canonical files.
 46. `0046_production_exchange_directory_reconciliation.sql` consumes explicit
     structured exchange-directory snapshots from signed Agent Feed transfer
     findings, reconciles complete and partial versions, records affected graph

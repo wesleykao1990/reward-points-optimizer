@@ -69,52 +69,144 @@
   const CARD_VIEWBOX = "0 0 856 540";
   let assetInstance = 0;
 
-  const SERVICE_SPECS = new Map([
-    ["point.d", ["d POINT", "d", "#f8f9fb", "#d9dce2", "#d70032", "#161616"]],
-    ["point.jre", ["JRE POINT", "JRE", "#f6f8f7", "#dfe8e2", "#11823b", "#102719"]],
-    ["point.nanaco", ["nanaco Points", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"]],
-    ["point.paypay", ["PayPay Points", "P", "#fff7f8", "#e8eaee", "#ff003c", "#252122"]],
-    ["point.ponta", ["Ponta", "P", "#fff6e6", "#ffd189", "#ef7d00", "#3d2711"]],
-    ["point.rakuten", ["Rakuten Point", "R", "#fff9fa", "#e7e9ee", "#bf0000", "#231b1c"]],
-    ["point.v", ["V Point", "V", "#f7fbf9", "#e2ebe8", "#16a44a", "#151e1a"]],
-    ["point.waon", ["WAON POINT", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"]],
-    ["wallet.aeonpay", ["AEON Pay", "A", "#f9f5ff", "#e5d7f4", "#7b2f8e", "#2b1630"]],
-    ["wallet.aupay", ["au PAY", "au", "#fff6ed", "#ffd2ad", "#e85a00", "#3a2114"]],
-    ["wallet.dbarai", ["d払い", "d", "#fff7f8", "#e9eaed", "#d70032", "#171717"]],
-    ["wallet.famipay", ["FamiPay", "F", "#f5fbf7", "#dceee6", "#159447", "#163429"]],
-    ["wallet.paypay", ["PayPay", "P", "#ff244e", "#ad001f", "#ff003c", "#ffffff"]],
-    ["wallet.rakutenpay", ["Rakuten Pay", "R", "#d9133d", "#860019", "#bf0000", "#ffffff"]],
-    ["point.moppy", ["Moppy", "M", "#fff8ed", "#ffd79e", "#ee8200", "#42250d"]],
-    ["point.saison", ["Saison Permanent", "S", "#f7f9ff", "#dfe7fb", "#114fa3", "#18243a"]],
-    ["point.saison-permanent", ["Saison Permanent", "S", "#f7f9ff", "#dfe7fb", "#114fa3", "#18243a"]],
-    ["point.jr-kyupo", ["JR Kyupo", "JR", "#f5fbf8", "#dcece5", "#0d824f", "#143328"]],
-    ["point.seven-mile", ["Seven Mile", "7i", "#fff7f0", "#ffe0c2", "#f36c21", "#302014"]],
-    ["storedvalue.suica", ["Suica", "Su", "#f3faf6", "#d7eadf", "#1ca14d", "#143023"]],
-    ["transit.suica", ["Suica", "Su", "#f3faf6", "#d7eadf", "#1ca14d", "#143023"]],
-    ["wallet.anapay", ["ANA Pay", "ANA", "#f2f7ff", "#d9e7fb", "#0a4fa3", "#102945"]],
-    ["wallet.kyash", ["Kyash", "K", "#fff4f7", "#fadce4", "#e31962", "#3c1422"]],
-    ["wallet.revolut", ["Revolut", "R", "#f6f7fb", "#dfe2eb", "#121826", "#121826"]],
-    ["wallet.revolut-jp", ["Revolut", "R", "#f6f7fb", "#dfe2eb", "#121826", "#121826"]],
-    ["mile.ana", ["ANA Mileage Club", "ANA", "#f2f7ff", "#d8e7fa", "#0c4c9b", "#112942"]],
-    ["mile.jal", ["JAL Mileage Bank", "JAL", "#fff6f6", "#ebe8e8", "#d71920", "#2c2020"]],
-    ["portal.jal-mileage-park", ["JAL Mileage Park", "JAL", "#fff6f6", "#ebe8e8", "#d71920", "#2c2020"]],
-    ["emoney.nanaco", ["nanaco", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"]],
-    ["emoney.waon", ["WAON", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"]],
-    ["storedvalue.nanaco", ["nanaco", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"]],
-    ["storedvalue.waon", ["WAON", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"]],
-  ].map(([id, values]) => [
-    id,
-    {
+  const SERVICE_SPECS = new Map(
+    [
+      ["point.d", ["d POINT", "d", "#f8f9fb", "#d9dce2", "#d70032", "#161616"]],
+      [
+        "point.jre",
+        ["JRE POINT", "JRE", "#f6f8f7", "#dfe8e2", "#11823b", "#102719"],
+      ],
+      [
+        "point.nanaco",
+        ["nanaco Points", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"],
+      ],
+      [
+        "point.paypay",
+        ["PayPay Points", "P", "#fff7f8", "#e8eaee", "#ff003c", "#252122"],
+      ],
+      [
+        "point.ponta",
+        ["Ponta", "P", "#fff6e6", "#ffd189", "#ef7d00", "#3d2711"],
+      ],
+      [
+        "point.rakuten",
+        ["Rakuten Point", "R", "#fff9fa", "#e7e9ee", "#bf0000", "#231b1c"],
+      ],
+      ["point.v", ["V Point", "V", "#f7fbf9", "#e2ebe8", "#16a44a", "#151e1a"]],
+      [
+        "point.waon",
+        ["WAON POINT", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"],
+      ],
+      [
+        "wallet.aeonpay",
+        ["AEON Pay", "A", "#f9f5ff", "#e5d7f4", "#7b2f8e", "#2b1630"],
+      ],
+      [
+        "wallet.aupay",
+        ["au PAY", "au", "#fff6ed", "#ffd2ad", "#e85a00", "#3a2114"],
+      ],
+      [
+        "wallet.dbarai",
+        ["d払い", "d", "#fff7f8", "#e9eaed", "#d70032", "#171717"],
+      ],
+      [
+        "wallet.famipay",
+        ["FamiPay", "F", "#f5fbf7", "#dceee6", "#159447", "#163429"],
+      ],
+      [
+        "wallet.paypay",
+        ["PayPay", "P", "#ff244e", "#ad001f", "#ff003c", "#ffffff"],
+      ],
+      [
+        "wallet.rakutenpay",
+        ["Rakuten Pay", "R", "#d9133d", "#860019", "#bf0000", "#ffffff"],
+      ],
+      [
+        "point.moppy",
+        ["Moppy", "M", "#fff8ed", "#ffd79e", "#ee8200", "#42250d"],
+      ],
+      [
+        "point.saison",
+        ["Saison Permanent", "S", "#f7f9ff", "#dfe7fb", "#114fa3", "#18243a"],
+      ],
+      [
+        "point.saison-permanent",
+        ["Saison Permanent", "S", "#f7f9ff", "#dfe7fb", "#114fa3", "#18243a"],
+      ],
+      [
+        "point.jr-kyupo",
+        ["JR Kyupo", "JR", "#f5fbf8", "#dcece5", "#0d824f", "#143328"],
+      ],
+      [
+        "point.seven-mile",
+        ["Seven Mile", "7i", "#fff7f0", "#ffe0c2", "#f36c21", "#302014"],
+      ],
+      [
+        "storedvalue.suica",
+        ["Suica", "Su", "#f3faf6", "#d7eadf", "#1ca14d", "#143023"],
+      ],
+      [
+        "transit.suica",
+        ["Suica", "Su", "#f3faf6", "#d7eadf", "#1ca14d", "#143023"],
+      ],
+      [
+        "wallet.anapay",
+        ["ANA Pay", "ANA", "#f2f7ff", "#d9e7fb", "#0a4fa3", "#102945"],
+      ],
+      [
+        "wallet.kyash",
+        ["Kyash", "K", "#fff4f7", "#fadce4", "#e31962", "#3c1422"],
+      ],
+      [
+        "wallet.revolut",
+        ["Revolut", "R", "#f6f7fb", "#dfe2eb", "#121826", "#121826"],
+      ],
+      [
+        "wallet.revolut-jp",
+        ["Revolut", "R", "#f6f7fb", "#dfe2eb", "#121826", "#121826"],
+      ],
+      [
+        "mile.ana",
+        ["ANA Mileage Club", "ANA", "#f2f7ff", "#d8e7fa", "#0c4c9b", "#112942"],
+      ],
+      [
+        "mile.jal",
+        ["JAL Mileage Bank", "JAL", "#fff6f6", "#ebe8e8", "#d71920", "#2c2020"],
+      ],
+      [
+        "portal.jal-mileage-park",
+        ["JAL Mileage Park", "JAL", "#fff6f6", "#ebe8e8", "#d71920", "#2c2020"],
+      ],
+      [
+        "emoney.nanaco",
+        ["nanaco", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"],
+      ],
+      [
+        "emoney.waon",
+        ["WAON", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"],
+      ],
+      [
+        "storedvalue.nanaco",
+        ["nanaco", "7", "#f8f8f7", "#e9e8e4", "#f28a19", "#26211c"],
+      ],
+      [
+        "storedvalue.waon",
+        ["WAON", "W", "#fbf8fd", "#e8dff0", "#7b3f98", "#221a27"],
+      ],
+    ].map(([id, values]) => [
       id,
-      name: values[0],
-      mark: values[1],
-      top: values[2],
-      bottom: values[3],
-      accent: values[4],
-      text: values[5],
-      kind: "service",
-    },
-  ]));
+      {
+        id,
+        name: values[0],
+        mark: values[1],
+        top: values[2],
+        bottom: values[3],
+        accent: values[4],
+        text: values[5],
+        kind: "service",
+      },
+    ]),
+  );
 
   const CARD_REPRESENTATIVES = Object.freeze({
     "card.aeon": {
@@ -185,7 +277,7 @@
   });
 
   const LABEL_IDS = Object.freeze({
-    "dポイント": "point.d",
+    dポイント: "point.d",
     "d Point": "point.d",
     "d POINT": "point.d",
     "JRE POINT": "point.jre",
@@ -194,37 +286,37 @@
     PayPay: "wallet.paypay",
     "PayPay Points": "point.paypay",
     Ponta: "point.ponta",
-    "楽天ポイント": "point.rakuten",
+    楽天ポイント: "point.rakuten",
     "Rakuten Point": "point.rakuten",
-    "Vポイント": "point.v",
+    Vポイント: "point.v",
     "V Point": "point.v",
     "WAON POINT": "point.waon",
     "AEON Pay": "wallet.aeonpay",
     "au PAY": "wallet.aupay",
-    "d払い": "wallet.dbarai",
+    d払い: "wallet.dbarai",
     FamiPay: "wallet.famipay",
-    "楽天ペイ": "wallet.rakutenpay",
+    楽天ペイ: "wallet.rakutenpay",
     "Rakuten Pay": "wallet.rakutenpay",
     Moppy: "point.moppy",
-    "永久不滅ポイント": "point.saison-permanent",
-    "JRキューポ": "point.jr-kyupo",
-    "セブンマイル": "point.seven-mile",
+    永久不滅ポイント: "point.saison-permanent",
+    JRキューポ: "point.jr-kyupo",
+    セブンマイル: "point.seven-mile",
     Suica: "storedvalue.suica",
     "ANA Pay": "wallet.anapay",
     Revolut: "wallet.revolut-jp",
     Kyash: "wallet.kyash",
-    "ANAマイル": "mile.ana",
+    ANAマイル: "mile.ana",
     "ANA Mileage Club": "mile.ana",
-    "JALマイル": "mile.jal",
+    JALマイル: "mile.jal",
     "JAL Mileage Bank": "mile.jal",
-    "JALマイレージパーク": "portal.jal-mileage-park",
+    JALマイレージパーク: "portal.jal-mileage-park",
   });
 
   const svgNode = (tag, attributes = {}, text = null) => {
     const element = document.createElementNS(SVG_NS, tag);
-    Object.entries(attributes).forEach(([name, value]) =>
-      element.setAttribute(name, String(value)),
-    );
+    Object.entries(attributes).forEach(([name, value]) => {
+      element.setAttribute(name, String(value));
+    });
     if (text !== null) element.textContent = String(text);
     return element;
   };
@@ -249,7 +341,11 @@
     if (value.includes("rakuten")) return "R";
     if (value.includes("paypay")) return "P";
     if (value.includes("aeon")) return "AEON";
-    if (value.includes("mitsui") || value.includes("sumitomo") || value.includes("olive"))
+    if (
+      value.includes("mitsui") ||
+      value.includes("sumitomo") ||
+      value.includes("olive")
+    )
       return "SMBC";
     if (value.includes("jcb")) return "JCB";
     if (/\bd card\b|docomo/u.test(value)) return "d";
@@ -260,7 +356,11 @@
     if (value.includes("ana")) return "ANA";
     if (value.includes("jal")) return "JAL";
     if (value.includes("saison")) return "SAISON";
-    if (value.includes("view") || value.includes("jre") || value.includes("suica"))
+    if (
+      value.includes("view") ||
+      value.includes("jre") ||
+      value.includes("suica")
+    )
       return "VIEW";
     if (value.includes("eneos")) return "ENEOS";
     if (value.includes("orico")) return "Orico";
@@ -298,47 +398,160 @@
     const key = `${card.name} ${card.issuer || ""}`.toLowerCase();
     const category = card.category;
     if (category === "gold")
-      return { top: "#e8c676", bottom: "#9e6d16", accent: "#fff1b8", text: "#21170a" };
-    if (category === "platinum" || category === "premium" || category === "hotel")
-      return { top: "#323840", bottom: "#0c1015", accent: "#c9d2db", text: "#f7f8fa" };
+      return {
+        top: "#e8c676",
+        bottom: "#9e6d16",
+        accent: "#fff1b8",
+        text: "#21170a",
+      };
+    if (
+      category === "platinum" ||
+      category === "premium" ||
+      category === "hotel"
+    )
+      return {
+        top: "#323840",
+        bottom: "#0c1015",
+        accent: "#c9d2db",
+        text: "#f7f8fa",
+      };
     if (key.includes("paypay"))
-      return { top: "#303238", bottom: "#111217", accent: "#ff003c", text: "#ffffff" };
+      return {
+        top: "#303238",
+        bottom: "#111217",
+        accent: "#ff003c",
+        text: "#ffffff",
+      };
     if (key.includes("rakuten"))
-      return { top: "#f4f5f7", bottom: "#cbd0d7", accent: "#bf0000", text: "#6f0000" };
+      return {
+        top: "#f4f5f7",
+        bottom: "#cbd0d7",
+        accent: "#bf0000",
+        text: "#6f0000",
+      };
     if (key.includes("aeon"))
-      return { top: "#5753b5", bottom: "#252269", accent: "#d9468a", text: "#ffffff" };
-    if (key.includes("mitsui") || key.includes("sumitomo") || key.includes("olive"))
-      return { top: "#1a8a63", bottom: "#053e30", accent: "#b4dc3f", text: "#ffffff" };
+      return {
+        top: "#5753b5",
+        bottom: "#252269",
+        accent: "#d9468a",
+        text: "#ffffff",
+      };
+    if (
+      key.includes("mitsui") ||
+      key.includes("sumitomo") ||
+      key.includes("olive")
+    )
+      return {
+        top: "#1a8a63",
+        bottom: "#053e30",
+        accent: "#b4dc3f",
+        text: "#ffffff",
+      };
     if (key.includes("jcb"))
-      return { top: "#4c5b7a", bottom: "#20283a", accent: "#d8e0ee", text: "#ffffff" };
+      return {
+        top: "#4c5b7a",
+        bottom: "#20283a",
+        accent: "#d8e0ee",
+        text: "#ffffff",
+      };
     if (key.includes("docomo") || /\bd card\b/u.test(key))
-      return { top: "#f3f3f1", bottom: "#d8d8d4", accent: "#d70032", text: "#2c2525" };
+      return {
+        top: "#f3f3f1",
+        bottom: "#d8d8d4",
+        accent: "#d70032",
+        text: "#2c2525",
+      };
     if (key.includes("au"))
-      return { top: "#f3933c", bottom: "#ba4c10", accent: "#fff2d9", text: "#ffffff" };
+      return {
+        top: "#f3933c",
+        bottom: "#ba4c10",
+        accent: "#fff2d9",
+        text: "#ffffff",
+      };
     if (key.includes("epos"))
-      return { top: "#f0443e", bottom: "#aa1015", accent: "#ffffff", text: "#ffffff" };
+      return {
+        top: "#f0443e",
+        bottom: "#aa1015",
+        accent: "#ffffff",
+        text: "#ffffff",
+      };
     if (key.includes("american express"))
-      return { top: "#5c8e78", bottom: "#21493b", accent: "#d9eadf", text: "#ffffff" };
+      return {
+        top: "#5c8e78",
+        bottom: "#21493b",
+        accent: "#d9eadf",
+        text: "#ffffff",
+      };
     if (key.includes("ana"))
-      return { top: "#1d65a8", bottom: "#072c5a", accent: "#c7e4ff", text: "#ffffff" };
+      return {
+        top: "#1d65a8",
+        bottom: "#072c5a",
+        accent: "#c7e4ff",
+        text: "#ffffff",
+      };
     if (key.includes("jal"))
-      return { top: "#f3f3f1", bottom: "#d6d6d2", accent: "#d71920", text: "#2c2020" };
+      return {
+        top: "#f3f3f1",
+        bottom: "#d6d6d2",
+        accent: "#d71920",
+        text: "#2c2020",
+      };
     if (key.includes("saison"))
-      return { top: "#2d6cba", bottom: "#123c74", accent: "#f4f6fb", text: "#ffffff" };
+      return {
+        top: "#2d6cba",
+        bottom: "#123c74",
+        accent: "#f4f6fb",
+        text: "#ffffff",
+      };
     if (key.includes("view") || key.includes("jre") || key.includes("suica"))
-      return { top: "#eef0f2", bottom: "#c7ccd1", accent: "#16814d", text: "#1e2a24" };
+      return {
+        top: "#eef0f2",
+        bottom: "#c7ccd1",
+        accent: "#16814d",
+        text: "#1e2a24",
+      };
     if (key.includes("mufg") || key.includes("mitsubishi"))
-      return { top: "#494b50", bottom: "#1a1b1e", accent: "#d71920", text: "#ffffff" };
+      return {
+        top: "#494b50",
+        bottom: "#1a1b1e",
+        accent: "#d71920",
+        text: "#ffffff",
+      };
     if (key.includes("eneos"))
-      return { top: "#f45a32", bottom: "#b71915", accent: "#ffb000", text: "#ffffff" };
+      return {
+        top: "#f45a32",
+        bottom: "#b71915",
+        accent: "#ffb000",
+        text: "#ffffff",
+      };
     if (key.includes("orico"))
-      return { top: "#303238", bottom: "#111217", accent: "#f58220", text: "#ffffff" };
+      return {
+        top: "#303238",
+        bottom: "#111217",
+        accent: "#f58220",
+        text: "#ffffff",
+      };
     if (key.includes("life"))
-      return { top: "#3a3d43", bottom: "#17191d", accent: "#ef3340", text: "#ffffff" };
+      return {
+        top: "#3a3d43",
+        bottom: "#17191d",
+        accent: "#ef3340",
+        text: "#ffffff",
+      };
     if (key.includes("merc"))
-      return { top: "#ff5964", bottom: "#c91f36", accent: "#ffffff", text: "#ffffff" };
+      return {
+        top: "#ff5964",
+        bottom: "#c91f36",
+        accent: "#ffffff",
+        text: "#ffffff",
+      };
     if (key.includes("apollostation"))
-      return { top: "#f4f5f7", bottom: "#d9dde2", accent: "#e0222c", text: "#252525" };
+      return {
+        top: "#f4f5f7",
+        bottom: "#d9dde2",
+        accent: "#e0222c",
+        text: "#252525",
+      };
     const hue = hashHue(card.id);
     return {
       top: `hsl(${hue} 42% 48%)`,
@@ -711,13 +924,13 @@
   const observePaymentLogos = () => {
     hydratePaymentLogos();
     const observer = new MutationObserver((records) => {
-      records.forEach((record) =>
+      records.forEach((record) => {
         record.addedNodes.forEach((node) => {
           if (!(node instanceof Element)) return;
           if (node.matches(".payment-logo")) hydrateLogoFrame(node);
           hydratePaymentLogos(node);
-        }),
-      );
+        });
+      });
     });
     observer.observe(document.body, { childList: true, subtree: true });
   };

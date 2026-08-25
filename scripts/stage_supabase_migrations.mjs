@@ -38,8 +38,88 @@ const SCHEMA_DESTINATIONS = new Map([
     "20260824172039_schema_0028_p0_route_graph_open_ended_windows.sql",
   ],
   [
+    "0029_verified_agent_feed_experimental_projection.sql",
+    "20260825082135_verified_agent_feed_experimental_projection.sql",
+  ],
+  [
+    "0031_agent_feed_canonical_hash.sql",
+    "20260825083716_agent_feed_canonical_hash.sql",
+  ],
+  [
+    "0032_agent_feed_native_experimental_projection.sql",
+    "20260825084216_agent_feed_native_experimental_projection.sql",
+  ],
+  [
+    "0033_agent_feed_native_bounded_ingress.sql",
+    "20260825084325_agent_feed_native_bounded_ingress.sql",
+  ],
+  [
+    "0034_agent_feed_outbox_pgcrypto_schema.sql",
+    "20260825084544_agent_feed_outbox_pgcrypto_schema.sql",
+  ],
+  [
+    "0035_credit_card_direct_publication.sql",
+    "20260825100337_credit_card_direct_publication_v2.sql",
+  ],
+  [
+    "0036_asset_source_catalogue.sql",
+    "20260825202837_asset_source_catalogue.sql",
+  ],
+  [
+    "0037_credit_card_rule_review_gate_scope.sql",
+    "20260825100510_credit_card_rule_review_gate_scope.sql",
+  ],
+  [
+    "0038_credit_card_single_character_slug_fix.sql",
+    "20260825100641_credit_card_single_character_slug_fix.sql",
+  ],
+  [
+    "0039_credit_card_ingest_publish_helper.sql",
+    "20260825101256_credit_card_ingest_publish_helper.sql",
+  ],
+  [
+    "0040_credit_card_native_reward_publication.sql",
+    "20260825102424_credit_card_native_reward_publication.sql",
+  ],
+  [
+    "0041_credit_card_agent_feed_fact_helper.sql",
+    "20260825102700_credit_card_agent_feed_fact_helper.sql",
+  ],
+  [
+    "0042_online_commerce_schema.sql",
+    "20260825202913_online_commerce_schema_and_golden_sites.sql",
+  ],
+  [
+    "0045_online_commerce_purchase_context_api.sql",
+    "20260825203333_online_commerce_purchase_context_api.sql",
+  ],
+  [
     "0046_production_exchange_directory_reconciliation.sql",
     "20260825203108_schema_0029_production_exchange_directory_reconciliation.sql",
+  ],
+]);
+
+const SKIPPED_SCHEMA_MIGRATIONS = new Set([
+  "0030_agent_feed_native_bounded_ingress.sql",
+  "0043_online_commerce_golden_catalogue.sql",
+  "0044_online_commerce_golden_facts.sql",
+]);
+
+const SCHEMA_SOURCE_GROUPS = new Map([
+  [
+    "0042_online_commerce_schema.sql",
+    [
+      "0042_online_commerce_schema.sql",
+      "0043_online_commerce_golden_catalogue.sql",
+      "0044_online_commerce_golden_facts.sql",
+    ],
+  ],
+]);
+
+const ADDITIONAL_SCHEMA_DESTINATIONS = new Map([
+  [
+    "0031_agent_feed_canonical_hash.sql",
+    ["20260825084147_agent_feed_canonical_hash.sql"],
   ],
 ]);
 
@@ -171,14 +251,28 @@ async function main(requestedMode) {
   assertSequence(dataNames, 3, "data");
 
   const inputs = [
-    ...schemaNames.map((name, index) => ({
-      source: join(schemaDirectory, name),
-      sourceName: `db/${name}`,
-      destination: schemaDestination(name, index),
-    })),
+    ...schemaNames.flatMap((name, index) => {
+      if (SKIPPED_SCHEMA_MIGRATIONS.has(name)) return [];
+      const sourceNames = SCHEMA_SOURCE_GROUPS.get(name) ?? [name];
+      const destinations = [
+        schemaDestination(name, index),
+        ...(ADDITIONAL_SCHEMA_DESTINATIONS.get(name) ?? []),
+      ];
+      return destinations.map((destination) => ({
+        sources: sourceNames.map((sourceName) => ({
+          source: join(schemaDirectory, sourceName),
+          sourceName: `db/${sourceName}`,
+        })),
+        destination,
+      }));
+    }),
     ...dataNames.map((name, index) => ({
-      source: join(dataDirectory, name),
-      sourceName: `db/seeds/${name}`,
+      sources: [
+        {
+          source: join(dataDirectory, name),
+          sourceName: `db/seeds/${name}`,
+        },
+      ],
       destination: dataDestination(name, index),
     })),
   ];
@@ -188,10 +282,14 @@ async function main(requestedMode) {
 
   const staged = [];
   for (const input of inputs) {
-    const source = await fs.readFile(input.source, "utf8");
+    const contents = [];
+    for (const item of input.sources) {
+      const source = await fs.readFile(item.source, "utf8");
+      contents.push(postgresSql(source, item.sourceName));
+    }
     staged.push({
       ...input,
-      contents: postgresSql(source, input.sourceName),
+      contents: contents.join("\n"),
     });
   }
 
