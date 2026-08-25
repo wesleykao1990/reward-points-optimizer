@@ -1,0 +1,39 @@
+name: Retry the full 246-asset reference pipeline
+
+on:
+  workflow_run:
+    workflows:
+      - Build and deploy all 246 reference-faithful Liquid Glass assets
+    types:
+      - completed
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  retry:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Count recent failed full-catalogue attempts
+        id: count
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          failures="$(gh api \
+            'repos/${{ github.repository }}/actions/workflows/liquid-glass-assets-v5.yml/runs?per_page=10' \
+            --jq '[.workflow_runs[] | select(.conclusion == "failure")] | length')"
+          echo "failures=$failures" >> "$GITHUB_OUTPUT"
+
+      - name: Retry when the bounded budget remains
+        if: fromJSON(steps.count.outputs.failures) < 3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run liquid-glass-assets-v5.yml --ref main
+
+      - name: Exhausted retry budget
+        if: fromJSON(steps.count.outputs.failures) >= 3
+        run: |
+          echo "Three full attempts failed; the diagnostics artifact from the latest run must be inspected." >&2
+          exit 1
