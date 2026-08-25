@@ -64,6 +64,25 @@ export const P0_RESEARCH_IMPLEMENTATION_DESCRIPTORS = Object.freeze([
     optional_schema_keys: ["structured_transfer_required_fields"],
     optional_bounded_run_keys: ["retrieval_cutoff"],
   }),
+  Object.freeze({
+    research_artifact_id: "p0-moppy-jal-standard.research.v0.1",
+    research_artifact_type: "p0_complex_route_benchmark_research",
+    research_schema_id: "p0-complex-route-benchmark-research-v0.1",
+    implementation_version: "p0-moppy-jal-standard.implementation.v0.8",
+    coverage_index_version: "p0-coverage-index.v0.8",
+    optional_schema_keys: ["structured_transfer_required_fields"],
+    optional_bounded_run_keys: ["retrieval_cutoff"],
+  }),
+  Object.freeze({
+    research_artifact_id: "p0-exchange-route-completeness.research.v0.1",
+    research_artifact_type: "p0_complex_route_benchmark_research",
+    research_schema_id: "p0-complex-route-benchmark-research-v0.1",
+    implementation_version:
+      "p0-exchange-route-completeness.implementation.v0.9",
+    coverage_index_version: "p0-coverage-index.v0.9",
+    optional_schema_keys: ["structured_transfer_required_fields"],
+    optional_bounded_run_keys: ["retrieval_cutoff"],
+  }),
 ] as const);
 
 export const RESEARCH_FACT_REASONS = Object.freeze([

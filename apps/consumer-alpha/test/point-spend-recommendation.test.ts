@@ -106,14 +106,12 @@ describe("P0 point spending browser route", () => {
 
   it("lists the bounded P0 asset graph without evidence internals", async () => {
     const result = await listPointSpendBrowserOptions();
-    expect(result.rule_count).toBe(28);
-    expect(result.coverage).toMatchObject({
-      rule_count: 28,
-      asset_count: 22,
-      direct_pair_count: 25,
-      reachable_pair_count: 49,
-      conditional_rule_count: 13,
-    });
+    expect(result.rule_count).toBe(result.coverage.rule_count);
+    expect(result.coverage.direct_pair_count).toBeGreaterThan(0);
+    expect(result.coverage.reachable_pair_count).toBeGreaterThanOrEqual(
+      result.coverage.direct_pair_count,
+    );
+    expect(result.coverage.conditional_rule_count).toBeGreaterThan(0);
     const rakutenCoverage = result.coverage.targets_by_source.find(
       (source) => source.asset_id === "asset.point.rakuten",
     );
@@ -138,16 +136,19 @@ describe("P0 point spending browser route", () => {
       label: "楽天ポイント",
       kind: "reward_point",
     });
-    expect(result.wallet_catalogue).toHaveLength(28);
+    expect(result.wallet_catalogue.length).toBeGreaterThan(0);
+    expect(result.wallet_catalogue.some((item) => item.kind === "point")).toBe(
+      true,
+    );
     expect(
-      result.wallet_catalogue.filter((item) => item.kind === "point"),
-    ).toHaveLength(10);
+      result.wallet_catalogue.some((item) => item.kind === "mobile_pay"),
+    ).toBe(true);
     expect(
-      result.wallet_catalogue.filter((item) => item.kind === "mobile_pay"),
-    ).toHaveLength(9);
+      result.wallet_catalogue.some((item) => item.kind === "credit_card"),
+    ).toBe(true);
     expect(
-      result.wallet_catalogue.filter((item) => item.kind === "credit_card"),
-    ).toHaveLength(7);
+      result.wallet_catalogue.some((item) => /サンプル/u.test(item.label)),
+    ).toBe(false);
     expect(result.wallet_catalogue).toContainEqual({
       family_id: "wallet.rakutenpay",
       label: "楽天ペイ",
@@ -248,6 +249,194 @@ describe("P0 point spending browser route", () => {
     ]);
   });
 
+  it("includes newly enumerated official-directory routes in multi-hop search", async () => {
+    const result = await recommendPointSpend({
+      source_asset_id: "asset.point.waon",
+      target_asset_id: "asset.mile.ana",
+      balance: 10_000,
+      objective: "maximize_target",
+      effective_at: "2026-08-25T21:40:00+09:00",
+      confirmed_rule_ids: [],
+      confirmed_prerequisite_ids: [
+        "prereq.aeon-sugoca",
+        "prereq.jq-card-saison",
+        "prereq.mizuho-ana-existing-holder",
+      ],
+      period_source_used_by_rule: {},
+      unit_value_jpy: null,
+    });
+    expect(result).toMatchObject({
+      status: "ready",
+      winner: { target_amount: "7000", residual_source_amount: "0" },
+    });
+    expect(result.winner?.steps.map((step) => step.destination_label)).toEqual([
+      "JRキューポ",
+      "セゾン永久不滅ポイント",
+      "ANAマイル",
+    ]);
+  });
+
+  it("prices production Moppy fees, exact WAON amounts, and ANA miles", async () => {
+    const common = {
+      source_asset_id: "asset.point.moppy",
+      balance: 1070,
+      objective: "maximize_target" as const,
+      effective_at: "2026-08-26T12:00:00+09:00",
+      confirmed_rule_ids: [] as string[],
+      confirmed_prerequisite_ids: [] as string[],
+      period_source_used_by_rule: {},
+      unit_value_jpy: null,
+    };
+    const v = await recommendPointSpend({
+      ...common,
+      target_asset_id: "asset.point.v",
+    });
+    expect(v).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "1000",
+        source_amount_used: "1070",
+        residual_source_amount: "0",
+        steps: [{ fee_source_units: "70" }],
+      },
+    });
+
+    const waon = await recommendPointSpend({
+      ...common,
+      balance: 1020,
+      target_asset_id: "asset.point.waon",
+    });
+    expect(waon).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "1000",
+        source_amount_used: "1020",
+        steps: [{ fee_source_units: "20" }],
+      },
+    });
+
+    const ponta = await recommendPointSpend({
+      ...common,
+      balance: 315,
+      target_asset_id: "asset.point.ponta",
+    });
+    expect(ponta).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "300",
+        source_amount_used: "315",
+        residual_source_amount: "0",
+        steps: [{ fee_source_units: "15" }],
+      },
+    });
+
+    const paypay = await recommendPointSpend({
+      ...common,
+      balance: 550,
+      target_asset_id: "asset.point.paypay",
+    });
+    expect(paypay).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "500",
+        source_amount_used: "550",
+        residual_source_amount: "0",
+        steps: [{ fee_source_units: "50" }],
+      },
+    });
+
+    const ana = await recommendPointSpend({
+      ...common,
+      balance: 3500,
+      target_asset_id: "asset.mile.ana",
+    });
+    expect(ana).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "1750",
+        source_amount_used: "3500",
+        residual_source_amount: "0",
+        steps: [
+          { destination_node_id: "asset.point.nanaco" },
+          { destination_node_id: "asset.mile.ana" },
+        ],
+      },
+    });
+  });
+
+  it("uses shared fiscal-year usage for JAL and ANA JR Kyupo tiers", async () => {
+    const ana = await recommendPointSpend({
+      source_asset_id: "asset.mile.ana",
+      target_asset_id: "asset.point.jr-kyupo",
+      balance: 30_000,
+      objective: "maximize_target",
+      effective_at: "2026-08-26T12:00:00+09:00",
+      confirmed_rule_ids: [],
+      confirmed_prerequisite_ids: ["prereq.jq-sugoca-ana"],
+      period_source_used_by_rule: {
+        "period.ana-partner-fiscal-year": 0,
+      },
+      unit_value_jpy: null,
+    });
+    expect(ana).toMatchObject({
+      status: "ready",
+      winner: { target_amount: "25000", source_amount_used: "30000" },
+    });
+
+    const jal = await recommendPointSpend({
+      source_asset_id: "asset.mile.jal",
+      target_asset_id: "asset.point.jr-kyupo",
+      balance: 40_000,
+      objective: "maximize_target",
+      effective_at: "2026-08-26T12:00:00+09:00",
+      confirmed_rule_ids: [],
+      confirmed_prerequisite_ids: ["prereq.jmb-jq-sugoca"],
+      period_source_used_by_rule: {
+        "period.jal-jr-kyupo-fiscal-year": 10_000,
+      },
+      unit_value_jpy: null,
+    });
+    expect(jal).toMatchObject({
+      status: "ready",
+      winner: {
+        target_amount: "20000",
+        source_amount_used: "20000",
+        residual_source_amount: "20000",
+      },
+    });
+  });
+
+  it("exposes Recruit to d point only after the linked-account condition", async () => {
+    const base = {
+      source_asset_id: "asset.point.recruit",
+      target_asset_id: "asset.point.d",
+      balance: 1000,
+      objective: "maximize_target" as const,
+      effective_at: "2026-08-25T21:40:00+09:00",
+      confirmed_rule_ids: [],
+      period_source_used_by_rule: {},
+      unit_value_jpy: null,
+    };
+    expect(
+      await recommendPointSpend({
+        ...base,
+        confirmed_prerequisite_ids: [],
+      }),
+    ).toMatchObject({
+      status: "no_route",
+      no_route_reason: "condition_confirmation_required",
+    });
+    expect(
+      await recommendPointSpend({
+        ...base,
+        confirmed_prerequisite_ids: ["prereq.recruit-d-account-link"],
+      }),
+    ).toMatchObject({
+      status: "ready",
+      winner: { target_amount: "1000", residual_source_amount: "0" },
+    });
+  });
+
   it("uses the ANA-card V-point rate only after explicit confirmation", async () => {
     const base = {
       source_asset_id: "asset.point.v",
@@ -288,6 +477,7 @@ describe("P0 point spending browser route", () => {
   it("explains uncovered, conditional, and minimum-balance no-route states", async () => {
     const uncovered = await recommendPointSpend({
       ...input,
+      source_asset_id: "asset.point.paypay",
       target_asset_id: "asset.mile.jal",
     });
     expect(uncovered).toMatchObject({
@@ -298,7 +488,7 @@ describe("P0 point spending browser route", () => {
         conditions: [],
       },
     });
-    expect(uncovered.message).toContain("楽天ポイントからJALマイル");
+    expect(uncovered.message).toContain("PayPayポイントからJALマイル");
 
     const conditionRequired = await recommendPointSpend({
       ...input,

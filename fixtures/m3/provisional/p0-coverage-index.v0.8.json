@@ -1,0 +1,13 @@
+{
+  "version": "p0-coverage-index.v0.8",
+  "entries": [
+    {
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.jal.moppy-standard-transfer",
+        "jp.moppy.exchange-directory"
+      ]
+    }
+  ]
+}

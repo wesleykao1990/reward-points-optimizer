@@ -2094,10 +2094,15 @@
               "day",
               "month",
               "year",
+              "fiscal_year_april",
               "campaign_period",
               "lifetime",
               "rolling_30_day",
             ].includes(rule.period_cap.period) ||
+            typeof rule.period_cap.usage_key !== "string" ||
+            !/^[a-z0-9][a-z0-9.-]{1,119}$/u.test(rule.period_cap.usage_key) ||
+            typeof rule.period_cap.usage_label !== "string" ||
+            rule.period_cap.usage_label.length > 120 ||
             typeof rule.period_cap.partial_consumption !== "boolean"))
       )
         throw new Error("point_spend_options_invalid");
@@ -2114,6 +2119,8 @@
             : {
                 maximum_source_units: rule.period_cap.maximum_source_units,
                 period: rule.period_cap.period,
+                usage_key: rule.period_cap.usage_key,
+                usage_label: rule.period_cap.usage_label,
                 partial_consumption: rule.period_cap.partial_consumption,
               },
       };
@@ -2614,6 +2621,7 @@
     );
     if (relevant.length === 0) return;
     container.appendChild(text("strong", "追加条件の確認"));
+    const renderedUsageKeys = new Set();
     relevant.forEach((rule) => {
       if (rule.conditions.length > 0 || rule.prerequisite_ids.length > 0) {
         const label = node("label", "point-spend-check");
@@ -2635,17 +2643,14 @@
         label.appendChild(copy);
         container.appendChild(label);
       }
-      if (rule.period_cap) {
+      if (
+        rule.period_cap &&
+        !renderedUsageKeys.has(rule.period_cap.usage_key)
+      ) {
+        renderedUsageKeys.add(rule.period_cap.usage_key);
         const label = node("label");
-        const period =
-          rule.period_cap.period === "rolling_30_day"
-            ? "過去30日間"
-            : "対象期間";
         label.appendChild(
-          text(
-            "span",
-            `${rule.label}：${period}にすでに利用した数量（上限 ${rule.period_cap.maximum_source_units}）`,
-          ),
+          text("span", `${rule.label}：${rule.period_cap.usage_label}`),
         );
         const input = node("input");
         input.type = "number";
@@ -2654,7 +2659,7 @@
         input.step = "1";
         input.value = "0";
         input.inputMode = "numeric";
-        input.dataset.pointSpendUsageRule = rule.rule_id;
+        input.dataset.pointSpendUsageRule = rule.period_cap.usage_key;
         label.appendChild(input);
         container.appendChild(label);
       }
@@ -2884,6 +2889,14 @@
       ? `${step.processing_days}・${step.start_date}に開始`
       : step.processing_days;
     item.appendChild(text("small", timing));
+    if (Number(step.fee_source_units) > 0)
+      item.appendChild(
+        text(
+          "small",
+          `交換手数料 ${step.fee_source_units} ${step.source_label}`,
+          "point-spend-fee",
+        ),
+      );
     // A hop that could not carry everything is where the plan actually loses
     // value, so it says so on the hop rather than in a footnote.
     if (step.limit_note)

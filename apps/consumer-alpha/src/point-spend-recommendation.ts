@@ -36,6 +36,8 @@ const RESEARCH_FILES = Object.freeze([
   "p0-wallet-card-rules.research.v0.1.json",
   "p0-merchant-transit-regulatory-rules.research.v0.1.json",
   "p0-complex-route-benchmark.research.v0.1.json",
+  "p0-moppy-jal-standard.research.v0.1.json",
+  "p0-exchange-route-completeness.research.v0.1.json",
 ] as const);
 
 export const MAX_POINT_SPEND_BODY_BYTES = 4_096;
@@ -148,6 +150,8 @@ export interface PointSpendBrowserStep {
   readonly destination_label: string;
   readonly source_amount: string;
   readonly destination_amount: string;
+  /** Source units charged in addition to the converted principal. */
+  readonly fee_source_units: string;
   readonly processing_days: string;
   /** Units this hop had to leave behind, in the hop's own source units. */
   readonly stranded_amount: string;
@@ -1044,10 +1048,30 @@ function edge(rule: P0SpendRule): PointRouteEdge {
     destination_units: rule.destination_units,
     minimum_source_units: rule.minimum_source_units,
     increment_source_units: rule.increment_source_units,
+    ...(rule.allowed_source_amounts === undefined
+      ? {}
+      : { allowed_source_amounts: rule.allowed_source_amounts }),
     maximum_source_units_per_request: rule.maximum_source_units_per_request,
     maximum_source_units_per_period: rule.maximum_source_units_per_period,
     maximum_period: rule.maximum_period,
     fee_source_units: rule.fee_source_units,
+    ...(rule.fee_schedule === undefined
+      ? {}
+      : { fee_schedule: rule.fee_schedule }),
+    ...(rule.period_usage_key === undefined
+      ? {}
+      : { period_usage_key: rule.period_usage_key }),
+    ...(rule.period_usage_min_source_units === undefined
+      ? {}
+      : {
+          period_usage_min_source_units: rule.period_usage_min_source_units,
+        }),
+    ...(rule.period_usage_max_source_units_exclusive === undefined
+      ? {}
+      : {
+          period_usage_max_source_units_exclusive:
+            rule.period_usage_max_source_units_exclusive,
+        }),
     processing_time_days_min: rule.processing_time_days_min,
     processing_time_days_max: rule.processing_time_days_max,
     cancellation_policy: rule.cancellation_policy,
@@ -1369,6 +1393,14 @@ export async function listPointSpendBrowserOptions(
     readonly source_asset_id: string;
     readonly destination_asset_id: string;
     readonly conditions: readonly string[];
+    readonly prerequisite_ids: readonly string[];
+    readonly period_cap: {
+      readonly maximum_source_units: string;
+      readonly period: NonNullable<P0SpendRule["maximum_period"]>;
+      readonly usage_key: string;
+      readonly usage_label: string;
+      readonly partial_consumption: boolean;
+    } | null;
   }[];
   readonly campaign_routes: readonly CampaignRouteDescriptor[];
 }> {
@@ -1473,7 +1505,9 @@ export async function listPointSpendBrowserOptions(
         (rule) =>
           rule.required_conditions_ja.length > 0 ||
           (rule.requires_rule_ids?.length ?? 0) > 0 ||
-          rule.maximum_source_units_per_period !== null,
+          rule.maximum_source_units_per_period !== null ||
+          rule.period_usage_min_source_units != null ||
+          rule.period_usage_max_source_units_exclusive != null,
       )
       .map((rule) => ({
         rule_id: rule.rule_id,
@@ -1483,11 +1517,26 @@ export async function listPointSpendBrowserOptions(
         conditions: rule.required_conditions_ja,
         prerequisite_ids: rule.requires_rule_ids ?? [],
         period_cap:
-          rule.maximum_source_units_per_period === null
+          rule.maximum_source_units_per_period === null &&
+          rule.period_usage_min_source_units == null &&
+          rule.period_usage_max_source_units_exclusive == null
             ? null
             : {
-                maximum_source_units: rule.maximum_source_units_per_period,
-                period: rule.maximum_period,
+                maximum_source_units:
+                  rule.maximum_source_units_per_period ??
+                  rule.period_usage_max_source_units_exclusive ??
+                  rule.period_usage_min_source_units ??
+                  "0",
+                period: rule.maximum_period as NonNullable<
+                  P0SpendRule["maximum_period"]
+                >,
+                usage_key: rule.period_usage_key ?? rule.rule_id,
+                usage_label:
+                  rule.maximum_period === "fiscal_year_april"
+                    ? "同一年度（4月1日〜翌年3月31日）に交換済みの数量"
+                    : rule.maximum_period === "rolling_30_day"
+                      ? "過去30日間に交換済みの数量"
+                      : "対象期間に交換済みの数量",
                 partial_consumption: rule.partial_consumption ?? true,
               },
       })),
@@ -1609,6 +1658,7 @@ function browserStep(
     destination_label: labelByAsset.get(hop.destination_asset_id) ?? "交換先",
     source_amount: hop.source_amount,
     destination_amount: hop.destination_amount,
+    fee_source_units: hop.fee_source_units,
     processing_days: dayLabel(
       hop.processing_time_days_min,
       hop.processing_time_days_max,
@@ -1723,6 +1773,30 @@ function potentialRouteRuleIds(
   return relevant;
 }
 
+function minimumSourceDebit(rule: P0SpendRule): bigint | null {
+  const principals =
+    rule.allowed_source_amounts === undefined
+      ? rule.minimum_source_units === null
+        ? []
+        : [rule.minimum_source_units]
+      : rule.allowed_source_amounts;
+  const principal = principals
+    .map((value) => BigInt(value))
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))[0];
+  if (principal === undefined) return null;
+  let fee = BigInt(rule.fee_source_units);
+  if (rule.fee_schedule !== undefined) {
+    const numerator = BigInt(rule.fee_schedule.numerator);
+    const denominator = BigInt(rule.fee_schedule.denominator);
+    const product = principal * numerator;
+    fee +=
+      rule.fee_schedule.rounding === "ceil"
+        ? (product + denominator - 1n) / denominator
+        : product / denominator;
+  }
+  return principal + fee;
+}
+
 function noRouteInfo(
   input: PointSpendBrowserInput,
   optimization: ReturnType<typeof optimizePointRoute>,
@@ -1783,6 +1857,25 @@ function noRouteInfo(
         ),
     ),
   ].sort((left, right) => left.localeCompare(right, "ja"));
+  const sourceMinimum = ruleSet.rules
+    .filter(
+      (rule) =>
+        relevantRuleIds.has(rule.rule_id) &&
+        rule.source_asset.asset_id === input.source_asset_id,
+    )
+    .map(minimumSourceDebit)
+    .filter((value): value is bigint => value !== null)
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))[0];
+  // Do not ask the user to confirm downstream membership conditions when
+  // the current balance cannot enter any first hop in the route graph.
+  if (sourceMinimum !== undefined && BigInt(input.balance) < sourceMinimum)
+    return {
+      reason: "balance_below_minimum",
+      details: {
+        minimum_source_amount: String(sourceMinimum),
+        conditions: [],
+      },
+    };
   if (conditions.length > 0)
     return {
       reason: "condition_confirmation_required",
@@ -1790,19 +1883,13 @@ function noRouteInfo(
     };
 
   if (skippedByReason.has("insufficient_or_unaligned_balance")) {
-    const minimum = ruleSet.rules
-      .filter(
-        (rule) =>
-          relevantRuleIds.has(rule.rule_id) &&
-          rule.source_asset.asset_id === input.source_asset_id &&
-          rule.minimum_source_units !== null,
-      )
-      .sort((left, right) =>
-        left.rule_id.localeCompare(right.rule_id),
-      )[0]?.minimum_source_units;
     return {
       reason: "balance_below_minimum",
-      details: { minimum_source_amount: minimum ?? null, conditions: [] },
+      details: {
+        minimum_source_amount:
+          sourceMinimum === undefined ? null : String(sourceMinimum),
+        conditions: [],
+      },
     };
   }
 

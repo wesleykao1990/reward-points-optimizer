@@ -1,0 +1,1916 @@
+{
+  "artifact_type": "p0_complex_route_benchmark_research",
+  "schema_version": "0.1",
+  "schema": {
+    "id": "p0-complex-route-benchmark-research-v0.1",
+    "required_root_keys": [
+      "artifact_type",
+      "schema_version",
+      "schema",
+      "metadata",
+      "sources",
+      "role_results",
+      "claims",
+      "summary"
+    ],
+    "source_required_fields": [
+      "source_id",
+      "family_id",
+      "roles",
+      "url",
+      "title",
+      "publisher",
+      "official_domain",
+      "retrieval"
+    ],
+    "claim_required_fields": [
+      "claim_id",
+      "family_id",
+      "source_role_id",
+      "source_ids",
+      "claim_type",
+      "subject",
+      "predicate",
+      "value",
+      "applicability",
+      "exclusions",
+      "evidence_locator",
+      "short_paraphrase"
+    ],
+    "structured_transfer_required_fields": [
+      "route_id",
+      "operation",
+      "source_asset_ref",
+      "destination_asset_ref",
+      "source_units",
+      "destination_units",
+      "minimum_source_units",
+      "increment_source_units",
+      "maximum_source_units_per_request",
+      "maximum_source_units_per_period",
+      "maximum_period",
+      "fee_source_units",
+      "processing_time_days_min",
+      "processing_time_days_max",
+      "cancellation_policy",
+      "validity",
+      "prerequisite_ids",
+      "requires_rule_ids",
+      "required_conditions_ja",
+      "requires_direct_source",
+      "partial_consumption"
+    ],
+    "role_result_outcomes": [
+      "claims_found",
+      "partially_checked",
+      "no_economic_claim_found"
+    ],
+    "sort_order": "sources by source_id; role_results by family_id then source_role_id; claims by claim_id",
+    "source_policy": "First-party official programme and exchange pages only; no discovery page or search snippet is claim evidence.",
+    "quote_policy": "No verbatim quotation fields are used; evidence_locator identifies the official page section."
+  },
+  "metadata": {
+    "artifact_id": "p0-exchange-route-completeness.research.v0.1",
+    "protocol_version": "0.1",
+    "task_id": "production.exchange-route-expansion.v1",
+    "producer": "codex-official-source-research",
+    "families": [
+      "point.ana-mile",
+      "point.jal-mile",
+      "point.moppy",
+      "point.recruit",
+      "transit.jrkyushu"
+    ],
+    "declared_roles": [
+      "eligible_accounts",
+      "eligible_cards",
+      "transfer_partner_directory"
+    ],
+    "bounded_run": {
+      "started_at": "2026-08-25T21:00:00+09:00",
+      "ended_at": "2026-08-25T21:40:00+09:00",
+      "timezone": "Asia/Tokyo",
+      "scope": "Official Recruit, JAL, ANA, JR Kyushu and Moppy pages were checked for production routes between assets declared in the unified graph.",
+      "truncation": "Only rows whose arithmetic and applicability are exact are executable. Unresolved provider details remain explicit production coverage gaps.",
+      "retrieval_cutoff": "2026-08-25"
+    },
+    "publisher_policy": "Official operator pages only; search results were used solely to locate those pages.",
+    "pii_or_secret_check": "No credentials, account identifiers, membership data, tokens or payment data included."
+  },
+  "sources": [
+    {
+      "source_id": "jp.ana.jr-kyupo-benefit",
+      "family_id": "point.ana-mile",
+      "roles": [
+        "eligible_cards",
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_sugoca/",
+      "title": "JRキューポに交換する",
+      "publisher": "全日本空輸株式会社",
+      "official_domain": "www.ana.co.jp",
+      "notes": "The official ANA page states the 10,000-mile unit, processing time and first-two versus third-and-later fiscal-year tiers.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.ana.partner-exchange-rules",
+      "family_id": "point.ana-mile",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_cap/",
+      "title": "提携ポイントへの交換条件",
+      "publisher": "全日本空輸株式会社",
+      "official_domain": "www.ana.co.jp",
+      "notes": "The official common rule page defines the April-to-March cumulative tier counter shared by eligible partner exchanges.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.jal.jr-kyupo-benefit",
+      "family_id": "point.jal-mile",
+      "roles": [
+        "eligible_cards",
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.jal.co.jp/jp/ja/jalmile/use/partner/sugoca/",
+      "title": "JRキューポ特典",
+      "publisher": "日本航空株式会社",
+      "official_domain": "www.jal.co.jp",
+      "notes": "The official JAL benefit page states both tiers and the 30,000-mile April-to-March limit.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.jal.ponta-benefit",
+      "family_id": "point.jal-mile",
+      "roles": [
+        "eligible_cards",
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.jal.co.jp/jp/ja/jalmile/use/partner/ponta/",
+      "title": "Ponta特典（JMB×Ponta会員限定）",
+      "publisher": "日本航空株式会社",
+      "official_domain": "www.jal.co.jp",
+      "notes": "The official JAL benefit page supplies the two current JAL-mile to Ponta tiers, exchange units, minimum and membership requirement.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.jrkyushu.point-exchange",
+      "family_id": "transit.jrkyushu",
+      "roles": [
+        "eligible_cards",
+        "transfer_partner_directory"
+      ],
+      "url": "https://www.jrkyushu.co.jp/point/exchange/",
+      "title": "提携ポイントとの交換について｜JRキューポ｜JR九州",
+      "publisher": "九州旅客鉄道株式会社",
+      "official_domain": "www.jrkyushu.co.jp",
+      "notes": "The official JR Kyushu exchange table supplies both directions, ratios, units and named card/account prerequisites for the represented P0 programmes.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.ana-exchange",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/cashback/detail.php?c_id=91",
+      "title": "ANAマイレージクラブに交換",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy detail page states 1,750 points to 500 ANA miles, no fee, a 1,750-point minimum and 1-to-3-day processing.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.exchange",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/cashback/",
+      "title": "ポイント交換",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy exchange directory supplies the current fee-free d-point and nanaco routes, minimums and processing windows.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.exchange-fee-help",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/help/detail/?id=37",
+      "title": "ポイント交換に手数料は必要？",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official help page states that exchange fees are deducted from the submitted Moppy-point amount.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.paypay-exchange",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/cashback/detail.php?c_id=47",
+      "title": "PayPayポイントに交換",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy detail page states a 1-to-1 rate, 550-point minimum, fee from 50 points and real-time processing.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.ponta-exchange",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/cashback/detail.php?c_id=49",
+      "title": "Pontaポイントに交換",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy detail page states a 1-to-1 rate, 315-point minimum, fee from 15 points and real-time processing.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.rakuten-fee-update",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/news/detail.php?news_id=3283",
+      "title": "楽天ポイントへの交換手数料変更のお知らせ",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy notice states a ten-percent exchange fee from 2026-04-01.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.v-fee-update",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/news/detail.php?category=2&news_id=3293",
+      "title": "Vポイントへの交換手数料変更のお知らせ",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official Moppy notice states a seven-percent exchange fee from 2026-04-01.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.moppy.waon-launch",
+      "family_id": "point.moppy",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://pc.moppy.jp/news/detail.php?news_id=3086",
+      "title": "WAON POINTへのポイント交換を開始しました",
+      "publisher": "株式会社セレス",
+      "official_domain": "pc.moppy.jp",
+      "notes": "The official launch notice states the five supported exchange amounts and their two-percent fees.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.recruitpoint.d-transfer",
+      "family_id": "point.recruit",
+      "roles": [
+        "eligible_accounts",
+        "transfer_partner_directory"
+      ],
+      "url": "https://img.point.recruit.co.jp/recruitid/doc/point_partners/dpoint.html",
+      "title": "リクルートポイントからdポイントに交換する",
+      "publisher": "株式会社リクルート",
+      "official_domain": "img.point.recruit.co.jp",
+      "notes": "The official detail page states 1 Recruit point to 1 d point, one-point minimum and increment, immediate processing and required account linkage.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    },
+    {
+      "source_id": "jp.recruitpoint.exchange-partners",
+      "family_id": "point.recruit",
+      "roles": [
+        "transfer_partner_directory"
+      ],
+      "url": "https://point.recruit.co.jp/recruitid/doc/point_partners/",
+      "title": "交換できる提携ポイント・交換レート",
+      "publisher": "株式会社リクルート",
+      "official_domain": "point.recruit.co.jp",
+      "notes": "The official partner directory lists both Ponta and d point as outbound Recruit Point exchange destinations.",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T21:30:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      }
+    }
+  ],
+  "role_results": [
+    {
+      "family_id": "point.ana-mile",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.ana.jr-kyupo-benefit",
+        "jp.ana.partner-exchange-rules"
+      ],
+      "claim_ids": [
+        "claim.route.ana.jr-kyupo.full-tier.001",
+        "claim.route.ana.jr-kyupo.reduced-tier.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "point.jal-mile",
+      "source_role_id": "eligible_cards",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.jal.ponta-benefit"
+      ],
+      "claim_ids": [
+        "claim.route.prerequisite.jmb-ponta-link.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.jal.jr-kyupo-benefit",
+        "jp.jal.ponta-benefit"
+      ],
+      "claim_ids": [
+        "claim.route.jal.jr-kyupo.high-tier.001",
+        "claim.route.jal.jr-kyupo.low-tier.001",
+        "claim.route.jal.ponta.high-tier.001",
+        "claim.route.jal.ponta.low-tier.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.moppy.ana-exchange",
+        "jp.moppy.exchange",
+        "jp.moppy.exchange-fee-help",
+        "jp.moppy.paypay-exchange",
+        "jp.moppy.ponta-exchange",
+        "jp.moppy.rakuten-fee-update",
+        "jp.moppy.v-fee-update",
+        "jp.moppy.waon-launch"
+      ],
+      "claim_ids": [
+        "claim.route.moppy.ana.001",
+        "claim.route.moppy.d.001",
+        "claim.route.moppy.nanaco.001",
+        "claim.route.moppy.paypay.minimum.001",
+        "claim.route.moppy.ponta.minimum.001",
+        "claim.route.moppy.rakuten.001",
+        "claim.route.moppy.v.001",
+        "claim.route.moppy.waon.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "point.recruit",
+      "source_role_id": "eligible_accounts",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.recruitpoint.d-transfer"
+      ],
+      "claim_ids": [
+        "claim.route.prerequisite.recruit-d-link.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "point.recruit",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.recruitpoint.d-transfer",
+        "jp.recruitpoint.exchange-partners"
+      ],
+      "claim_ids": [
+        "claim.route.recruit.d.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_ids": [
+        "claim.route.prerequisite.aeon-sugoca.001",
+        "claim.route.prerequisite.bic-jq-sugoca.001",
+        "claim.route.prerequisite.jmb-jq-sugoca.001",
+        "claim.route.prerequisite.jq-sugoca-ana.001",
+        "claim.route.prerequisite.v-jr-link.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    },
+    {
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_ids": [
+        "claim.route.bic.jr-kyupo.001",
+        "claim.route.jr-kyupo.ana.001",
+        "claim.route.jr-kyupo.bic.001",
+        "claim.route.jr-kyupo.jal.001",
+        "claim.route.jr-kyupo.v.001",
+        "claim.route.saison.jr-kyupo.001",
+        "claim.route.waon.jr-kyupo.001"
+      ],
+      "checked_at": "2026-08-25T21:30:00+09:00",
+      "notes": "Every listed claim is bound to an official current exchange directory or detail page."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim.route.ana.jr-kyupo.full-tier.001",
+      "family_id": "point.ana-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.ana.jr-kyupo-benefit",
+        "jp.ana.partner-exchange-rules"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANAマイル → JRキューポ（年度2口目まで）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "ana-to-jr-kyupo-full-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.ana",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 10000,
+          "destination_units": 10000,
+          "minimum_source_units": 10000,
+          "increment_source_units": 10000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": "fiscal_year_april",
+          "fee_source_units": 0,
+          "period_usage_key": "period.ana-partner-fiscal-year",
+          "period_usage_max_source_units_exclusive": 20000,
+          "processing_time_days_min": 3,
+          "processing_time_days_max": 4,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jq-sugoca-ana.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jq-sugoca-ana"
+          ],
+          "required_conditions_ja": [
+            "年度（4月〜翌3月）の提携ポイント交換が2口目まで。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA JR Kyupo benefit and common partner exchange rules: first two units",
+      "short_paraphrase": "ANAマイル → JRキューポ（年度2口目まで）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.ana.jr-kyupo.reduced-tier.001",
+      "family_id": "point.ana-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.ana.jr-kyupo-benefit",
+        "jp.ana.partner-exchange-rules"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ANAマイル → JRキューポ（年度3口目以降）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "ana-to-jr-kyupo-reduced-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.ana",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 10000,
+          "destination_units": 5000,
+          "minimum_source_units": 10000,
+          "increment_source_units": 10000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": "fiscal_year_april",
+          "fee_source_units": 0,
+          "period_usage_key": "period.ana-partner-fiscal-year",
+          "period_usage_min_source_units": 20000,
+          "processing_time_days_min": 3,
+          "processing_time_days_max": 4,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jq-sugoca-ana.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jq-sugoca-ana"
+          ],
+          "required_conditions_ja": [
+            "年度（4月〜翌3月）の提携ポイント交換が3口目以降。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "ANA JR Kyupo benefit and common partner exchange rules: third and later units",
+      "short_paraphrase": "ANAマイル → JRキューポ（年度3口目以降）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.bic.jr-kyupo.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "ビックポイント → JRキューポ",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "bic-to-jr-kyupo",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.bic",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 1500,
+          "destination_units": 1000,
+          "minimum_source_units": 1500,
+          "increment_source_units": 1500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.bic-jq-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.bic-camera-jq-sugoca"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: Bic Point inbound row",
+      "short_paraphrase": "ビックポイント → JRキューポの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jal.jr-kyupo.high-tier.001",
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jal.jr-kyupo-benefit"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JALマイル → JRキューポ（10,000マイル単位）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jal-to-jr-kyupo-high-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.jal",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 10000,
+          "destination_units": 10000,
+          "minimum_source_units": 10000,
+          "increment_source_units": 10000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": 30000,
+          "maximum_period": "fiscal_year_april",
+          "fee_source_units": 0,
+          "period_usage_key": "period.jal-jr-kyupo-fiscal-year",
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jmb-jq-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jmb-jq-sugoca"
+          ],
+          "required_conditions_ja": [
+            "年度（4月〜翌3月）の交換上限は合計30,000マイル。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL JR Kyupo benefit: 10,000-mile tier and annual cap",
+      "short_paraphrase": "JALマイル → JRキューポ（10,000マイル単位）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jal.jr-kyupo.low-tier.001",
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jal.jr-kyupo-benefit"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JALマイル → JRキューポ（3,000〜9,000マイル）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jal-to-jr-kyupo-low-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.jal",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 3000,
+          "destination_units": 1500,
+          "minimum_source_units": 3000,
+          "increment_source_units": 3000,
+          "maximum_source_units_per_request": 9000,
+          "maximum_source_units_per_period": 30000,
+          "maximum_period": "fiscal_year_april",
+          "fee_source_units": 0,
+          "period_usage_key": "period.jal-jr-kyupo-fiscal-year",
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jmb-jq-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jmb-jq-sugoca"
+          ],
+          "required_conditions_ja": [
+            "年度（4月〜翌3月）の交換上限は合計30,000マイル。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL JR Kyupo benefit: 3,000–9,000-mile tier and annual cap",
+      "short_paraphrase": "JALマイル → JRキューポ（3,000〜9,000マイル）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jal.ponta.high-tier.001",
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jal.ponta-benefit"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JALマイル → Pontaポイント（10,000マイル単位）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jal-to-ponta-high-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.jal",
+          "destination_asset_ref": "asset.point.ponta",
+          "source_units": 10000,
+          "destination_units": 10000,
+          "minimum_source_units": 10000,
+          "increment_source_units": 10000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jmb-ponta-link.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jmb-ponta-link"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL Ponta benefit: 10,000-mile tier",
+      "short_paraphrase": "JALマイル → Pontaポイント（10,000マイル単位）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jal.ponta.low-tier.001",
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jal.ponta-benefit"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JALマイル → Pontaポイント（3,000〜9,000マイル）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jal-to-ponta-low-tier",
+          "operation": "transfer",
+          "source_asset_ref": "asset.mile.jal",
+          "destination_asset_ref": "asset.point.ponta",
+          "source_units": 1000,
+          "destination_units": 500,
+          "minimum_source_units": 3000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": 9000,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jmb-ponta-link.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jmb-ponta-link"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL Ponta benefit: 3,000–9,000-mile tier",
+      "short_paraphrase": "JALマイル → Pontaポイント（3,000〜9,000マイル）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jr-kyupo.ana.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JRキューポ → ANAマイル",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jr-kyupo-to-ana",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.jr-kyupo",
+          "destination_asset_ref": "asset.mile.ana",
+          "source_units": 1000,
+          "destination_units": 500,
+          "minimum_source_units": 1000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jq-sugoca-ana.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jq-sugoca-ana"
+          ],
+          "required_conditions_ja": [
+            "交換申込みは1日1回まで。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: ANA outbound row and daily frequency",
+      "short_paraphrase": "JRキューポ → ANAマイルの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jr-kyupo.bic.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JRキューポ → ビックポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jr-kyupo-to-bic",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.jr-kyupo",
+          "destination_asset_ref": "asset.point.bic",
+          "source_units": 1000,
+          "destination_units": 1000,
+          "minimum_source_units": 1000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.bic-jq-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.bic-camera-jq-sugoca"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: Bic Point outbound row",
+      "short_paraphrase": "JRキューポ → ビックポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jr-kyupo.jal.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JRキューポ → JALマイル",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jr-kyupo-to-jal",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.jr-kyupo",
+          "destination_asset_ref": "asset.mile.jal",
+          "source_units": 1000,
+          "destination_units": 500,
+          "minimum_source_units": 1000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jmb-jq-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jmb-jq-sugoca"
+          ],
+          "required_conditions_ja": [
+            "交換申込みは1日1回まで。"
+          ],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: JAL outbound row and daily frequency",
+      "short_paraphrase": "JRキューポ → JALマイルの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.jr-kyupo.v.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "JRキューポ → Vポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "jr-kyupo-to-v",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.jr-kyupo",
+          "destination_asset_ref": "asset.point.v",
+          "source_units": 500,
+          "destination_units": 500,
+          "minimum_source_units": 500,
+          "increment_source_units": 500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.v-jr-link.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.v-point-jr-link"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: V Point outbound row",
+      "short_paraphrase": "JRキューポ → Vポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.ana.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.ana-exchange",
+        "jp.moppy.exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → ANAマイル",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-ana",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.mile.ana",
+          "source_units": 1750,
+          "destination_units": 500,
+          "minimum_source_units": 1750,
+          "increment_source_units": 1750,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": 1,
+          "processing_time_days_max": 3,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy ANA Mileage Club detail: rate, minimum, fee and processing time",
+      "short_paraphrase": "モッピーポイント → ANAマイルの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.d.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → dポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-d",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.d",
+          "source_units": 500,
+          "destination_units": 500,
+          "minimum_source_units": 500,
+          "increment_source_units": 500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy exchange directory: d Point row",
+      "short_paraphrase": "モッピーポイント → dポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.nanaco.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → nanacoポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-nanaco",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.nanaco",
+          "source_units": 500,
+          "destination_units": 500,
+          "minimum_source_units": 500,
+          "increment_source_units": 500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 3,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy exchange directory: nanaco Point row",
+      "short_paraphrase": "モッピーポイント → nanacoポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.paypay.minimum.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange",
+        "jp.moppy.exchange-fee-help",
+        "jp.moppy.paypay-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → PayPayポイント（確認済み最小交換）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-paypay-minimum",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.paypay",
+          "source_units": 1,
+          "destination_units": 1,
+          "minimum_source_units": 500,
+          "increment_source_units": null,
+          "allowed_source_amounts": [
+            500
+          ],
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 50,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy PayPay detail and fee help: exact minimum transaction",
+      "short_paraphrase": "モッピーポイント → PayPayポイント（確認済み最小交換）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.ponta.minimum.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange",
+        "jp.moppy.exchange-fee-help",
+        "jp.moppy.ponta-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → Pontaポイント（確認済み最小交換）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-ponta-minimum",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.ponta",
+          "source_units": 1,
+          "destination_units": 1,
+          "minimum_source_units": 300,
+          "increment_source_units": null,
+          "allowed_source_amounts": [
+            300
+          ],
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 15,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy Ponta detail and fee help: exact minimum transaction",
+      "short_paraphrase": "モッピーポイント → Pontaポイント（確認済み最小交換）の公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.rakuten.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange",
+        "jp.moppy.rakuten-fee-update"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → 楽天ポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-rakuten",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.rakuten",
+          "source_units": 500,
+          "destination_units": 500,
+          "minimum_source_units": 500,
+          "increment_source_units": 500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "fee_schedule": {
+            "model": "percentage_of_source",
+            "numerator": 10,
+            "denominator": 100,
+            "rounding": "ceil"
+          },
+          "processing_time_days_min": 1,
+          "processing_time_days_max": 2,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": "2026-04-01",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy Rakuten Point fee notice: ten-percent fee from 2026-04-01",
+      "short_paraphrase": "モッピーポイント → 楽天ポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.v.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange",
+        "jp.moppy.v-fee-update"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → Vポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-v",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.v",
+          "source_units": 500,
+          "destination_units": 500,
+          "minimum_source_units": 500,
+          "increment_source_units": 500,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "fee_schedule": {
+            "model": "percentage_of_source",
+            "numerator": 7,
+            "denominator": 100,
+            "rounding": "ceil"
+          },
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": "2026-04-01",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2026-04-01",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy V Point fee notice: seven-percent fee from 2026-04-01",
+      "short_paraphrase": "モッピーポイント → Vポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.moppy.waon.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.moppy.exchange",
+        "jp.moppy.waon-launch"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → WAON POINT",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-waon",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.point.waon",
+          "source_units": 1,
+          "destination_units": 1,
+          "minimum_source_units": 500,
+          "increment_source_units": null,
+          "allowed_source_amounts": [
+            500,
+            1000,
+            3000,
+            5000,
+            10000
+          ],
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "fee_schedule": {
+            "model": "percentage_of_source",
+            "numerator": 2,
+            "denominator": 100,
+            "rounding": "ceil"
+          },
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": "2025-07-18",
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": "2025-07-18",
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Moppy WAON launch notice: five exact exchange amounts and two-percent fees",
+      "short_paraphrase": "モッピーポイント → WAON POINTの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.aeon-sugoca.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "eligibility",
+      "subject": "イオンSUGOCAカード",
+      "predicate": "requires_aeon_sugoca",
+      "value": {
+        "prerequisite_id": "prereq.aeon-sugoca",
+        "condition_ja": "イオンSUGOCAカードを保有し、JR九州Web会員IDとおまとめ登録していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: WAON POINT eligibility",
+      "short_paraphrase": "イオンSUGOCAカードを保有し、JR九州Web会員IDとおまとめ登録していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.bic-jq-sugoca.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "eligibility",
+      "subject": "BIC CAMERA JQ SUGOCA",
+      "predicate": "requires_bic_camera_jq_sugoca",
+      "value": {
+        "prerequisite_id": "prereq.bic-camera-jq-sugoca",
+        "condition_ja": "BIC CAMERA JQ SUGOCAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: Bic Point eligibility",
+      "short_paraphrase": "BIC CAMERA JQ SUGOCAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.jmb-jq-sugoca.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "eligibility",
+      "subject": "JMB JQ SUGOCA",
+      "predicate": "requires_jmb_jq_sugoca",
+      "value": {
+        "prerequisite_id": "prereq.jmb-jq-sugoca",
+        "condition_ja": "JMB JQ SUGOCAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: JAL Mileage Bank eligibility",
+      "short_paraphrase": "JMB JQ SUGOCAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.jmb-ponta-link.001",
+      "family_id": "point.jal-mile",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jal.ponta-benefit"
+      ],
+      "claim_type": "eligibility",
+      "subject": "JMB×Ponta会員登録",
+      "predicate": "requires_jmb_ponta_linkage",
+      "value": {
+        "prerequisite_id": "prereq.jmb-ponta-link",
+        "condition_ja": "JMB×Ponta会員としてJMB番号とPonta会員IDを連携していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL Ponta benefit: eligible member section",
+      "short_paraphrase": "JMB×Ponta会員としてJMB番号とPonta会員IDを連携していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.jq-sugoca-ana.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "eligibility",
+      "subject": "JQ SUGOCA ANA",
+      "predicate": "requires_jq_sugoca_ana",
+      "value": {
+        "prerequisite_id": "prereq.jq-sugoca-ana",
+        "condition_ja": "JQ SUGOCA ANAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: ANA Mileage Club eligibility",
+      "short_paraphrase": "JQ SUGOCA ANAを保有し、JR九州Web会員IDとおまとめ登録していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.recruit-d-link.001",
+      "family_id": "point.recruit",
+      "source_role_id": "eligible_accounts",
+      "source_ids": [
+        "jp.recruitpoint.d-transfer"
+      ],
+      "claim_type": "eligibility",
+      "subject": "リクルートIDとdアカウントの連携",
+      "predicate": "requires_recruit_and_d_account_linkage",
+      "value": {
+        "prerequisite_id": "prereq.recruit-d-account-link",
+        "condition_ja": "リクルートIDにdアカウントを連携していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Recruit d-point transfer detail: target account requirement",
+      "short_paraphrase": "リクルートIDにdアカウントを連携していること。"
+    },
+    {
+      "claim_id": "claim.route.prerequisite.v-jr-link.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "eligibility",
+      "subject": "Vポイント付与先カードの連携",
+      "predicate": "requires_v_point_card_linkage",
+      "value": {
+        "prerequisite_id": "prereq.v-point-jr-link",
+        "condition_ja": "JR九州Web会員情報にVポイントが貯まる対象カードを連携していること。"
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: V Point destination account",
+      "short_paraphrase": "JR九州Web会員情報にVポイントが貯まる対象カードを連携していること。"
+    },
+    {
+      "claim_id": "claim.route.recruit.d.001",
+      "family_id": "point.recruit",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.recruitpoint.d-transfer",
+        "jp.recruitpoint.exchange-partners"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "リクルートポイント → dポイント",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "recruit-to-d",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.recruit",
+          "destination_asset_ref": "asset.point.d",
+          "source_units": 1,
+          "destination_units": 1,
+          "minimum_source_units": 1,
+          "increment_source_units": 1,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.recruit-d-link.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.recruit-d-account-link"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "Recruit d-point transfer detail: rate, unit and immediate transfer",
+      "short_paraphrase": "リクルートポイント → dポイントの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.saison.jr-kyupo.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "永久不滅ポイント → JRキューポ",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "saison-permanent-to-jr-kyupo",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.saison-permanent",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 200,
+          "destination_units": 1000,
+          "minimum_source_units": 200,
+          "increment_source_units": 200,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.jq-card-saison.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.jq-card-saison"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: Saison Permanent Point inbound row",
+      "short_paraphrase": "永久不滅ポイント → JRキューポの公式交換条件を計算経路として表現します。"
+    },
+    {
+      "claim_id": "claim.route.waon.jr-kyupo.001",
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "WAON POINT → JRキューポ",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "waon-to-jr-kyupo",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.waon",
+          "destination_asset_ref": "asset.point.jr-kyupo",
+          "source_units": 1000,
+          "destination_units": 1000,
+          "minimum_source_units": 1000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": null,
+          "processing_time_days_max": null,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [
+            "claim.route.prerequisite.aeon-sugoca.001"
+          ],
+          "requires_rule_ids": [
+            "prereq.aeon-sugoca"
+          ],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JR Kyupo exchange table: WAON POINT inbound row",
+      "short_paraphrase": "WAON POINT → JRキューポの公式交換条件を計算経路として表現します。"
+    }
+  ],
+  "summary": {
+    "claim_count": 29,
+    "source_count": 15,
+    "role_result_count": 8,
+    "claim_count_by_family": {
+      "point.ana-mile": 2,
+      "point.jal-mile": 5,
+      "point.moppy": 8,
+      "point.recruit": 2,
+      "transit.jrkyushu": 12
+    },
+    "claim_count_by_role": {
+      "eligible_accounts": 1,
+      "eligible_cards": 6,
+      "transfer_partner_directory": 22
+    },
+    "claim_count_by_type": {
+      "eligibility": 7,
+      "transfer_rule": 22
+    },
+    "failures": [],
+    "validation_intent": "Every executable directory row must compile to a source-bound graph edge and every prerequisite must remain explicit."
+  }
+}

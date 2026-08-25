@@ -856,6 +856,25 @@ This checkpoint removes the workspace-wide checksum workflow. The maintained
 integrity gates are schema/adapter tests, fresh migration+seed SQL tests,
 deterministic compiler hashes and the staged Supabase migration parity check.
 
+### Production exchange-directory reconciliation
+
+Implementation checkpoint (2026-08-26): signed Agent Feed transfer findings
+may now carry a versioned complete or partial official-directory snapshot.
+Every exact row is compiled through the existing point-route compiler; an
+asserted executable label cannot bypass compilation or asset binding. The
+database stores immutable directory versions, reconciles partial changes back
+to the latest complete enumeration, records the affected assets/rules, and
+projects the newest exact claims through the existing database route-graph
+port. The next recommendation query sees the update without a deploy or a
+background cache rebuild.
+
+Rows missing an exact fee, ratio, minimum, increment, cap, timing or
+prerequisite produce a focused research task and remain outside arithmetic.
+Inactive replacements remove the previous edge. Systematic enumeration of the
+remaining twelve programme-owned outbound directories is now data operations,
+not a new graph architecture. See
+`docs/30_exchange_directory_reconciliation.md`.
+
 ## Later milestones
 
 - full data-operations console;

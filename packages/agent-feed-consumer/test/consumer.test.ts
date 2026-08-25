@@ -408,6 +408,38 @@ describe("signed Agent Feed consumer boundary", () => {
     assert.equal(semanticResponse.outcome?.duplicate_kind, "semantic");
   });
 
+  test("preserves structured exchange-directory snapshots for Rewards reconciliation", () => {
+    const snapshot = {
+      version: "production-exchange-directory-snapshot.v1",
+      directory_id: "directory.moppy.exchange",
+      family_id: "point.moppy",
+      source_role_id: "transfer_partner_directory",
+      source_asset_id: "asset.point.moppy",
+      complete: false,
+      sources: [],
+      entries: [],
+    };
+    const mapped = mapFindingToObservation({
+      event: event(),
+      finding: finding({
+        finding_type: "rewards.transfer_change",
+        attributes: {
+          change_type: "transfer",
+          source_id: "jp.moppy.exchange",
+          exchange_directory_snapshot: snapshot,
+        },
+      }),
+      submitted_evidence: [evidence()],
+      received_at: receivedAt,
+    });
+    assert.ok(mapped);
+    assert.equal(mapped.observation.change_type, "transfer");
+    assert.deepEqual(
+      mapped.observation.raw_attributes.exchange_directory_snapshot,
+      snapshot,
+    );
+  });
+
   test("retry attempts keep stable payload identity while transport bytes and delivery IDs change", async () => {
     const first = handler();
     const input = event({ attempt: 1 });

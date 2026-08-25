@@ -6730,6 +6730,80 @@
       }
     },
     {
+      "id": "jp.moppy.exchange-directory",
+      "name": "Moppy Point Exchange Directory",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://moppy.jp/cashback/",
+      "authority_scope": [
+        "minimum_exchange",
+        "exchange_fee",
+        "processing_time",
+        "transfer_partner_directory"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-25",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official Moppy directory for exchange minimums, fees and processing times, including JAL Mileage Bank."
+      }
+    },
+    {
+      "id": "jp.jal.moppy-standard-transfer",
+      "name": "JAL Moppy Standard Mileage Transfer",
+      "publisher": "日本航空株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://partner.jal.co.jp/jmb/partner/feature/200176/",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_exchange",
+        "exchange_fee",
+        "processing_time"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-25",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official JAL partner page for the ordinary Moppy-to-JAL ratio and minimum; the official Moppy exchange directory supplies fee and processing-time details."
+      }
+    },
+    {
       "id": "jp.jal.moppy-summer-rate-up",
       "name": "JAL Moppy Summer Mileage Rate-Up Festival 2026",
       "publisher": "日本航空株式会社",
@@ -6765,6 +6839,290 @@
         "status": "registered",
         "notes": "Official JAL campaign page for the 20% August 2026 mileage uplift, posting timing and lottery exclusion."
       }
+    },
+    {
+      "id": "jp.recruitpoint.exchange-partners",
+      "name": "Recruit Point Exchange Partner Directory",
+      "publisher": "株式会社リクルート",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://point.recruit.co.jp/recruitid/doc/point_partners/",
+      "authority_scope": [
+        "transfer_partner_directory",
+        "conversion_routes"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-25",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official Recruit directory for outbound Recruit Point exchange partners, including Ponta and d point."
+      }
+    },
+    {
+      "id": "jp.recruitpoint.d-transfer",
+      "name": "Recruit Point to d Point Transfer",
+      "publisher": "株式会社リクルート",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://img.point.recruit.co.jp/recruitid/doc/point_partners/dpoint.html",
+      "authority_scope": [
+        "conversion_ratio",
+        "minimum_transfer",
+        "processing_time",
+        "eligibility"
+      ],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "requires_terms_review",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {
+          "current_classification": "unknown",
+          "last_observed_at": null,
+          "observation_ids": []
+        }
+      },
+      "verification": {
+        "url_registered_on": "2026-08-25",
+        "content_verified_on": null,
+        "status": "registered",
+        "notes": "Official Recruit detail page for the 1:1 d-point transfer, one-point unit, immediate processing and linked-account requirement."
+      }
+    },
+    {
+      "id": "jp.jal.jr-kyupo-benefit",
+      "name": "JAL JR Kyupo benefit",
+      "publisher": "日本航空株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.jal.co.jp/jp/ja/jalmile/use/partner/sugoca/",
+      "authority_scope": ["conversion_ratio", "minimum_transfer", "annual_cap", "eligibility"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official JAL page for JR Kyupo tiers and the April-to-March 30,000-mile limit."}
+    },
+    {
+      "id": "jp.ana.jr-kyupo-benefit",
+      "name": "ANA JR Kyupo exchange benefit",
+      "publisher": "全日本空輸株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_sugoca/",
+      "authority_scope": ["conversion_ratio", "minimum_transfer", "processing_time", "eligibility"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official ANA page for JR Kyupo exchange units, processing time, and fiscal-year rate tiers."}
+    },
+    {
+      "id": "jp.ana.partner-exchange-rules",
+      "name": "ANA partner exchange common rules",
+      "publisher": "全日本空輸株式会社",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_cap/",
+      "authority_scope": ["annual_cap", "tiered_conversion", "transfer_conditions"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official ANA common April-to-March partner-exchange tier rules."}
+    },
+    {
+      "id": "jp.moppy.ana-exchange",
+      "name": "Moppy ANA Mileage Club exchange",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/cashback/detail.php?c_id=91",
+      "authority_scope": ["conversion_ratio", "fees", "minimum_exchange", "processing_time"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy page for the 1,750-point to 500-mile ANA exchange, fee, minimum and processing time."}
+    },
+    {
+      "id": "jp.moppy.ponta-exchange",
+      "name": "Moppy Ponta Point exchange",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/cashback/detail.php?c_id=49",
+      "authority_scope": ["conversion_ratio", "fees", "minimum_exchange", "processing_time"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {"retrieval_method": "http_html", "requires_login": false, "automation_status": "official_documentation", "terms_review_status": "not_reviewed", "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}},
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy page for Ponta conversion rate, minimum fee and processing time."}
+    },
+    {
+      "id": "jp.moppy.paypay-exchange",
+      "name": "Moppy PayPay Point exchange",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/cashback/detail.php?c_id=47",
+      "authority_scope": ["conversion_ratio", "fees", "minimum_exchange", "processing_time"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {"retrieval_method": "http_html", "requires_login": false, "automation_status": "official_documentation", "terms_review_status": "not_reviewed", "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}},
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy page for PayPay conversion rate, minimum fee and processing time."}
+    },
+    {
+      "id": "jp.moppy.exchange-fee-help",
+      "name": "Moppy exchange-fee help",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/help/detail/?id=37",
+      "authority_scope": ["fees", "transfer_conditions"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "medium",
+      "recommended_check_cadence": "monthly",
+      "access": {"retrieval_method": "http_html", "requires_login": false, "automation_status": "official_documentation", "terms_review_status": "not_reviewed", "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}},
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official help page stating that exchange fees are deducted from the submitted Moppy-point amount."}
+    },
+    {
+      "id": "jp.moppy.v-fee-update",
+      "name": "Moppy V Point fee update",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/news/detail.php?category=2&news_id=3293",
+      "authority_scope": ["conversion_ratio", "fees", "effective_period"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy notice for the 7% V Point exchange fee effective 2026-04-01."}
+    },
+    {
+      "id": "jp.moppy.rakuten-fee-update",
+      "name": "Moppy Rakuten Point fee update",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/news/detail.php?news_id=3283",
+      "authority_scope": ["conversion_ratio", "fees", "effective_period"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy notice for the 10% Rakuten Point exchange fee effective 2026-04-01."}
+    },
+    {
+      "id": "jp.moppy.waon-launch",
+      "name": "Moppy WAON POINT exchange launch",
+      "publisher": "株式会社セレス",
+      "category": "transfer_rules",
+      "tier": "T1_CANONICAL",
+      "publication_use": "canonical",
+      "source_url": "https://pc.moppy.jp/news/detail.php?news_id=3086",
+      "authority_scope": ["conversion_ratio", "fees", "minimums", "exchange_amounts"],
+      "locale": "ja-JP",
+      "geography": "JP",
+      "evidence_format": "html",
+      "volatility": "high",
+      "recommended_check_cadence": "weekly",
+      "access": {
+        "retrieval_method": "http_html",
+        "requires_login": false,
+        "automation_status": "official_documentation",
+        "terms_review_status": "not_reviewed",
+        "technical_feasibility": {"current_classification": "unknown", "last_observed_at": null, "observation_ids": []}
+      },
+      "verification": {"url_registered_on": "2026-08-26", "content_verified_on": "2026-08-26", "status": "content_verified", "notes": "Official Moppy launch notice for exact WAON POINT exchange amounts and 2% fees."}
     }
   ]
 }

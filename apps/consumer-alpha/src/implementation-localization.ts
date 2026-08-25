@@ -19,6 +19,13 @@ const PREDICATE_LABELS: Readonly<Record<string, string>> = Object.freeze({
   requires_eligible_ana_card_holder: "対象ANAカード会員の条件",
   requires_existing_holder: "既存会員の保有条件",
   requires_jq_card_saison_and_permanent_point_card: "JQ CARDセゾン等の保有条件",
+  requires_aeon_sugoca: "イオンSUGOCAカードの保有条件",
+  requires_bic_camera_jq_sugoca: "BIC CAMERA JQ SUGOCAの保有条件",
+  requires_jmb_jq_sugoca: "JMB JQ SUGOCAの保有条件",
+  requires_jmb_ponta_linkage: "JMBとPontaの会員連携条件",
+  requires_jq_sugoca_ana: "JQ SUGOCA ANAの保有条件",
+  requires_recruit_and_d_account_linkage: "リクルートIDとdアカウントの連携条件",
+  requires_v_point_card_linkage: "Vポイント付与先カードの連携条件",
   requires_revolut_card_payment_to_ana_pay:
     "RevolutカードによるANA Pay決済条件",
   route_is_unavailable: "利用できない経路",
@@ -350,6 +357,9 @@ export const IMPLEMENTATION_PREDICATE_LABEL_COUNT =
   Object.keys(PREDICATE_LABELS).length;
 
 const SUBJECT_LABELS: Readonly<Record<string, string>> = Object.freeze({
+  "BIC CAMERA JQ SUGOCA": "BIC CAMERA JQ SUGOCAカード",
+  "JMB JQ SUGOCA": "JMB JQ SUGOCAカード",
+  "JQ SUGOCA ANA": "JQ SUGOCA ANAカード",
   "Moppy → JALマイル（20%増量分）": "モッピー → JALマイル（20%増量分）",
   "Moppy JALドリームキャンペーン スカイボーナス":
     "モッピー JALドリームキャンペーン スカイボーナス",
@@ -2104,6 +2114,10 @@ const SUMMARY_TRANSLATION_ENTRIES = [
   [
     "本体はモッピーポイント12,000をJALマイル6,000へ交換する研究データとして保存し、増量・リベート・抽選を別扱いにします。",
     "本体はモッピーポイント12,000をJALマイル6,000へ交換する研究データとして保存し、増量・リベート・抽選を別扱いにします。",
+  ],
+  [
+    "通常交換はモッピーポイント1,000をJALマイル500へ、最低1,000ポイントから手数料無料で交換します。",
+    "通常交換はモッピーポイント1,000をJALマイル500へ、最低1,000ポイントから手数料無料で交換します。",
   ],
   [
     "ANA Payから楽天Edyへの経路は利用不可の情報エッジであり、変換ルールにはしません。",

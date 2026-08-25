@@ -126,5 +126,8 @@ References:
 - Add multi-balance portfolio allocation. The current solver recommends a
   route from each balance independently; it does not solve a mixed-integer
   redemption portfolio.
-- Add recurring source-change handling that creates a new provisional version
-  and invalidates affected recommendations without silently publishing it.
+- Continue systematic full-directory enumeration for the remaining programme
+  families. Recurring Agent Feed transfer findings now reconcile complete or
+  partial directory snapshots automatically; exact rows update the graph on
+  the next request, while incomplete rows create focused research tasks. See
+  `docs/30_exchange_directory_reconciliation.md`.

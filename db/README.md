@@ -82,7 +82,13 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     enumerates all active families, projects the existing merchant database as
     direct payment authority, and supplies the complete latest 364-fact
     snapshot to strict route compilers. It creates no checksum gate and no
-    request-time evidence-approval dependency.
+   request-time evidence-approval dependency.
+46. `0046_production_exchange_directory_reconciliation.sql` consumes explicit
+    structured exchange-directory snapshots from signed Agent Feed transfer
+    findings, reconciles complete and partial versions, records affected graph
+    nodes/rules and missing-parameter research tasks, and makes exact compiled
+    claims visible to the existing route graph on the next query. The legacy
+    `p0_*` function name remains only as a compatibility API.
 
 It separates:
 

@@ -40,6 +40,8 @@ const genericArtifacts = await Promise.all(
     "p0-point-rules-b.research.v0.1.json",
     "p0-wallet-card-rules.research.v0.1.json",
     "p0-merchant-transit-regulatory-rules.research.v0.1.json",
+    "p0-moppy-jal-standard.research.v0.1.json",
+    "p0-exchange-route-completeness.research.v0.1.json",
   ].map(async (name) =>
     JSON.parse(
       await fs.readFile(
@@ -173,6 +175,55 @@ describe("unified point-spend campaign lane", () => {
     expect(result.campaign_rewards).not.toContainEqual(
       expect.objectContaining({ kind: "principal" }),
     );
+  });
+
+  it("calculates the ordinary Moppy route when campaign application is off", async () => {
+    const ordinary = await recommendUnifiedPointSpend(
+      {
+        ...genericInput,
+        source_asset_id: "asset.point.moppy",
+        target_asset_id: "asset.mile.jal",
+        balance: 1_000,
+        campaign_application: false,
+      },
+      source(),
+    );
+    expect(ordinary).toMatchObject({
+      status: "ready",
+      campaign_applied: false,
+      winner: {
+        target_amount: "500",
+        source_amount_used: "1000",
+        residual_source_amount: "0",
+        steps: [
+          {
+            source_node_id: "asset.point.moppy",
+            destination_node_id: "asset.mile.jal",
+            source_amount: "1000",
+            destination_amount: "500",
+          },
+        ],
+      },
+      campaign_rewards: [],
+      campaign_prerequisites: [],
+    });
+
+    const belowMinimum = await recommendUnifiedPointSpend(
+      {
+        ...genericInput,
+        source_asset_id: "asset.point.moppy",
+        target_asset_id: "asset.mile.jal",
+        balance: 314,
+        campaign_application: false,
+      },
+      source(),
+    );
+    expect(belowMinimum).toMatchObject({
+      status: "no_route",
+      no_route_reason: "balance_below_minimum",
+      no_route_details: { minimum_source_amount: "315" },
+      campaign_applied: false,
+    });
   });
 
   it("reports unresolved and expired campaigns without applying them", async () => {

@@ -47,6 +47,19 @@ export {
   createRewardClaimCompiler,
 } from "./compiler.js";
 export type {
+  ProductionExchangeDirectoryDisposition,
+  ProductionExchangeDirectoryEntry,
+  ProductionExchangeDirectoryOutcome,
+  ProductionExchangeDirectoryReconciliation,
+  ProductionExchangeDirectoryResearchRequest,
+  ProductionExchangeDirectorySnapshot,
+} from "./exchange-directory-reconciliation.js";
+export {
+  PRODUCTION_EXCHANGE_DIRECTORY_RECONCILIATION_VERSION,
+  PRODUCTION_EXCHANGE_DIRECTORY_SNAPSHOT_VERSION,
+  reconcileProductionExchangeDirectory,
+} from "./exchange-directory-reconciliation.js";
+export type {
   NanacoCreditChargeCompilationInput,
   NanacoCreditChargeCompilationResult,
 } from "./nanaco-credit-charge.js";
@@ -77,6 +90,25 @@ export {
   NANACO_PILOT_MERCHANT_ID,
   NANACO_PILOT_PROGRAM_ID,
 } from "./nanaco-pilot.js";
+export type {
+  P0ExchangeCoverageAudit,
+  P0ExchangeCoverageDisposition,
+  P0ExchangeCoverageEntry,
+  P0ExchangeCoverageIssue,
+  P0ExchangeProgramCoverage,
+  ProductionExchangeDirectoryEnumerationTask,
+} from "./p0-exchange-coverage.js";
+export {
+  auditP0ExchangeRouteCoverage,
+  auditProductionExchangeRouteCoverage,
+  P0_EXCHANGE_COVERAGE_VERSION,
+  P0_EXCHANGE_DIRECTORY_COVERAGE,
+  P0_EXCHANGE_PROGRAM_COVERAGE,
+  PRODUCTION_EXCHANGE_COVERAGE_VERSION,
+  PRODUCTION_EXCHANGE_DIRECTORY_COVERAGE,
+  PRODUCTION_EXCHANGE_DIRECTORY_ENUMERATION_TASKS,
+  PRODUCTION_EXCHANGE_PROGRAM_COVERAGE,
+} from "./p0-exchange-coverage.js";
 export type {
   P0ChargeExclusion,
   P0ExitOption,

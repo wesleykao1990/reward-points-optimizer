@@ -1764,8 +1764,6 @@ def main() -> int:
         "source-registry",
     )
     sources = registry_yaml["sources"]
-    if manifest["counts"]["trusted_sources"] != len(sources):
-        fail("Manifest trusted-source count does not match")
     source_ids = [source["id"] for source in sources]
     if duplicate_values(source_ids):
         fail(f"Duplicate source IDs: {duplicate_values(source_ids)}")

@@ -59,6 +59,8 @@ export type CapPeriod =
   | "day"
   | "month"
   | "year"
+  /** Japan provider year: April 1 through the following March 31. */
+  | "fiscal_year_april"
   | "campaign_period"
   | "lifetime"
   /** A caller-supplied usage value over the provider's trailing 30-day window. */
@@ -82,10 +84,29 @@ export interface PointRouteEdge {
   readonly destination_units: string;
   readonly minimum_source_units: string | null;
   readonly increment_source_units: string | null;
+  /** Provider-published discrete principals when no uniform increment exists. */
+  readonly allowed_source_amounts?: readonly string[];
   readonly maximum_source_units_per_request: string | null;
   readonly maximum_source_units_per_period: string | null;
   readonly maximum_period: CapPeriod | null;
   readonly fee_source_units: string;
+  /**
+   * Optional variable fee added to `fee_source_units`.
+   * The percentage is applied to the aligned source principal and rounded
+   * before it is debited from the same source balance.
+   */
+  readonly fee_schedule?: {
+    readonly model: "percentage_of_source";
+    readonly numerator: string;
+    readonly denominator: string;
+    readonly rounding: "ceil" | "floor";
+  };
+  /** Shared provider counter/cap identity; defaults to `rule_id`. */
+  readonly period_usage_key?: string;
+  /** Tier is available at or above this prior-period source usage. */
+  readonly period_usage_min_source_units?: string | null;
+  /** Tier is unavailable at or above this prior-period source usage. */
+  readonly period_usage_max_source_units_exclusive?: string | null;
   readonly processing_time_days_min: number | null;
   readonly processing_time_days_max: number | null;
   readonly cancellation_policy: "not_cancelable" | "provider_defined";
@@ -274,6 +295,11 @@ const EDGE_KEYS = [
 const EDGE_OPTIONAL_KEYS = [
   "requires_rule_ids",
   "partial_consumption",
+  "fee_schedule",
+  "period_usage_key",
+  "period_usage_min_source_units",
+  "period_usage_max_source_units_exclusive",
+  "allowed_source_amounts",
 ] as const;
 
 const REQUEST_KEYS = [
@@ -295,6 +321,7 @@ const CAP_PERIODS: readonly CapPeriod[] = [
   "day",
   "month",
   "year",
+  "fiscal_year_april",
   "campaign_period",
   "lifetime",
   "rolling_30_day",
@@ -405,6 +432,9 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
   assertAsset(record.source_asset);
   assertAsset(record.destination_asset);
   const requiresRuleIds = record.requires_rule_ids;
+  const feeSchedule = record.fee_schedule;
+  const periodUsageKey = record.period_usage_key;
+  const allowedSourceAmounts = record.allowed_source_amounts;
   if (
     typeof record.rule_id !== "string" ||
     !/^[a-z0-9][a-z0-9.-]{1,119}$/u.test(record.rule_id) ||
@@ -443,16 +473,90 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
         ))) ||
     (record.partial_consumption !== undefined &&
       typeof record.partial_consumption !== "boolean") ||
+    (periodUsageKey !== undefined &&
+      (typeof periodUsageKey !== "string" ||
+        !CONFIRMATION_ID.test(periodUsageKey))) ||
+    (record.period_usage_min_source_units !== undefined &&
+      !optionalDecimal(record.period_usage_min_source_units)) ||
+    (record.period_usage_max_source_units_exclusive !== undefined &&
+      !optionalDecimal(record.period_usage_max_source_units_exclusive)) ||
+    (allowedSourceAmounts !== undefined &&
+      (!Array.isArray(allowedSourceAmounts) ||
+        allowedSourceAmounts.length < 1 ||
+        allowedSourceAmounts.length > 64 ||
+        new Set(allowedSourceAmounts).size !== allowedSourceAmounts.length ||
+        !allowedSourceAmounts.every((item) => typeof item === "string"))) ||
     typeof record.requires_direct_source !== "boolean"
   )
     throw new TypeError("point_route_edge_invalid");
   decimalString(record.source_units);
   decimalString(record.destination_units);
   decimalString(record.fee_source_units);
+  if (feeSchedule !== undefined) {
+    if (
+      !feeSchedule ||
+      typeof feeSchedule !== "object" ||
+      Array.isArray(feeSchedule)
+    )
+      throw new TypeError("point_route_edge_fee_schedule_invalid");
+    const schedule = feeSchedule as PlainRecord;
+    exactKeys(
+      schedule,
+      ["model", "numerator", "denominator", "rounding"],
+      "point_route_edge_fee_schedule_shape_invalid",
+    );
+    if (
+      schedule.model !== "percentage_of_source" ||
+      typeof schedule.numerator !== "string" ||
+      typeof schedule.denominator !== "string" ||
+      !["ceil", "floor"].includes(schedule.rounding as string)
+    )
+      throw new TypeError("point_route_edge_fee_schedule_invalid");
+    const numerator = decimalString(schedule.numerator);
+    const denominator = decimalString(schedule.denominator);
+    if (
+      !numerator.isInteger() ||
+      numerator.lt(0) ||
+      !denominator.isInteger() ||
+      denominator.lte(0) ||
+      numerator.gte(denominator)
+    )
+      throw new TypeError("point_route_edge_fee_schedule_invalid");
+  }
+  if (allowedSourceAmounts !== undefined) {
+    const parsed = allowedSourceAmounts.map((item) => decimalString(item));
+    if (
+      parsed.some((item) => !item.isInteger() || item.lte(0)) ||
+      parsed.some((item, index, values) => {
+        const previous = values[index - 1];
+        return previous !== undefined && item.lte(previous);
+      })
+    )
+      throw new TypeError("point_route_edge_allowed_amounts_invalid");
+    if (record.increment_source_units !== null)
+      throw new TypeError("point_route_edge_allowed_amounts_conflict");
+  }
+  const tierMin =
+    record.period_usage_min_source_units === undefined ||
+    record.period_usage_min_source_units === null
+      ? null
+      : decimalString(record.period_usage_min_source_units as string);
+  const tierMax =
+    record.period_usage_max_source_units_exclusive === undefined ||
+    record.period_usage_max_source_units_exclusive === null
+      ? null
+      : decimalString(record.period_usage_max_source_units_exclusive as string);
   if (
-    (record.maximum_source_units_per_period === null) !==
-    (record.maximum_period === null)
+    tierMin?.lt(0) === true ||
+    tierMax?.lte(0) === true ||
+    (tierMin !== null && tierMax !== null && tierMin.gte(tierMax))
   )
+    throw new TypeError("point_route_edge_period_tier_invalid");
+  const hasPeriodConstraint =
+    record.maximum_source_units_per_period !== null ||
+    tierMin !== null ||
+    tierMax !== null;
+  if (hasPeriodConstraint !== (record.maximum_period !== null))
     throw new TypeError("point_route_edge_cap_period_mismatch");
   if (
     typeof record.processing_time_days_min === "number" &&
@@ -468,7 +572,10 @@ function assertEdge(value: unknown): asserts value is PointRouteEdge {
     throw new TypeError("point_route_edge_validity_inverted");
 }
 
-function transferSpec(edge: PointRouteEdge): TransferCalculationSpec {
+function transferSpec(
+  edge: PointRouteEdge,
+  feeAmount = decimalString(edge.fee_source_units),
+): TransferCalculationSpec {
   return {
     model: "transfer_ratio",
     source_asset: edge.source_asset,
@@ -484,11 +591,14 @@ function transferSpec(edge: PointRouteEdge): TransferCalculationSpec {
     // authoritative trailing-window aggregate, so retain the public period
     // label on the route while using the kernel's compatible day token.
     maximum_period:
-      edge.maximum_period === "rolling_30_day" ? "day" : edge.maximum_period,
-    fee:
-      edge.fee_source_units === "0"
-        ? null
-        : { asset: edge.source_asset, amount: edge.fee_source_units },
+      edge.maximum_period === "rolling_30_day"
+        ? "day"
+        : edge.maximum_period === "fiscal_year_april"
+          ? "year"
+          : edge.maximum_period,
+    fee: feeAmount.eq(0)
+      ? null
+      : { asset: edge.source_asset, amount: canonicalDecimal(feeAmount) },
     rounding: {
       aggregation_scope: "transfer_request",
       eligible_spend_quantum_jpy: null,
@@ -512,6 +622,7 @@ function activeOn(edge: PointRouteEdge, date: string): boolean {
 
 interface Alignment {
   readonly source: Decimal;
+  readonly fee: Decimal;
   readonly stranded: Decimal;
   readonly binding: BindingConstraint;
 }
@@ -526,15 +637,40 @@ interface Alignment {
  * "you are capped at 20,000 this month" and "you lost 800 to a 1,000-unit
  * increment" call for different advice.
  */
+function feeForSource(edge: PointRouteEdge, source: Decimal): Decimal {
+  let fee = decimalString(edge.fee_source_units);
+  if (edge.fee_schedule === undefined) return fee;
+  const raw = source
+    .mul(decimalString(edge.fee_schedule.numerator))
+    .div(decimalString(edge.fee_schedule.denominator));
+  fee = fee.plus(
+    edge.fee_schedule.rounding === "ceil" ? raw.ceil() : raw.floor(),
+  );
+  return fee;
+}
+
+function usageKey(edge: PointRouteEdge): string {
+  return edge.period_usage_key ?? edge.rule_id;
+}
+
 function alignSource(
   edge: PointRouteEdge,
   available: Decimal,
   capRemaining: Decimal | null,
+  tierRemaining: Decimal | null = null,
 ): Alignment | null {
-  const fee = decimalString(edge.fee_source_units);
-  if (fee.gt(available)) return null;
-  const spendable = available.minus(fee);
-  let amount = spendable;
+  const fixedFee = decimalString(edge.fee_source_units);
+  if (fixedFee.gt(available)) return null;
+  let amount = available.minus(fixedFee);
+  if (edge.fee_schedule !== undefined) {
+    const numerator = decimalString(edge.fee_schedule.numerator);
+    const denominator = decimalString(edge.fee_schedule.denominator);
+    amount = available
+      .minus(fixedFee)
+      .mul(denominator)
+      .div(denominator.plus(numerator))
+      .floor();
+  }
   let binding: BindingConstraint = "balance";
   if (edge.maximum_source_units_per_request !== null) {
     const requestMaximum = decimalString(edge.maximum_source_units_per_request);
@@ -545,6 +681,10 @@ function alignSource(
   }
   if (capRemaining !== null && amount.gt(capRemaining)) {
     amount = capRemaining;
+    binding = "period_cap";
+  }
+  if (tierRemaining !== null && amount.gt(tierRemaining)) {
+    amount = tierRemaining;
     binding = "period_cap";
   }
   const minimum =
@@ -560,22 +700,52 @@ function alignSource(
     );
     if (aligned.lt(amount) && binding === "balance") binding = "increment";
     amount = aligned;
+  } else if (edge.allowed_source_amounts !== undefined) {
+    const allowed = edge.allowed_source_amounts
+      .map((item) => decimalString(item))
+      .filter((item) => item.lte(amount));
+    const selected = allowed.at(-1);
+    if (selected === undefined) return null;
+    if (selected.lt(amount) && binding === "balance") binding = "increment";
+    amount = selected;
   }
   if (minimum !== null && amount.lt(minimum)) return null;
   if (amount.lte(0)) return null;
+  // Percentage rounding can make the algebraic upper bound one unit too
+  // optimistic. Align down without ever iterating in proportion to balance.
+  const decrement =
+    edge.increment_source_units === null
+      ? edge.allowed_source_amounts === undefined
+        ? D(1)
+        : D(0)
+      : decimalString(edge.increment_source_units);
+  let fee = feeForSource(edge, amount);
+  if (amount.plus(fee).gt(available)) {
+    if (decrement.eq(0)) return null;
+    amount = amount.minus(decrement);
+    if (minimum !== null && amount.lt(minimum)) return null;
+    fee = feeForSource(edge, amount);
+  }
+  if (amount.lte(0) || amount.plus(fee).gt(available)) return null;
   // Reaching the remaining period cap exactly is itself the binding
   // constraint, whether the amount arrived clamped here or was already
   // limited upstream by `backwardCapacity`: either way nothing more can move
   // through this rule until the period resets.
   if (capRemaining !== null && amount.eq(capRemaining)) binding = "period_cap";
-  return { source: amount, stranded: spendable.minus(amount), binding };
+  return {
+    source: amount,
+    fee,
+    stranded: available.minus(amount).minus(fee),
+    binding,
+  };
 }
 
 type CapLedger = Map<string, Decimal>;
+type UsageLedger = Map<string, Decimal>;
 
 function capRemaining(ledger: CapLedger, edge: PointRouteEdge): Decimal | null {
   if (edge.maximum_source_units_per_period === null) return null;
-  return ledger.get(edge.rule_id) ?? D(0);
+  return ledger.get(usageKey(edge)) ?? D(0);
 }
 
 /**
@@ -594,6 +764,7 @@ function capRemaining(ledger: CapLedger, edge: PointRouteEdge): Decimal | null {
 function backwardCapacity(
   path: readonly PointRouteEdge[],
   ledger: CapLedger,
+  usageLedger: UsageLedger,
 ): Decimal | null {
   let capacity: Decimal | null = null;
   for (let index = path.length - 1; index >= 0; index -= 1) {
@@ -607,6 +778,15 @@ function backwardCapacity(
         hopMaximum === null || remaining.lt(hopMaximum)
           ? remaining
           : hopMaximum;
+    if (edge.period_usage_max_source_units_exclusive != null) {
+      const tierRemaining = decimalString(
+        edge.period_usage_max_source_units_exclusive,
+      ).minus(usageLedger.get(usageKey(edge)) ?? D(0));
+      hopMaximum =
+        hopMaximum === null || tierRemaining.lt(hopMaximum)
+          ? tierRemaining
+          : hopMaximum;
+    }
     if (capacity !== null) {
       // Source units that produce at most `capacity` destination units.  The
       // forward calculation floors, so flooring here cannot overshoot.
@@ -622,7 +802,7 @@ function backwardCapacity(
     capacity =
       hopMaximum === null
         ? null
-        : hopMaximum.plus(decimalString(edge.fee_source_units));
+        : hopMaximum.plus(feeForSource(edge, hopMaximum));
   }
   return capacity;
 }
@@ -654,24 +834,25 @@ function nonPartialCapFailure(
   path: readonly PointRouteEdge[],
   input: Decimal,
   ledger: CapLedger,
+  usageLedger: UsageLedger,
 ): LegFailure | null {
   let amount = input;
   for (let index = 0; index < path.length; index += 1) {
     const edge = path[index] as PointRouteEdge;
-    const fee = decimalString(edge.fee_source_units);
-    if (fee.gt(amount)) return null;
-    const spendable = amount.minus(fee);
     if (edge.partial_consumption === false) {
-      if (
-        edge.maximum_source_units_per_request !== null &&
-        spendable.gt(decimalString(edge.maximum_source_units_per_request))
-      )
-        return {
-          rule_id: edge.rule_id,
-          reason_code: "transfer_request_maximum_exceeded",
-        };
+      if (edge.maximum_source_units_per_request !== null) {
+        const maximum = decimalString(edge.maximum_source_units_per_request);
+        if (amount.gt(maximum.plus(feeForSource(edge, maximum))))
+          return {
+            rule_id: edge.rule_id,
+            reason_code: "transfer_request_maximum_exceeded",
+          };
+      }
       const remaining = capRemaining(ledger, edge);
-      if (remaining !== null && spendable.gt(remaining))
+      if (
+        remaining !== null &&
+        amount.gt(remaining.plus(feeForSource(edge, remaining)))
+      )
         return {
           rule_id: edge.rule_id,
           reason_code: "transfer_period_maximum_exceeded",
@@ -679,10 +860,16 @@ function nonPartialCapFailure(
     }
 
     const remaining = capRemaining(ledger, edge);
-    const alignment = alignSource(edge, amount, remaining);
+    const used = usageLedger.get(usageKey(edge)) ?? D(0);
+    const tierMaximum =
+      edge.period_usage_max_source_units_exclusive == null
+        ? null
+        : decimalString(edge.period_usage_max_source_units_exclusive);
+    const tierRemaining = tierMaximum === null ? null : tierMaximum.minus(used);
+    const alignment = alignSource(edge, amount, remaining, tierRemaining);
     if (alignment === null) return null;
     const sourceAmount = canonicalDecimal(alignment.source);
-    const evaluated = evaluateTransfer(transferSpec(edge), {
+    const evaluated = evaluateTransfer(transferSpec(edge, alignment.fee), {
       source_amount: sourceAmount,
       visited_asset_ids: path
         .slice(0, index)
@@ -718,12 +905,18 @@ function evaluateLeg(
   path: readonly PointRouteEdge[],
   input: Decimal,
   ledger: CapLedger,
+  usageLedger: UsageLedger,
   effectiveDate: string,
   balanceExpiresOn: string | null,
 ): LegEvaluation | LegFailure {
-  const nonPartialFailure = nonPartialCapFailure(path, input, ledger);
+  const nonPartialFailure = nonPartialCapFailure(
+    path,
+    input,
+    ledger,
+    usageLedger,
+  );
   if (nonPartialFailure) return nonPartialFailure;
-  const capacity = backwardCapacity(path, ledger);
+  const capacity = backwardCapacity(path, ledger, usageLedger);
   let amount = capacity?.lt(input) ? capacity : input;
   let minDays: number | null = 0;
   let maxDays: number | null = 0;
@@ -755,8 +948,31 @@ function evaluateLeg(
     )
       return { rule_id: edge.rule_id, reason_code: "source_balance_expired" };
 
+    const key = usageKey(edge);
+    const used = (usageLedger.get(key) ?? D(0)).plus(
+      capConsumption.get(key) ?? D(0),
+    );
+    const tierMinimum =
+      edge.period_usage_min_source_units == null
+        ? null
+        : decimalString(edge.period_usage_min_source_units);
+    const tierMaximum =
+      edge.period_usage_max_source_units_exclusive == null
+        ? null
+        : decimalString(edge.period_usage_max_source_units_exclusive);
+    if (tierMinimum !== null && used.lt(tierMinimum))
+      return {
+        rule_id: edge.rule_id,
+        reason_code: "period_tier_not_active",
+      };
+    if (tierMaximum !== null && used.gte(tierMaximum))
+      return {
+        rule_id: edge.rule_id,
+        reason_code: "period_tier_exhausted",
+      };
     const remaining = capRemaining(ledger, edge);
-    const alignment = alignSource(edge, amount, remaining);
+    const tierRemaining = tierMaximum === null ? null : tierMaximum.minus(used);
+    const alignment = alignSource(edge, amount, remaining, tierRemaining);
     if (alignment === null)
       return {
         rule_id: edge.rule_id,
@@ -766,7 +982,7 @@ function evaluateLeg(
       };
 
     const sourceAmount = canonicalDecimal(alignment.source);
-    const evaluated = evaluateTransfer(transferSpec(edge), {
+    const evaluated = evaluateTransfer(transferSpec(edge, alignment.fee), {
       source_amount: sourceAmount,
       visited_asset_ids: path
         .slice(0, hops.length)
@@ -795,7 +1011,16 @@ function evaluateLeg(
         reward_class: edge.source_asset.reward_class,
         amount: canonicalDecimal(alignment.stranded),
       });
-    if (remaining !== null) capConsumption.set(edge.rule_id, alignment.source);
+    if (
+      remaining !== null ||
+      tierMinimum !== null ||
+      tierMaximum !== null ||
+      edge.period_usage_key !== undefined
+    )
+      capConsumption.set(
+        key,
+        (capConsumption.get(key) ?? D(0)).plus(alignment.source),
+      );
 
     hops.push({
       rule_id: edge.rule_id,
@@ -805,7 +1030,7 @@ function evaluateLeg(
       destination_reward_class: edge.destination_asset.reward_class,
       source_amount: sourceAmount,
       destination_amount: evaluated.destination_amount,
-      fee_source_units: edge.fee_source_units,
+      fee_source_units: canonicalDecimal(alignment.fee),
       stranded_source_amount: canonicalDecimal(alignment.stranded),
       binding_constraint: alignment.binding,
       initiated_on: initiatedOn,
@@ -982,6 +1207,7 @@ function allocate(
   paths: readonly (readonly PointRouteEdge[])[],
   available: Decimal,
   ledger: CapLedger,
+  usageLedger: UsageLedger,
   effectiveDate: string,
   balanceExpiresOn: string | null,
   maxLegs: number,
@@ -1005,6 +1231,7 @@ function allocate(
         path,
         remaining,
         ledger,
+        usageLedger,
         effectiveDate,
         balanceExpiresOn,
       );
@@ -1029,9 +1256,10 @@ function allocate(
 
     legs.push(best.evaluation.leg);
     stranded.push(...best.evaluation.stranded);
-    for (const [ruleId, consumption] of best.evaluation.capConsumption) {
-      const current = ledger.get(ruleId) ?? D(0);
-      ledger.set(ruleId, current.minus(consumption));
+    for (const [key, consumption] of best.evaluation.capConsumption) {
+      const current = ledger.get(key);
+      if (current !== undefined) ledger.set(key, current.minus(consumption));
+      usageLedger.set(key, (usageLedger.get(key) ?? D(0)).plus(consumption));
     }
     const consumed = decimalString(best.evaluation.consumed);
     used = used.plus(consumed);
@@ -1213,8 +1441,12 @@ export function optimizePointRoute(
       skipped.set(edge.rule_id, "condition_confirmation_required");
       return false;
     }
-    if (edge.maximum_source_units_per_period !== null) {
-      const used = input.period_source_used_by_rule[edge.rule_id];
+    if (
+      edge.maximum_source_units_per_period !== null ||
+      edge.period_usage_min_source_units != null ||
+      edge.period_usage_max_source_units_exclusive != null
+    ) {
+      const used = input.period_source_used_by_rule[usageKey(edge)];
       if (used === undefined) {
         // A capped rule with unknown prior usage is not assumed to be unused.
         skipped.set(edge.rule_id, "transfer_period_usage_unknown");
@@ -1225,14 +1457,24 @@ export function optimizePointRoute(
   });
 
   const ledger: CapLedger = new Map();
+  const usageLedger: UsageLedger = new Map();
   for (const edge of usableEdges) {
+    const key = usageKey(edge);
+    const used = decimalString(input.period_source_used_by_rule[key] ?? "0");
+    if (
+      edge.maximum_source_units_per_period !== null ||
+      edge.period_usage_min_source_units != null ||
+      edge.period_usage_max_source_units_exclusive != null
+    )
+      usageLedger.set(key, used);
     if (edge.maximum_source_units_per_period === null) continue;
     const maximum = decimalString(edge.maximum_source_units_per_period);
-    const used = decimalString(
-      input.period_source_used_by_rule[edge.rule_id] ?? "0",
-    );
     const remaining = maximum.minus(used);
-    ledger.set(edge.rule_id, remaining.lt(0) ? D(0) : remaining);
+    const normalized = remaining.lt(0) ? D(0) : remaining;
+    const existing = ledger.get(key);
+    if (existing !== undefined && !existing.eq(normalized))
+      throw new TypeError("point_route_shared_cap_conflict");
+    ledger.set(key, normalized);
   }
 
   const plans: PointRoutePlan[] = [];
@@ -1278,10 +1520,12 @@ export function optimizePointRoute(
       // Each target is priced against the same starting cap state; the
       // committed winner is what actually consumes the shared ledger.
       const trialLedger: CapLedger = new Map(ledger);
+      const trialUsageLedger: UsageLedger = new Map(usageLedger);
       const outcome = allocate(
         paths,
         decimalString(balance.amount),
         trialLedger,
+        trialUsageLedger,
         effectiveDate,
         balanceExpiresOn,
         input.max_legs,

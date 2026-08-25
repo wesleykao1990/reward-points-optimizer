@@ -31,6 +31,8 @@ const IMPLEMENTATION_FIXTURES = Object.freeze([
   "../../../fixtures/m3/provisional/p0-wallet-card-rules.implementation.v0.5.json",
   "../../../fixtures/m3/provisional/p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
   "../../../fixtures/m3/provisional/p0-complex-route-benchmark.implementation.v0.7.json",
+  "../../../fixtures/m3/provisional/p0-moppy-jal-standard.implementation.v0.8.json",
+  "../../../fixtures/m3/provisional/p0-exchange-route-completeness.implementation.v0.9.json",
 ] as const);
 /** The PostgreSQL adapter pages at 128; the browser catalogue has a separate
  * resource ceiling while accepting bounded additive snapshots. */

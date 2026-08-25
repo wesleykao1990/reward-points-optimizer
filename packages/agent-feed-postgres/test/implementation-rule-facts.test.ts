@@ -17,6 +17,8 @@ const IMPLEMENTATION_FILES = [
   "p0-wallet-card-rules.implementation.v0.5.json",
   "p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
   "p0-complex-route-benchmark.implementation.v0.7.json",
+  "p0-moppy-jal-standard.implementation.v0.8.json",
+  "p0-exchange-route-completeness.implementation.v0.9.json",
 ] as const;
 
 function implementationRows(
@@ -112,7 +114,7 @@ describe("PostgreSQL route-graph implementation-fact adapter", () => {
 
     expect(queryText).toBe(P0_ROUTE_GRAPH_FACTS_QUERY);
     expect(queryValues).toEqual(["2026-08-25T00:00:00.000Z"]);
-    expect(result.artifacts).toHaveLength(5);
+    expect(result.artifacts).toHaveLength(IMPLEMENTATION_FILES.length);
     const complex = result.artifacts.find(
       (artifact) =>
         (artifact as { metadata?: { artifact_id?: string } }).metadata
@@ -139,6 +141,11 @@ describe("PostgreSQL route-graph implementation-fact adapter", () => {
         expect.objectContaining({ rule_id: "p0.transfer.revolut-to-ana-pay" }),
         expect.objectContaining({
           rule_id: "p0.transfer.saison-permanent-to-ana-mizuho",
+        }),
+        expect.objectContaining({
+          rule_id: "p0.transfer.moppy-to-jal-standard",
+          source_units: "1000",
+          destination_units: "500",
         }),
       ]),
     );

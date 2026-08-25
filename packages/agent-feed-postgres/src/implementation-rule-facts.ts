@@ -17,14 +17,14 @@ select claim_id, family_id, source_role_id, claim_type, subject, predicate,
        source_ids, value, applicability, research_artifact_id,
        implementation_version, implementation_hash, as_of,
        source_identity, exclusions
-  from ${P0_ROUTE_GRAPH_FACTS_FUNCTION}($1::timestamptz)
+ from ${P0_ROUTE_GRAPH_FACTS_FUNCTION}($1::timestamptz)
  order by research_artifact_id asc, claim_id asc
- limit 2049
+ limit 4097
 `;
 export const P0_IMPLEMENTATION_RULE_FACTS_QUERY = P0_ROUTE_GRAPH_FACTS_QUERY;
 
-/** The private projection is bounded at 2,049; anything at or beyond that is a fault. */
-export const MAX_P0_ROUTE_GRAPH_FACT_ROWS = 2_048 as const;
+/** The private projection is bounded without pinning it to a historical row count. */
+export const MAX_P0_ROUTE_GRAPH_FACT_ROWS = 4_096 as const;
 export const MAX_P0_IMPLEMENTATION_RULE_FACT_ROWS =
   MAX_P0_ROUTE_GRAPH_FACT_ROWS;
 

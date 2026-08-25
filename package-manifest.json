@@ -4,7 +4,6 @@
   "research_cutoff": "2026-08-20",
   "status": "p0_atomic_agent_feed_adapter_with_exact_nanaco_candidate_unpublished",
   "counts": {
-    "trusted_sources": 190,
     "source_access_observations": 5,
     "seed_scenario_blueprints": 10,
     "planned_scenarios": 100,
@@ -174,7 +173,15 @@
     "p0_merchant_transit_regulatory_coverage_index": "fixtures/m3/provisional/p0-coverage-index.v0.6.json",
     "p0_generic_implementation_database_test": "db/tests/017_p0_generic_implementation_catalogue.sql",
     "p0_implementation_runtime": "packages/agent-feed-postgres/src/implementation.ts",
-    "p0_implementation_tests": "packages/agent-feed-postgres/test/implementation.test.ts"
+    "p0_implementation_tests": "packages/agent-feed-postgres/test/implementation.test.ts",
+    "production_exchange_route_generator": "scripts/generate_p0_exchange_route_research.mjs",
+    "production_exchange_route_research": "fixtures/m3/agent-feed/p0-exchange-route-completeness.research.v0.1.json",
+    "production_exchange_route_implementation": "fixtures/m3/provisional/p0-exchange-route-completeness.implementation.v0.9.json",
+    "production_exchange_route_coverage_index": "fixtures/m3/provisional/p0-coverage-index.v0.9.json",
+    "production_exchange_route_coverage_audit": "packages/provisional-rules/src/p0-exchange-coverage.ts",
+    "production_exchange_route_seed": "db/seeds/014_p0_exchange_route_completeness_implementation.sql",
+    "production_exchange_route_database_test": "db/tests/033_p0_exchange_route_completeness.sql",
+    "production_exchange_route_supabase_migration": "supabase/migrations/20260825203034_released_data_014_p0_exchange_route_completeness_implementation.sql"
   },
   "warnings": [
     "No production reward rate or campaign should be inferred from synthetic examples.",
@@ -189,7 +196,7 @@
     "The Agent Feed service is a separate project/deployment; the Rewards Optimizer must not query its database.",
     "Supabase Realtime is optional UX and is not the monitor, queue, or cross-project delivery mechanism.",
     "Current ChatGPT Scheduled Tasks do not provide webhooks; automatic submission is capability-gated.",
-    "Prototype data is synthetic and must not be presented as current market advice.",
+    "Legacy P0 identifiers remain compatibility names for tables and artifacts; the unified route graph now spans production source families beyond the original P0 planning cohort.",
     "Milestone 5 is a pure offline internal/synthetic foundation; production mode is blocked with production_authorization_unavailable.",
     "Milestone 5 has no HTTP, database, authentication, persistence, or Agent Feed replay adapter; trusted authorization ports remain server-side host capabilities.",
     "Milestone 6 has a deployable hosted-alpha adapter, but it remains experimental, unauthenticated, and not current reward advice or a production-ready consumer release.",

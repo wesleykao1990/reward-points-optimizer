@@ -61,3 +61,15 @@ persists exactly 18 source-bound catalogue facts, including the explicit
 Revolut-to-ANA Pay cap and research-only campaign/exclusion facts, with zero
 derived rules or canonical publication rows. Regenerate and check it with the
 same descriptor-driven command above.
+
+`013_p0_moppy_jal_standard_implementation.sql` is generated from the official
+JAL and Moppy ordinary-transfer pages. It adds the non-campaign 1,000 Moppy
+points to 500 JAL miles route independently of bounded campaign bonuses,
+rebates, and lotteries.
+
+`014_p0_exchange_route_completeness_implementation.sql` is the legacy-named
+storage slice for the expanding production route graph. Its 26 facts include
+19 executable routes and seven explicit eligibility claims. Percentage fees,
+discrete exchange menus, and April-to-March tier/cap counters are preserved in
+the stored claim values; only rows lacking exact public parameters remain in
+the production coverage audit.

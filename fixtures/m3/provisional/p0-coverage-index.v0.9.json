@@ -1,0 +1,71 @@
+{
+  "version": "p0-coverage-index.v0.9",
+  "entries": [
+    {
+      "family_id": "point.ana-mile",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.ana.jr-kyupo-benefit",
+        "jp.ana.partner-exchange-rules"
+      ]
+    },
+    {
+      "family_id": "point.jal-mile",
+      "source_role_id": "eligible_cards",
+      "known_source_ids": [
+        "jp.jal.ponta-benefit"
+      ]
+    },
+    {
+      "family_id": "point.jal-mile",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.jal.jr-kyupo-benefit",
+        "jp.jal.ponta-benefit"
+      ]
+    },
+    {
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.moppy.ana-exchange",
+        "jp.moppy.exchange",
+        "jp.moppy.exchange-fee-help",
+        "jp.moppy.paypay-exchange",
+        "jp.moppy.ponta-exchange",
+        "jp.moppy.rakuten-fee-update",
+        "jp.moppy.v-fee-update",
+        "jp.moppy.waon-launch"
+      ]
+    },
+    {
+      "family_id": "point.recruit",
+      "source_role_id": "eligible_accounts",
+      "known_source_ids": [
+        "jp.recruitpoint.d-transfer"
+      ]
+    },
+    {
+      "family_id": "point.recruit",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.recruitpoint.d-transfer",
+        "jp.recruitpoint.exchange-partners"
+      ]
+    },
+    {
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "eligible_cards",
+      "known_source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ]
+    },
+    {
+      "family_id": "transit.jrkyushu",
+      "source_role_id": "transfer_partner_directory",
+      "known_source_ids": [
+        "jp.jrkyushu.point-exchange"
+      ]
+    }
+  ]
+}

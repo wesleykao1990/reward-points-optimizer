@@ -373,6 +373,116 @@ describe("point route optimizer", () => {
     expect(result.winner?.legs[0]?.rule_ids).toEqual(["p0.direct"]);
   });
 
+  it("debits a source-percentage fee without overstating the destination", () => {
+    const percentageFee = edge("p0.moppy-v", SITE, HUB, "1", "1", {
+      minimum_source_units: "500",
+      increment_source_units: "500",
+      fee_schedule: {
+        model: "percentage_of_source",
+        numerator: "7",
+        denominator: "100",
+        rounding: "ceil",
+      },
+    });
+    const result = optimizePointRoute(
+      request({
+        target_asset_id: HUB.asset_id,
+        balances: [{ asset: SITE, amount: "1070", expires_at: null }],
+        edges: [percentageFee],
+      }),
+    );
+    expect(result.winner?.source_amount_used).toBe("1070");
+    expect(result.winner?.target_amount).toBe("1000");
+    expect(result.winner?.legs[0]?.hops[0]?.fee_source_units).toBe("70");
+  });
+
+  it("uses only provider-published discrete exchange principals", () => {
+    const waon = edge("p0.moppy-waon", SITE, HUB, "1", "1", {
+      minimum_source_units: "500",
+      increment_source_units: null,
+      allowed_source_amounts: ["500", "1000", "3000", "5000", "10000"],
+      fee_schedule: {
+        model: "percentage_of_source",
+        numerator: "2",
+        denominator: "100",
+        rounding: "ceil",
+      },
+    });
+    const result = optimizePointRoute(
+      request({
+        target_asset_id: HUB.asset_id,
+        balances: [{ asset: SITE, amount: "1020", expires_at: null }],
+        edges: [waon],
+      }),
+    );
+    expect(result.winner?.source_amount_used).toBe("1020");
+    expect(result.winner?.target_amount).toBe("1000");
+    expect(result.winner?.legs[0]?.hops[0]?.fee_source_units).toBe("20");
+  });
+
+  it("moves from a full-rate to reduced-rate fiscal-year tier", () => {
+    const full = edge("p0.ana-full", SITE, HUB, "10000", "10000", {
+      minimum_source_units: "10000",
+      increment_source_units: "10000",
+      maximum_period: "fiscal_year_april",
+      period_usage_key: "period.ana-partner-fiscal-year",
+      period_usage_max_source_units_exclusive: "20000",
+    });
+    const reduced = edge("p0.ana-reduced", SITE, HUB, "10000", "5000", {
+      minimum_source_units: "10000",
+      increment_source_units: "10000",
+      maximum_period: "fiscal_year_april",
+      period_usage_key: "period.ana-partner-fiscal-year",
+      period_usage_min_source_units: "20000",
+    });
+    const result = optimizePointRoute(
+      request({
+        target_asset_id: HUB.asset_id,
+        balances: [{ asset: SITE, amount: "30000", expires_at: null }],
+        edges: [full, reduced],
+        period_source_used_by_rule: {
+          "period.ana-partner-fiscal-year": "0",
+        },
+      }),
+    );
+    expect(result.winner?.target_amount).toBe("25000");
+    expect(result.winner?.legs.map((leg) => leg.rule_ids[0])).toEqual([
+      "p0.ana-full",
+      "p0.ana-reduced",
+    ]);
+  });
+
+  it("shares a fiscal-year cap across sibling rate rules", () => {
+    const low = edge("p0.jal-low", SITE, HUB, "1000", "500", {
+      minimum_source_units: "3000",
+      increment_source_units: "1000",
+      maximum_source_units_per_request: "9000",
+      maximum_source_units_per_period: "30000",
+      maximum_period: "fiscal_year_april",
+      period_usage_key: "period.jal-jr-kyupo-fiscal-year",
+    });
+    const high = edge("p0.jal-high", SITE, HUB, "10000", "10000", {
+      minimum_source_units: "10000",
+      increment_source_units: "10000",
+      maximum_source_units_per_period: "30000",
+      maximum_period: "fiscal_year_april",
+      period_usage_key: "period.jal-jr-kyupo-fiscal-year",
+    });
+    const result = optimizePointRoute(
+      request({
+        target_asset_id: HUB.asset_id,
+        balances: [{ asset: SITE, amount: "40000", expires_at: null }],
+        edges: [low, high],
+        period_source_used_by_rule: {
+          "period.jal-jr-kyupo-fiscal-year": "10000",
+        },
+      }),
+    );
+    expect(result.winner?.source_amount_used).toBe("20000");
+    expect(result.winner?.target_amount).toBe("20000");
+    expect(result.winner?.source_amount_available).toBe("40000");
+  });
+
   it("is deterministic and rejects hostile input", () => {
     const left = optimizePointRoute(request());
     const right = optimizePointRoute(request());

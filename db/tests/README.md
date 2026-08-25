@@ -25,7 +25,20 @@ JRO_TEST_DATABASE_URL=postgresql://.../jro_test JRO_DB_TEST_CONFIRM=isolated pnp
 - `024_p0_agent_feed_scope_projection.sql`: terminal raw-payload redaction,
   signed subset scope projection, receipt/event/run binding, missing/forged/
   drifted scope rejection, and append-only/private projection controls.
+- `032_p0_moppy_jal_standard_route.sql`: the official non-campaign Moppy to
+  JAL 1,000-point to 500-mile route is present exactly once in the runtime
+  graph projection with its minimum, increment, fee, and asset tuple intact.
+- `033_p0_exchange_route_completeness.sql`: the additive official-directory
+  slice projects all 12 expected route IDs and preserves the Recruit-to-d and
+  tiered JAL-to-Ponta boundary fields.
+- `034_production_exchange_directory_reconciliation.sql`: a structured Agent
+  Feed transfer-directory snapshot becomes an immediately visible route;
+  partial updates replace only affected entries, incomplete updates remove
+  arithmetic and create precise research tasks, and all ledgers remain private.
 
 The runner applies all numbered seeds after all migrations and before all SQL
 tests. Use `pnpm seed:m3:check` to prove the generated M3 SQL still matches the
 reviewed fixtures; seed 002 is separately pinned by test 010.
+`033_p0_exchange_route_completeness.sql` verifies the production exchange
+route inventory stored under the legacy P0 table/function namespace, including
+Moppy fees/discrete WAON amounts and ANA/JAL fiscal-year tiers.

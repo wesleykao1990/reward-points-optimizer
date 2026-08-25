@@ -119,6 +119,7 @@ function campaignRoute(
       destination_label: step.destination_label,
       source_amount: step.source_amount,
       destination_amount: step.destination_amount,
+      fee_source_units: "0",
       processing_days: processingDays(processingReward),
       stranded_amount: "0",
       limit_note: null,

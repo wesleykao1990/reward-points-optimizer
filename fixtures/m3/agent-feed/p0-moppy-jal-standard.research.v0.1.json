@@ -1,0 +1,202 @@
+{
+  "artifact_type": "p0_complex_route_benchmark_research",
+  "schema_version": "0.1",
+  "schema": {
+    "id": "p0-complex-route-benchmark-research-v0.1",
+    "required_root_keys": [
+      "artifact_type",
+      "schema_version",
+      "schema",
+      "metadata",
+      "sources",
+      "role_results",
+      "claims",
+      "summary"
+    ],
+    "source_required_fields": [
+      "source_id",
+      "family_id",
+      "roles",
+      "url",
+      "title",
+      "publisher",
+      "official_domain",
+      "retrieval"
+    ],
+    "claim_required_fields": [
+      "claim_id",
+      "family_id",
+      "source_role_id",
+      "source_ids",
+      "claim_type",
+      "subject",
+      "predicate",
+      "value",
+      "applicability",
+      "exclusions",
+      "evidence_locator",
+      "short_paraphrase"
+    ],
+    "structured_transfer_required_fields": [
+      "route_id",
+      "operation",
+      "source_asset_ref",
+      "destination_asset_ref",
+      "source_units",
+      "destination_units",
+      "minimum_source_units",
+      "increment_source_units",
+      "maximum_source_units_per_request",
+      "maximum_source_units_per_period",
+      "maximum_period",
+      "fee_source_units",
+      "processing_time_days_min",
+      "processing_time_days_max",
+      "cancellation_policy",
+      "validity",
+      "prerequisite_ids",
+      "requires_rule_ids",
+      "required_conditions_ja",
+      "requires_direct_source",
+      "partial_consumption"
+    ],
+    "role_result_outcomes": [
+      "claims_found",
+      "partially_checked",
+      "no_economic_claim_found"
+    ],
+    "sort_order": "sources by source_id; role_results by family_id then source_role_id; claims by claim_id",
+    "source_policy": "First-party official operator and transfer pages only; no search snippet is used as claim evidence.",
+    "quote_policy": "No verbatim quotation fields are used; evidence_locator points to the fetched official page section."
+  },
+  "metadata": {
+    "artifact_id": "p0-moppy-jal-standard.research.v0.1",
+    "protocol_version": "0.1",
+    "task_id": "p0.1-moppy-jal-standard-transfer",
+    "producer": "codex-official-source-research",
+    "families": ["point.moppy"],
+    "declared_roles": ["transfer_partner_directory"],
+    "bounded_run": {
+      "started_at": "2026-08-25T20:30:00+09:00",
+      "ended_at": "2026-08-25T20:40:00+09:00",
+      "timezone": "Asia/Tokyo",
+      "scope": "The official JAL Moppy partner page and the official Moppy exchange directory were checked for the ordinary Moppy-to-JAL exchange ratio, minimum, fee and processing time.",
+      "truncation": "Only the ordinary Moppy-to-JAL principal exchange is represented here. Campaign bonuses, rebates and lotteries remain separate bounded records.",
+      "retrieval_cutoff": "2026-08-25"
+    },
+    "publisher_policy": "Official JAL and Moppy pages only; search snippets were used only to locate the official pages and not as claim evidence.",
+    "pii_or_secret_check": "No credentials, account numbers, membership data, tokens or payment data included."
+  },
+  "sources": [
+    {
+      "source_id": "jp.jal.moppy-standard-transfer",
+      "family_id": "point.moppy",
+      "roles": ["transfer_partner_directory"],
+      "url": "https://partner.jal.co.jp/jmb/partner/feature/200176/",
+      "title": "モッピー特集",
+      "publisher": "日本航空株式会社",
+      "official_domain": "partner.jal.co.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T20:35:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "The official JAL partner page states the ordinary transfer ratio of 1,000 Moppy points to 500 JAL miles and a minimum exchange of 1,000 points. The official Moppy exchange directory states no fee and completion within 30 minutes."
+    },
+    {
+      "source_id": "jp.moppy.exchange-directory",
+      "family_id": "point.moppy",
+      "roles": ["transfer_partner_directory"],
+      "url": "https://moppy.jp/cashback/",
+      "title": "ポイント交換",
+      "publisher": "株式会社セレス",
+      "official_domain": "moppy.jp",
+      "retrieval": {
+        "status": "fetched",
+        "accessed_at": "2026-08-25T20:35:00+09:00",
+        "http_status": 200,
+        "content_type": "text/html",
+        "failure_reason": null
+      },
+      "notes": "The official Moppy exchange directory lists JAL Mileage Bank with a 1,000-point minimum, no exchange fee and completion within 30 minutes."
+    }
+  ],
+  "role_results": [
+    {
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "outcome": "claims_found",
+      "source_ids": [
+        "jp.jal.moppy-standard-transfer",
+        "jp.moppy.exchange-directory"
+      ],
+      "claim_ids": ["claim.route.moppy.jal.standard.001"],
+      "checked_at": "2026-08-25T20:35:00+09:00",
+      "notes": "The ordinary Moppy-to-JAL principal route is independent of campaign modifiers."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "claim.route.moppy.jal.standard.001",
+      "family_id": "point.moppy",
+      "source_role_id": "transfer_partner_directory",
+      "source_ids": [
+        "jp.jal.moppy-standard-transfer",
+        "jp.moppy.exchange-directory"
+      ],
+      "claim_type": "transfer_rule",
+      "subject": "モッピーポイント → JALマイル（通常交換）",
+      "predicate": "converts_at_fixed_ratio",
+      "value": {
+        "transfer": {
+          "route_id": "moppy-to-jal-standard",
+          "operation": "transfer",
+          "source_asset_ref": "asset.point.moppy",
+          "destination_asset_ref": "asset.mile.jal",
+          "source_units": 1000,
+          "destination_units": 500,
+          "minimum_source_units": 1000,
+          "increment_source_units": 1000,
+          "maximum_source_units_per_request": null,
+          "maximum_source_units_per_period": null,
+          "maximum_period": null,
+          "fee_source_units": 0,
+          "processing_time_days_min": 0,
+          "processing_time_days_max": 0,
+          "cancellation_policy": "provider_defined",
+          "validity": {
+            "valid_from": null,
+            "valid_to": null,
+            "timezone": "Asia/Tokyo"
+          },
+          "prerequisite_ids": [],
+          "requires_rule_ids": [],
+          "required_conditions_ja": [],
+          "requires_direct_source": false,
+          "partial_consumption": true
+        }
+      },
+      "applicability": {
+        "status": "current_as_observed",
+        "effective_from": null,
+        "effective_to": null,
+        "timezone": "Asia/Tokyo"
+      },
+      "exclusions": [],
+      "evidence_locator": "JAL モッピー特集: マイル移行対象および通常マイル移行数、最低交換ポイント数; Moppy ポイント交換: 手数料と交換日数",
+      "short_paraphrase": "通常交換はモッピーポイント1,000をJALマイル500へ、最低1,000ポイントから手数料無料で交換します。"
+    }
+  ],
+  "summary": {
+    "claim_count": 1,
+    "source_count": 2,
+    "role_result_count": 1,
+    "claim_count_by_family": {"point.moppy": 1},
+    "claim_count_by_role": {"transfer_partner_directory": 1},
+    "claim_count_by_type": {"transfer_rule": 1},
+    "failures": [],
+    "validation_intent": "Require the official source, exact transfer tuple and complete structured transfer fields before the ordinary route enters the calculation graph."
+  }
+}

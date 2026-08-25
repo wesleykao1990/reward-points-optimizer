@@ -1,0 +1,33 @@
+-- GENERATED FILE. Run `node scripts/generate_p0_research_implementation_seeds.mjs` to refresh.
+-- This seed persists the exact p0-moppy-jal-standard.research.v0.1 implementation
+-- snapshot as 1 searchable catalogue facts and zero
+-- derived candidates. It never writes canonical reward rules, evidence, publication
+-- rows, or unrelated canonical rows.
+\set ON_ERROR_STOP on
+
+begin;
+
+select set_config('app_private.p0_implementation_write_context', 'seed', true);
+insert into app_private.p0_implementation_coverage_refs (
+    coverage_index_version, family_id, source_role_id, source_id
+) values
+    ('p0-coverage-index.v0.8', 'point.moppy', 'transfer_partner_directory', 'jp.jal.moppy-standard-transfer'),
+    ('p0-coverage-index.v0.8', 'point.moppy', 'transfer_partner_directory', 'jp.moppy.exchange-directory');
+select set_config('app_private.p0_implementation_write_context', '', true);
+
+select * from app_private.persist_p0_implementation_snapshot(
+    $p0_implementation_snapshot${"version":"p0-moppy-jal-standard.implementation.v0.8","artifact_type":"p0_point_rules_implementation","research_artifact_id":"p0-moppy-jal-standard.research.v0.1","research_artifact_hash":"sha256:c15d8840f9e78a6e90947fd733a58d06cec77ef32dd36b24bc8beb93811b4e46","coverage_index_version":"p0-coverage-index.v0.8","as_of":"2026-08-25T20:40:00+09:00","parent_claim_count":1,"derived_rule_count":0,"entries":[{"parent_claim_id":"claim.route.moppy.jal.standard.001","family_id":"point.moppy","source_role_id":"transfer_partner_directory","source_ids":["jp.jal.moppy-standard-transfer","jp.moppy.exchange-directory"],"source_identity":[{"source_id":"jp.jal.moppy-standard-transfer","family_id":"point.moppy","roles":["transfer_partner_directory"],"url":"https://partner.jal.co.jp/jmb/partner/feature/200176/","publisher":"日本航空株式会社","official_domain":"partner.jal.co.jp"},{"source_id":"jp.moppy.exchange-directory","family_id":"point.moppy","roles":["transfer_partner_directory"],"url":"https://moppy.jp/cashback/","publisher":"株式会社セレス","official_domain":"moppy.jp"}],"claim_type":"transfer_rule","subject":"モッピーポイント → JALマイル（通常交換）","predicate":"converts_at_fixed_ratio","value":{"transfer":{"route_id":"moppy-to-jal-standard","operation":"transfer","source_asset_ref":"asset.point.moppy","destination_asset_ref":"asset.mile.jal","source_units":1000,"destination_units":500,"minimum_source_units":1000,"increment_source_units":1000,"maximum_source_units_per_request":null,"maximum_source_units_per_period":null,"maximum_period":null,"fee_source_units":0,"processing_time_days_min":0,"processing_time_days_max":0,"cancellation_policy":"provider_defined","validity":{"valid_from":null,"valid_to":null,"timezone":"Asia/Tokyo"},"prerequisite_ids":[],"requires_rule_ids":[],"required_conditions_ja":[],"requires_direct_source":false,"partial_consumption":true}},"applicability":{"status":"current_as_observed","effective_from":null,"effective_to":null,"timezone":"Asia/Tokyo"},"exclusions":[],"evidence_locator":"JAL モッピー特集: マイル移行対象および通常マイル移行数、最低交換ポイント数; Moppy ポイント交換: 手数料と交換日数","short_paraphrase":"通常交換はモッピーポイント1,000をJALマイル500へ、最低1,000ポイントから手数料無料で交換します。","disposition":"catalogue_fact","derived_rule_ids":[],"reason":"insufficient_operation_mapping","reason_detail":"The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields."}],"derived_rules":[],"issues":[{"code":"catalogue_fact","path":"/claims/claim.route.moppy.jal.standard.001","message":"The claim has economic values but lacks explicit machine operation, asset, tax, or rounding fields.","claim_id":"claim.route.moppy.jal.standard.001","reason":"insufficient_operation_mapping"}],"implementation_hash":"sha256:9bbad862bed7958bedc02de7375c0c070cbe5759bbfccb46e7fc134729ae18a5"}$p0_implementation_snapshot$::jsonb
+);
+
+do $seed_check$
+begin
+    if (select count(*) from app_private.p0_implementation_snapshots where implementation_version = 'p0-moppy-jal-standard.implementation.v0.8') <> 1
+       or (select count(*) from app_private.p0_implementation_facts where implementation_version = 'p0-moppy-jal-standard.implementation.v0.8') <> 1
+       or (select count(*) from app_private.p0_implementation_fact_corrections) <> 0
+    then
+        raise exception 'P0 implementation seed row counts are incorrect for 013_p0_moppy_jal_standard_implementation.sql';
+    end if;
+end
+$seed_check$;
+
+commit;

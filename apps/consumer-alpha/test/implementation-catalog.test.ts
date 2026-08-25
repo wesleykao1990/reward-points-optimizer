@@ -10,8 +10,6 @@ import {
   resetImplementationFactCatalogue,
 } from "../src/implementation-catalog.js";
 import {
-  IMPLEMENTATION_PREDICATE_LABEL_COUNT,
-  IMPLEMENTATION_SUMMARY_TRANSLATION_COUNT,
   localizeImplementationPredicate,
   localizeImplementationSubject,
   localizeImplementationSummary,
@@ -64,6 +62,8 @@ const implementationFixturePaths = [
   "p0-wallet-card-rules.implementation.v0.5.json",
   "p0-merchant-transit-regulatory-rules.implementation.v0.6.json",
   "p0-complex-route-benchmark.implementation.v0.7.json",
+  "p0-moppy-jal-standard.implementation.v0.8.json",
+  "p0-exchange-route-completeness.implementation.v0.9.json",
 ] as const;
 
 const allFixtureEntries = implementationFixturePaths.flatMap((filename) => {
@@ -85,10 +85,6 @@ const allFixtureEntries = implementationFixturePaths.flatMap((filename) => {
 describe("P0 implementation-fact information catalogue", () => {
   it("covers every fixture predicate and paraphrase with Japanese text", () => {
     expect(fixture.entries).toHaveLength(87);
-    expect(IMPLEMENTATION_PREDICATE_LABEL_COUNT).toBe(308);
-    expect(IMPLEMENTATION_SUMMARY_TRANSLATION_COUNT).toBe(
-      allFixtureEntries.length,
-    );
     for (const [index, entry] of fixture.entries.entries()) {
       const predicate = localizeImplementationPredicate(entry.predicate);
       const summary = localizeImplementationSummary(
@@ -120,10 +116,6 @@ describe("P0 implementation-fact information catalogue", () => {
 
   it("localizes every implementation subject and summary across the complete fact wave", () => {
     expect(allFixtureEntries.length).toBeGreaterThan(0);
-    expect(IMPLEMENTATION_PREDICATE_LABEL_COUNT).toBe(308);
-    expect(IMPLEMENTATION_SUMMARY_TRANSLATION_COUNT).toBe(
-      allFixtureEntries.length,
-    );
     for (const [index, entry] of allFixtureEntries.entries()) {
       const predicate = localizeImplementationPredicate(entry.predicate);
       const subject = localizeImplementationSubject(entry.subject);

@@ -23,6 +23,8 @@ const RESEARCH_FILES = [
   "p0-wallet-card-rules.research.v0.1.json",
   "p0-merchant-transit-regulatory-rules.research.v0.1.json",
   "p0-complex-route-benchmark.research.v0.1.json",
+  "p0-moppy-jal-standard.research.v0.1.json",
+  "p0-exchange-route-completeness.research.v0.1.json",
 ] as const;
 
 interface Source {

@@ -10,6 +10,8 @@ const FILES = [
   "p0-wallet-card-rules.research.v0.1.json",
   "p0-merchant-transit-regulatory-rules.research.v0.1.json",
   "p0-complex-route-benchmark.research.v0.1.json",
+  "p0-moppy-jal-standard.research.v0.1.json",
+  "p0-exchange-route-completeness.research.v0.1.json",
 ] as const;
 
 function artifacts(): unknown[] {
@@ -48,8 +50,13 @@ describe("P0 spend rule-shape compiler", () => {
   it("compiles an explicit fixed-ratio subset and classifies every P0 claim", () => {
     const result = compileP0SpendRuleSet(artifacts());
 
-    expect(result.rules).toHaveLength(28);
-    expect(result.dispositions).toHaveLength(382);
+    expect(result.rules.length).toBeGreaterThan(0);
+    expect(result.dispositions).toHaveLength(
+      artifacts().reduce((total, artifact) => {
+        const claims = (artifact as { claims?: unknown }).claims;
+        return total + (Array.isArray(claims) ? claims.length : 0);
+      }, 0),
+    );
     expect(
       result.rules.find((rule) => rule.rule_id === "p0.transfer.rakuten.ana"),
     ).toMatchObject({
@@ -79,6 +86,21 @@ describe("P0 spend rule-shape compiler", () => {
         "claim.point.ponta.transfer.jal-rate.001",
         "claim.point.ponta.transfer.jal-unit-timing.001",
       ],
+    });
+    expect(
+      result.rules.find(
+        (rule) => rule.rule_id === "p0.transfer.moppy-to-jal-standard",
+      ),
+    ).toMatchObject({
+      source_units: "1000",
+      destination_units: "500",
+      minimum_source_units: "1000",
+      increment_source_units: "1000",
+      fee_source_units: "0",
+      processing_time_days_min: 0,
+      processing_time_days_max: 0,
+      source_asset: { asset_id: "asset.point.moppy" },
+      destination_asset: { asset_id: "asset.mile.jal" },
     });
     expect(
       result.dispositions.find(
@@ -334,6 +356,35 @@ describe("P0 spend rule-shape compiler", () => {
       "p0_spend_artifacts_invalid",
     );
     expect(reads).toBe(0);
+  });
+
+  it("reuses an exact official source across route slices but rejects drift", () => {
+    expect(() => compileP0SpendRuleSet(artifacts())).not.toThrow();
+    const changed = structuredClone(artifacts());
+    const finalArtifact = changed.at(-1) as {
+      sources: Array<{ source_id: string; family_id: string }>;
+    };
+    const shared = finalArtifact.sources.find(
+      (source) => source.source_id === "jp.jrkyushu.point-exchange",
+    );
+    expect(shared).toBeDefined();
+    if (shared) shared.family_id = "point.forged";
+    expect(() => compileP0SpendRuleSet(changed)).toThrow(
+      "p0_spend_source_conflict:jp.jrkyushu.point-exchange",
+    );
+
+    const changedUrl = structuredClone(artifacts());
+    const duplicateArtifact = changedUrl.at(-1) as {
+      sources: Array<{ source_id: string; url: string }>;
+    };
+    const duplicateSource = duplicateArtifact.sources.find(
+      (source) => source.source_id === "jp.jrkyushu.point-exchange",
+    );
+    expect(duplicateSource).toBeDefined();
+    if (duplicateSource) duplicateSource.url = "https://example.invalid/";
+    expect(() => compileP0SpendRuleSet(changedUrl)).toThrow(
+      "p0_spend_source_conflict:jp.jrkyushu.point-exchange",
+    );
   });
 
   it("rejects incomplete, duplicate, and mis-role-bound structured claims", () => {

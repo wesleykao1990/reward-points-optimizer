@@ -38,17 +38,29 @@ export interface P0SpendRule {
   readonly destination_units: string;
   readonly minimum_source_units: string | null;
   readonly increment_source_units: string | null;
+  /** Provider-published discrete principals when no uniform increment exists. */
+  readonly allowed_source_amounts?: readonly string[];
   readonly maximum_source_units_per_request: string | null;
   readonly maximum_source_units_per_period: string | null;
   readonly maximum_period:
     | "day"
     | "month"
     | "year"
+    | "fiscal_year_april"
     | "campaign_period"
     | "lifetime"
     | "rolling_30_day"
     | null;
   readonly fee_source_units: string;
+  readonly fee_schedule?: {
+    readonly model: "percentage_of_source";
+    readonly numerator: string;
+    readonly denominator: string;
+    readonly rounding: "ceil" | "floor";
+  };
+  readonly period_usage_key?: string;
+  readonly period_usage_min_source_units?: string | null;
+  readonly period_usage_max_source_units_exclusive?: string | null;
   readonly processing_time_days_min: number | null;
   readonly processing_time_days_max: number | null;
   readonly cancellation_policy: "not_cancelable" | "provider_defined";
@@ -392,6 +404,11 @@ function rule(
     | "source_claim_ids"
     | "source_ids"
     | "fee_source_units"
+    | "fee_schedule"
+    | "allowed_source_amounts"
+    | "period_usage_key"
+    | "period_usage_min_source_units"
+    | "period_usage_max_source_units_exclusive"
     | "maximum_source_units_per_request"
     | "maximum_source_units_per_period"
     | "maximum_period"
@@ -411,6 +428,11 @@ function rule(
       Pick<
         P0SpendRule,
         | "fee_source_units"
+        | "fee_schedule"
+        | "allowed_source_amounts"
+        | "period_usage_key"
+        | "period_usage_min_source_units"
+        | "period_usage_max_source_units_exclusive"
         | "maximum_source_units_per_request"
         | "maximum_source_units_per_period"
         | "maximum_period"
@@ -435,6 +457,30 @@ function rule(
     ),
     source_ids: sourceIds(claimList),
     fee_source_units: input.fee_source_units ?? "0",
+    ...(input.fee_schedule === undefined
+      ? {}
+      : { fee_schedule: Object.freeze({ ...input.fee_schedule }) }),
+    ...(input.allowed_source_amounts === undefined
+      ? {}
+      : {
+          allowed_source_amounts: Object.freeze([
+            ...input.allowed_source_amounts,
+          ]),
+        }),
+    ...(input.period_usage_key === undefined
+      ? {}
+      : { period_usage_key: input.period_usage_key }),
+    ...(input.period_usage_min_source_units === undefined
+      ? {}
+      : {
+          period_usage_min_source_units: input.period_usage_min_source_units,
+        }),
+    ...(input.period_usage_max_source_units_exclusive === undefined
+      ? {}
+      : {
+          period_usage_max_source_units_exclusive:
+            input.period_usage_max_source_units_exclusive,
+        }),
     maximum_source_units_per_request:
       input.maximum_source_units_per_request ?? null,
     maximum_source_units_per_period:
@@ -883,10 +929,15 @@ interface StructuredTransferForm {
   readonly destination_units: string;
   readonly minimum_source_units: string | null;
   readonly increment_source_units: string | null;
+  readonly allowed_source_amounts?: readonly string[];
   readonly maximum_source_units_per_request: string | null;
   readonly maximum_source_units_per_period: string | null;
   readonly maximum_period: P0SpendRule["maximum_period"];
   readonly fee_source_units: string;
+  readonly fee_schedule?: P0SpendRule["fee_schedule"];
+  readonly period_usage_key?: string;
+  readonly period_usage_min_source_units?: string | null;
+  readonly period_usage_max_source_units_exclusive?: string | null;
   readonly processing_time_days_min: number | null;
   readonly processing_time_days_max: number | null;
   readonly cancellation_policy: P0SpendRule["cancellation_policy"];
@@ -909,6 +960,9 @@ interface StructuredTransferCheck {
 interface SourceBinding {
   readonly family_id: string;
   readonly roles: ReadonlySet<string>;
+  readonly url: string;
+  readonly publisher: string;
+  readonly official_domain: string;
 }
 
 function hasOwn(record: JsonRecord, key: string): boolean {
@@ -1079,6 +1133,7 @@ function checkStructuredTransfer(
     maximumPeriod !== "day" &&
     maximumPeriod !== "month" &&
     maximumPeriod !== "year" &&
+    maximumPeriod !== "fiscal_year_april" &&
     maximumPeriod !== "campaign_period" &&
     maximumPeriod !== "lifetime" &&
     maximumPeriod !== "rolling_30_day"
@@ -1087,11 +1142,120 @@ function checkStructuredTransfer(
       "information_only",
       "structured maximum period is invalid",
     );
-  if ((periodMaximum === null) !== (maximumPeriod === null))
+  let periodUsageMin: string | null | undefined;
+  let periodUsageMax: string | null | undefined;
+  try {
+    periodUsageMin = hasOwn(raw, "period_usage_min_source_units")
+      ? nonNegativeIntegerValue(
+          raw.period_usage_min_source_units,
+          "period_usage_min_source_units",
+        )
+      : undefined;
+    periodUsageMax = hasOwn(raw, "period_usage_max_source_units_exclusive")
+      ? nonNegativeIntegerValue(
+          raw.period_usage_max_source_units_exclusive,
+          "period_usage_max_source_units_exclusive",
+        )
+      : undefined;
+  } catch {
     return structuredInvalid(
       "information_only",
-      "structured period maximum and period must be both present or both null",
+      "structured period tier is invalid",
     );
+  }
+  const hasPeriodConstraint =
+    periodMaximum !== null || periodUsageMin != null || periodUsageMax != null;
+  if (hasPeriodConstraint !== (maximumPeriod !== null))
+    return structuredInvalid(
+      "information_only",
+      "structured period constraint and period must be both present or both null",
+    );
+  if (
+    periodUsageMin !== undefined &&
+    periodUsageMax !== undefined &&
+    periodUsageMin !== null &&
+    periodUsageMax !== null &&
+    Number(periodUsageMin) >= Number(periodUsageMax)
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured period tier bounds are inverted",
+    );
+  const periodUsageKey = raw.period_usage_key;
+  if (
+    periodUsageKey !== undefined &&
+    (typeof periodUsageKey !== "string" ||
+      !/^[a-z0-9][a-z0-9.-]{1,119}$/u.test(periodUsageKey))
+  )
+    return structuredInvalid(
+      "information_only",
+      "structured period usage key is invalid",
+    );
+  let feeSchedule: P0SpendRule["fee_schedule"] | undefined;
+  if (raw.fee_schedule !== undefined) {
+    const schedule = raw.fee_schedule;
+    if (!schedule || typeof schedule !== "object" || Array.isArray(schedule))
+      return structuredInvalid(
+        "information_only",
+        "structured fee schedule is invalid",
+      );
+    const feeRecord = schedule as JsonRecord;
+    if (
+      feeRecord.model !== "percentage_of_source" ||
+      !Number.isSafeInteger(feeRecord.numerator) ||
+      Number(feeRecord.numerator) < 0 ||
+      !Number.isSafeInteger(feeRecord.denominator) ||
+      Number(feeRecord.denominator) <= 0 ||
+      Number(feeRecord.numerator) >= Number(feeRecord.denominator) ||
+      (feeRecord.rounding !== "ceil" && feeRecord.rounding !== "floor")
+    )
+      return structuredInvalid(
+        "information_only",
+        "structured fee schedule is invalid",
+      );
+    feeSchedule = Object.freeze({
+      model: "percentage_of_source",
+      numerator: String(feeRecord.numerator),
+      denominator: String(feeRecord.denominator),
+      rounding: feeRecord.rounding,
+    });
+  }
+  let allowedSourceAmounts: readonly string[] | undefined;
+  if (raw.allowed_source_amounts !== undefined) {
+    if (
+      !Array.isArray(raw.allowed_source_amounts) ||
+      raw.allowed_source_amounts.length < 1 ||
+      raw.allowed_source_amounts.length > 64
+    )
+      return structuredInvalid(
+        "information_only",
+        "structured allowed source amounts are invalid",
+      );
+    try {
+      allowedSourceAmounts = Object.freeze(
+        raw.allowed_source_amounts.map((value) =>
+          positiveIntegerValue(value, "allowed_source_amounts"),
+        ),
+      );
+    } catch {
+      return structuredInvalid(
+        "information_only",
+        "structured allowed source amounts are invalid",
+      );
+    }
+    if (
+      increment !== null ||
+      new Set(allowedSourceAmounts).size !== allowedSourceAmounts.length ||
+      allowedSourceAmounts.some((value, index, values) => {
+        const previous = values[index - 1];
+        return previous !== undefined && Number(value) <= Number(previous);
+      })
+    )
+      return structuredInvalid(
+        "information_only",
+        "structured allowed source amounts must be strictly increasing and replace the increment",
+      );
+  }
   if (
     minimum !== null &&
     increment !== null &&
@@ -1270,6 +1434,19 @@ function checkStructuredTransfer(
       maximum_source_units_per_period: periodMaximum,
       maximum_period: maximumPeriod,
       fee_source_units: fee,
+      ...(feeSchedule === undefined ? {} : { fee_schedule: feeSchedule }),
+      ...(allowedSourceAmounts === undefined
+        ? {}
+        : { allowed_source_amounts: allowedSourceAmounts }),
+      ...(periodUsageKey === undefined
+        ? {}
+        : { period_usage_key: periodUsageKey }),
+      ...(periodUsageMin === undefined
+        ? {}
+        : { period_usage_min_source_units: periodUsageMin }),
+      ...(periodUsageMax === undefined
+        ? {}
+        : { period_usage_max_source_units_exclusive: periodUsageMax }),
       processing_time_days_min: processingMin,
       processing_time_days_max: processingMax,
       cancellation_policy: raw.cancellation_policy,
@@ -1370,6 +1547,27 @@ function structuredTransferDrafts(
           maximum_source_units_per_period: form.maximum_source_units_per_period,
           maximum_period: form.maximum_period,
           fee_source_units: form.fee_source_units,
+          ...(form.fee_schedule === undefined
+            ? {}
+            : { fee_schedule: form.fee_schedule }),
+          ...(form.allowed_source_amounts === undefined
+            ? {}
+            : { allowed_source_amounts: form.allowed_source_amounts }),
+          ...(form.period_usage_key === undefined
+            ? {}
+            : { period_usage_key: form.period_usage_key }),
+          ...(form.period_usage_min_source_units === undefined
+            ? {}
+            : {
+                period_usage_min_source_units:
+                  form.period_usage_min_source_units,
+              }),
+          ...(form.period_usage_max_source_units_exclusive === undefined
+            ? {}
+            : {
+                period_usage_max_source_units_exclusive:
+                  form.period_usage_max_source_units_exclusive,
+              }),
           processing_time_days_min: form.processing_time_days_min,
           processing_time_days_max: form.processing_time_days_max,
           cancellation_policy: form.cancellation_policy,
@@ -1508,10 +1706,16 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
         const source = rawSource as JsonRecord;
         const sourceId = stringValue(source, "source_id");
         const familyId = stringValue(source, "family_id");
+        const url = stringValue(source, "url");
+        const publisher = stringValue(source, "publisher");
+        const officialDomain = stringValue(source, "official_domain");
         const roles = source.roles;
         if (
           !sourceId ||
           !familyId ||
+          !url ||
+          !publisher ||
+          !officialDomain ||
           !Array.isArray(roles) ||
           roles.length === 0 ||
           !roles.every((role) => typeof role === "string" && role.length > 0)
@@ -1519,12 +1723,31 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
           throw new TypeError(
             `p0_spend_source_invalid:${sourceId ?? "unknown"}`,
           );
-        if (sourceBindings.has(sourceId))
-          throw new TypeError(`p0_spend_source_duplicate:${sourceId}`);
-        sourceBindings.set(sourceId, {
-          family_id: familyId,
-          roles: new Set(roles as string[]),
-        });
+        const normalizedRoles = new Set(roles as string[]);
+        const existingSource = sourceBindings.get(sourceId);
+        if (existingSource) {
+          const sameRoles =
+            existingSource.roles.size === normalizedRoles.size &&
+            [...existingSource.roles].every((role) =>
+              normalizedRoles.has(role),
+            );
+          if (
+            existingSource.family_id !== familyId ||
+            existingSource.url !== url ||
+            existingSource.publisher !== publisher ||
+            existingSource.official_domain !== officialDomain ||
+            !sameRoles
+          )
+            throw new TypeError(`p0_spend_source_conflict:${sourceId}`);
+        } else {
+          sourceBindings.set(sourceId, {
+            family_id: familyId,
+            roles: normalizedRoles,
+            url,
+            publisher,
+            official_domain: officialDomain,
+          });
+        }
       }
     for (const rawClaim of record.claims) {
       const claim = claimRecord(rawClaim);
@@ -1535,7 +1758,15 @@ export function compileP0SpendRuleSet(input: unknown): P0SpendRuleSet {
   }
 
   const structured = structuredTransferDrafts(claims, sourceBindings);
-  const drafts = [...DRAFTS, ...structured.drafts];
+  // Built-in legacy drafts describe known checked-in claim groups. Dynamic
+  // Agent Feed directory snapshots are intentionally smaller and must not be
+  // forced to carry every historical claim merely to compile one exact row.
+  const drafts = [
+    ...DRAFTS.filter((draft) =>
+      draft.claimIds.every((claimId) => claims.has(claimId)),
+    ),
+    ...structured.drafts,
+  ];
   const rules = drafts
     .map((draft) => draft.build(claims))
     .sort((left, right) => left.rule_id.localeCompare(right.rule_id));

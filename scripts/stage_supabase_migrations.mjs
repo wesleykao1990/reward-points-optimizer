@@ -37,12 +37,24 @@ const SCHEMA_DESTINATIONS = new Map([
     "0028_p0_route_graph_open_ended_windows.sql",
     "20260824172039_schema_0028_p0_route_graph_open_ended_windows.sql",
   ],
+  [
+    "0046_production_exchange_directory_reconciliation.sql",
+    "20260825203108_schema_0029_production_exchange_directory_reconciliation.sql",
+  ],
 ]);
 
 const DATA_DESTINATIONS = new Map([
   [
     "012_p0_complex_route_benchmark_implementation.sql",
     "20260824172106_released_data_012_p0_complex_route_benchmark_implementation.sql",
+  ],
+  [
+    "013_p0_moppy_jal_standard_implementation.sql",
+    "20260825203011_released_data_013_p0_moppy_jal_standard_implementation.sql",
+  ],
+  [
+    "014_p0_exchange_route_completeness_implementation.sql",
+    "20260825203034_released_data_014_p0_exchange_route_completeness_implementation.sql",
   ],
 ]);
 
