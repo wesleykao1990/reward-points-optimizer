@@ -208,19 +208,21 @@ jobs:
           '''
               text = text.replace(smoke_marker, smoke_helper + smoke_marker)
 
-          smoke_needle = r'''          if (!svg.includes('viewBox="0 0 856 539.8"'))
-            throw new Error(`production_ratio_invalid:${id}`);
-        }
-          '''
-          smoke_replacement = r'''          if (!svg.includes('viewBox="0 0 856 539.8"'))
-            throw new Error(`production_ratio_invalid:${id}`);
-          const metrics = await renderedArtworkMetrics(asset.path);
-          if (metrics.opaque < 60000 || metrics.colorful < 1200)
-            throw new Error(
-              `production_artwork_not_rendered:${id}:${JSON.stringify(metrics)}`,
-            );
-        }
-          '''
+          smoke_needle = (
+              '          if (!svg.includes(\'viewBox="0 0 856 539.8"\'))\n'
+              '            throw new Error(`production_ratio_invalid:${id}`);\n'
+              '        }\n'
+          )
+          smoke_replacement = (
+              '          if (!svg.includes(\'viewBox="0 0 856 539.8"\'))\n'
+              '            throw new Error(`production_ratio_invalid:${id}`);\n'
+              '          const metrics = await renderedArtworkMetrics(asset.path);\n'
+              '          if (metrics.opaque < 60000 || metrics.colorful < 1200)\n'
+              '            throw new Error(\n'
+              '              `production_artwork_not_rendered:${id}:${JSON.stringify(metrics)}`,\n'
+              '            );\n'
+              '        }\n'
+          )
           text = text.replace(smoke_needle, smoke_replacement)
 
           path.write_text(text)
