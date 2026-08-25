@@ -1222,27 +1222,31 @@ async function acquireRemote(asset, pageUrl, explicitImageUrl) {
   }
 
   let page;
+try {
+  page = await fetchBytes(pageUrl, {
+    accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
+    timeout: 28_000,
+    maxBytes: 8_000_000,
+  });
+} catch {
+  const origin = new URL(pageUrl).origin;
   try {
-    page = await fetchBytes(pageUrl, {
+    page = await fetchBytes(`${origin}/`, {
       accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
       timeout: 28_000,
       maxBytes: 8_000_000,
     });
+    pageUrl = page.url;
   } catch {
-    const origin = new URL(pageUrl).origin;
-    if (origin !== pageUrl) {
-      page = await fetchBytes(`${origin}/`, {
-        accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
-        timeout: 28_000,
-        maxBytes: 8_000_000,
-      });
-      pageUrl = page.url;
-    } else {
-      throw new Error(`source_page_unavailable:${asset.id}`);
-    }
+    page = {
+      bytes: Buffer.from("", "utf8"),
+      url: pageUrl,
+      contentType: "text/html",
+    };
   }
+}
 
-  const pageMime = sniffMime(page.bytes, page.contentType);
+const pageMime = sniffMime(page.bytes, page.contentType);
   if (pageMime.startsWith("image/"))
     return {
       bytes: page.bytes,
