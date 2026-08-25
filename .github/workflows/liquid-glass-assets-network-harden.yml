@@ -1,0 +1,85 @@
+name: Harden Liquid Glass network recovery
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-network-harden.yml
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: true
+
+jobs:
+  harden-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Make static-fetch failure fall through to browser recovery
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          path = Path("scripts/complete_liquid_glass_assets.mjs")
+          text = path.read_text()
+          pattern = re.compile(
+              r'''  let page;\n  try \{\n    page = await fetchBytes\(pageUrl,[\s\S]*?\n  \}\n\n  const pageMime = sniffMime\(page\.bytes, page\.contentType\);'''
+          )
+          replacement = '''  let page;
+          try {
+            page = await fetchBytes(pageUrl, {
+              accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
+              timeout: 28_000,
+              maxBytes: 8_000_000,
+            });
+          } catch {
+            const origin = new URL(pageUrl).origin;
+            try {
+              page = await fetchBytes(`${origin}/`, {
+                accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
+                timeout: 28_000,
+                maxBytes: 8_000_000,
+              });
+              pageUrl = page.url;
+            } catch {
+              page = {
+                bytes: Buffer.from("", "utf8"),
+                url: pageUrl,
+                contentType: "text/html",
+              };
+            }
+          }
+
+          const pageMime = sniffMime(page.bytes, page.contentType);'''
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1 and "bytes: Buffer.from(\"\", \"utf8\")" not in text:
+              raise SystemExit(f"network recovery block was not patched: {count}")
+          path.write_text(text)
+          PY
+
+      - name: Commit network recovery patch
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/complete_liquid_glass_assets.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "Harden official artwork network recovery"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Dispatch hardened supervisor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run liquid-glass-assets-supervisor-v2.yml --ref main
