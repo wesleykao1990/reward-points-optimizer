@@ -1,0 +1,100 @@
+name: Supervise complete Liquid Glass asset catalogue v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-supervisor-v3.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: true
+
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Activate repository-declared pnpm
+        run: |
+          corepack enable
+          PACKAGE_MANAGER="$(node -p "require('./package.json').packageManager || 'pnpm@latest'")"
+          corepack prepare "$PACKAGE_MANAGER" --activate
+          pnpm --version
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install isolated browser acquisition runtime
+        run: |
+          mkdir -p /tmp/liquid-glass-puppeteer
+          printf '{"type":"module"}\n' > /tmp/liquid-glass-puppeteer/package.json
+          npm install --prefix /tmp/liquid-glass-puppeteer --no-save --package-lock=false puppeteer@24.16.0
+          echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
+
+      - name: Apply consolidated hardened repair set
+        run: |
+          python - <<'PY'
+          import re
+          import textwrap
+          from pathlib import Path
+
+          workflow = Path(".github/workflows/liquid-glass-assets-supervisor-v2.yml")
+          source = workflow.read_text()
+          blocks = re.findall(
+              r"python - <<'PY'\n(.*?)\n\s*PY",
+              source,
+              flags=re.DOTALL,
+          )
+          if len(blocks) != 1:
+              raise SystemExit(f"unexpected supervisor repair block count: {len(blocks)}")
+          code = textwrap.dedent(blocks[0])
+          exec(compile(code, str(workflow), "exec"), {"__name__": "__main__"})
+          PY
+
+      - name: Validate pipeline syntax
+        run: node --check scripts/complete_liquid_glass_assets.mjs
+
+      - name: Execute complete acquisition, validation, deployment, and smoke loop
+        id: pipeline
+        continue-on-error: true
+        env:
+          LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
+        run: node scripts/complete_liquid_glass_assets.mjs
+
+      - name: Capture pipeline diagnostics
+        if: always()
+        run: |
+          mkdir -p /tmp/liquid-glass-diagnostics
+          cp apps/consumer-alpha/public/assets/liquid-glass/generation-failures.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/validation-failures.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/generation-report.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/manifest.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          git status --short > /tmp/liquid-glass-diagnostics/git-status.txt
+          git log -8 --oneline > /tmp/liquid-glass-diagnostics/recent-commits.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liquid-glass-pipeline-diagnostics-v3
+          path: /tmp/liquid-glass-diagnostics
+          retention-days: 7
+
+      - name: Require completed pipeline
+        if: steps.pipeline.outcome != 'success'
+        run: exit 1
