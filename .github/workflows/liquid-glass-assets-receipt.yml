@@ -1,0 +1,62 @@
+name: Record Liquid Glass completion receipt
+
+on:
+  workflow_run:
+    workflows:
+      - Supervise complete Liquid Glass asset catalogue v3
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  receipt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch production manifest and write receipt
+        env:
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          mkdir -p registry/assets
+          HTTP_STATUS="$(curl -L -sS -o /tmp/liquid-glass-manifest.json -w '%{http_code}' 'https://reward-points-optimizer-consumer-al.vercel.app/assets/liquid-glass/manifest.json?receipt=1' || true)"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          let manifest = null;
+          try {
+            manifest = JSON.parse(fs.readFileSync('/tmp/liquid-glass-manifest.json', 'utf8'));
+          } catch {}
+          const receipt = {
+            version: 'liquid-glass-completion-receipt.v1',
+            recorded_at: new Date().toISOString(),
+            workflow_conclusion: process.env.WORKFLOW_CONCLUSION,
+            workflow_run_url: process.env.WORKFLOW_RUN_URL,
+            workflow_head_sha: process.env.WORKFLOW_HEAD_SHA,
+            production_manifest_version: manifest?.version ?? null,
+            production_generation_run_id: manifest?.generation_run_id ?? null,
+            production_asset_count: manifest?.asset_count ?? null,
+            production_canonical_count: manifest?.canonical_count ?? null,
+            production_alias_count: manifest?.alias_count ?? null,
+            production_aspect_ratio: manifest?.aspect_ratio ?? null,
+          };
+          fs.writeFileSync(
+            'registry/assets/liquid-glass-completion-receipt.json',
+            `${JSON.stringify(receipt, null, 2)}\n`,
+          );
+          NODE
+
+      - name: Commit receipt
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add registry/assets/liquid-glass-completion-receipt.json
+          git commit -m "Record Liquid Glass completion receipt" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
