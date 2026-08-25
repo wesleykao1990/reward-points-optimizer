@@ -1,0 +1,167 @@
+name: Generate reference-faithful Liquid Glass assets
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/liquid-glass-assets.yml"
+      - "api/asset-sources.mjs"
+      - "api/handler.mjs"
+      - "apps/consumer-alpha/src/asset-source-catalogue.ts"
+      - "apps/consumer-alpha/public/assets/payment-logos/**"
+      - "apps/consumer-alpha/public/coverage.js"
+      - "apps/consumer-alpha/public/liquid-glass.css"
+      - "apps/consumer-alpha/src/server.ts"
+      - "registry/assets/liquid-glass-source-overrides.v1.json"
+      - "scripts/generate_liquid_glass_assets.mjs"
+      - "scripts/generate_liquid_glass_assets.mjs.gz.b64"
+      - "supabase/migrations/20260825202837_asset_source_catalogue.sql"
+      - "vercel.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-main
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      !contains(github.event.head_commit.message, '[assets-generated]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Materialize the auditable generator source
+        run: |
+          set -euo pipefail
+          if [ ! -f scripts/generate_liquid_glass_assets.mjs ]; then
+            base64 --decode scripts/generate_liquid_glass_assets.mjs.gz.b64 \
+              | gzip --decompress > scripts/generate_liquid_glass_assets.mjs
+          fi
+          node --check scripts/generate_liquid_glass_assets.mjs
+
+      - name: Wait for the database-backed source catalogue deployment
+        env:
+          SOURCE_URL: https://reward-points-optimizer-consumer-al.vercel.app/api/asset-sources
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent --show-error \
+              --connect-timeout 10 --max-time 25 \
+              "$SOURCE_URL" > /tmp/asset-sources.json; then
+              if node - "$EXPECTED_COMMIT" <<'NODE'
+          const fs = require('node:fs');
+          const expected = process.argv[2];
+          const body = JSON.parse(fs.readFileSync('/tmp/asset-sources.json', 'utf8'));
+          const ok = body.version === 'asset-source-catalogue.v1' &&
+            body.deployment_commit_sha === expected &&
+            Array.isArray(body.assets) && body.assets.length === 211;
+          process.exit(ok ? 0 : 1);
+          NODE
+              then
+                echo "Source catalogue is ready for $EXPECTED_COMMIT"
+                exit 0
+              fi
+            fi
+            echo "Waiting for Vercel deployment ($attempt/120)..."
+            sleep 10
+          done
+          echo "Timed out waiting for the matching source catalogue deployment" >&2
+          exit 1
+
+      - name: Generate all 246 Liquid Glass assets
+        run: >-
+          node scripts/generate_liquid_glass_assets.mjs
+          --source-json /tmp/asset-sources.json
+          --allow-source-commit "${{ github.sha }}"
+
+      - name: Upload generation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquid-glass-generation-${{ github.run_id }}
+          path: apps/consumer-alpha/public/assets/liquid-glass
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Validate completeness and source provenance
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = 'apps/consumer-alpha/public/assets/liquid-glass';
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+          if (manifest.version !== 'liquid-glass-generated-manifest.v1') throw new Error('manifest_version');
+          if (manifest.expected_asset_count !== 246 || manifest.ready_count !== 246 || manifest.failed_count !== 0)
+            throw new Error(`manifest_counts:${manifest.ready_count}:${manifest.failed_count}`);
+          if (!Array.isArray(manifest.assets) || manifest.assets.length !== 246)
+            throw new Error('manifest_asset_length');
+          const critical = new Set([
+            'point.d', 'point.jre', 'point.nanaco', 'point.paypay',
+            'point.ponta', 'point.rakuten', 'point.v', 'point.waon',
+            'wallet.paypay', 'wallet.rakutenpay', 'card.rakuten',
+            'card.d', 'card.smbc'
+          ]);
+          for (const asset of manifest.assets) {
+            const relative = asset.path.replace(/^\/assets\/liquid-glass\//u, '');
+            const filename = path.join(root, relative);
+            if (!fs.existsSync(filename)) throw new Error(`missing_file:${asset.id}:${relative}`);
+            const svg = fs.readFileSync(filename, 'utf8');
+            if (!svg.includes('viewBox="0 0 856 540"')) throw new Error(`wrong_ratio:${asset.id}`);
+            if (asset.source_kind !== 'poimichi_generic' && !asset.source_sha256)
+              throw new Error(`missing_source_hash:${asset.id}`);
+            if (asset.type === 'credit_card') {
+              if (asset.source_kind === 'poimichi_generic' || asset.source_kind === 'official_favicon_fallback' ||
+                  asset.source_kind === 'official_icon' || asset.source_kind === 'official_apple-icon')
+                throw new Error(`credit_card_not_card_art:${asset.id}:${asset.source_kind}`);
+              const dimensions = asset.source_dimensions;
+              if (!dimensions || !Number.isFinite(dimensions.width) || !Number.isFinite(dimensions.height) ||
+                  dimensions.width * dimensions.height < 10000)
+                throw new Error(`credit_card_source_too_small:${asset.id}`);
+            }
+            if (critical.has(asset.id) && ![
+              'checked_in_official_artwork',
+              'official_explicit_image',
+              'official_img',
+              'official_meta',
+              'official_apple-icon',
+              'official_icon',
+              'official_favicon_fallback'
+            ].includes(asset.source_kind))
+              throw new Error(`critical_source_kind:${asset.id}:${asset.source_kind}`);
+          }
+          console.log(`Validated ${manifest.assets.length} assets.`);
+          NODE
+
+      - name: Commit the generated pack
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f scripts/generate_liquid_glass_assets.mjs.gz.b64
+          git add -A \
+            apps/consumer-alpha/public/assets/liquid-glass \
+            scripts/generate_liquid_glass_assets.mjs \
+            scripts/generate_liquid_glass_assets.mjs.gz.b64
+          if git diff --cached --quiet; then
+            echo "Generated assets are already current."
+            exit 0
+          fi
+          git commit -m "Generate reference-faithful Liquid Glass assets [assets-generated]"
+          git pull --rebase origin main
+          git push origin HEAD:main

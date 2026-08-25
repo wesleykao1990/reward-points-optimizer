@@ -1,0 +1,47 @@
+/* Reference-faithful Liquid Glass artwork.
+   Every generated asset uses the ISO/IEC 7810 ID-1 card ratio (85.60:53.98)
+   and remains transparent outside its own rounded card. */
+.payment-logo,
+.p0-product-option .payment-logo,
+.lot-card .payment-logo {
+  display: grid;
+  flex: 0 0 52px;
+  width: 52px;
+  height: auto;
+  aspect-ratio: 85.6 / 53.98;
+  place-items: center;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.payment-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.route-node-logo.payment-logo {
+  flex-basis: 44px;
+  width: 44px;
+}
+
+.wallet-chip .payment-logo {
+  flex-basis: 46px;
+  width: 46px;
+}
+
+.payment-logo-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 7px;
+  background: var(--card);
+}
