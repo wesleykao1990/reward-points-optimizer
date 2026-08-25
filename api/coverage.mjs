@@ -1,12 +1,7 @@
-import { Pool } from "pg";
-import {
-  createPostgresPoolConfig,
-  createRoleScopedQueryPool,
-} from "../apps/consumer-alpha/dist/runtime.js";
+import { createCreditCardCoverageReader } from "../apps/consumer-alpha/dist/credit-card-coverage.js";
 import { SUPABASE_PROD_CA_2021 } from "../apps/consumer-alpha/dist/supabase-ca.js";
 
-let pool;
-let target;
+let reader;
 
 function databaseUrl() {
   return (
@@ -16,20 +11,16 @@ function databaseUrl() {
   );
 }
 
-function queryTarget() {
-  if (target !== undefined) return target;
+function coverageReader() {
+  if (reader !== undefined) return reader;
   const connectionString = databaseUrl();
   if (connectionString === undefined || connectionString.length === 0)
     throw new Error("jro_database_url_required");
-  pool = new Pool(
-    createPostgresPoolConfig(connectionString, {
-      databaseRole: "jro_runtime",
-      poolMax: 1,
-      sslRootCertificate: SUPABASE_PROD_CA_2021,
-    }),
+  reader = createCreditCardCoverageReader(
+    connectionString,
+    SUPABASE_PROD_CA_2021,
   );
-  target = createRoleScopedQueryPool(pool, "jro_runtime");
-  return target;
+  return reader;
 }
 
 function sendJson(res, status, value) {
@@ -51,17 +42,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await queryTarget().query(`
-      select
-        coverage_tier,
-        count(*)::integer as catalogue_count,
-        count(*) filter (where optimization_covered)::integer as optimization_count
-      from app_api.credit_card_coverage
-      group by coverage_tier
-      order by case coverage_tier when 'P0' then 0 when 'P1' then 1 when 'P2' then 2 else 9 end,
-               coverage_tier
-    `);
-    const tiers = result.rows.map((row) => ({
+    const rows = await coverageReader().query();
+    const tiers = rows.map((row) => ({
       tier: String(row.coverage_tier),
       catalogue_count: Number(row.catalogue_count),
       optimization_count: Number(row.optimization_count),

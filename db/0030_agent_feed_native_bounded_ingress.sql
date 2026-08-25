@@ -1,0 +1,11 @@
+-- Superseded before deployment.
+--
+-- The initial database-native Agent Feed ingress draft incorrectly relied on
+-- unqualified pgcrypto.digest() while using a locked-down search_path. The
+-- production-safe implementation is split into the following migrations so
+-- each compatibility/security boundary can be applied and verified separately:
+--   0031_agent_feed_canonical_hash.sql
+--   0032_agent_feed_native_experimental_projection.sql
+--   0033_agent_feed_native_bounded_ingress.sql
+--
+-- This file intentionally performs no DDL.
