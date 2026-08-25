@@ -1,13 +1,7 @@
 import { createAssetSourceCatalogueReader } from "../apps/consumer-alpha/dist/asset-source-catalogue.js";
 import { SUPABASE_PROD_CA_2021 } from "../apps/consumer-alpha/dist/supabase-ca.js";
-import { createVercelRequestHandler } from "../apps/consumer-alpha/dist/vercel-adapter.js";
 
-const appHandler = createVercelRequestHandler({
-  environment: process.env,
-  requireDatabase: true,
-});
-
-let assetReader;
+let reader;
 
 function databaseUrl() {
   return (
@@ -17,16 +11,16 @@ function databaseUrl() {
   );
 }
 
-function sourceReader() {
-  if (assetReader !== undefined) return assetReader;
+function catalogueReader() {
+  if (reader !== undefined) return reader;
   const connectionString = databaseUrl();
   if (connectionString === undefined || connectionString.length === 0)
     throw new Error("jro_database_url_required");
-  assetReader = createAssetSourceCatalogueReader(
+  reader = createAssetSourceCatalogueReader(
     connectionString,
     SUPABASE_PROD_CA_2021,
   );
-  return assetReader;
+  return reader;
 }
 
 function sendJson(res, status, value) {
@@ -38,21 +32,7 @@ function sendJson(res, status, value) {
   res.end(JSON.stringify(value));
 }
 
-function isAssetSourceRequest(req) {
-  try {
-    const parsed = new URL(req.url ?? "/", "https://localhost.invalid");
-    return (
-      parsed.pathname === "/api/asset-sources" ||
-      (parsed.pathname === "/api/handler" &&
-        parsed.searchParams.size === 1 &&
-        parsed.searchParams.get("path") === "asset-sources")
-    );
-  } catch {
-    return false;
-  }
-}
-
-async function handleAssetSources(req, res) {
+export default async function handler(req, res) {
   if ((req.method ?? "").toUpperCase() !== "GET") {
     res.setHeader("Allow", "GET");
     sendJson(res, 405, {
@@ -65,7 +45,7 @@ async function handleAssetSources(req, res) {
   }
 
   try {
-    const rows = await sourceReader().query();
+    const rows = await catalogueReader().query();
     sendJson(res, 200, {
       version: "asset-source-catalogue.v1",
       deployment_commit_sha: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
@@ -87,12 +67,4 @@ async function handleAssetSources(req, res) {
       },
     });
   }
-}
-
-export default async function handler(req, res) {
-  if (isAssetSourceRequest(req)) {
-    await handleAssetSources(req, res);
-    return;
-  }
-  await appHandler(req, res);
 }

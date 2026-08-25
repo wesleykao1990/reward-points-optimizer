@@ -1,4 +1,3 @@
--- Staged from db/0036_asset_source_catalogue.sql; edit the canonical source, not this file.
 begin;
 
 create or replace view app_api.asset_source_catalogue
