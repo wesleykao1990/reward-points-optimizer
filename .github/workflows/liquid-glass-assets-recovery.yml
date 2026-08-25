@@ -1,0 +1,279 @@
+name: Recover Liquid Glass asset acquisition
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-recovery.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install isolated browser acquisition runtime
+        run: |
+          mkdir -p /tmp/liquid-glass-puppeteer
+          printf '{"type":"module"}\n' > /tmp/liquid-glass-puppeteer/package.json
+          npm install --prefix /tmp/liquid-glass-puppeteer --no-save --package-lock=false puppeteer@24.16.0
+          echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
+
+      - name: Add official-domain and rendered-element recovery strategies
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/complete_liquid_glass_assets.mjs")
+          text = path.read_text()
+
+          if "async function officialSearchCandidates" not in text:
+              marker = "async function acquireRemote(asset, pageUrl, explicitImageUrl) {"
+              insertion = r'''
+          async function officialSearchCandidates(asset, pageUrl) {
+            try {
+              const pageHost = new URL(pageUrl).hostname.replace(/^www\./u, "");
+              const query = encodeURIComponent(
+                `site:${pageHost} \"${asset.display_name}\" card logo`,
+              );
+              const search = await fetchBytes(
+                `https://www.bing.com/images/search?q=${query}&form=HDRSC2`,
+                {
+                  accept: "text/html,*/*;q=0.5",
+                  timeout: 22_000,
+                  maxBytes: 6_000_000,
+                },
+              );
+              const html = search.bytes.toString("utf8");
+              const urls = [];
+              for (const match of html.matchAll(
+                /(?:murl(?:&quot;|\")\s*:\s*(?:&quot;|\"))([^&\"]+)/giu,
+              )) {
+                const value = match[1]
+                  .replaceAll("&amp;", "&")
+                  .replaceAll("\\/", "/");
+                try {
+                  const candidate = new URL(value);
+                  const host = candidate.hostname.replace(/^www\./u, "");
+                  if (host === pageHost || host.endsWith(`.${pageHost}`))
+                    urls.push(candidate.toString());
+                } catch {
+                  // Ignore malformed search metadata.
+                }
+              }
+              return [...new Set(urls)].slice(0, 24).map((url) => ({
+                url,
+                descriptor: "official-domain-image-search",
+                alt: asset.display_name,
+              }));
+            } catch {
+              return [];
+            }
+          }
+
+          async function officialElementScreenshot(asset, pageUrl) {
+            try {
+              puppeteerPromise ??= import(
+                pathToFileURL(process.env.PUPPETEER_ENTRY).href,
+              );
+              const puppeteer = await puppeteerPromise;
+              browserPromise ??= puppeteer.default.launch({
+                headless: true,
+                args: [
+                  "--no-sandbox",
+                  "--disable-setuid-sandbox",
+                  "--disable-dev-shm-usage",
+                ],
+              });
+              const browser = await browserPromise;
+              const page = await browser.newPage();
+              try {
+                await page.setUserAgent(USER_AGENT);
+                await page.setViewport({
+                  width: 1440,
+                  height: 1400,
+                  deviceScaleFactor: 1,
+                });
+                await page.goto(pageUrl, {
+                  waitUntil: "domcontentloaded",
+                  timeout: 40_000,
+                });
+                await page.evaluate(async () => {
+                  for (let y = 0; y < document.body.scrollHeight; y += 700) {
+                    window.scrollTo(0, y);
+                    await new Promise((resolve) => setTimeout(resolve, 110));
+                  }
+                  window.scrollTo(0, 0);
+                });
+                await new Promise((resolve) => setTimeout(resolve, 900));
+                const tokens = nameTokens(asset);
+                const selected = await page.evaluate((wantedTokens) => {
+                  const nodes = [
+                    ...document.querySelectorAll("img"),
+                    ...[...document.querySelectorAll("*")].filter((element) =>
+                      getComputedStyle(element).backgroundImage?.includes("url("),
+                    ),
+                  ];
+                  let best = null;
+                  nodes.forEach((element, index) => {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.width < 220 || rect.height < 120) return;
+                    const ratio = rect.width / rect.height;
+                    const cardLike =
+                      (ratio >= 1.1 && ratio <= 2.1) ||
+                      (ratio >= 0.47 && ratio <= 0.92);
+                    if (!cardLike) return;
+                    const haystack = `${
+                      element.currentSrc || element.getAttribute("src") || ""
+                    } ${element.getAttribute("alt") || ""} ${
+                      element.getAttribute("aria-label") || ""
+                    } ${element.className || ""}`.toLocaleLowerCase("en-US");
+                    let score = rect.width * rect.height / 5000 + 150;
+                    wantedTokens.forEach((token) => {
+                      if (haystack.includes(token)) score += 60;
+                    });
+                    if (/card|カード/iu.test(haystack)) score += 55;
+                    if (/logo|icon|favicon/iu.test(haystack)) score -= 100;
+                    if (!best || score > best.score)
+                      best = { index, score };
+                  });
+                  if (!best) return false;
+                  nodes[best.index].setAttribute(
+                    "data-poimichi-official-artwork",
+                    "selected",
+                  );
+                  return true;
+                }, tokens);
+                if (!selected) return null;
+                const handle = await page.$(
+                  '[data-poimichi-official-artwork="selected"]',
+                );
+                if (!handle) return null;
+                const bytes = Buffer.from(
+                  await handle.screenshot({ type: "png", omitBackground: true }),
+                );
+                return {
+                  bytes,
+                  imageUrl: `${pageUrl}#rendered-official-artwork`,
+                  mime: "image/png",
+                  dimensions: imageDimensions(bytes, "image/png"),
+                  descriptor: "official-rendered-element",
+                  score: 500,
+                  pageUrl,
+                  sourceKind: "official_rendered_element",
+                };
+              } finally {
+                await page.close();
+              }
+            } catch {
+              return null;
+            }
+          }
+
+          '''
+              text = text.replace(marker, insertion + marker)
+
+          old_fetch = r'''  } catch {
+            const origin = new URL(pageUrl).origin;
+            if (origin !== pageUrl) {
+              page = await fetchBytes(`${origin}/`, {
+                accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
+                timeout: 28_000,
+                maxBytes: 8_000_000,
+              });
+              pageUrl = page.url;
+            } else {
+              throw new Error(`source_page_unavailable:${asset.id}`);
+            }
+          }
+          '''
+          new_fetch = r'''  } catch {
+            const origin = new URL(pageUrl).origin;
+            try {
+              page = await fetchBytes(`${origin}/`, {
+                accept: "text/html,application/xhtml+xml,image/*,*/*;q=0.3",
+                timeout: 28_000,
+                maxBytes: 8_000_000,
+              });
+              pageUrl = page.url;
+            } catch {
+              page = {
+                bytes: Buffer.from("", "utf8"),
+                url: pageUrl,
+                contentType: "text/html",
+              };
+            }
+          }
+          '''
+          text = text.replace(old_fetch, new_fetch)
+
+          needle = r'''  if (best && best.score >= minimum)
+            return {
+              ...best,
+              pageUrl,
+              sourceKind: best.descriptor.startsWith("rendered")
+                ? "official_rendered_image"
+                : "official_page_image",
+            };
+
+          if (!isCreditCard(asset)) {
+          '''
+          replacement = r'''  if (!best || best.score < minimum) {
+            const searched = await officialSearchCandidates(asset, pageUrl);
+            const searchedBest = await bestCandidate(asset, searched);
+            if (searchedBest && searchedBest.score > (best?.score ?? -Infinity))
+              best = searchedBest;
+          }
+
+          if (best && best.score >= minimum)
+            return {
+              ...best,
+              pageUrl,
+              sourceKind: best.descriptor.startsWith("rendered")
+                ? "official_rendered_image"
+                : best.descriptor === "official-domain-image-search"
+                  ? "official_domain_image_search"
+                  : "official_page_image",
+            };
+
+          if (isCreditCard(asset)) {
+            const renderedElement = await officialElementScreenshot(asset, pageUrl);
+            if (renderedElement) return renderedElement;
+          }
+
+          if (!isCreditCard(asset)) {
+          '''
+          text = text.replace(needle, replacement)
+
+          path.write_text(text)
+          PY
+
+      - name: Resume full generation and deployment loop
+        env:
+          LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
+        run: node scripts/complete_liquid_glass_assets.mjs
