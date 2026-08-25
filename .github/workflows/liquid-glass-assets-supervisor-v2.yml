@@ -1,0 +1,172 @@
+name: Supervise complete Liquid Glass asset catalogue v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-supervisor-v2.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: false
+
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install isolated browser acquisition runtime
+        run: |
+          mkdir -p /tmp/liquid-glass-puppeteer
+          printf '{"type":"module"}\n' > /tmp/liquid-glass-puppeteer/package.json
+          npm install --prefix /tmp/liquid-glass-puppeteer --no-save --package-lock=false puppeteer@24.16.0
+          echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
+
+      - name: Apply all prior repairs and harden formatted variants
+        run: |
+          python - <<'PY'
+          import re
+          import textwrap
+          from pathlib import Path
+
+          target = Path("scripts/complete_liquid_glass_assets.mjs")
+
+          for workflow_name in [
+              ".github/workflows/liquid-glass-assets-completion.yml",
+              ".github/workflows/liquid-glass-assets-recovery.yml",
+              ".github/workflows/liquid-glass-assets-finalize.yml",
+          ]:
+              workflow = Path(workflow_name)
+              if not workflow.exists():
+                  continue
+              source = workflow.read_text()
+              for block in re.findall(
+                  r"python - <<'PY'\n(.*?)\n\s*PY",
+                  source,
+                  flags=re.DOTALL,
+              ):
+                  exec(
+                      compile(textwrap.dedent(block), workflow_name, "exec"),
+                      {"__name__": "__main__"},
+                  )
+
+          text = target.read_text()
+          text = text.replace(
+              '".github/workflows/liquid-glass-assets-completion.yml",',
+              "",
+          )
+          text = re.sub(
+              r'const mime = sniffMime\(bytes, `image/\$\{extname\(filename\)\.slice\(1\)\}`\);',
+              'const extension = extname(filename).toLocaleLowerCase("en-US");\n  const declaredMime = extension === ".svg" ? "image/svg+xml" : extension === ".jpg" || extension === ".jpeg" ? "image/jpeg" : extension === ".ico" ? "image/x-icon" : `image/${extension.slice(1)}`;\n  const mime = sniffMime(bytes, declaredMime);',
+              text,
+          )
+
+          if "async function officialSearchCandidates" not in text:
+              raise SystemExit("officialSearchCandidates was not installed")
+          if "async function officialElementScreenshot" not in text:
+              raise SystemExit("officialElementScreenshot was not installed")
+          if "async function officialPageCapture" not in text:
+              raise SystemExit("officialPageCapture was not installed")
+
+          replacement = '''if (!best || best.score < minimum) {
+    const searched = await officialSearchCandidates(asset, pageUrl);
+    const searchedBest = await bestCandidate(asset, searched);
+    if (searchedBest && searchedBest.score > (best?.score ?? -Infinity))
+      best = searchedBest;
+  }
+
+  if (best && best.score >= minimum)
+    return {
+      ...best,
+      pageUrl,
+      sourceKind: best.descriptor.startsWith("rendered")
+        ? "official_rendered_image"
+        : best.descriptor === "official-domain-image-search"
+          ? "official_domain_image_search"
+          : "official_page_image",
+    };
+
+  if (isCreditCard(asset)) {
+    const renderedElement = await officialElementScreenshot(asset, pageUrl);
+    if (renderedElement) return renderedElement;
+    const pageCapture = await officialPageCapture(asset, pageUrl);
+    if (pageCapture) return pageCapture;
+  }
+
+  if (!isCreditCard(asset)) {'''
+
+          pattern = re.compile(
+              r'if \(best && best\.score >= minimum\)[\s\S]*?if \(!isCreditCard\(asset\)\) \{',
+          )
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f"could not harden acquireRemote selection block: {count}")
+
+          if "const artworkHref =" not in text:
+              text = text.replace(
+                  "  const inner = sourceFile\n    ? `<image",
+                  '  const artworkHref = source.bytes && source.bytes.length <= 1500000\n    ? `data:${source.mime};base64,${source.bytes.toString("base64")}`\n    : sourceFile?.publicPath;\n  const inner = artworkHref\n    ? `<image',
+              )
+              text = text.replace(
+                  "sourceFile.publicPath,",
+                  "artworkHref,",
+                  1,
+              )
+
+          target.write_text(text)
+          PY
+
+      - name: Validate pipeline syntax
+        run: node --check scripts/complete_liquid_glass_assets.mjs
+
+      - name: Execute complete acquisition, validation, deployment, and smoke loop
+        id: pipeline
+        continue-on-error: true
+        env:
+          LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
+        run: node scripts/complete_liquid_glass_assets.mjs
+
+      - name: Capture pipeline diagnostics
+        if: always()
+        run: |
+          mkdir -p /tmp/liquid-glass-diagnostics
+          cp apps/consumer-alpha/public/assets/liquid-glass/generation-failures.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/validation-failures.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/generation-report.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          cp apps/consumer-alpha/public/assets/liquid-glass/manifest.json /tmp/liquid-glass-diagnostics/ 2>/dev/null || true
+          git status --short > /tmp/liquid-glass-diagnostics/git-status.txt
+          git log -8 --oneline > /tmp/liquid-glass-diagnostics/recent-commits.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liquid-glass-pipeline-diagnostics
+          path: /tmp/liquid-glass-diagnostics
+          retention-days: 7
+
+      - name: Require completed pipeline
+        if: steps.pipeline.outcome != 'success'
+        run: exit 1
