@@ -1,0 +1,75 @@
+name: Supervise complete Liquid Glass asset catalogue
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-supervisor.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: false
+
+jobs:
+  supervise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install isolated browser acquisition runtime
+        run: |
+          mkdir -p /tmp/liquid-glass-puppeteer
+          printf '{"type":"module"}\n' > /tmp/liquid-glass-puppeteer/package.json
+          npm install --prefix /tmp/liquid-glass-puppeteer --no-save --package-lock=false puppeteer@24.16.0
+          echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
+
+      - name: Apply every asset-pipeline repair idempotently
+        run: |
+          python - <<'PY'
+          import re
+          import textwrap
+          from pathlib import Path
+
+          workflows = [
+              Path(".github/workflows/liquid-glass-assets-completion.yml"),
+              Path(".github/workflows/liquid-glass-assets-recovery.yml"),
+              Path(".github/workflows/liquid-glass-assets-finalize.yml"),
+          ]
+          for workflow in workflows:
+              source = workflow.read_text()
+              blocks = re.findall(
+                  r"python - <<'PY'\n(.*?)\n\s*PY",
+                  source,
+                  flags=re.DOTALL,
+              )
+              for block in blocks:
+                  code = textwrap.dedent(block)
+                  exec(compile(code, str(workflow), "exec"), {"__name__": "__main__"})
+          PY
+
+      - name: Run the complete 246-asset loop until deployed and rendered
+        env:
+          LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
+        run: node scripts/complete_liquid_glass_assets.mjs
