@@ -1,0 +1,31 @@
+name: Preempt prototype Liquid Glass run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-preempt.yml
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: true
+
+jobs:
+  dispatch-hardened-supervisor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Dispatch hardened completion loop
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run liquid-glass-assets-supervisor-v2.yml --ref main
