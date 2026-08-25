@@ -94,6 +94,9 @@ The ordered migration chain targets PostgreSQL 15+ and Supabase-compatible Postg
     nodes/rules and missing-parameter research tasks, and makes exact compiled
     claims visible to the existing route graph on the next query. The legacy
     `p0_*` function name remains only as a compatibility API.
+47. `0047_online_commerce_golden_backfill.sql` makes the five-site commerce
+    golden dataset self-contained on a clean database and idempotently restores
+    any catalogue, acceptance, or reward rows skipped by missing dependencies.
 
 It separates:
 

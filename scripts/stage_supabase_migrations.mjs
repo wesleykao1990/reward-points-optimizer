@@ -97,6 +97,10 @@ const SCHEMA_DESTINATIONS = new Map([
     "0046_production_exchange_directory_reconciliation.sql",
     "20260825203108_schema_0029_production_exchange_directory_reconciliation.sql",
   ],
+  [
+    "0047_online_commerce_golden_backfill.sql",
+    "20260825210410_online_commerce_golden_backfill.sql",
+  ],
 ]);
 
 const SKIPPED_SCHEMA_MIGRATIONS = new Set([
