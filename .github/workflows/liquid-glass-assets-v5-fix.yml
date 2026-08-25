@@ -1,0 +1,47 @@
+name: Fix and restart the 246-asset reference pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/liquid-glass-assets-v5-fix.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-assets-completion
+  cancel-in-progress: true
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Correct the service-alias verification path
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/liquid-glass-assets-v5.yml')
+          text = path.read_text()
+          text = text.replace(
+              '              card__rakuten|instrument__card__d-card-gold)',
+              '              instrument__card__d-card-gold)',
+          )
+          path.write_text(text)
+          PY
+
+      - name: Commit the correction and trigger the final pipeline
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/liquid-glass-assets-v5.yml
+          git commit -m "Fix Liquid Glass representative asset verification"
+          git pull --rebase origin main
+          git push origin HEAD:main
