@@ -15,6 +15,7 @@ on:
       - "apps/consumer-alpha/src/server.ts"
       - "registry/assets/liquid-glass-source-overrides.v1.json"
       - "scripts/generate_liquid_glass_assets.mjs"
+      - "scripts/generate_liquid_glass_assets.mjs.gz.b64"
       - "supabase/migrations/20260825202837_asset_source_catalogue.sql"
       - "vercel.json"
 
@@ -42,6 +43,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Materialize the auditable generator source
+        run: |
+          set -euo pipefail
+          if [ ! -f scripts/generate_liquid_glass_assets.mjs ]; then
+            base64 --decode scripts/generate_liquid_glass_assets.mjs.gz.b64 \
+              | gzip --decompress > scripts/generate_liquid_glass_assets.mjs
+          fi
+          node --check scripts/generate_liquid_glass_assets.mjs
 
       - name: Wait for the database-backed source catalogue deployment
         env:
@@ -142,7 +152,11 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/consumer-alpha/public/assets/liquid-glass
+          rm -f scripts/generate_liquid_glass_assets.mjs.gz.b64
+          git add -A \
+            apps/consumer-alpha/public/assets/liquid-glass \
+            scripts/generate_liquid_glass_assets.mjs \
+            scripts/generate_liquid_glass_assets.mjs.gz.b64
           if git diff --cached --quiet; then
             echo "Generated assets are already current."
             exit 0
