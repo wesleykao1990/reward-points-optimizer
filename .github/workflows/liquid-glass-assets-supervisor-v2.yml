@@ -91,32 +91,35 @@ jobs:
           if "async function officialPageCapture" not in text:
               raise SystemExit("officialPageCapture was not installed")
 
-          replacement = '''if (!best || best.score < minimum) {
-    const searched = await officialSearchCandidates(asset, pageUrl);
-    const searchedBest = await bestCandidate(asset, searched);
-    if (searchedBest && searchedBest.score > (best?.score ?? -Infinity))
-      best = searchedBest;
-  }
+          replacement = textwrap.dedent(
+              '''\
+              if (!best || best.score < minimum) {
+                const searched = await officialSearchCandidates(asset, pageUrl);
+                const searchedBest = await bestCandidate(asset, searched);
+                if (searchedBest && searchedBest.score > (best?.score ?? -Infinity))
+                  best = searchedBest;
+              }
 
-  if (best && best.score >= minimum)
-    return {
-      ...best,
-      pageUrl,
-      sourceKind: best.descriptor.startsWith("rendered")
-        ? "official_rendered_image"
-        : best.descriptor === "official-domain-image-search"
-          ? "official_domain_image_search"
-          : "official_page_image",
-    };
+              if (best && best.score >= minimum)
+                return {
+                  ...best,
+                  pageUrl,
+                  sourceKind: best.descriptor.startsWith("rendered")
+                    ? "official_rendered_image"
+                    : best.descriptor === "official-domain-image-search"
+                      ? "official_domain_image_search"
+                      : "official_page_image",
+                };
 
-  if (isCreditCard(asset)) {
-    const renderedElement = await officialElementScreenshot(asset, pageUrl);
-    if (renderedElement) return renderedElement;
-    const pageCapture = await officialPageCapture(asset, pageUrl);
-    if (pageCapture) return pageCapture;
-  }
+              if (isCreditCard(asset)) {
+                const renderedElement = await officialElementScreenshot(asset, pageUrl);
+                if (renderedElement) return renderedElement;
+                const pageCapture = await officialPageCapture(asset, pageUrl);
+                if (pageCapture) return pageCapture;
+              }
 
-  if (!isCreditCard(asset)) {'''
+              if (!isCreditCard(asset)) {'''
+          )
 
           pattern = re.compile(
               r'if \(best && best\.score >= minimum\)[\s\S]*?if \(!isCreditCard\(asset\)\) \{',
