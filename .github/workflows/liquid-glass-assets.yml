@@ -8,6 +8,7 @@ on:
     paths:
       - ".github/workflows/liquid-glass-assets.yml"
       - "api/asset-sources.mjs"
+      - "api/handler.mjs"
       - "apps/consumer-alpha/src/asset-source-catalogue.ts"
       - "apps/consumer-alpha/public/assets/payment-logos/**"
       - "apps/consumer-alpha/public/coverage.js"
@@ -55,7 +56,7 @@ jobs:
 
       - name: Wait for the database-backed source catalogue deployment
         env:
-          SOURCE_URL: https://reward-points-optimizer-consumer-al.vercel.app/asset-sources
+          SOURCE_URL: https://reward-points-optimizer-consumer-al.vercel.app/api/asset-sources
           EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           set -euo pipefail
