@@ -131,7 +131,9 @@
   const inferId = (frame) => {
     if (frame.dataset.liquidAssetId) return frame.dataset.liquidAssetId;
     const option = frame.closest(".p0-product-option");
-    const optionInput = option?.querySelector("input[data-p0-product]");
+    const optionInput = option?.querySelector(
+      "input[data-p0-product], input[data-payment-stack-owned]",
+    );
     if (optionInput?.value) return optionInput.value;
     const walletChip = frame.closest("[data-wallet-chip]");
     if (walletChip?.dataset.walletChip) return walletChip.dataset.walletChip;
@@ -176,6 +178,7 @@
       { once: true },
     );
     frame.replaceChildren(image);
+    frame.dataset.liquidAssetId = id;
     frame.dataset.liquidGlassPath = asset.path;
   };
 
@@ -217,7 +220,16 @@
       !Array.isArray(manifest.assets)
     )
       throw new Error("asset_manifest_invalid");
-    byId = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+    const manifestById = new Map(
+      manifest.assets.map((asset) => [asset.id, asset]),
+    );
+    byId = new Map(manifestById);
+    manifest.assets.forEach((asset) => {
+      if (!String(asset.id).startsWith("card.")) return;
+      if (!String(asset.resolved_id).startsWith("instrument.card.")) return;
+      const canonical = manifestById.get(asset.resolved_id);
+      if (canonical) byId.set(asset.id, canonical);
+    });
     byName = new Map();
     manifest.assets.forEach((asset) => {
       byName.set(normalize(asset.display_name), asset);
