@@ -3,6 +3,9 @@ from pathlib import Path
 path = Path("scripts/complete_liquid_glass_assets.mjs")
 text = path.read_text()
 
+# Keep exact first-party URLs for provenance and as a fallback, but prefer the
+# byte-for-byte official files already vendored into the repository whenever
+# they are available. This avoids CDN/hotlink flakiness during generation.
 explicit_block = r'''
 const EXPLICIT_IMAGE_OVERRIDES = Object.freeze({
   "instrument.card.majica-ucs": "https://www.ucscard.co.jp/assets/images/lineup/ucscard/mv_pc.png",
@@ -24,6 +27,8 @@ const EXPLICIT_IMAGE_OVERRIDES = Object.freeze({
 const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
   "instrument.card.majica-ucs": "https://www.ucscard.co.jp/lineup/ucscard/",
   "instrument.card.rakuten-bank-card-credit-function": "https://www.rakuten-bank.co.jp/card/rc/update.html",
+  "program.jp.bicpoint": "https://www.biccamera.com/bc/c/info/point/no_check.jsp",
+  "program.jp.muji-good": "https://www.muji.com/jp/ja/service/goodprogram/",
   "program.jp.nitori": "https://www.nitori-net.jp/ec/characteristic/loyalty-program/",
   "program.jp.mi-point": "https://www.mistore.jp/shopping/campaign/mip_cp.html",
   "program.jp.takashimaya-point": "https://www.takashimaya.co.jp/store/special/card_list/",
@@ -39,12 +44,45 @@ if "const EXPLICIT_IMAGE_OVERRIDES" not in text:
         raise SystemExit("LOCAL_OFFICIAL_ART marker missing")
     text = text.replace(marker, explicit_block + marker, 1)
 
+# Ensure current page overrides are upgraded even when the explicit block was
+# inserted by a previous run.
+text = text.replace(
+    'const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({\n',
+    'const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({\n'
+    '  "program.jp.bicpoint": "https://www.biccamera.com/bc/c/info/point/no_check.jsp",\n'
+    '  "program.jp.muji-good": "https://www.muji.com/jp/ja/service/goodprogram/",\n'
+    if '"program.jp.bicpoint": "https://www.biccamera.com/bc/c/info/point/no_check.jsp"' not in text
+    else 'const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({\n',
+    1,
+)
+
 old_page = '''function sourcePageFor(asset) {\n  return (\n    PAGE_OVERRIDES[asset.id] ??\n    asset.source_page_url ??'''
 new_page = '''function sourcePageFor(asset) {\n  return (\n    EXPLICIT_SOURCE_PAGE_OVERRIDES[asset.id] ??\n    PAGE_OVERRIDES[asset.id] ??\n    asset.source_page_url ??'''
 if old_page in text:
     text = text.replace(old_page, new_page, 1)
 elif "EXPLICIT_SOURCE_PAGE_OVERRIDES[asset.id]" not in text:
     raise SystemExit("sourcePageFor marker missing")
+
+# Map the successfully vendored official bytes. localOfficial() accepts nested
+# paths under assets/payment-logos, so these preserve the real source artwork.
+local_entries = {
+    "instrument.card.majica-ucs": "reference-official/majica-ucs.png",
+    "instrument.card.ana-card-general": "reference-official/ana-card-general.jpg",
+    "instrument.card.ana-super-flyers-gold-card": "reference-official/ana-super-flyers-gold-card.jpg",
+    "instrument.card.ana-wide-gold-card": "reference-official/ana-wide-gold-card.jpg",
+    "program.jp.nitori": "reference-official/nitori-members.jpg",
+    "instrument.card.rakuten-bank-card-credit-function": "reference-official/rakuten-bank-card.png",
+    "program.jp.takashimaya-point": "reference-official/takashimaya-point.png",
+    "program.jp.mi-point": "reference-official/mi-point.jpg",
+    "wallet.anapay": "reference-official/ana-pay.png",
+    "mile.ana": "reference-official/ana-mileage.png",
+}
+for asset_id, filename in local_entries.items():
+    entry = f'  "{asset_id}": "{filename}",\n'
+    if entry not in text:
+        if marker not in text:
+            raise SystemExit("LOCAL_OFFICIAL_ART marker missing")
+        text = text.replace(marker, marker + "\n" + entry.rstrip("\n"), 1)
 
 old_remote = "return acquireRemote(resolved, pageUrl, resolved.source_image_url);"
 new_remote = "return acquireRemote(\n          resolved,\n          pageUrl,\n          EXPLICIT_IMAGE_OVERRIDES[resolved.id] ?? resolved.source_image_url,\n        );"
@@ -54,8 +92,7 @@ elif "EXPLICIT_IMAGE_OVERRIDES[resolved.id]" not in text:
     raise SystemExit("acquireRemote call marker missing")
 
 # Some first-party CDNs reject hotlinked image requests unless the browser sends
-# the official product/program page as Referer. Preserve that provenance on the
-# explicit source fetch rather than falling back to reconstructed artwork.
+# the official product/program page as Referer.
 old_headers = '''      headers: {\n        "user-agent": USER_AGENT,\n        accept: options.accept ?? "*/*",\n      },'''
 new_headers = '''      headers: {\n        "user-agent": USER_AGENT,\n        accept: options.accept ?? "*/*",\n        ...(options.referer ? { referer: options.referer } : {}),\n      },'''
 if old_headers in text:
@@ -78,4 +115,4 @@ elif "referer: pageUrl" not in text:
     raise SystemExit("explicit candidate marker missing")
 
 path.write_text(text)
-print("Pinned direct first-party artwork with official Referer headers")
+print("Using vendored official artwork and current first-party page overrides")
