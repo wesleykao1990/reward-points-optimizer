@@ -1,23 +1,35 @@
 {
   "version": "liquid-glass-assets.v2",
-  "generation_run_id": "liquid-glass-1787727252214-78b1e8908872",
-  "generated_at": "2026-08-26T06:54:40.385Z",
-  "source_catalogue_deployment_commit_sha": "9e804a32ffa4a8759c9912322f99b693463dc621",
-  "aspect_ratio": "85.60:53.98",
-  "width": 856,
-  "height": 539.8,
+  "generation_run_id": "liquid-glass-1787745332405-5f189e731c31",
+  "generated_at": "2026-08-26T11:56:31.527Z",
+  "source_catalogue_deployment_commit_sha": "9eb47848d0b4314e1221afebb29735479bbf967a",
+  "aspect_ratio": "mixed",
+  "width": null,
+  "height": null,
+  "geometries": {
+    "card": {
+      "aspect_ratio": "85.60:53.98",
+      "width": 856,
+      "height": 539.8
+    },
+    "service": {
+      "aspect_ratio": "3:2",
+      "width": 672,
+      "height": 448
+    }
+  },
   "canonical_count": 211,
-  "alias_count": 35,
-  "asset_count": 246,
+  "alias_count": 40,
+  "asset_count": 251,
   "source_stats": {
-    "checked_in_official_artwork": 51,
+    "checked_in_official_artwork": 54,
     "official_product_origin_capture": 3,
     "official_product_page_capture": 18,
     "official_page_image": 144,
     "official_exact_image": 9,
     "official_rendered_element_loose": 4,
-    "official_page_capture_fallback": 9,
-    "official-explicit-image": 2,
+    "official_page_capture_fallback": 10,
+    "official-explicit-image": 3,
     "poimichi_generic_category": 5,
     "official_origin_capture_fallback": 1
   },
@@ -205,6 +217,56 @@
       "reused_from_supabase": true
     },
     {
+      "id": "emoney.nanaco",
+      "display_name": "nanaco電子マネー",
+      "labels": [
+        "nanaco電子マネー"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.jp.nanaco",
+      "resolved_id": "instrument.jp.nanaco",
+      "path": "/assets/liquid-glass/services/emoney__nanaco.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.nanaco-net.jp/how-to/save_point/",
+      "source_image_url": "/assets/payment-logos/nanaco.png",
+      "source_sha256": "8b91dda91860a7f247ed356c826ede6e75840c40fcc28cb07888953a70b02f1c",
+      "source_asset_path": "/assets/liquid-glass/sources/8b91dda91860a7f247ed356c.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 360,
+        "height": 232
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "emoney.waon",
+      "display_name": "WAON電子マネー",
+      "labels": [
+        "WAON電子マネー"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.emoney.waon",
+      "resolved_id": "instrument.emoney.waon",
+      "path": "/assets/liquid-glass/services/emoney__waon.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.smartwaon.com/",
+      "source_image_url": "/assets/payment-logos/waon.png",
+      "source_sha256": "94c8e0f99460b1db505c9fc86943a9e9f5b09cb5b4fb2677b7051c9473ffadc0",
+      "source_asset_path": "/assets/liquid-glass/sources/94c8e0f99460b1db505c9fc8.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 240,
+        "height": 52
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
       "id": "instrument.card.aeon",
       "display_name": "AEON Card",
       "labels": [
@@ -226,8 +288,9 @@
         "width": 396,
         "height": 622
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.aeon-card-select",
@@ -736,8 +799,9 @@
         "width": 300,
         "height": 189
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.d-card-gold",
@@ -1850,8 +1914,9 @@
         "width": 818,
         "height": 516
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.mitsui-sumitomo-card-platinum",
@@ -2135,8 +2200,9 @@
         "width": 248,
         "height": 160
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.paypay-card-gold",
@@ -2186,8 +2252,9 @@
         "width": 360,
         "height": 227
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.rakuten-bank-card-credit-function",
@@ -2237,8 +2304,9 @@
         "width": 170,
         "height": 107
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.rakuten-gold-card",
@@ -2262,8 +2330,9 @@
         "width": 170,
         "height": 107
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.rakuten-pink-card",
@@ -2287,8 +2356,9 @@
         "width": 170,
         "height": 107
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.rakuten-premium-card",
@@ -2312,8 +2382,9 @@
         "width": 170,
         "height": 107
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.recruit-card",
@@ -2701,8 +2772,9 @@
         "width": 800,
         "height": 520
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.yamada-labi-card",
@@ -2766,7 +2838,7 @@
       "alias_of": null,
       "resolved_id": "instrument.create.hippo",
       "path": "/assets/liquid-glass/entities/instrument__create__hippo.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://www.create-sd.co.jp/service/hippo/",
@@ -2778,9 +2850,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.crie.card",
@@ -2792,7 +2863,7 @@
       "alias_of": null,
       "resolved_id": "instrument.crie.card",
       "path": "/assets/liquid-glass/entities/instrument__crie__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official-explicit-image",
       "source_page_url": "https://c-united.co.jp/crie/card/",
@@ -2804,9 +2875,8 @@
         "width": 3240,
         "height": 1608
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.doutor.valuecard",
@@ -2818,7 +2888,7 @@
       "alias_of": null,
       "resolved_id": "instrument.doutor.valuecard",
       "path": "/assets/liquid-glass/entities/instrument__doutor__valuecard.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.doutor.co.jp/dvc/",
@@ -2830,9 +2900,8 @@
         "width": 420,
         "height": 53
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.id",
@@ -2844,7 +2913,7 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.id",
       "path": "/assets/liquid-glass/entities/instrument__emoney__id.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://id-credit.com/",
@@ -2853,12 +2922,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/bc137214185e3d8e36625244.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 198.43,
-        "height": 128.98
+        "width": 198,
+        "height": 129
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.pitapa",
@@ -2870,7 +2938,7 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.pitapa",
       "path": "/assets/liquid-glass/entities/instrument__emoney__pitapa.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.pitapa.com/",
@@ -2882,9 +2950,8 @@
         "width": 200,
         "height": 49
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.quicpay",
@@ -2896,7 +2963,7 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.quicpay",
       "path": "/assets/liquid-glass/entities/instrument__emoney__quicpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.quicpay.jp/",
@@ -2908,9 +2975,8 @@
         "width": 520,
         "height": 101
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.rakuten_edy",
@@ -2922,7 +2988,7 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.rakuten_edy",
       "path": "/assets/liquid-glass/entities/instrument__emoney__rakuten_edy.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://edy.rakuten.co.jp/",
@@ -2934,9 +3000,8 @@
         "width": 48,
         "height": 48
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.transit_ic",
@@ -2948,7 +3013,7 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.transit_ic",
       "path": "/assets/liquid-glass/entities/instrument__emoney__transit_ic.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://www.jreast.co.jp/suica/",
@@ -2960,9 +3025,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.emoney.waon",
@@ -2974,10 +3038,10 @@
       "alias_of": null,
       "resolved_id": "instrument.emoney.waon",
       "path": "/assets/liquid-glass/entities/instrument__emoney__waon.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.waon.net/",
+      "source_page_url": "https://www.smartwaon.com/",
       "source_image_url": "/assets/payment-logos/waon.png",
       "source_sha256": "94c8e0f99460b1db505c9fc86943a9e9f5b09cb5b4fb2677b7051c9473ffadc0",
       "source_asset_path": "/assets/liquid-glass/sources/94c8e0f99460b1db505c9fc8.png",
@@ -2986,9 +3050,8 @@
         "width": 240,
         "height": 52
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.jp.nanaco",
@@ -3000,10 +3063,10 @@
       "alias_of": null,
       "resolved_id": "instrument.jp.nanaco",
       "path": "/assets/liquid-glass/entities/instrument__jp__nanaco.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.nanaco-net.jp/",
+      "source_page_url": "https://www.nanaco-net.jp/how-to/save_point/",
       "source_image_url": "/assets/payment-logos/nanaco.png",
       "source_sha256": "8b91dda91860a7f247ed356c826ede6e75840c40fcc28cb07888953a70b02f1c",
       "source_asset_path": "/assets/liquid-glass/sources/8b91dda91860a7f247ed356c.png",
@@ -3012,9 +3075,8 @@
         "width": 360,
         "height": 232
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.jp.seven-card-plus",
@@ -3052,7 +3114,7 @@
       "alias_of": null,
       "resolved_id": "instrument.komeda.komeca",
       "path": "/assets/liquid-glass/entities/instrument__komeda__komeca.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.komeda.co.jp/",
@@ -3064,9 +3126,8 @@
         "width": 439,
         "height": 100
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.life.lacuca",
@@ -3078,7 +3139,7 @@
       "alias_of": null,
       "resolved_id": "instrument.life.lacuca",
       "path": "/assets/liquid-glass/entities/instrument__life__lacuca.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.lifecorp.jp/service/lacuca/",
@@ -3090,9 +3151,8 @@
         "width": 480,
         "height": 343
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.majica.money",
@@ -3104,7 +3164,7 @@
       "alias_of": null,
       "resolved_id": "instrument.majica.money",
       "path": "/assets/liquid-glass/entities/instrument__majica__money.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.majica-net.com/",
@@ -3116,9 +3176,8 @@
         "width": 629,
         "height": 327
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.misterdonut.card",
@@ -3130,7 +3189,7 @@
       "alias_of": null,
       "resolved_id": "instrument.misterdonut.card",
       "path": "/assets/liquid-glass/entities/instrument__misterdonut__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.misterdonut.jp/",
@@ -3142,9 +3201,8 @@
         "width": 260,
         "height": 160
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.mos.card",
@@ -3156,7 +3214,7 @@
       "alias_of": null,
       "resolved_id": "instrument.mos.card",
       "path": "/assets/liquid-glass/entities/instrument__mos__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.mos.jp/mosca/",
@@ -3168,9 +3226,8 @@
         "width": 290,
         "height": 203
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.payment.cashless_generic",
@@ -3182,7 +3239,7 @@
       "alias_of": null,
       "resolved_id": "instrument.payment.cashless_generic",
       "path": "/assets/liquid-glass/entities/instrument__payment__cashless_generic.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "poimichi_generic_category",
       "source_page_url": null,
@@ -3191,9 +3248,8 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": false,
-      "reused_from_supabase": true
+      "source_score": 0,
+      "official_reference_preserved": false
     },
     {
       "id": "instrument.payment.credit_card_general",
@@ -3205,7 +3261,7 @@
       "alias_of": null,
       "resolved_id": "instrument.payment.credit_card_general",
       "path": "/assets/liquid-glass/entities/instrument__payment__credit_card_general.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "poimichi_generic_category",
       "source_page_url": null,
@@ -3214,9 +3270,8 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": false,
-      "reused_from_supabase": true
+      "source_score": 0,
+      "official_reference_preserved": false
     },
     {
       "id": "instrument.payment.emoney_generic",
@@ -3228,7 +3283,7 @@
       "alias_of": null,
       "resolved_id": "instrument.payment.emoney_generic",
       "path": "/assets/liquid-glass/entities/instrument__payment__emoney_generic.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "poimichi_generic_category",
       "source_page_url": null,
@@ -3237,9 +3292,8 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": false,
-      "reused_from_supabase": true
+      "source_score": 0,
+      "official_reference_preserved": false
     },
     {
       "id": "instrument.payment.ic_generic",
@@ -3251,7 +3305,7 @@
       "alias_of": null,
       "resolved_id": "instrument.payment.ic_generic",
       "path": "/assets/liquid-glass/entities/instrument__payment__ic_generic.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "poimichi_generic_category",
       "source_page_url": null,
@@ -3260,9 +3314,8 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": false,
-      "reused_from_supabase": true
+      "source_score": 0,
+      "official_reference_preserved": false
     },
     {
       "id": "instrument.payment.unionpay",
@@ -3274,7 +3327,7 @@
       "alias_of": null,
       "resolved_id": "instrument.payment.unionpay",
       "path": "/assets/liquid-glass/entities/instrument__payment__unionpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.unionpayintl.com/jp/",
@@ -3286,9 +3339,8 @@
         "width": 578,
         "height": 329
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.prepaid.hopetan",
@@ -3300,7 +3352,7 @@
       "alias_of": null,
       "resolved_id": "instrument.prepaid.hopetan",
       "path": "/assets/liquid-glass/entities/instrument__prepaid__hopetan.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://shop-mirai.coopnet.or.jp/about/hopetan_card/",
@@ -3312,9 +3364,8 @@
         "width": 163,
         "height": 50
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.pronto.money",
@@ -3326,7 +3377,7 @@
       "alias_of": null,
       "resolved_id": "instrument.pronto.money",
       "path": "/assets/liquid-glass/entities/instrument__pronto__money.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.pronto.co.jp/",
@@ -3335,12 +3386,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/0f41f7ffb356b31e3543056b.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 520.1,
-        "height": 103.3
+        "width": 520,
+        "height": 103
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.renoir.card",
@@ -3352,7 +3402,7 @@
       "alias_of": null,
       "resolved_id": "instrument.renoir.card",
       "path": "/assets/liquid-glass/entities/instrument__renoir__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ginza-renoir.co.jp/",
@@ -3361,12 +3411,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/d88bf8e9ef848256414cb37b.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 140.891,
-        "height": 140.889
+        "width": 141,
+        "height": 141
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.santoku.cogca",
@@ -3378,7 +3427,7 @@
       "alias_of": null,
       "resolved_id": "instrument.santoku.cogca",
       "path": "/assets/liquid-glass/entities/instrument__santoku__cogca.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.cogca.jp/",
@@ -3390,9 +3439,8 @@
         "width": 199,
         "height": 86
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.st.emoney",
@@ -3404,7 +3452,7 @@
       "alias_of": null,
       "resolved_id": "instrument.st.emoney",
       "path": "/assets/liquid-glass/entities/instrument__st__emoney.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.st-c.co.jp/",
@@ -3416,9 +3464,8 @@
         "width": 1380,
         "height": 734
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.starbucks.card",
@@ -3430,7 +3477,7 @@
       "alias_of": null,
       "resolved_id": "instrument.starbucks.card",
       "path": "/assets/liquid-glass/entities/instrument__starbucks__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.starbucks.co.jp/card/",
@@ -3442,9 +3489,8 @@
         "width": 48,
         "height": 48
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.sugi.pay",
@@ -3456,7 +3502,7 @@
       "alias_of": null,
       "resolved_id": "instrument.sugi.pay",
       "path": "/assets/liquid-glass/entities/instrument__sugi__pay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.sugi-net.jp/",
@@ -3468,9 +3514,8 @@
         "width": 51,
         "height": 50
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.tullys.card",
@@ -3482,7 +3527,7 @@
       "alias_of": null,
       "resolved_id": "instrument.tullys.card",
       "path": "/assets/liquid-glass/entities/instrument__tullys__card.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.tullys.co.jp/",
@@ -3494,9 +3539,8 @@
         "width": 55,
         "height": 64
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.ueshima.precious",
@@ -3508,7 +3552,7 @@
       "alias_of": null,
       "resolved_id": "instrument.ueshima.precious",
       "path": "/assets/liquid-glass/entities/instrument__ueshima__precious.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ueshima-coffee-ten.jp/precious/",
@@ -3517,12 +3561,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/261aa9cbc55bfb82ac299392.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 335.8,
+        "width": 336,
         "height": 80
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.aeonpay",
@@ -3534,7 +3577,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.aeonpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__aeonpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.aeon.co.jp/aeonpay/",
@@ -3546,9 +3589,8 @@
         "width": 236,
         "height": 42
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.alipay",
@@ -3560,7 +3602,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.alipay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__alipay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://global.alipay.com/",
@@ -3572,9 +3614,8 @@
         "width": 180,
         "height": 180
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.applepay",
@@ -3586,7 +3627,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.applepay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__applepay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.apple.com/jp/apple-pay/",
@@ -3598,9 +3639,8 @@
         "width": 293,
         "height": 180
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.aupay",
@@ -3612,7 +3652,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.aupay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__aupay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://aupay.wallet.auone.jp/",
@@ -3624,9 +3664,8 @@
         "width": 120,
         "height": 120
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.bankpay",
@@ -3638,7 +3677,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.bankpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__bankpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://jeppo.jp/bankpay/",
@@ -3650,9 +3689,8 @@
         "width": 700,
         "height": 129
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.barcode_generic",
@@ -3664,7 +3702,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.barcode_generic",
       "path": "/assets/liquid-glass/entities/instrument__wallet__barcode_generic.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "poimichi_generic_category",
       "source_page_url": null,
@@ -3673,9 +3711,8 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": false,
-      "reused_from_supabase": true
+      "source_score": 0,
+      "official_reference_preserved": false
     },
     {
       "id": "instrument.wallet.dbarai",
@@ -3687,7 +3724,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.dbarai",
       "path": "/assets/liquid-glass/entities/instrument__wallet__dbarai.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://service.smt.docomo.ne.jp/keitai_payment/",
@@ -3699,9 +3736,8 @@
         "width": 144,
         "height": 144
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.famipay",
@@ -3713,7 +3749,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.famipay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__famipay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://famipay.famidigi.jp/",
@@ -3722,12 +3758,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/a1042fbcf4c87e3e5f6bd7f1.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 157.16,
+        "width": 157,
         "height": 40
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.jcoinpay",
@@ -3739,7 +3774,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.jcoinpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__jcoinpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://j-coin.jp/",
@@ -3751,9 +3786,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.merpay",
@@ -3765,7 +3799,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.merpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__merpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.merpay.com/",
@@ -3777,9 +3811,8 @@
         "width": 270,
         "height": 50
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.paypay",
@@ -3791,7 +3824,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.paypay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__paypay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://paypay.ne.jp/",
@@ -3803,9 +3836,8 @@
         "width": 120,
         "height": 30
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.quocardpay",
@@ -3817,7 +3849,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.quocardpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__quocardpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.quocard.com/pay/",
@@ -3829,9 +3861,8 @@
         "width": 121,
         "height": 50
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.rakutenpay",
@@ -3843,7 +3874,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.rakutenpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__rakutenpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://pay.rakuten.co.jp/",
@@ -3853,11 +3884,10 @@
       "source_mime": "image/svg+xml",
       "source_dimensions": {
         "width": 74,
-        "height": 24.8
+        "height": 25
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.smartcode",
@@ -3869,7 +3899,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.smartcode",
       "path": "/assets/liquid-glass/entities/instrument__wallet__smartcode.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.smart-code.jp/",
@@ -3881,9 +3911,8 @@
         "width": 241,
         "height": 94
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.wechatpay",
@@ -3895,7 +3924,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.wechatpay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__wechatpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://pay.weixin.qq.com/",
@@ -3907,9 +3936,8 @@
         "width": 320,
         "height": 297
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.wallet.yuchopay",
@@ -3921,7 +3949,7 @@
       "alias_of": null,
       "resolved_id": "instrument.wallet.yuchopay",
       "path": "/assets/liquid-glass/entities/instrument__wallet__yuchopay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.jp-bank.japanpost.jp/kojin/sokin/yuchopay/kj_sk_yp_index.html",
@@ -3933,9 +3961,8 @@
         "width": 560,
         "height": 135
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "instrument.yoshinoya.prepaid",
@@ -3947,7 +3974,7 @@
       "alias_of": null,
       "resolved_id": "instrument.yoshinoya.prepaid",
       "path": "/assets/liquid-glass/entities/instrument__yoshinoya__prepaid.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.yoshinoya.com/",
@@ -3956,12 +3983,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/fa61a338a72c6577df9c12f1.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 976.42,
-        "height": 715.61
+        "width": 976,
+        "height": 716
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "mile.ana",
@@ -3973,7 +3999,7 @@
       "alias_of": null,
       "resolved_id": "mile.ana",
       "path": "/assets/liquid-glass/services/mile__ana.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.ana.co.jp/ja/jp/amc/",
@@ -3985,9 +4011,8 @@
         "width": 2960,
         "height": 2960
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "mile.jal",
@@ -3999,7 +4024,7 @@
       "alias_of": null,
       "resolved_id": "mile.jal",
       "path": "/assets/liquid-glass/services/mile__jal.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://www.jal.co.jp/jp/ja/jmb/",
@@ -4011,9 +4036,33 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "point.ana-mile",
+      "display_name": "ANAマイル",
+      "labels": [
+        "ANAマイル"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "point.ana-mile",
+      "path": "/assets/liquid-glass/services/point__ana-mile.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.ana.co.jp/ja/jp/amc/",
+      "source_image_url": "/assets/payment-logos/reference-official/ana-mileage.png",
+      "source_sha256": "dcfef8e14b02112313f1a61795eb0a73ee3813665c534a318193198ac13de8e7",
+      "source_asset_path": "/assets/liquid-glass/sources/dcfef8e14b02112313f1a617.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 2960,
+        "height": 2960
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.d",
@@ -4025,7 +4074,7 @@
       "alias_of": "program.jp.dpoint",
       "resolved_id": "program.jp.dpoint",
       "path": "/assets/liquid-glass/services/point__d.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://dpoint.docomo.ne.jp/",
@@ -4037,9 +4086,33 @@
         "width": 192,
         "height": 192
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "point.jal-mile",
+      "display_name": "JALマイル",
+      "labels": [
+        "JALマイル"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "point.jal-mile",
+      "path": "/assets/liquid-glass/services/point__jal-mile.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_capture_fallback",
+      "source_page_url": "https://www.jal.co.jp/ja-jp/mileage.html",
+      "source_image_url": "https://www.jal.co.jp/ja-jp/mileage.html#official-product-page-capture",
+      "source_sha256": "3c6a5352420b390fd59800bdfbb3ecf822023ebab3dff3fc83ab7fd56f6e7357",
+      "source_asset_path": "/assets/liquid-glass/sources/3c6a5352420b390fd59800bd.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1586,
+        "height": 1000
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.jr-kyupo",
@@ -4051,7 +4124,7 @@
       "alias_of": null,
       "resolved_id": "point.jr-kyupo",
       "path": "/assets/liquid-glass/services/point__jr-kyupo.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.jrkyushu.co.jp/",
@@ -4063,9 +4136,8 @@
         "width": 279,
         "height": 56
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.jre",
@@ -4077,7 +4149,7 @@
       "alias_of": "program.jp.jrepoint",
       "resolved_id": "program.jp.jrepoint",
       "path": "/assets/liquid-glass/services/point__jre.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.jrepoint.jp/",
@@ -4089,9 +4161,8 @@
         "width": 498,
         "height": 112
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.moppy",
@@ -4104,7 +4175,7 @@
       "alias_of": null,
       "resolved_id": "point.moppy",
       "path": "/assets/liquid-glass/services/point__moppy.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://pc.moppy.jp/",
@@ -4116,9 +4187,8 @@
         "width": 180,
         "height": 144
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.nanaco",
@@ -4130,7 +4200,7 @@
       "alias_of": "program.jp.nanaco",
       "resolved_id": "program.jp.nanaco",
       "path": "/assets/liquid-glass/services/point__nanaco.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.nanaco-net.jp/how-to/save_point/",
@@ -4142,9 +4212,8 @@
         "width": 360,
         "height": 232
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.paypay",
@@ -4156,10 +4225,10 @@
       "alias_of": "program.jp.paypaypoint",
       "resolved_id": "program.jp.paypaypoint",
       "path": "/assets/liquid-glass/services/point__paypay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://paypay.ne.jp/guide/point/",
+      "source_page_url": "https://paypay.ne.jp/",
       "source_image_url": "/assets/payment-logos/paypay.svg",
       "source_sha256": "c375647314af7ab78ea20c91f3f932a94a16d5b5fe8564cb38d8719828b0de45",
       "source_asset_path": "/assets/liquid-glass/sources/c375647314af7ab78ea20c91.svg",
@@ -4168,9 +4237,8 @@
         "width": 120,
         "height": 30
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.ponta",
@@ -4182,7 +4250,7 @@
       "alias_of": "program.jp.ponta",
       "resolved_id": "program.jp.ponta",
       "path": "/assets/liquid-glass/services/point__ponta.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.ponta.jp/",
@@ -4194,9 +4262,8 @@
         "width": 180,
         "height": 180
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.rakuten",
@@ -4208,7 +4275,7 @@
       "alias_of": "program.jp.rakutenpoint",
       "resolved_id": "program.jp.rakutenpoint",
       "path": "/assets/liquid-glass/services/point__rakuten.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://point.rakuten.co.jp/",
@@ -4220,9 +4287,33 @@
         "width": 242,
         "height": 32
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "point.recruit",
+      "display_name": "Recruit Point",
+      "labels": [
+        "Recruit Point"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "point.recruit",
+      "path": "/assets/liquid-glass/services/point__recruit.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official-explicit-image",
+      "source_page_url": "https://point.recruit.co.jp/",
+      "source_image_url": "https://img.point.recruit.co.jp/recruitid/assets/dynamic/img/logo/point/rpt01_a.svg",
+      "source_sha256": "127a262c9c47db3ec8babb04476a0ab5ec9fa014520793598eb00856901fa7ad",
+      "source_asset_path": "/assets/liquid-glass/sources/127a262c9c47db3ec8babb04.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 360,
+        "height": 61
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.saison",
@@ -4235,7 +4326,7 @@
       "alias_of": null,
       "resolved_id": "point.saison",
       "path": "/assets/liquid-glass/services/point__saison.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.saisoncard.co.jp/point/",
@@ -4247,9 +4338,8 @@
         "width": 40,
         "height": 40
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.saison-permanent",
@@ -4261,7 +4351,7 @@
       "alias_of": null,
       "resolved_id": "point.saison-permanent",
       "path": "/assets/liquid-glass/services/point__saison-permanent.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.saisoncard.co.jp/point/",
@@ -4273,9 +4363,8 @@
         "width": 40,
         "height": 40
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.seven-mile",
@@ -4287,7 +4376,7 @@
       "alias_of": null,
       "resolved_id": "point.seven-mile",
       "path": "/assets/liquid-glass/services/point__seven-mile.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.7mp.omni7.jp/",
@@ -4299,9 +4388,8 @@
         "width": 1200,
         "height": 630
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.v",
@@ -4313,7 +4401,7 @@
       "alias_of": "program.jp.vpoint",
       "resolved_id": "program.jp.vpoint",
       "path": "/assets/liquid-glass/services/point__v.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://vpoint.net/",
@@ -4322,12 +4410,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/03c2f85b8c1bc0ffcc7b9ebb.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 208.22,
-        "height": 54.69
+        "width": 208,
+        "height": 55
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "point.waon",
@@ -4339,7 +4426,7 @@
       "alias_of": "program.jp.waonpoint",
       "resolved_id": "program.jp.waonpoint",
       "path": "/assets/liquid-glass/services/point__waon.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.smartwaon.com/",
@@ -4351,9 +4438,8 @@
         "width": 240,
         "height": 52
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "portal.jal-mileage-park",
@@ -4365,7 +4451,7 @@
       "alias_of": null,
       "resolved_id": "portal.jal-mileage-park",
       "path": "/assets/liquid-glass/services/portal__jal-mileage-park.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://partner.jal.co.jp/",
@@ -4374,12 +4460,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/6bd5da5e9a6e58faf50686f7.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 244.56,
-        "height": 46.49
+        "width": 245,
+        "height": 46
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.bicpoint",
@@ -4391,7 +4476,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.bicpoint",
       "path": "/assets/liquid-glass/entities/program__jp__bicpoint.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.biccamera.com/bc/c/info/point/no_check.jsp",
@@ -4403,9 +4488,8 @@
         "width": 640,
         "height": 320
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.bikkuri-app-rank",
@@ -4417,7 +4501,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.bikkuri-app-rank",
       "path": "/assets/liquid-glass/entities/program__jp__bikkuri-app-rank.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.bikkuri-donkey.com/app/",
@@ -4429,9 +4513,8 @@
         "width": 338,
         "height": 383
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.chatnoir-point",
@@ -4443,7 +4526,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.chatnoir-point",
       "path": "/assets/liquid-glass/entities/program__jp__chatnoir-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://c-united.co.jp/veloce/",
@@ -4455,9 +4538,8 @@
         "width": 240,
         "height": 64
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.club-on-millennium",
@@ -4469,7 +4551,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.club-on-millennium",
       "path": "/assets/liquid-glass/entities/program__jp__club-on-millennium.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.sogo-seibu.jp/",
@@ -4481,9 +4563,8 @@
         "width": 5000,
         "height": 5000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.cocos-mileage",
@@ -4495,7 +4576,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.cocos-mileage",
       "path": "/assets/liquid-glass/entities/program__jp__cocos-mileage.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.cocos-jpn.co.jp/",
@@ -4507,9 +4588,8 @@
         "width": 146,
         "height": 104
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.coop-mirai-point",
@@ -4521,7 +4601,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.coop-mirai-point",
       "path": "/assets/liquid-glass/entities/program__jp__coop-mirai-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://shop-mirai.coopnet.or.jp/about/hopetan_card/",
@@ -4533,9 +4613,8 @@
         "width": 163,
         "height": 50
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.create-point",
@@ -4547,11 +4626,11 @@
       "alias_of": null,
       "resolved_id": "program.jp.create-point",
       "path": "/assets/liquid-glass/entities/program__jp__create-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
-      "source_page_url": "https://www.create-sd.co.jp/service/point/",
-      "source_image_url": "https://www.create-sd.co.jp/service/point/#official-product-page-capture",
+      "source_page_url": "https://www.create-sd.co.jp/service/hippo/",
+      "source_image_url": "https://www.create-sd.co.jp/service/hippo/#official-product-page-capture",
       "source_sha256": "4b3e19982164907737a9de19188dce847944878d3f89f18d20e0761dc9694100",
       "source_asset_path": "/assets/liquid-glass/sources/4b3e19982164907737a9de19.png",
       "source_mime": "image/png",
@@ -4559,9 +4638,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.crie-card-discount",
@@ -4573,7 +4651,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.crie-card-discount",
       "path": "/assets/liquid-glass/entities/program__jp__crie-card-discount.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official-explicit-image",
       "source_page_url": "https://c-united.co.jp/crie/card/",
@@ -4585,9 +4663,8 @@
         "width": 3240,
         "height": 1608
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.daimaru-matsuzakaya-card-point",
@@ -4599,7 +4676,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.daimaru-matsuzakaya-card-point",
       "path": "/assets/liquid-glass/entities/program__jp__daimaru-matsuzakaya-card-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://depaco.daimaru-matsuzakaya.jp/shop/pages/point.aspx",
@@ -4611,9 +4688,8 @@
         "width": 274,
         "height": 62
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.daimaru-matsuzakaya-point",
@@ -4625,7 +4701,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.daimaru-matsuzakaya-point",
       "path": "/assets/liquid-glass/entities/program__jp__daimaru-matsuzakaya-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://depaco.daimaru-matsuzakaya.jp/shop/pages/point.aspx",
@@ -4637,9 +4713,8 @@
         "width": 274,
         "height": 62
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.dennys-point",
@@ -4651,7 +4726,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.dennys-point",
       "path": "/assets/liquid-glass/entities/program__jp__dennys-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.dennys.jp/",
@@ -4663,9 +4738,8 @@
         "width": 209,
         "height": 209
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.doutor-value",
@@ -4677,7 +4751,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.doutor-value",
       "path": "/assets/liquid-glass/entities/program__jp__doutor-value.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.doutor.co.jp/dvc/",
@@ -4689,9 +4763,8 @@
         "width": 420,
         "height": 53
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.dpoint",
@@ -4703,7 +4776,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.dpoint",
       "path": "/assets/liquid-glass/entities/program__jp__dpoint.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://dpoint.docomo.ne.jp/",
@@ -4715,9 +4788,8 @@
         "width": 192,
         "height": 192
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.gongcha-leaf",
@@ -4729,7 +4801,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.gongcha-leaf",
       "path": "/assets/liquid-glass/entities/program__jp__gongcha-leaf.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.gongcha.co.jp/faq/leaf_program-9/",
@@ -4738,12 +4810,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/95b6138922e9dad97278b56b.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 98.23,
-        "height": 120.99
+        "width": 98,
+        "height": 121
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.hands-club",
@@ -4755,7 +4826,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.hands-club",
       "path": "/assets/liquid-glass/entities/program__jp__hands-club.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://hands.net/handsclub/",
@@ -4767,9 +4838,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.ikinaristeak-meat-mileage",
@@ -4781,7 +4851,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.ikinaristeak-meat-mileage",
       "path": "/assets/liquid-glass/entities/program__jp__ikinaristeak-meat-mileage.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://ikinaristeak.com/",
@@ -4793,9 +4863,8 @@
         "width": 548,
         "height": 129
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.ingfan",
@@ -4807,7 +4876,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.ingfan",
       "path": "/assets/liquid-glass/entities/program__jp__ingfan.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ingni-store.com/",
@@ -4819,9 +4888,8 @@
         "width": 450,
         "height": 562
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.jrepoint",
@@ -4833,7 +4901,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.jrepoint",
       "path": "/assets/liquid-glass/entities/program__jp__jrepoint.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.jrepoint.jp/",
@@ -4845,9 +4913,8 @@
         "width": 498,
         "height": 112
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.keio-point",
@@ -4859,7 +4926,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.keio-point",
       "path": "/assets/liquid-glass/entities/program__jp__keio-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.keio-passport.co.jp/",
@@ -4871,9 +4938,8 @@
         "width": 168,
         "height": 39
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.keyuca-point",
@@ -4885,7 +4951,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.keyuca-point",
       "path": "/assets/liquid-glass/entities/program__jp__keyuca-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.keyuca.com/Page/guide.aspx",
@@ -4897,9 +4963,8 @@
         "width": 120,
         "height": 120
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.komeca-point",
@@ -4911,7 +4976,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.komeca-point",
       "path": "/assets/liquid-glass/entities/program__jp__komeca-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.komeda.co.jp/",
@@ -4923,9 +4988,8 @@
         "width": 439,
         "height": 100
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.life-point",
@@ -4937,7 +5001,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.life-point",
       "path": "/assets/liquid-glass/entities/program__jp__life-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.lifecorp.jp/service/point/",
@@ -4949,9 +5013,8 @@
         "width": 180,
         "height": 45
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.loft-stamp",
@@ -4963,7 +5026,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.loft-stamp",
       "path": "/assets/liquid-glass/entities/program__jp__loft-stamp.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.loft.co.jp/",
@@ -4975,9 +5038,8 @@
         "width": 93,
         "height": 59
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.majica",
@@ -4989,7 +5051,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.majica",
       "path": "/assets/liquid-glass/entities/program__jp__majica.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.majica-net.com/",
@@ -5001,9 +5063,8 @@
         "width": 629,
         "height": 327
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.matsukiyococokara",
@@ -5015,7 +5076,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.matsukiyococokara",
       "path": "/assets/liquid-glass/entities/program__jp__matsukiyococokara.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_capture_fallback",
       "source_page_url": "https://www.matsukiyococokara-online.com/point",
@@ -5027,9 +5088,8 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.matsuya-point",
@@ -5041,7 +5101,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.matsuya-point",
       "path": "/assets/liquid-glass/entities/program__jp__matsuya-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.matsuyafoods.co.jp/",
@@ -5053,9 +5113,8 @@
         "width": 540,
         "height": 120
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.mi-point",
@@ -5067,7 +5126,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.mi-point",
       "path": "/assets/liquid-glass/entities/program__jp__mi-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.mistore.jp/shopping/campaign/mip_cp.html",
@@ -5079,9 +5138,8 @@
         "width": 1440,
         "height": 512
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.mospoint",
@@ -5093,7 +5151,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.mospoint",
       "path": "/assets/liquid-glass/entities/program__jp__mospoint.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.mos.jp/mosca/",
@@ -5105,9 +5163,8 @@
         "width": 290,
         "height": 203
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.muji-good",
@@ -5119,7 +5176,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.muji-good",
       "path": "/assets/liquid-glass/entities/program__jp__muji-good.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.muji.com/jp/ja/service/goodprogram/",
@@ -5131,9 +5188,8 @@
         "width": 1200,
         "height": 106
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.my-saintmarc",
@@ -5145,7 +5201,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.my-saintmarc",
       "path": "/assets/liquid-glass/entities/program__jp__my-saintmarc.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.saint-marc-hd.com/hd/",
@@ -5154,12 +5210,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/f282349c3832ea4b44be1d0e.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 174.245,
+        "width": 174,
         "height": 92
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.myroyal",
@@ -5171,7 +5226,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.myroyal",
       "path": "/assets/liquid-glass/entities/program__jp__myroyal.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.royalhost.jp/",
@@ -5183,9 +5238,8 @@
         "width": 480,
         "height": 480
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.nanaco",
@@ -5198,7 +5252,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.nanaco",
       "path": "/assets/liquid-glass/entities/program__jp__nanaco.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.nanaco-net.jp/how-to/save_point/",
@@ -5210,9 +5264,8 @@
         "width": 360,
         "height": 232
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.nitori",
@@ -5224,7 +5277,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.nitori",
       "path": "/assets/liquid-glass/entities/program__jp__nitori.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.nitori-net.jp/ec/characteristic/loyalty-program/",
@@ -5236,9 +5289,8 @@
         "width": 800,
         "height": 396
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.ohsho-stamp",
@@ -5250,7 +5302,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.ohsho-stamp",
       "path": "/assets/liquid-glass/entities/program__jp__ohsho-stamp.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ohsho.co.jp/",
@@ -5262,9 +5314,8 @@
         "width": 124,
         "height": 82
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.olympic-tokopon",
@@ -5276,7 +5327,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.olympic-tokopon",
       "path": "/assets/liquid-glass/entities/program__jp__olympic-tokopon.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.olympic-corp.co.jp/",
@@ -5288,9 +5339,8 @@
         "width": 416,
         "height": 122
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.ootoya-point",
@@ -5302,7 +5352,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.ootoya-point",
       "path": "/assets/liquid-glass/entities/program__jp__ootoya-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ootoya.com/",
@@ -5314,9 +5364,8 @@
         "width": 240,
         "height": 211
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.ozeki-cashback",
@@ -5328,7 +5377,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.ozeki-cashback",
       "path": "/assets/liquid-glass/entities/program__jp__ozeki-cashback.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.ozeki-net.co.jp/service/card/",
@@ -5337,12 +5386,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/5354a67c2e4e59f3aae211c2.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 136.34,
+        "width": 136,
         "height": 40
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.pal-point",
@@ -5354,7 +5402,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.pal-point",
       "path": "/assets/liquid-glass/entities/program__jp__pal-point.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_page_image",
       "source_page_url": "https://www.palcloset.jp/",
@@ -5363,12 +5411,11 @@
       "source_asset_path": "/assets/liquid-glass/sources/80add9531394613f088871c9.svg",
       "source_mime": "image/svg+xml",
       "source_dimensions": {
-        "width": 325.8,
-        "height": 98.1
+        "width": 326,
+        "height": 98
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "program.jp.paypaypoint",
@@ -5380,914 +5427,7 @@
       "alias_of": null,
       "resolved_id": "program.jp.paypaypoint",
       "path": "/assets/liquid-glass/entities/program__jp__paypaypoint.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://paypay.ne.jp/guide/point/",
-      "source_image_url": "/assets/payment-logos/paypay.svg",
-      "source_sha256": "c375647314af7ab78ea20c91f3f932a94a16d5b5fe8564cb38d8719828b0de45",
-      "source_asset_path": "/assets/liquid-glass/sources/c375647314af7ab78ea20c91.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 120,
-        "height": 30
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.plaza-pass",
-      "display_name": "PLAZA PASS Points",
-      "labels": [
-        "PLAZA PASS Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.plaza-pass",
-      "path": "/assets/liquid-glass/entities/program__jp__plaza-pass.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.plazastyle.com/contents/pass/",
-      "source_image_url": "https://www.plazastyle.com/favicon.ico",
-      "source_sha256": "a89015b5d957821490e82473b24c9bd5c94a3944582b6734d5ae3ce7cd7e5d15",
-      "source_asset_path": "/assets/liquid-glass/sources/a89015b5d957821490e82473.ico",
-      "source_mime": "image/x-icon",
-      "source_dimensions": null,
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.ponta",
-      "display_name": "Ponta",
-      "labels": [
-        "Ponta"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.ponta",
-      "path": "/assets/liquid-glass/entities/program__jp__ponta.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.ponta.jp/",
-      "source_image_url": "/assets/payment-logos/ponta.png",
-      "source_sha256": "081a3db7c67d7f7585562844e5a97fcda3019b66a4fb4895319177cb727fecd6",
-      "source_asset_path": "/assets/liquid-glass/sources/081a3db7c67d7f7585562844.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 180,
-        "height": 180
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.rakutenpoint",
-      "display_name": "Rakuten Point",
-      "labels": [
-        "Rakuten Point"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.rakutenpoint",
-      "path": "/assets/liquid-glass/entities/program__jp__rakutenpoint.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://point.rakuten.co.jp/",
-      "source_image_url": "/assets/payment-logos/rakutenpoint.svg",
-      "source_sha256": "1d4b2ca12047bc053d1df64004ee17e87afb5c1524e0732ec9047adfbeedfca3",
-      "source_asset_path": "/assets/liquid-glass/sources/1d4b2ca12047bc053d1df640.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 242,
-        "height": 32
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.renoir-bonus-value",
-      "display_name": "Renoir Card Bonus Value",
-      "labels": [
-        "Renoir Card Bonus Value"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.renoir-bonus-value",
-      "path": "/assets/liquid-glass/entities/program__jp__renoir-bonus-value.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.ginza-renoir.co.jp/",
-      "source_image_url": "https://www.ginza-renoir.co.jp/images/common/logo_newyorkers_black.svg",
-      "source_sha256": "d88bf8e9ef848256414cb37b20429c18a7e9de9194b9811758f55c939d572f28",
-      "source_asset_path": "/assets/liquid-glass/sources/d88bf8e9ef848256414cb37b.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 140.891,
-        "height": 140.889
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.santoku-point",
-      "display_name": "Santoku Points",
-      "labels": [
-        "Santoku Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.santoku-point",
-      "path": "/assets/liquid-glass/entities/program__jp__santoku-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://santoku.co.jp/service/card/",
-      "source_image_url": "https://santoku.co.jp/wp/wp-content/themes/tukuru/img/card/card_mainimg.png",
-      "source_sha256": "7801ce5274cdfa0ff8d075b56126d3615f0782c6f1fdaf975ebab1b36299d6e5",
-      "source_asset_path": "/assets/liquid-glass/sources/7801ce5274cdfa0ff8d075b5.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1012,
-        "height": 271
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.sanwa-point",
-      "display_name": "Sanwa / FOOD ONE Points",
-      "labels": [
-        "Sanwa / FOOD ONE Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.sanwa-point",
-      "path": "/assets/liquid-glass/entities/program__jp__sanwa-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.heartful-sanwa.co.jp/",
-      "source_image_url": "https://www.heartful-sanwa.co.jp/wp/wp-content/uploads/2026/08/260714_web_GUILTY-Sangenton-Pork-Loin-Tonkatsu_SANWA%EF%BC%86FOOD-ONE_Y1040%C3%97T1040pix-300x300.jpg",
-      "source_sha256": "731945bae52b7eb5afbf9c8ab56904b3bef6ad1283f847ae259510d1c4908d43",
-      "source_asset_path": "/assets/liquid-glass/sources/731945bae52b7eb5afbf9c8a.jpg",
-      "source_mime": "image/jpeg",
-      "source_dimensions": {
-        "width": 300,
-        "height": 300
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.seims-point",
-      "display_name": "Seims Points",
-      "labels": [
-        "Seims Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.seims-point",
-      "path": "/assets/liquid-glass/entities/program__jp__seims-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.fujiyakuhin.co.jp/",
-      "source_image_url": "https://www.fujiyakuhin.co.jp/cnt_common/images/logo_group.webp",
-      "source_sha256": "cb61d678a33f044f70b840be1fdeec8574b403111ad1ca98e2822e74376e420e",
-      "source_asset_path": "/assets/liquid-glass/sources/cb61d678a33f044f70b840be.webp",
-      "source_mime": "image/webp",
-      "source_dimensions": {
-        "width": 678,
-        "height": 80
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.seki-tulip",
-      "display_name": "Seki Tulip Points",
-      "labels": [
-        "Seki Tulip Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.seki-tulip",
-      "path": "/assets/liquid-glass/entities/program__jp__seki-tulip.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.sekiyakuhin.co.jp/tulip_point.html",
-      "source_image_url": "https://www.sekiyakuhin.co.jp/img/icon/nav-01.svg",
-      "source_sha256": "f981c2bcc771598be0eb3830abc8bb87b417b5e849c9f937e5eeaef0635bc7e6",
-      "source_asset_path": "/assets/liquid-glass/sources/f981c2bcc771598be0eb3830.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 200,
-        "height": 140
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.skylark",
-      "display_name": "Skylark Points",
-      "labels": [
-        "Skylark Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.skylark",
-      "path": "/assets/liquid-glass/entities/program__jp__skylark.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.skylark.co.jp/",
-      "source_image_url": "https://www.skylark.co.jp/site_resource/common/images/logo/logo_gusto.png",
-      "source_sha256": "45241f1263e839f049ddd5fb21658ac3070a8c9eb848270d011bc86a92b02c4a",
-      "source_asset_path": "/assets/liquid-glass/sources/45241f1263e839f049ddd5fb.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 73,
-        "height": 73
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.soupstock-point",
-      "display_name": "Soup Stock Tokyo Points",
-      "labels": [
-        "Soup Stock Tokyo Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.soupstock-point",
-      "path": "/assets/liquid-glass/entities/program__jp__soupstock-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.soup-stock-tokyo.com/faq",
-      "source_image_url": "https://www.soup-stock-tokyo.com/wp-content/themes/soup-stock-tokyo/assets/img/logo-large.svg",
-      "source_sha256": "4b918f38e31df675b22ca80a7ddf3a83ff24965fb6171d3cf689ead5c122de02",
-      "source_asset_path": "/assets/liquid-glass/sources/4b918f38e31df675b22ca80a.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 393,
-        "height": 66
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.st-point",
-      "display_name": "ST Point",
-      "labels": [
-        "ST Point"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.st-point",
-      "path": "/assets/liquid-glass/entities/program__jp__st-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.st-c.co.jp/",
-      "source_image_url": "https://www.st-c.co.jp/assets/pages/img/top/about/img_products_1.png",
-      "source_sha256": "61f6e0cd74ff2b0ba8771df183c9ccc7a8dd2377ecf124ad2239b1b0805bb1e2",
-      "source_asset_path": "/assets/liquid-glass/sources/61f6e0cd74ff2b0ba8771df1.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1380,
-        "height": 734
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.starbucks-stars",
-      "display_name": "Starbucks Rewards Stars",
-      "labels": [
-        "Starbucks Rewards Stars"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.starbucks-stars",
-      "path": "/assets/liquid-glass/entities/program__jp__starbucks-stars.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.starbucks.co.jp/rewards/",
-      "source_image_url": "https://www.starbucks.co.jp/rewards/top/images/ogp2022.png",
-      "source_sha256": "82028b6ed7bbe2460948460bb659100c3361b85fd65d1c4c9a4202069d65b438",
-      "source_asset_path": "/assets/liquid-glass/sources/82028b6ed7bbe2460948460b.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1200,
-        "height": 630
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.sugi-point",
-      "display_name": "Sugi Points",
-      "labels": [
-        "Sugi Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.sugi-point",
-      "path": "/assets/liquid-glass/entities/program__jp__sugi-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.sugi-net.jp/",
-      "source_image_url": "https://www.sugi-net.jp/logos/sugi-channel-logo.svg",
-      "source_sha256": "b0f12c23d83feee41af596374c99e89db386cd68488c6011a58049d9b9fb8338",
-      "source_asset_path": "/assets/liquid-glass/sources/b0f12c23d83feee41af59637.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 51,
-        "height": 50
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.sundrug",
-      "display_name": "Sundrug Points",
-      "labels": [
-        "Sundrug Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.sundrug",
-      "path": "/assets/liquid-glass/entities/program__jp__sundrug.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.sundrug.co.jp/",
-      "source_image_url": "https://www.sundrug.co.jp/wp-content/themes/template-original/bin/image/design/parts/logo_site.png",
-      "source_sha256": "c622c2b2671f651245a2f3232d74655ec88ba0c5e12416c9b21972e8232d5f8e",
-      "source_asset_path": "/assets/liquid-glass/sources/c622c2b2671f651245a2f323.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1952,
-        "height": 312
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.sushiro-point",
-      "display_name": "Sushiro Points",
-      "labels": [
-        "Sushiro Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.sushiro-point",
-      "path": "/assets/liquid-glass/entities/program__jp__sushiro-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.akindo-sushiro.co.jp/",
-      "source_image_url": "https://www.akindo-sushiro.co.jp/assets/images/pages/index/top-visual_hdg.svg",
-      "source_sha256": "f5e7fcad11f69e3bd01aa151253ca700404cff39777586e5d46b0c4e64c48d6d",
-      "source_asset_path": "/assets/liquid-glass/sources/f5e7fcad11f69e3bd01aa151.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 284.99,
-        "height": 314.83
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.takashimaya-point",
-      "display_name": "Takashimaya Point Card Points",
-      "labels": [
-        "Takashimaya Point Card Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.takashimaya-point",
-      "path": "/assets/liquid-glass/entities/program__jp__takashimaya-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.takashimaya.co.jp/store/special/card_list/",
-      "source_image_url": "/assets/payment-logos/reference-official/takashimaya-point.png",
-      "source_sha256": "a930641600d3fa269314c8739ddae07c4916c89f6a9afca1ebd4d926c0011340",
-      "source_asset_path": "/assets/liquid-glass/sources/a930641600d3fa269314c873.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 593,
-        "height": 139
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.tobu-point",
-      "display_name": "TOBU POINT",
-      "labels": [
-        "TOBU POINT"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.tobu-point",
-      "path": "/assets/liquid-glass/entities/program__jp__tobu-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.tobupoint.jp/",
-      "source_image_url": "https://www.tobupoint.jp/cms/tobupoint/img/usr/common/google_play.svg",
-      "source_sha256": "ee07bbc86dd08520f9d08d6a49932290daff421fab98a7540dc35aff2f529c85",
-      "source_asset_path": "/assets/liquid-glass/sources/ee07bbc86dd08520f9d08d6a.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 646,
-        "height": 192
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.tokyu-point",
-      "display_name": "TOKYU POINT",
-      "labels": [
-        "TOKYU POINT"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.tokyu-point",
-      "path": "/assets/liquid-glass/entities/program__jp__tokyu-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.topcard.co.jp/point/",
-      "source_image_url": "https://point.tokyu.co.jp/sites/point/files/styles/large/public/header_logo_image/tokyupoint_logo.png?itok=xgvk28Jw&cb=24145e8d",
-      "source_sha256": "3b9d112f609903263f3035daeb46ea9978238adcd2df315c729dc12b2217ea36",
-      "source_asset_path": "/assets/liquid-glass/sources/3b9d112f609903263f3035da.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 376,
-        "height": 80
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.tsuruha-point",
-      "display_name": "Tsuruha Group Points",
-      "labels": [
-        "Tsuruha Group Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.tsuruha-point",
-      "path": "/assets/liquid-glass/entities/program__jp__tsuruha-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.tsuruha.co.jp/",
-      "source_image_url": "https://www.tsuruha.co.jp/assets/common/logo.svg",
-      "source_sha256": "42d8badddbc3f82b350e26b6b65779ae1a91f16bff91b21b06ac31dd6e11408e",
-      "source_asset_path": "/assets/liquid-glass/sources/42d8badddbc3f82b350e26b6.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 120,
-        "height": 120
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.tullys-beans",
-      "display_name": "Tully's Points / Beans",
-      "labels": [
-        "Tully's Points / Beans"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.tullys-beans",
-      "path": "/assets/liquid-glass/entities/program__jp__tullys-beans.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.tullys.co.jp/",
-      "source_image_url": "https://www.tullys.co.jp/assets/images/common/header/logo.svg",
-      "source_sha256": "0b622bf2fbd0cf37037500fc9ad2a68244be7d68aafb46624cd9025aee1f26df",
-      "source_asset_path": "/assets/liquid-glass/sources/0b622bf2fbd0cf37037500fc.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 55,
-        "height": 64
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.ueshima-precious",
-      "display_name": "Precious Card Points",
-      "labels": [
-        "Precious Card Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.ueshima-precious",
-      "path": "/assets/liquid-glass/entities/program__jp__ueshima-precious.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.ueshima-coffee-ten.jp/precious/",
-      "source_image_url": "https://www.ueshima-coffee-ten.jp/fileadmin/res/shared/logo/ueshima-coffee-ten.svg",
-      "source_sha256": "261aa9cbc55bfb82ac29939266297a9ae30ca08b6884d4bbc618dcec5320fca3",
-      "source_asset_path": "/assets/liquid-glass/sources/261aa9cbc55bfb82ac299392.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 335.8,
-        "height": 80
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.vpoint",
-      "display_name": "V Point",
-      "labels": [
-        "V Point"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.vpoint",
-      "path": "/assets/liquid-glass/entities/program__jp__vpoint.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://vpoint.net/",
-      "source_image_url": "/assets/payment-logos/vpoint.svg",
-      "source_sha256": "03c2f85b8c1bc0ffcc7b9ebbf860909074e3d7d95c85f01423347342d5472d29",
-      "source_asset_path": "/assets/liquid-glass/sources/03c2f85b8c1bc0ffcc7b9ebb.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 208.22,
-        "height": 54.69
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.waonpoint",
-      "display_name": "WAON POINT",
-      "labels": [
-        "WAON POINT"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.waonpoint",
-      "path": "/assets/liquid-glass/entities/program__jp__waonpoint.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.smartwaon.com/",
-      "source_image_url": "/assets/payment-logos/waon.png",
-      "source_sha256": "94c8e0f99460b1db505c9fc86943a9e9f5b09cb5b4fb2677b7051c9473ffadc0",
-      "source_asset_path": "/assets/liquid-glass/sources/94c8e0f99460b1db505c9fc8.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 240,
-        "height": 52
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.wendys-stage",
-      "display_name": "First Wendy’s Passport Stage Points",
-      "labels": [
-        "First Wendy’s Passport Stage Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.wendys-stage",
-      "path": "/assets/liquid-glass/entities/program__jp__wendys-stage.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.first-kitchen.co.jp/wfkclub/",
-      "source_image_url": "https://www.first-kitchen.co.jp/wfkclub/img/2026/wfk_logo.svg",
-      "source_sha256": "ed559956cb8aa4e2165261b27cc482fa6839f8d3a39da2ab22459f08f45b21a6",
-      "source_asset_path": "/assets/liquid-glass/sources/ed559956cb8aa4e2165261b2.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 381.09,
-        "height": 156.16
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.yaoko-point",
-      "display_name": "Yaoko Card Points",
-      "labels": [
-        "Yaoko Card Points"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.yaoko-point",
-      "path": "/assets/liquid-glass/entities/program__jp__yaoko-point.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.yaoko-net.com/service/card/",
-      "source_image_url": "https://www.yaoko-net.com/images/cs/service/card/gp_logo.jpg",
-      "source_sha256": "ed0f7192eff37845c17195598ac75b6072251aeda81d74c5b18b17f1c865712e",
-      "source_asset_path": "/assets/liquid-glass/sources/ed0f7192eff37845c1719559.jpg",
-      "source_mime": "image/jpeg",
-      "source_dimensions": {
-        "width": 256,
-        "height": 80
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "program.jp.yodobashi-goldpoint",
-      "display_name": "Yodobashi Gold Point",
-      "labels": [
-        "Yodobashi Gold Point"
-      ],
-      "entity_type": "loyalty_program",
-      "alias_of": null,
-      "resolved_id": "program.jp.yodobashi-goldpoint",
-      "path": "/assets/liquid-glass/entities/program__jp__yodobashi-goldpoint.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_capture_fallback",
-      "source_page_url": "https://www.yodobashi.com/ec/support/member/pointservice/",
-      "source_image_url": "https://www.yodobashi.com/ec/support/member/pointservice/#official-product-page-capture",
-      "source_sha256": "34bc188365bdcf34efdee95e17fb15dc5ec02a209229e3958531bf0a36f9109a",
-      "source_asset_path": "/assets/liquid-glass/sources/34bc188365bdcf34efdee95e.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1586,
-        "height": 1000
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "storedvalue.suica",
-      "display_name": "Suica",
-      "labels": [
-        "Suica"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": null,
-      "resolved_id": "storedvalue.suica",
-      "path": "/assets/liquid-glass/services/storedvalue__suica.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_origin_capture_fallback",
-      "source_page_url": "https://www.jreast.co.jp/suica/",
-      "source_image_url": "https://www.jreast.co.jp/#official-product-page-capture",
-      "source_sha256": "c24f2fa78f9c56616402b8212a654563072877c85d1e818e9bec6fa2b6dd250d",
-      "source_asset_path": "/assets/liquid-glass/sources/c24f2fa78f9c56616402b821.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1586,
-        "height": 1000
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "transit.suica",
-      "display_name": "Suica",
-      "labels": [
-        "Suica"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": null,
-      "resolved_id": "transit.suica",
-      "path": "/assets/liquid-glass/services/transit__suica.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_capture_fallback",
-      "source_page_url": "https://www.jreast.co.jp/suica/",
-      "source_image_url": "https://www.jreast.co.jp/suica/#official-product-page-capture",
-      "source_sha256": "c87461979892f1b0db42676f87f5ba4e5a4c47e597e9ce99d80bbd1e00c92b64",
-      "source_asset_path": "/assets/liquid-glass/sources/c87461979892f1b0db42676f.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 1586,
-        "height": 1000
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.aeonpay",
-      "display_name": "AEON Pay",
-      "labels": [
-        "AEON Pay"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": "instrument.wallet.aeonpay",
-      "resolved_id": "instrument.wallet.aeonpay",
-      "path": "/assets/liquid-glass/services/wallet__aeonpay.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.aeon.co.jp/aeonpay/",
-      "source_image_url": "/assets/payment-logos/aeonpay.png",
-      "source_sha256": "14d94cb496194e8423b017da9502ed8182c983e7c7af3b3f0d09782625a058db",
-      "source_asset_path": "/assets/liquid-glass/sources/14d94cb496194e8423b017da.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 236,
-        "height": 42
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.anapay",
-      "display_name": "ANA Pay",
-      "labels": [
-        "ANA Pay"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": null,
-      "resolved_id": "wallet.anapay",
-      "path": "/assets/liquid-glass/services/wallet__anapay.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://www.ana.co.jp/ja/jp/amc/ana-pay/",
-      "source_image_url": "/assets/payment-logos/reference-official/ana-pay.png",
-      "source_sha256": "2a55459f4665ab09712ac176ada71d73e5d032661c2e461b63b6a28cd503207c",
-      "source_asset_path": "/assets/liquid-glass/sources/2a55459f4665ab09712ac176.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 607,
-        "height": 133
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.aupay",
-      "display_name": "au PAY",
-      "labels": [
-        "au PAY"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": "instrument.wallet.aupay",
-      "resolved_id": "instrument.wallet.aupay",
-      "path": "/assets/liquid-glass/services/wallet__aupay.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://aupay.wallet.auone.jp/",
-      "source_image_url": "/assets/payment-logos/aupay.png",
-      "source_sha256": "debff558acbc94c89a392ae45f8cedc64d3c65291860171d985dcb7750abec09",
-      "source_asset_path": "/assets/liquid-glass/sources/debff558acbc94c89a392ae4.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 120,
-        "height": 120
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.dbarai",
-      "display_name": "d払い",
-      "labels": [
-        "d払い"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": "instrument.wallet.dbarai",
-      "resolved_id": "instrument.wallet.dbarai",
-      "path": "/assets/liquid-glass/services/wallet__dbarai.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://service.smt.docomo.ne.jp/keitai_payment/",
-      "source_image_url": "/assets/payment-logos/dbarai.png",
-      "source_sha256": "2ef061302d47ac7a9a490589a42cf97fbd3f3e866c52cfb443fbb1ab966048cf",
-      "source_asset_path": "/assets/liquid-glass/sources/2ef061302d47ac7a9a490589.png",
-      "source_mime": "image/png",
-      "source_dimensions": {
-        "width": 144,
-        "height": 144
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.famipay",
-      "display_name": "FamiPay",
-      "labels": [
-        "FamiPay"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": "instrument.wallet.famipay",
-      "resolved_id": "instrument.wallet.famipay",
-      "path": "/assets/liquid-glass/services/wallet__famipay.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "checked_in_official_artwork",
-      "source_page_url": "https://famipay.famidigi.jp/",
-      "source_image_url": "/assets/payment-logos/famipay.svg",
-      "source_sha256": "a1042fbcf4c87e3e5f6bd7f1e3f2b8fce9a51c351c3a080e98514bf0ab982981",
-      "source_asset_path": "/assets/liquid-glass/sources/a1042fbcf4c87e3e5f6bd7f1.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 157.16,
-        "height": 40
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.kyash",
-      "display_name": "Kyash",
-      "labels": [
-        "Kyash"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": null,
-      "resolved_id": "wallet.kyash",
-      "path": "/assets/liquid-glass/services/wallet__kyash.svg",
-      "aspect_ratio": "85.60:53.98",
-      "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.kyash.co/",
-      "source_image_url": "https://cdn.prod.website-files.com/5db15c3bca3871afff172c17/5f363d33f39a32a1a48e2f0a_common-logo.svg",
-      "source_sha256": "49302332056ed291eaaa0ad1aa3b92667a9e328f58d04dc42014a01030783c74",
-      "source_asset_path": "/assets/liquid-glass/sources/49302332056ed291eaaa0ad1.svg",
-      "source_mime": "image/svg+xml",
-      "source_dimensions": {
-        "width": 230,
-        "height": 73
-      },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
-    },
-    {
-      "id": "wallet.paypay",
-      "display_name": "PayPay",
-      "labels": [
-        "PayPay"
-      ],
-      "entity_type": "service_alias",
-      "alias_of": "instrument.wallet.paypay",
-      "resolved_id": "instrument.wallet.paypay",
-      "path": "/assets/liquid-glass/services/wallet__paypay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://paypay.ne.jp/",
@@ -6299,9 +5439,880 @@
         "width": 120,
         "height": 30
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.plaza-pass",
+      "display_name": "PLAZA PASS Points",
+      "labels": [
+        "PLAZA PASS Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.plaza-pass",
+      "path": "/assets/liquid-glass/entities/program__jp__plaza-pass.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.plazastyle.com/contents/pass/",
+      "source_image_url": "https://www.plazastyle.com/favicon.ico",
+      "source_sha256": "a89015b5d957821490e82473b24c9bd5c94a3944582b6734d5ae3ce7cd7e5d15",
+      "source_asset_path": "/assets/liquid-glass/sources/a89015b5d957821490e82473.ico",
+      "source_mime": "image/x-icon",
+      "source_dimensions": null,
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.ponta",
+      "display_name": "Ponta",
+      "labels": [
+        "Ponta"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.ponta",
+      "path": "/assets/liquid-glass/entities/program__jp__ponta.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.ponta.jp/",
+      "source_image_url": "/assets/payment-logos/ponta.png",
+      "source_sha256": "081a3db7c67d7f7585562844e5a97fcda3019b66a4fb4895319177cb727fecd6",
+      "source_asset_path": "/assets/liquid-glass/sources/081a3db7c67d7f7585562844.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 180,
+        "height": 180
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.rakutenpoint",
+      "display_name": "Rakuten Point",
+      "labels": [
+        "Rakuten Point"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.rakutenpoint",
+      "path": "/assets/liquid-glass/entities/program__jp__rakutenpoint.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://point.rakuten.co.jp/",
+      "source_image_url": "/assets/payment-logos/rakutenpoint.svg",
+      "source_sha256": "1d4b2ca12047bc053d1df64004ee17e87afb5c1524e0732ec9047adfbeedfca3",
+      "source_asset_path": "/assets/liquid-glass/sources/1d4b2ca12047bc053d1df640.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 242,
+        "height": 32
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.renoir-bonus-value",
+      "display_name": "Renoir Card Bonus Value",
+      "labels": [
+        "Renoir Card Bonus Value"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.renoir-bonus-value",
+      "path": "/assets/liquid-glass/entities/program__jp__renoir-bonus-value.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.ginza-renoir.co.jp/",
+      "source_image_url": "https://www.ginza-renoir.co.jp/images/common/logo_newyorkers_black.svg",
+      "source_sha256": "d88bf8e9ef848256414cb37b20429c18a7e9de9194b9811758f55c939d572f28",
+      "source_asset_path": "/assets/liquid-glass/sources/d88bf8e9ef848256414cb37b.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 141,
+        "height": 141
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.santoku-point",
+      "display_name": "Santoku Points",
+      "labels": [
+        "Santoku Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.santoku-point",
+      "path": "/assets/liquid-glass/entities/program__jp__santoku-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://santoku.co.jp/service/card/",
+      "source_image_url": "https://santoku.co.jp/wp/wp-content/themes/tukuru/img/card/card_mainimg.png",
+      "source_sha256": "7801ce5274cdfa0ff8d075b56126d3615f0782c6f1fdaf975ebab1b36299d6e5",
+      "source_asset_path": "/assets/liquid-glass/sources/7801ce5274cdfa0ff8d075b5.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1012,
+        "height": 271
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.sanwa-point",
+      "display_name": "Sanwa / FOOD ONE Points",
+      "labels": [
+        "Sanwa / FOOD ONE Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.sanwa-point",
+      "path": "/assets/liquid-glass/entities/program__jp__sanwa-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.heartful-sanwa.co.jp/",
+      "source_image_url": "https://www.heartful-sanwa.co.jp/wp/wp-content/uploads/2026/08/260714_web_GUILTY-Sangenton-Pork-Loin-Tonkatsu_SANWA%EF%BC%86FOOD-ONE_Y1040%C3%97T1040pix-300x300.jpg",
+      "source_sha256": "731945bae52b7eb5afbf9c8ab56904b3bef6ad1283f847ae259510d1c4908d43",
+      "source_asset_path": "/assets/liquid-glass/sources/731945bae52b7eb5afbf9c8a.jpg",
+      "source_mime": "image/jpeg",
+      "source_dimensions": {
+        "width": 300,
+        "height": 300
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.seims-point",
+      "display_name": "Seims Points",
+      "labels": [
+        "Seims Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.seims-point",
+      "path": "/assets/liquid-glass/entities/program__jp__seims-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.fujiyakuhin.co.jp/",
+      "source_image_url": "https://www.fujiyakuhin.co.jp/cnt_common/images/logo_group.webp",
+      "source_sha256": "cb61d678a33f044f70b840be1fdeec8574b403111ad1ca98e2822e74376e420e",
+      "source_asset_path": "/assets/liquid-glass/sources/cb61d678a33f044f70b840be.webp",
+      "source_mime": "image/webp",
+      "source_dimensions": {
+        "width": 678,
+        "height": 80
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.seki-tulip",
+      "display_name": "Seki Tulip Points",
+      "labels": [
+        "Seki Tulip Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.seki-tulip",
+      "path": "/assets/liquid-glass/entities/program__jp__seki-tulip.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.sekiyakuhin.co.jp/tulip_point.html",
+      "source_image_url": "https://www.sekiyakuhin.co.jp/img/icon/nav-01.svg",
+      "source_sha256": "f981c2bcc771598be0eb3830abc8bb87b417b5e849c9f937e5eeaef0635bc7e6",
+      "source_asset_path": "/assets/liquid-glass/sources/f981c2bcc771598be0eb3830.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 200,
+        "height": 140
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.skylark",
+      "display_name": "Skylark Points",
+      "labels": [
+        "Skylark Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.skylark",
+      "path": "/assets/liquid-glass/entities/program__jp__skylark.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.skylark.co.jp/",
+      "source_image_url": "https://www.skylark.co.jp/site_resource/common/images/logo/logo_gusto.png",
+      "source_sha256": "45241f1263e839f049ddd5fb21658ac3070a8c9eb848270d011bc86a92b02c4a",
+      "source_asset_path": "/assets/liquid-glass/sources/45241f1263e839f049ddd5fb.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 73,
+        "height": 73
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.soupstock-point",
+      "display_name": "Soup Stock Tokyo Points",
+      "labels": [
+        "Soup Stock Tokyo Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.soupstock-point",
+      "path": "/assets/liquid-glass/entities/program__jp__soupstock-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.soup-stock-tokyo.com/faq",
+      "source_image_url": "https://www.soup-stock-tokyo.com/wp-content/themes/soup-stock-tokyo/assets/img/logo-large.svg",
+      "source_sha256": "4b918f38e31df675b22ca80a7ddf3a83ff24965fb6171d3cf689ead5c122de02",
+      "source_asset_path": "/assets/liquid-glass/sources/4b918f38e31df675b22ca80a.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 393,
+        "height": 66
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.st-point",
+      "display_name": "ST Point",
+      "labels": [
+        "ST Point"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.st-point",
+      "path": "/assets/liquid-glass/entities/program__jp__st-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.st-c.co.jp/",
+      "source_image_url": "https://www.st-c.co.jp/assets/pages/img/top/about/img_products_1.png",
+      "source_sha256": "61f6e0cd74ff2b0ba8771df183c9ccc7a8dd2377ecf124ad2239b1b0805bb1e2",
+      "source_asset_path": "/assets/liquid-glass/sources/61f6e0cd74ff2b0ba8771df1.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1380,
+        "height": 734
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.starbucks-stars",
+      "display_name": "Starbucks Rewards Stars",
+      "labels": [
+        "Starbucks Rewards Stars"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.starbucks-stars",
+      "path": "/assets/liquid-glass/entities/program__jp__starbucks-stars.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.starbucks.co.jp/rewards/",
+      "source_image_url": "https://www.starbucks.co.jp/rewards/top/images/ogp2022.png",
+      "source_sha256": "82028b6ed7bbe2460948460bb659100c3361b85fd65d1c4c9a4202069d65b438",
+      "source_asset_path": "/assets/liquid-glass/sources/82028b6ed7bbe2460948460b.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1200,
+        "height": 630
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.sugi-point",
+      "display_name": "Sugi Points",
+      "labels": [
+        "Sugi Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.sugi-point",
+      "path": "/assets/liquid-glass/entities/program__jp__sugi-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.sugi-net.jp/",
+      "source_image_url": "https://www.sugi-net.jp/logos/sugi-channel-logo.svg",
+      "source_sha256": "b0f12c23d83feee41af596374c99e89db386cd68488c6011a58049d9b9fb8338",
+      "source_asset_path": "/assets/liquid-glass/sources/b0f12c23d83feee41af59637.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 51,
+        "height": 50
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.sundrug",
+      "display_name": "Sundrug Points",
+      "labels": [
+        "Sundrug Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.sundrug",
+      "path": "/assets/liquid-glass/entities/program__jp__sundrug.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.sundrug.co.jp/",
+      "source_image_url": "https://www.sundrug.co.jp/wp-content/themes/template-original/bin/image/design/parts/logo_site.png",
+      "source_sha256": "c622c2b2671f651245a2f3232d74655ec88ba0c5e12416c9b21972e8232d5f8e",
+      "source_asset_path": "/assets/liquid-glass/sources/c622c2b2671f651245a2f323.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1952,
+        "height": 312
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.sushiro-point",
+      "display_name": "Sushiro Points",
+      "labels": [
+        "Sushiro Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.sushiro-point",
+      "path": "/assets/liquid-glass/entities/program__jp__sushiro-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.akindo-sushiro.co.jp/",
+      "source_image_url": "https://www.akindo-sushiro.co.jp/assets/images/pages/index/top-visual_hdg.svg",
+      "source_sha256": "f5e7fcad11f69e3bd01aa151253ca700404cff39777586e5d46b0c4e64c48d6d",
+      "source_asset_path": "/assets/liquid-glass/sources/f5e7fcad11f69e3bd01aa151.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 285,
+        "height": 315
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.takashimaya-point",
+      "display_name": "Takashimaya Point Card Points",
+      "labels": [
+        "Takashimaya Point Card Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.takashimaya-point",
+      "path": "/assets/liquid-glass/entities/program__jp__takashimaya-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.takashimaya.co.jp/store/special/card_list/",
+      "source_image_url": "/assets/payment-logos/reference-official/takashimaya-point.png",
+      "source_sha256": "a930641600d3fa269314c8739ddae07c4916c89f6a9afca1ebd4d926c0011340",
+      "source_asset_path": "/assets/liquid-glass/sources/a930641600d3fa269314c873.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 593,
+        "height": 139
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.tobu-point",
+      "display_name": "TOBU POINT",
+      "labels": [
+        "TOBU POINT"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.tobu-point",
+      "path": "/assets/liquid-glass/entities/program__jp__tobu-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.tobupoint.jp/",
+      "source_image_url": "https://www.tobupoint.jp/cms/tobupoint/img/usr/common/google_play.svg",
+      "source_sha256": "ee07bbc86dd08520f9d08d6a49932290daff421fab98a7540dc35aff2f529c85",
+      "source_asset_path": "/assets/liquid-glass/sources/ee07bbc86dd08520f9d08d6a.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 646,
+        "height": 192
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.tokyu-point",
+      "display_name": "TOKYU POINT",
+      "labels": [
+        "TOKYU POINT"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.tokyu-point",
+      "path": "/assets/liquid-glass/entities/program__jp__tokyu-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.topcard.co.jp/point/",
+      "source_image_url": "https://point.tokyu.co.jp/sites/point/files/styles/large/public/header_logo_image/tokyupoint_logo.png?itok=xgvk28Jw&cb=24145e8d",
+      "source_sha256": "3b9d112f609903263f3035daeb46ea9978238adcd2df315c729dc12b2217ea36",
+      "source_asset_path": "/assets/liquid-glass/sources/3b9d112f609903263f3035da.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 376,
+        "height": 80
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.tsuruha-point",
+      "display_name": "Tsuruha Group Points",
+      "labels": [
+        "Tsuruha Group Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.tsuruha-point",
+      "path": "/assets/liquid-glass/entities/program__jp__tsuruha-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.tsuruha.co.jp/",
+      "source_image_url": "https://www.tsuruha.co.jp/assets/common/logo.svg",
+      "source_sha256": "42d8badddbc3f82b350e26b6b65779ae1a91f16bff91b21b06ac31dd6e11408e",
+      "source_asset_path": "/assets/liquid-glass/sources/42d8badddbc3f82b350e26b6.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.tullys-beans",
+      "display_name": "Tully's Points / Beans",
+      "labels": [
+        "Tully's Points / Beans"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.tullys-beans",
+      "path": "/assets/liquid-glass/entities/program__jp__tullys-beans.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.tullys.co.jp/",
+      "source_image_url": "https://www.tullys.co.jp/assets/images/common/header/logo.svg",
+      "source_sha256": "0b622bf2fbd0cf37037500fc9ad2a68244be7d68aafb46624cd9025aee1f26df",
+      "source_asset_path": "/assets/liquid-glass/sources/0b622bf2fbd0cf37037500fc.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 55,
+        "height": 64
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.ueshima-precious",
+      "display_name": "Precious Card Points",
+      "labels": [
+        "Precious Card Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.ueshima-precious",
+      "path": "/assets/liquid-glass/entities/program__jp__ueshima-precious.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.ueshima-coffee-ten.jp/precious/",
+      "source_image_url": "https://www.ueshima-coffee-ten.jp/fileadmin/res/shared/logo/ueshima-coffee-ten.svg",
+      "source_sha256": "261aa9cbc55bfb82ac29939266297a9ae30ca08b6884d4bbc618dcec5320fca3",
+      "source_asset_path": "/assets/liquid-glass/sources/261aa9cbc55bfb82ac299392.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 336,
+        "height": 80
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.vpoint",
+      "display_name": "V Point",
+      "labels": [
+        "V Point"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.vpoint",
+      "path": "/assets/liquid-glass/entities/program__jp__vpoint.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://vpoint.net/",
+      "source_image_url": "/assets/payment-logos/vpoint.svg",
+      "source_sha256": "03c2f85b8c1bc0ffcc7b9ebbf860909074e3d7d95c85f01423347342d5472d29",
+      "source_asset_path": "/assets/liquid-glass/sources/03c2f85b8c1bc0ffcc7b9ebb.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 208,
+        "height": 55
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.waonpoint",
+      "display_name": "WAON POINT",
+      "labels": [
+        "WAON POINT"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.waonpoint",
+      "path": "/assets/liquid-glass/entities/program__jp__waonpoint.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.smartwaon.com/",
+      "source_image_url": "/assets/payment-logos/waon.png",
+      "source_sha256": "94c8e0f99460b1db505c9fc86943a9e9f5b09cb5b4fb2677b7051c9473ffadc0",
+      "source_asset_path": "/assets/liquid-glass/sources/94c8e0f99460b1db505c9fc8.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 240,
+        "height": 52
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.wendys-stage",
+      "display_name": "First Wendy’s Passport Stage Points",
+      "labels": [
+        "First Wendy’s Passport Stage Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.wendys-stage",
+      "path": "/assets/liquid-glass/entities/program__jp__wendys-stage.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.first-kitchen.co.jp/wfkclub/",
+      "source_image_url": "https://www.first-kitchen.co.jp/wfkclub/img/2026/wfk_logo.svg",
+      "source_sha256": "ed559956cb8aa4e2165261b27cc482fa6839f8d3a39da2ab22459f08f45b21a6",
+      "source_asset_path": "/assets/liquid-glass/sources/ed559956cb8aa4e2165261b2.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 381,
+        "height": 156
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.yaoko-point",
+      "display_name": "Yaoko Card Points",
+      "labels": [
+        "Yaoko Card Points"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.yaoko-point",
+      "path": "/assets/liquid-glass/entities/program__jp__yaoko-point.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.yaoko-net.com/service/card/",
+      "source_image_url": "https://www.yaoko-net.com/images/cs/service/card/gp_logo.jpg",
+      "source_sha256": "ed0f7192eff37845c17195598ac75b6072251aeda81d74c5b18b17f1c865712e",
+      "source_asset_path": "/assets/liquid-glass/sources/ed0f7192eff37845c1719559.jpg",
+      "source_mime": "image/jpeg",
+      "source_dimensions": {
+        "width": 256,
+        "height": 80
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "program.jp.yodobashi-goldpoint",
+      "display_name": "Yodobashi Gold Point",
+      "labels": [
+        "Yodobashi Gold Point"
+      ],
+      "entity_type": "loyalty_program",
+      "alias_of": null,
+      "resolved_id": "program.jp.yodobashi-goldpoint",
+      "path": "/assets/liquid-glass/entities/program__jp__yodobashi-goldpoint.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_capture_fallback",
+      "source_page_url": "https://www.yodobashi.com/ec/support/member/pointservice/",
+      "source_image_url": "https://www.yodobashi.com/ec/support/member/pointservice/#official-product-page-capture",
+      "source_sha256": "34bc188365bdcf34efdee95e17fb15dc5ec02a209229e3958531bf0a36f9109a",
+      "source_asset_path": "/assets/liquid-glass/sources/34bc188365bdcf34efdee95e.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1586,
+        "height": 1000
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "storedvalue.suica",
+      "display_name": "Suica",
+      "labels": [
+        "Suica"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "storedvalue.suica",
+      "path": "/assets/liquid-glass/services/storedvalue__suica.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_origin_capture_fallback",
+      "source_page_url": "https://www.jreast.co.jp/suica/",
+      "source_image_url": "https://www.jreast.co.jp/#official-product-page-capture",
+      "source_sha256": "c24f2fa78f9c56616402b8212a654563072877c85d1e818e9bec6fa2b6dd250d",
+      "source_asset_path": "/assets/liquid-glass/sources/c24f2fa78f9c56616402b821.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1586,
+        "height": 1000
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "transit.suica",
+      "display_name": "Suica",
+      "labels": [
+        "Suica"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "transit.suica",
+      "path": "/assets/liquid-glass/services/transit__suica.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_capture_fallback",
+      "source_page_url": "https://www.jreast.co.jp/suica/",
+      "source_image_url": "https://www.jreast.co.jp/suica/#official-product-page-capture",
+      "source_sha256": "c87461979892f1b0db42676f87f5ba4e5a4c47e597e9ce99d80bbd1e00c92b64",
+      "source_asset_path": "/assets/liquid-glass/sources/c87461979892f1b0db42676f.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 1586,
+        "height": 1000
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.aeonpay",
+      "display_name": "AEON Pay",
+      "labels": [
+        "AEON Pay"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.wallet.aeonpay",
+      "resolved_id": "instrument.wallet.aeonpay",
+      "path": "/assets/liquid-glass/services/wallet__aeonpay.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.aeon.co.jp/aeonpay/",
+      "source_image_url": "/assets/payment-logos/aeonpay.png",
+      "source_sha256": "14d94cb496194e8423b017da9502ed8182c983e7c7af3b3f0d09782625a058db",
+      "source_asset_path": "/assets/liquid-glass/sources/14d94cb496194e8423b017da.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 236,
+        "height": 42
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.anapay",
+      "display_name": "ANA Pay",
+      "labels": [
+        "ANA Pay"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "wallet.anapay",
+      "path": "/assets/liquid-glass/services/wallet__anapay.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://www.ana.co.jp/ja/jp/amc/ana-pay/",
+      "source_image_url": "/assets/payment-logos/reference-official/ana-pay.png",
+      "source_sha256": "2a55459f4665ab09712ac176ada71d73e5d032661c2e461b63b6a28cd503207c",
+      "source_asset_path": "/assets/liquid-glass/sources/2a55459f4665ab09712ac176.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 607,
+        "height": 133
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.aupay",
+      "display_name": "au PAY",
+      "labels": [
+        "au PAY"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.wallet.aupay",
+      "resolved_id": "instrument.wallet.aupay",
+      "path": "/assets/liquid-glass/services/wallet__aupay.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://aupay.wallet.auone.jp/",
+      "source_image_url": "/assets/payment-logos/aupay.png",
+      "source_sha256": "debff558acbc94c89a392ae45f8cedc64d3c65291860171d985dcb7750abec09",
+      "source_asset_path": "/assets/liquid-glass/sources/debff558acbc94c89a392ae4.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 120,
+        "height": 120
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.dbarai",
+      "display_name": "d払い",
+      "labels": [
+        "d払い"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.wallet.dbarai",
+      "resolved_id": "instrument.wallet.dbarai",
+      "path": "/assets/liquid-glass/services/wallet__dbarai.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://service.smt.docomo.ne.jp/keitai_payment/",
+      "source_image_url": "/assets/payment-logos/dbarai.png",
+      "source_sha256": "2ef061302d47ac7a9a490589a42cf97fbd3f3e866c52cfb443fbb1ab966048cf",
+      "source_asset_path": "/assets/liquid-glass/sources/2ef061302d47ac7a9a490589.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 144,
+        "height": 144
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.famipay",
+      "display_name": "FamiPay",
+      "labels": [
+        "FamiPay"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.wallet.famipay",
+      "resolved_id": "instrument.wallet.famipay",
+      "path": "/assets/liquid-glass/services/wallet__famipay.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://famipay.famidigi.jp/",
+      "source_image_url": "/assets/payment-logos/famipay.svg",
+      "source_sha256": "a1042fbcf4c87e3e5f6bd7f1e3f2b8fce9a51c351c3a080e98514bf0ab982981",
+      "source_asset_path": "/assets/liquid-glass/sources/a1042fbcf4c87e3e5f6bd7f1.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 157,
+        "height": 40
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.kyash",
+      "display_name": "Kyash",
+      "labels": [
+        "Kyash"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": null,
+      "resolved_id": "wallet.kyash",
+      "path": "/assets/liquid-glass/services/wallet__kyash.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "official_page_image",
+      "source_page_url": "https://www.kyash.co/",
+      "source_image_url": "https://cdn.prod.website-files.com/5db15c3bca3871afff172c17/5f363d33f39a32a1a48e2f0a_common-logo.svg",
+      "source_sha256": "49302332056ed291eaaa0ad1aa3b92667a9e328f58d04dc42014a01030783c74",
+      "source_asset_path": "/assets/liquid-glass/sources/49302332056ed291eaaa0ad1.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 230,
+        "height": 73
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
+    },
+    {
+      "id": "wallet.paypay",
+      "display_name": "PayPay",
+      "labels": [
+        "PayPay"
+      ],
+      "entity_type": "service_alias",
+      "alias_of": "instrument.wallet.paypay",
+      "resolved_id": "instrument.wallet.paypay",
+      "path": "/assets/liquid-glass/services/wallet__paypay.svg",
+      "aspect_ratio": "3:2",
+      "transparent_outside_card": true,
+      "source_kind": "checked_in_official_artwork",
+      "source_page_url": "https://paypay.ne.jp/",
+      "source_image_url": "/assets/payment-logos/paypay.svg",
+      "source_sha256": "c375647314af7ab78ea20c91f3f932a94a16d5b5fe8564cb38d8719828b0de45",
+      "source_asset_path": "/assets/liquid-glass/sources/c375647314af7ab78ea20c91.svg",
+      "source_mime": "image/svg+xml",
+      "source_dimensions": {
+        "width": 120,
+        "height": 30
+      },
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "wallet.rakutenpay",
@@ -6313,7 +6324,7 @@
       "alias_of": "instrument.wallet.rakutenpay",
       "resolved_id": "instrument.wallet.rakutenpay",
       "path": "/assets/liquid-glass/services/wallet__rakutenpay.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://pay.rakuten.co.jp/",
@@ -6323,11 +6334,10 @@
       "source_mime": "image/svg+xml",
       "source_dimensions": {
         "width": 74,
-        "height": 24.8
+        "height": 25
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "wallet.revolut",
@@ -6339,7 +6349,7 @@
       "alias_of": null,
       "resolved_id": "wallet.revolut",
       "path": "/assets/liquid-glass/services/wallet__revolut.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_rendered_element_loose",
       "source_page_url": "https://www.revolut.com/ja-JP/",
@@ -6351,9 +6361,8 @@
         "width": 3087,
         "height": 1715
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     },
     {
       "id": "wallet.revolut-jp",
@@ -6365,7 +6374,7 @@
       "alias_of": null,
       "resolved_id": "wallet.revolut-jp",
       "path": "/assets/liquid-glass/services/wallet__revolut-jp.svg",
-      "aspect_ratio": "85.60:53.98",
+      "aspect_ratio": "3:2",
       "transparent_outside_card": true,
       "source_kind": "official_rendered_element_loose",
       "source_page_url": "https://www.revolut.com/ja-JP/",
@@ -6377,9 +6386,8 @@
         "width": 3085,
         "height": 1713
       },
-      "source_score": null,
-      "official_reference_preserved": true,
-      "reused_from_supabase": true
+      "source_score": 1000,
+      "official_reference_preserved": true
     }
   ]
 }
