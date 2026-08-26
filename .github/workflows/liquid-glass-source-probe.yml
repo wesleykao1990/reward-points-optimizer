@@ -1,0 +1,37 @@
+name: Probe Liquid Glass official sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-source-probe.yml
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe remaining first-party artwork URLs
+        shell: bash
+        run: |
+          set +e
+          probe() {
+            id="$1"; url="$2"; ref="$3"
+            echo "=== $id ==="
+            curl -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36' -e "$ref" -L -sS --max-time 25 -o /tmp/out -w 'status=%{http_code} type=%{content_type} bytes=%{size_download} final=%{url_effective}\n' "$url"
+            file /tmp/out || true
+            head -c 32 /tmp/out | xxd -p || true
+          }
+          probe 'instrument.card.majica-ucs' 'https://www.ucscard.co.jp/assets/images/lineup/ucscard/mv_pc.png' 'https://www.ucscard.co.jp/lineup/ucscard/'
+          probe 'instrument.card.ana-card-general' 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/general_10.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/'
+          probe 'instrument.card.ana-super-flyers-gold-card' 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_05.gif' 'https://www.ana.co.jp/ja/jp/amc/premium/sfc/'
+          probe 'instrument.card.ana-wide-gold-card' 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_03.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/'
+          probe 'program.jp.bicpoint' 'https://www.biccamera.co.jp/shopguide/campaign/camp-caution/img/pointcard/bic_pointcard.png' 'https://www.biccamera.com/bc/c/info/point/index.jsp'
+          probe 'program.jp.muji-good' 'https://www.muji.com/jp/ja/service/goodprogram/assets/img/logo-mujigoodprogram.svg' 'https://www.muji.com/jp/ja/service/goodprogram/'
+          probe 'program.jp.nitori' 'https://www.nitori-net.jp/ecstatic/include/characteristic/loyalty-program/img01.png' 'https://www.nitori-net.jp/ec/characteristic/loyalty-program/'
+          probe 'instrument.card.rakuten-bank-card-credit-function' 'https://www.rakuten-bank.co.jp/card/rc/images/update-img-01.png' 'https://www.rakuten-bank.co.jp/card/rc/update.html'
+          probe 'program.jp.takashimaya-point' 'https://www.takashimaya.co.jp/base/pc/store/special/card_list/img/img_takashimaya_point.png' 'https://www.takashimaya.co.jp/store/special/card_list/'
+          probe 'program.jp.mi-point' 'https://www.mistore.jp/on/demandware.static/-/Sites-seamless-Library/ja_JP/dw9d1221a6/content/campaign/mip_cp/images/main.jpg' 'https://www.mistore.jp/shopping/campaign/mip_cp.html'
+          probe 'wallet.anapay' 'https://www.ana.co.jp/amc/ana-pay/img/image_top/mv/tittle_231107.png' 'https://www.ana.co.jp/ja/jp/amc/ana-pay/'
+          probe 'mile.ana' 'https://www.ana.co.jp/amc/ana-pay/img/image_top/logo/logo_ana.png' 'https://www.ana.co.jp/ja/jp/amc/'
