@@ -1,0 +1,152 @@
+name: Recover Liquid Glass official card sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-card-source-matrix.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: liquid-glass-card-source-matrix
+  cancel-in-progress: true
+
+jobs:
+  recover:
+    name: ${{ matrix.asset_id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include:
+          - asset_id: instrument.card.aeon
+            page_url: https://www.aeon.co.jp/card/lineup/aeoncardwaon/
+            image_url: https://www.aeon.co.jp/-/media/AeonCard/common/cardface/card_162_j_v.png?sc_lang=ja-JP&hash=175ED52073ACF919893A4DFD33EC5EB4
+          - asset_id: instrument.card.d
+            page_url: https://dcard.docomo.ne.jp/st/dcard_dcard/index.html
+            image_url: https://dcard.docomo.ne.jp/st/common/images/dCARD_REGULAR_white_VISA.jpg
+          - asset_id: instrument.card.mitsui-sumitomo-card-nl
+            page_url: https://www.smbc-card.com/nyukai/card/numberless.jsp
+            image_url: https://www.smbc-card.com/content/dam/smcc/jp/ja/card/nyukai_numberless.png
+          - asset_id: instrument.card.paypay-card
+            page_url: https://www.paypay-card.co.jp/service/card/overview/
+            image_url: https://www.paypay-card.co.jp/service/images/card/overview/illust_card_regular@2x.png
+          - asset_id: instrument.card.rakuten-ana-mileage-club-card
+            page_url: https://www.rakuten-card.co.jp/card/rakuten-amc-card/
+            image_url: https://image.card.jp.rakuten-static.com/card_corp/common/cardface/cardface_bl_n_visa_touch_rp_e_front_360_227.png
+          - asset_id: instrument.card.rakuten-card
+            page_url: https://www.rakuten-card.co.jp/cashless/newcard/
+            image_url: https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_n_visa_front.png
+          - asset_id: instrument.card.rakuten-gold-card
+            page_url: https://www.rakuten-card.co.jp/cashless/newcard/
+            image_url: https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_g_visa_front.png
+          - asset_id: instrument.card.rakuten-pink-card
+            page_url: https://www.rakuten-card.co.jp/cashless/newcard/
+            image_url: https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_pk_visa_front.png
+          - asset_id: instrument.card.rakuten-premium-card
+            page_url: https://www.rakuten-card.co.jp/cashless/newcard/
+            image_url: https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_p_visa_front.png
+          - asset_id: instrument.card.view-card-standard
+            page_url: https://www.jreast.co.jp/card/first/viewcardstandard.html
+            image_url: https://www.jreast.co.jp/card/first/img/img_card_viewcardstandard.jpg
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install isolated browser runtime
+        run: npm install --no-save --package-lock=false puppeteer@24.16.0
+
+      - name: Capture exact official image bytes and persist to Supabase
+        env:
+          ASSET_ID: ${{ matrix.asset_id }}
+          PAGE_URL: ${{ matrix.page_url }}
+          IMAGE_URL: ${{ matrix.image_url }}
+          CACHE_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import puppeteer from 'puppeteer';
+
+          const { ASSET_ID, PAGE_URL, IMAGE_URL, CACHE_ORIGIN } = process.env;
+          const ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36';
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'],
+          });
+          let bytes;
+          let mime;
+          let width = null;
+          let height = null;
+          try {
+            const page = await browser.newPage();
+            await page.setUserAgent(ua);
+            await page.setViewport({ width: 1440, height: 1800, deviceScaleFactor: 1 });
+            try {
+              await page.goto(PAGE_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+            } catch {}
+            await page.setExtraHTTPHeaders({ referer: PAGE_URL });
+            const response = await page.goto(IMAGE_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
+            if (!response || !response.ok())
+              throw new Error(`official_image_http_${response?.status() ?? 'none'}`);
+            bytes = Buffer.from(await response.buffer());
+            mime = String(response.headers()['content-type'] || '').split(';', 1)[0].trim();
+            const dimensions = await page.evaluate(() => {
+              const image = document.images?.[0];
+              return image ? { width: image.naturalWidth, height: image.naturalHeight } : null;
+            });
+            width = dimensions?.width || null;
+            height = dimensions?.height || null;
+            if (!mime.startsWith('image/') || bytes.length < 500)
+              throw new Error(`official_image_invalid:${mime}:${bytes.length}`);
+          } finally {
+            await browser.close();
+          }
+
+          const sha = createHash('sha256').update(bytes).digest('hex');
+          const oidcUrl = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          oidcUrl.searchParams.set('audience', 'poimichi-visual-assets');
+          const tokenResponse = await fetch(oidcUrl, {
+            headers: {
+              authorization: `bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}`,
+              accept: 'application/json',
+            },
+          });
+          if (!tokenResponse.ok) throw new Error(`oidc_http_${tokenResponse.status}`);
+          const { value: token } = await tokenResponse.json();
+
+          const cacheResponse = await fetch(`${CACHE_ORIGIN}/visual-assets`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${token}`,
+              'content-type': 'application/json',
+              accept: 'application/json',
+            },
+            body: JSON.stringify({
+              operation: 'upsert_source',
+              source: {
+                asset_id: ASSET_ID,
+                alias_of: null,
+                source_sha256: sha,
+                source_kind: 'official_exact_image',
+                mime_type: mime,
+                content_base64: bytes.toString('base64'),
+                width,
+                height,
+                official_page_url: PAGE_URL,
+                official_image_url: IMAGE_URL,
+              },
+            }),
+          });
+          const text = await cacheResponse.text();
+          if (!cacheResponse.ok)
+            throw new Error(`cache_http_${cacheResponse.status}:${text.slice(0,300)}`);
+          console.log(JSON.stringify({ asset_id: ASSET_ID, source_sha256: sha, mime, width, height, byte_size: bytes.length }));
+          NODE
