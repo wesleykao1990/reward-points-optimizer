@@ -54,11 +54,12 @@ jobs:
           python scripts/patch_liquid_glass_validation_diag.py
           python scripts/patch_liquid_glass_supabase_cache.py
           python scripts/patch_liquid_glass_batches.py
+          python scripts/patch_liquid_glass_visual_quality.py
           git config user.name poimichi-asset-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add apps/consumer-alpha/src/visual-asset-store.ts scripts/complete_liquid_glass_assets.mjs
           if ! git diff --cached --quiet; then
-            git commit -m "Enable durable batched Liquid Glass generation"
+            git commit -m "Harden Liquid Glass visual quality and live-wallet coverage"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
@@ -71,6 +72,6 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Assets run in 20-item checkpoints (13 total for 246 assets). Official source
-      # bytes and generated SVGs are persisted to Supabase and validated after every
-      # checkpoint so retries resume from stored work instead of starting over.
+      # Assets run in 20-item checkpoints. Official source bytes and generated
+      # SVGs are persisted to Supabase and validated after every checkpoint so
+      # retries resume from stored work instead of starting over.
