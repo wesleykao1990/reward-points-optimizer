@@ -72,7 +72,7 @@ jobs:
               const html = search.bytes.toString("utf8");
               const urls = [];
               for (const match of html.matchAll(
-                /(?:murl(?:&quot;|\")\s*:\s*(?:&quot;|\"))([^&\"]+)/giu,
+                /(?:murl(?:&quot;|")\s*:\s*(?:&quot;|"))([^&"]+)/gi,
               )) {
                 const value = match[1]
                   .replaceAll("&amp;", "&")
