@@ -45,14 +45,15 @@ jobs:
           npm install --prefix /tmp/liquid-glass-puppeteer --no-save --package-lock=false puppeteer@24.16.0
           echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
 
-      - name: Freeze requested 211 canonical plus 35 alias scope
+      - name: Freeze scope and pin official artwork sources
         run: |
           python scripts/patch_liquid_glass_scope.py
+          python scripts/patch_liquid_glass_explicit_sources.py
           git config user.name poimichi-asset-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add scripts/complete_liquid_glass_assets.mjs
           if ! git diff --cached --quiet; then
-            git commit -m "Freeze Liquid Glass catalogue to requested 246 assets"
+            git commit -m "Pin official artwork for Liquid Glass catalogue"
             git push origin HEAD:main
           fi
 
@@ -64,4 +65,4 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Fresh group prevents obsolete diagnostic acquisitions from blocking this authoritative run.
+      # Direct first-party image pins are used only for providers whose official pages block reliable artwork discovery.
