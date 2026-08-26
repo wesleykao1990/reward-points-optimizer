@@ -21,6 +21,7 @@ HOSTED_INTEGRATION_MIGRATIONS = {
     "0033_agent_feed_native_bounded_ingress.sql",
     "0034_agent_feed_outbox_pgcrypto_schema.sql",
     "0036_asset_source_catalogue.sql",
+    "0048_asset_source_catalogue_v2.sql",
 }
 MIGRATIONS = [
     path
