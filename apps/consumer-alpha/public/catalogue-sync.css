@@ -1,0 +1,186 @@
+.payment-logo.db-manifest-asset {
+  width: 92px !important;
+  flex: 0 0 92px !important;
+  aspect-ratio: 3 / 2;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  isolation: auto !important;
+}
+
+.payment-logo.db-manifest-asset.is-liquid-card {
+  width: 108px !important;
+  flex-basis: 108px !important;
+  aspect-ratio: 85.6 / 53.98;
+}
+
+.payment-logo.db-manifest-asset::before,
+.payment-logo.db-manifest-asset::after {
+  display: none !important;
+}
+
+.payment-logo.db-manifest-asset img,
+.payment-logo.db-manifest-asset.is-liquid-card img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  filter: none !important;
+}
+
+.db-card-proxies {
+  display: none !important;
+}
+
+.db-card-catalogue {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+.db-card-provider {
+  min-width: 0;
+  border: 1px solid rgba(190, 207, 223, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 4px 11px rgba(42, 61, 82, 0.07);
+  overflow: clip;
+}
+
+.db-card-provider > summary {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 82px;
+  padding: 8px 13px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.db-card-provider > summary::-webkit-details-marker {
+  display: none;
+}
+
+.db-card-provider > summary::after {
+  content: "›";
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 25px;
+  line-height: 1;
+  color: #718497;
+  transform: rotate(90deg);
+  transition: transform 0.18s ease;
+}
+
+.db-card-provider[open] > summary::after {
+  transform: rotate(-90deg);
+}
+
+.db-provider-logo {
+  width: 104px !important;
+  flex-basis: 104px !important;
+}
+
+.db-provider-copy {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.db-provider-copy strong {
+  color: #344f64;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.db-provider-copy small {
+  color: #7c8e9e;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.db-card-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  padding: 0 10px 11px;
+}
+
+.db-card-sku-option {
+  min-width: 0;
+  min-height: 92px;
+  align-items: center !important;
+  padding: 8px 10px !important;
+}
+
+.db-card-sku-option .payment-logo.db-manifest-asset.is-liquid-card {
+  width: 112px !important;
+  flex-basis: 112px !important;
+}
+
+.db-card-sku-option .p0-product-name {
+  min-width: 0;
+}
+
+.db-card-sku-option .p0-product-name strong {
+  font-size: 13px !important;
+  line-height: 1.22 !important;
+  overflow-wrap: anywhere;
+}
+
+.db-card-sku-option .p0-product-name small {
+  margin-top: 3px;
+  font-size: 10px !important;
+  line-height: 1.2;
+}
+
+@media (max-width: 600px) {
+  .payment-logo.db-manifest-asset {
+    width: 82px !important;
+    flex-basis: 82px !important;
+  }
+
+  .payment-logo.db-manifest-asset.is-liquid-card,
+  .db-provider-logo {
+    width: 100px !important;
+    flex-basis: 100px !important;
+  }
+
+  .db-card-products {
+    grid-template-columns: 1fr;
+  }
+
+  .db-card-sku-option .payment-logo.db-manifest-asset.is-liquid-card {
+    width: 116px !important;
+    flex-basis: 116px !important;
+  }
+
+  .db-card-provider > summary {
+    min-height: 78px;
+    padding: 7px 11px;
+  }
+}
+
+@media (max-width: 370px) {
+  .payment-logo.db-manifest-asset.is-liquid-card,
+  .db-provider-logo {
+    width: 92px !important;
+    flex-basis: 92px !important;
+  }
+
+  .db-card-sku-option .payment-logo.db-manifest-asset.is-liquid-card {
+    width: 104px !important;
+    flex-basis: 104px !important;
+  }
+}
