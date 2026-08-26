@@ -1797,6 +1797,7 @@ async function generateAssets(catalogue) {
 
   if (failures.length > 0) {
     writeJson(join(OUTPUT_ROOT, "generation-failures.json"), failures);
+    console.error("LIQUID_GLASS_GENERATION_FAILURES=" + JSON.stringify(failures));
     throw new Error(`asset_generation_failed:${failures.length}`);
   }
 
