@@ -1,0 +1,52 @@
+name: Probe official card-face candidates
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-card-candidate-probe.yml
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browser
+        run: npm install --no-save --package-lock=false puppeteer@24.16.0
+      - name: Print card-like images from official pages
+        run: |
+          node --input-type=module <<'NODE'
+          import puppeteer from 'puppeteer';
+          const targets = [
+            ['aeon','https://www.aeon.co.jp/card/lineup/aeoncardwaon/'],
+            ['d','https://dcard.docomo.ne.jp/st/dcard_dcard/index.html'],
+            ['smbc-nl','https://www.smbc-card.com/nyukai/card/numberless.jsp'],
+            ['paypay','https://www.paypay-card.co.jp/service/card/overview/'],
+            ['rakuten-amc','https://www.rakuten-card.co.jp/card/rakuten-amc-card/'],
+            ['rakuten','https://www.rakuten-card.co.jp/card/rakuten-card/'],
+            ['rakuten-gold','https://www.rakuten-card.co.jp/card/rakuten-gold-card/'],
+            ['rakuten-pink','https://www.rakuten-card.co.jp/card/rakuten-pink-card/'],
+            ['rakuten-premium','https://www.rakuten-card.co.jp/card/rakuten-premium-card/'],
+            ['view-standard','https://www.jreast.co.jp/card/first/viewcardstandard.html'],
+          ];
+          const browser = await puppeteer.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+          for (const [id,url] of targets) {
+            const page=await browser.newPage();
+            try {
+              await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36');
+              await page.setViewport({width:1440,height:1600});
+              await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+              await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=800){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,60));}window.scrollTo(0,0)});
+              await new Promise(r=>setTimeout(r,800));
+              const rows=await page.evaluate(()=>[...document.images].map((img,index)=>({index,nw:img.naturalWidth,nh:img.naturalHeight,src:img.currentSrc||img.src,alt:img.alt||'',title:img.title||'',cls:String(img.className||''),parent:(img.parentElement?.textContent||'').trim().replace(/\s+/g,' ').slice(0,160)})).filter(x=>x.nw>=90&&x.nh>=45&&(((x.nw/x.nh)>=1.08&&(x.nw/x.nh)<=2.15)||((x.nw/x.nh)>=0.46&&(x.nw/x.nh)<=0.93))).slice(0,60));
+              console.log(`===CARD_CANDIDATES ${id} ${url} count=${rows.length}===`);
+              rows.forEach(row=>console.log(JSON.stringify(row)));
+            } catch(e) { console.log(`PROBE_ERROR ${id} ${String(e)}`); }
+            finally { await page.close(); }
+          }
+          await browser.close();
+          NODE
