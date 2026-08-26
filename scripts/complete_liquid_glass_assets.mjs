@@ -789,6 +789,34 @@ const PAGE_OVERRIDES = Object.freeze({
   "portal.jal-mileage-park": "https://partner.jal.co.jp/",
 });
 
+
+const EXPLICIT_IMAGE_OVERRIDES = Object.freeze({
+  "instrument.card.majica-ucs": "https://www.ucscard.co.jp/assets/images/lineup/ucscard/mv_pc.png",
+  "instrument.card.ana-super-flyers-gold-card": "https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_05.gif",
+  "instrument.card.ana-card-general": "https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/general_10.gif",
+  "instrument.card.ana-wide-gold-card": "https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_03.gif",
+  "program.jp.crie-card-discount": "https://c-united.co.jp/crie-maison/crie/card/img/card/mv.jpg",
+  "program.jp.bicpoint": "https://www.biccamera.co.jp/shopguide/campaign/camp-caution/img/pointcard/bic_pointcard.png",
+  "program.jp.muji-good": "https://www.muji.com/jp/ja/service/goodprogram/assets/img/logo-mujigoodprogram.svg",
+  "program.jp.nitori": "https://www.nitori-net.jp/ecstatic/include/characteristic/loyalty-program/img01.png",
+  "instrument.card.rakuten-bank-card-credit-function": "https://www.rakuten-bank.co.jp/card/rc/images/update-img-01.png",
+  "instrument.crie.card": "https://c-united.co.jp/crie-maison/crie/card/img/card/mv.jpg",
+  "program.jp.takashimaya-point": "https://www.takashimaya.co.jp/base/pc/store/special/card_list/img/img_takashimaya_point.png",
+  "program.jp.mi-point": "https://www.mistore.jp/on/demandware.static/-/Sites-seamless-Library/ja_JP/dw9d1221a6/content/campaign/mip_cp/images/main.jpg",
+  "wallet.anapay": "https://www.ana.co.jp/amc/ana-pay/img/image_top/mv/tittle_231107.png",
+  "mile.ana": "https://www.ana.co.jp/amc/ana-pay/img/image_top/logo/logo_ana.png",
+});
+
+const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
+  "instrument.card.majica-ucs": "https://www.ucscard.co.jp/lineup/ucscard/",
+  "instrument.card.rakuten-bank-card-credit-function": "https://www.rakuten-bank.co.jp/card/rc/update.html",
+  "program.jp.nitori": "https://www.nitori-net.jp/ec/characteristic/loyalty-program/",
+  "program.jp.mi-point": "https://www.mistore.jp/shopping/campaign/mip_cp.html",
+  "program.jp.takashimaya-point": "https://www.takashimaya.co.jp/store/special/card_list/",
+  "program.jp.crie-card-discount": "https://c-united.co.jp/crie/card/",
+  "instrument.crie.card": "https://c-united.co.jp/crie/card/",
+});
+
 const LOCAL_OFFICIAL_ART = Object.freeze({
   "program.jp.dpoint": "dpoint.png",
   "program.jp.jrepoint": "jrepoint.webp",
@@ -829,6 +857,7 @@ function isCreditCard(asset) {
 
 function sourcePageFor(asset) {
   return (
+    EXPLICIT_SOURCE_PAGE_OVERRIDES[asset.id] ??
     PAGE_OVERRIDES[asset.id] ??
     asset.source_page_url ??
     asset.metadata?.source_url ??
@@ -1694,7 +1723,11 @@ async function acquireSource(asset, canonicalById) {
         if (localFilename) return localOfficial(resolved, localFilename);
         const pageUrl = sourcePageFor(resolved);
         if (!pageUrl) throw new Error(`official_source_page_missing:${resolved.id}`);
-        return acquireRemote(resolved, pageUrl, resolved.source_image_url);
+        return acquireRemote(
+          resolved,
+          pageUrl,
+          EXPLICIT_IMAGE_OVERRIDES[resolved.id] ?? resolved.source_image_url,
+        );
       })(),
     );
   return { resolved, source: await sourceCache.get(cacheKey) };
