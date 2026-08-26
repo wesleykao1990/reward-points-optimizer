@@ -56,6 +56,18 @@ jobs:
           python scripts/patch_liquid_glass_batches.py
           python scripts/run_liquid_glass_visual_quality_patch.py
           python scripts/fix_liquid_glass_manifest_geometry.py
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/complete_liquid_glass_assets.mjs')
+          t = p.read_text()
+          t = t.replace('const EXPECTED_CANONICAL = 211;', 'const EXPECTED_CANONICAL = 213;')
+          t = t.replace('["point.moppy", "ポイント (moppy)", null]', '["point.moppy", "モッピーポイント", null]')
+          t = t.replace('["point.saison", "ポイント (saison)", null]', '["point.saison", "永久不滅ポイント", null]')
+          t = t.replace('["point.recruit", "Recruit Point", null]', '["point.recruit", "リクルートポイント", null]')
+          t = t.replace('["emoney.nanaco", "nanaco電子マネー", "instrument.jp.nanaco"]', '["emoney.nanaco", "nanaco", "instrument.jp.nanaco"]')
+          t = t.replace('["emoney.waon", "WAON電子マネー", "instrument.emoney.waon"]', '["emoney.waon", "WAON", "instrument.emoney.waon"]')
+          p.write_text(t)
+          PY
           git config user.name poimichi-asset-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add apps/consumer-alpha/src/visual-asset-store.ts scripts/complete_liquid_glass_assets.mjs
