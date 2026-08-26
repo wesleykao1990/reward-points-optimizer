@@ -65,4 +65,4 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Direct first-party image pins are used only for providers whose official pages block reliable artwork discovery.
+      # Pinned first-party image requests carry the matching official product-page Referer.
