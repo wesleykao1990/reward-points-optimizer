@@ -78,6 +78,12 @@ jobs:
               '".github/workflows/liquid-glass-assets-completion.yml",',
               "",
           )
+          # Normalize the legacy Bing image-search regex if an older repair
+          # snippet reintroduces invalid identity escapes under Unicode mode.
+          text = text.replace(
+              r'/(?:murl(?:&quot;|\")\s*:\s*(?:&quot;|\"))([^&\"]+)/giu',
+              r'/(?:murl(?:&quot;|")\s*:\s*(?:&quot;|"))([^&"]+)/gi',
+          )
           text = re.sub(
               r'const mime = sniffMime\(bytes, `image/\$\{extname\(filename\)\.slice\(1\)\}`\);',
               'const extension = extname(filename).toLocaleLowerCase("en-US");\n  const declaredMime = extension === ".svg" ? "image/svg+xml" : extension === ".jpg" || extension === ".jpeg" ? "image/jpeg" : extension === ".ico" ? "image/x-icon" : `image/${extension.slice(1)}`;\n  const mime = sniffMime(bytes, declaredMime);',
