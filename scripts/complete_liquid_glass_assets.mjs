@@ -824,16 +824,16 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
+  "instrument.card.aeon": "reference-official/aeon-card-face.png",
+  "instrument.card.d": "reference-official/d-card-face.png",
+  "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
+  "instrument.card.paypay-card": "reference-official/paypay-card-face.png",
+  "instrument.card.rakuten-card": "reference-official/rakuten-card-face.png",
   "instrument.card.view-card-standard": "reference-official/view-card-standard-face.png",
   "instrument.card.rakuten-premium-card": "reference-official/rakuten-premium-card-face.png",
   "instrument.card.rakuten-pink-card": "reference-official/rakuten-pink-card-face.png",
   "instrument.card.rakuten-gold-card": "reference-official/rakuten-gold-card-face.png",
-  "instrument.card.rakuten-card": "reference-official/rakuten-card-face.png",
   "instrument.card.rakuten-ana-mileage-club-card": "reference-official/rakuten-amc-card-face.png",
-  "instrument.card.paypay-card": "reference-official/paypay-card-face.png",
-  "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
-  "instrument.card.d": "reference-official/d-card-face.png",
-  "instrument.card.aeon": "reference-official/aeon-card-face.png",
   "program.jp.muji-good": "reference-official/muji-good-program.png",
   "program.jp.bicpoint": "reference-official/bic-point.png",
   "mile.ana": "reference-official/ana-mileage.png",
@@ -862,13 +862,7 @@ const LOCAL_OFFICIAL_ART = Object.freeze({
   "instrument.wallet.famipay": "famipay.svg",
   "instrument.wallet.paypay": "paypay.svg",
   "instrument.wallet.rakutenpay": "rakutenpay.svg",
-  "instrument.card.aeon": "aeoncard.png",
   "instrument.card.au-pay-card": "aupaycard.png",
-  "instrument.card.d": "dcard.png",
-  "instrument.card.paypay-card": "paypaycard.png",
-  "instrument.card.rakuten-card": "rakutencard.svg",
-  "instrument.card.mitsui-sumitomo-card-nl": "smbccard.png",
-  "instrument.card.view-card-standard": "viewcard.gif",
 });
 
 const GENERIC_IDS = new Set([
