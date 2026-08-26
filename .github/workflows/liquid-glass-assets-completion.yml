@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: liquid-glass-assets-completion
+  group: liquid-glass-assets-authoritative-v2
   cancel-in-progress: true
 
 jobs:
@@ -64,4 +64,4 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Recovery run is authoritative; cancel obsolete diagnostic/acquisition attempts.
+      # Fresh group prevents obsolete diagnostic acquisitions from blocking this authoritative run.
