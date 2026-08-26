@@ -16,7 +16,7 @@ const durableCache = createLiquidGlassCacheClient(PRODUCTION_ORIGIN);
 const durableSourceByAssetId = new Map();
 const durableAssetById = new Map();
 const EXPECTED_CANONICAL = 211;
-const EXPECTED_ALIASES = 35;
+const EXPECTED_ALIASES = 40;
 const EXPECTED_ASSETS = EXPECTED_CANONICAL + EXPECTED_ALIASES;
 const CARD_WIDTH = 856;
 const CARD_HEIGHT = 539.8;
@@ -288,10 +288,10 @@ grant select on app_api.asset_source_catalogue to jro_runtime;
 
 function liquidGlassCss() {
   return `.payment-logo {
-  width: 52px !important;
+  width: 64px !important;
   height: auto !important;
-  aspect-ratio: 85.6 / 53.98;
-  flex: 0 0 52px !important;
+  aspect-ratio: 3 / 2;
+  flex: 0 0 64px !important;
   padding: 0 !important;
   overflow: visible;
   border: 0 !important;
@@ -299,23 +299,37 @@ function liquidGlassCss() {
   box-shadow: none !important;
 }
 
+.payment-logo.is-liquid-card {
+  width: 70px !important;
+  aspect-ratio: 85.6 / 53.98;
+  flex-basis: 70px !important;
+}
+
 .payment-logo img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px rgb(15 33 48 / 13%));
 }
 
 .route-node-logo {
-  width: 46px !important;
-  flex-basis: 46px !important;
+  width: 54px !important;
+  flex-basis: 54px !important;
+}
+
+.route-node-logo.is-liquid-card {
+  width: 58px !important;
+  flex-basis: 58px !important;
 }
 
 @media (max-width: 370px) {
   .payment-logo {
-    width: 46px !important;
-    flex-basis: 46px !important;
+    width: 58px !important;
+    flex-basis: 58px !important;
+  }
+  .payment-logo.is-liquid-card {
+    width: 64px !important;
+    flex-basis: 64px !important;
   }
 }
 `;
@@ -443,8 +457,8 @@ function coverageRuntime() {
     "電子マネー(nanaco)": "emoney.nanaco",
     "電子マネー(waon)": "emoney.waon",
     Suica: "storedvalue.suica",
-    ANAマイル: "mile.ana",
-    JALマイル: "mile.jal",
+    ANAマイル: "point.ana-mile",
+    JALマイル: "point.jal-mile",
   });
 
   let byId = new Map();
@@ -454,7 +468,9 @@ function coverageRuntime() {
   const inferId = (frame) => {
     if (frame.dataset.liquidAssetId) return frame.dataset.liquidAssetId;
     const option = frame.closest(".p0-product-option");
-    const optionInput = option?.querySelector("input[data-p0-product]");
+    const optionInput = option?.querySelector(
+      "input[data-p0-product], input[data-payment-stack-owned]",
+    );
     if (optionInput?.value) return optionInput.value;
     const walletChip = frame.closest("[data-wallet-chip]");
     if (walletChip?.dataset.walletChip) return walletChip.dataset.walletChip;
@@ -488,17 +504,23 @@ function coverageRuntime() {
     image.alt = "";
     image.loading = "lazy";
     image.decoding = "async";
+    const cardLayout =
+      asset.entity_type === "credit_card" || String(asset.id).startsWith("card.");
+    frame.classList.toggle("is-liquid-card", cardLayout);
     image.addEventListener(
       "error",
       () => {
         if (frame.dataset.liquidGlassPath !== asset.path) return;
         frame.replaceChildren(...original.map((node) => node.cloneNode(true)));
+        frame.classList.remove("is-liquid-card");
         frame.dataset.liquidGlassFailed = asset.path;
         delete frame.dataset.liquidGlassPath;
+        delete frame.dataset.liquidAssetId;
       },
       { once: true },
     );
     frame.replaceChildren(image);
+    frame.dataset.liquidAssetId = id;
     frame.dataset.liquidGlassPath = asset.path;
   };
 
@@ -536,11 +558,22 @@ function coverageRuntime() {
     const manifest = await response.json();
     if (
       manifest.version !== "liquid-glass-assets.v2" ||
-      manifest.asset_count !== 246 ||
-      !Array.isArray(manifest.assets)
+      !Number.isSafeInteger(manifest.asset_count) ||
+      manifest.asset_count < 251 ||
+      !Array.isArray(manifest.assets) ||
+      manifest.assets.length !== manifest.asset_count
     )
       throw new Error("asset_manifest_invalid");
-    byId = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+    const manifestById = new Map(
+      manifest.assets.map((asset) => [asset.id, asset]),
+    );
+    byId = new Map(manifestById);
+    manifest.assets.forEach((asset) => {
+      if (!String(asset.id).startsWith("card.")) return;
+      if (!String(asset.resolved_id).startsWith("instrument.card.")) return;
+      const canonical = manifestById.get(asset.resolved_id);
+      if (canonical) byId.set(asset.id, canonical);
+    });
     byName = new Map();
     manifest.assets.forEach((asset) => {
       byName.set(normalize(asset.display_name), asset);
@@ -658,6 +691,11 @@ const ALIASES = Object.freeze([
   ["mile.ana", "ANA Mileage Club", null],
   ["mile.jal", "JAL Mileage Bank", null],
   ["portal.jal-mileage-park", "JAL Mileage Park", null],
+  ["point.ana-mile", "ANAマイル", null],
+  ["point.jal-mile", "JALマイル", null],
+  ["point.recruit", "Recruit Point", null],
+  ["emoney.nanaco", "nanaco電子マネー", "instrument.jp.nanaco"],
+  ["emoney.waon", "WAON電子マネー", "instrument.emoney.waon"],
 ].map(([id, displayName, aliasOf]) => ({
   id,
   display_name: displayName,
@@ -667,6 +705,9 @@ const ALIASES = Object.freeze([
 })));
 
 const PAGE_OVERRIDES = Object.freeze({
+  "point.ana-mile": "https://www.ana.co.jp/ja/jp/amc/",
+  "point.jal-mile": "https://www.jal.co.jp/ja-jp/mileage.html",
+  "point.recruit": "https://point.recruit.co.jp/",
   "instrument.jp.seven-card-plus": "https://www.7card.co.jp/",
   "instrument.emoney.id": "https://id-credit.com/",
   "instrument.emoney.pitapa": "https://www.pitapa.com/",
@@ -795,6 +836,8 @@ const PAGE_OVERRIDES = Object.freeze({
 
 
 const EXPLICIT_IMAGE_OVERRIDES = Object.freeze({
+  "point.jal-mile": "https://www.jal.co.jp/ja-jp/mileage/_jcr_content/root/contents/responsivegrid/responsivegrid_10289_967948825/column_676520245/col-1-2-2/column/col-1-2-1/img_copy.coreimg.png/1780482085551.png",
+  "point.recruit": "https://img.point.recruit.co.jp/recruitid/assets/dynamic/img/logo/point/rpt01_a.svg",
   "instrument.card.majica-ucs": "https://www.ucscard.co.jp/assets/images/lineup/ucscard/mv_pc.png",
   "instrument.card.ana-super-flyers-gold-card": "https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_05.gif",
   "instrument.card.ana-card-general": "https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/general_10.gif",
@@ -824,6 +867,7 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
+  "point.ana-mile": "reference-official/ana-mileage.png",
   "instrument.card.aeon": "reference-official/aeon-card-face.png",
   "instrument.card.d": "reference-official/d-card-face.png",
   "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
@@ -875,6 +919,10 @@ const GENERIC_IDS = new Set([
 
 function isCreditCard(asset) {
   return asset.entity_type === "credit_card";
+}
+
+function usesCardLayout(asset) {
+  return isCreditCard(asset) || String(asset.id).startsWith("card.");
 }
 
 function sourcePageFor(asset) {
@@ -1814,46 +1862,61 @@ function liquidGlassSvg(asset, source, sourceFile) {
   const sourceAttributes = [
     `data-asset-id="${escapeXml(asset.id)}"`,
     `data-source-kind="${escapeXml(source.sourceKind)}"`,
+    `data-layout="${usesCardLayout(asset) ? "card" : "service"}"`,
     source.pageUrl ? `data-source-page="${escapeXml(source.pageUrl)}"` : "",
     source.imageUrl ? `data-source-image="${escapeXml(source.imageUrl)}"` : "",
   ]
     .filter(Boolean)
     .join(" ");
-  const isCard = isCreditCard(asset) || asset.id.startsWith("card.");
+  const isCard = usesCardLayout(asset);
+  const width = isCard ? 856 : 672;
+  const height = isCard ? 539.8 : 448;
+  const art = isCard
+    ? { x: 34, y: 34, width: 788, height: 471.8, rx: 46 }
+    : { x: 48, y: 52, width: 576, height: 344, rx: 52 };
   const artworkHref = source.bytes && source.bytes.length <= 1500000
     ? `data:${source.mime};base64,${source.bytes.toString("base64")}`
     : sourceFile?.publicPath;
   const inner = artworkHref
-    ? `<image x="${isCard ? 34 : 92}" y="${isCard ? 34 : 88}" width="${
-        isCard ? 788 : 672
-      }" height="${isCard ? 471.8 : 363.8}" href="${escapeXml(
+    ? `<image x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}" href="${escapeXml(
         artworkHref,
       )}" preserveAspectRatio="xMidYMid meet" clip-path="url(#art-${id})"/>`
-    : `<g aria-hidden="true"><rect x="118" y="155" width="620" height="230" rx="78" fill="#ffffff" fill-opacity="0.62"/><text x="428" y="302" text-anchor="middle" font-family="system-ui, sans-serif" font-size="92" font-weight="800" fill="#203244">${escapeXml(
-        genericSymbol(asset),
-      )}</text></g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="856" height="539.8" viewBox="0 0 856 539.8" role="img" aria-labelledby="title-${id}" ${sourceAttributes}>
-<title id="title-${id}">${title}</title>
-<defs>
-  <linearGradient id="glass-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/><stop offset="0.56" stop-color="#edf4fb" stop-opacity="0.76"/><stop offset="1" stop-color="#d9e8f4" stop-opacity="0.68"/></linearGradient>
-  <linearGradient id="shine-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.82"/><stop offset="0.46" stop-color="#ffffff" stop-opacity="0.12"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
-  <filter id="shadow-${id}" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="13" stdDeviation="13" flood-color="#24445f" flood-opacity="0.2"/></filter>
-  <clipPath id="art-${id}"><rect x="${isCard ? 34 : 92}" y="${
-    isCard ? 34 : 88
-  }" width="${isCard ? 788 : 672}" height="${isCard ? 471.8 : 363.8}" rx="${
-    isCard ? 46 : 58
-  }"/></clipPath>
-</defs>
-<g filter="url(#shadow-${id})">
-  <rect x="18" y="18" width="820" height="503.8" rx="58" fill="url(#glass-${id})" stroke="#ffffff" stroke-opacity="0.9" stroke-width="5"/>
-  <rect x="28" y="28" width="800" height="483.8" rx="50" fill="#ffffff" fill-opacity="${
-    isCard ? "0.74" : "0.56"
-  }"/>
+    : `<g aria-hidden="true"><rect x="${isCard ? 118 : 82}" y="${
+        isCard ? 155 : 126
+      }" width="${isCard ? 620 : 508}" height="${isCard ? 230 : 196}" rx="${
+        isCard ? 78 : 64
+      }" fill="#ffffff" fill-opacity="0.62"/><text x="${
+        isCard ? 428 : 336
+      }" y="${isCard ? 302 : 254}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="${
+        isCard ? 92 : 78
+      }" font-weight="800" fill="#203244">${escapeXml(genericSymbol(asset))}</text></g>`;
+  const outer = isCard
+    ? `<rect x="18" y="18" width="820" height="503.8" rx="58" fill="url(#glass-${id})" stroke="#ffffff" stroke-opacity="0.9" stroke-width="5"/>
+  <rect x="28" y="28" width="800" height="483.8" rx="50" fill="#ffffff" fill-opacity="0.74"/>
   ${inner}
   <path d="M48 80C230 16 568 20 808 77C660 184 420 211 92 192C66 157 52 117 48 80Z" fill="url(#shine-${id})"/>
   <path d="M43 448C240 355 522 358 824 222V470C824 495 806 508 779 508H77C59 508 48 486 43 448Z" fill="#75b8d8" fill-opacity="0.09"/>
   <path d="M42 393C279 245 538 311 822 160" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="8"/>
-  <rect x="24" y="24" width="808" height="491.8" rx="54" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3"/>
+  <rect x="24" y="24" width="808" height="491.8" rx="54" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3"/>`
+    : `<rect x="12" y="12" width="648" height="424" rx="72" fill="url(#glass-${id})" stroke="#ffffff" stroke-opacity="0.92" stroke-width="4"/>
+  <rect x="22" y="22" width="628" height="404" rx="64" fill="#ffffff" fill-opacity="0.50"/>
+  ${inner}
+  <path d="M34 68C178 16 438 18 638 66C514 151 326 164 70 150C52 126 40 96 34 68Z" fill="url(#shine-${id})"/>
+  <path d="M30 374C176 300 410 308 646 184V392C646 414 628 424 606 424H64C46 424 34 407 30 374Z" fill="#75b8d8" fill-opacity="0.08"/>
+  <path d="M31 334C196 229 420 270 642 148" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="6"/>
+  <rect x="18" y="18" width="636" height="412" rx="68" fill="none" stroke="#ffffff" stroke-opacity="0.58" stroke-width="2.5"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title-${id}" ${sourceAttributes}>
+<title id="title-${id}">${title}</title>
+<defs>
+  <linearGradient id="glass-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/><stop offset="0.56" stop-color="#edf4fb" stop-opacity="0.76"/><stop offset="1" stop-color="#d9e8f4" stop-opacity="0.68"/></linearGradient>
+  <linearGradient id="shine-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.82"/><stop offset="0.46" stop-color="#ffffff" stop-opacity="0.12"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+  <filter id="shadow-${id}" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="${isCard ? 13 : 9}" stdDeviation="${
+    isCard ? 13 : 10
+  }" flood-color="#24445f" flood-opacity="0.18"/></filter>
+  <clipPath id="art-${id}"><rect x="${art.x}" y="${art.y}" width="${art.width}" height="${art.height}" rx="${art.rx}"/></clipPath>
+</defs>
+<g filter="url(#shadow-${id})">
+  ${outer}
 </g>
 </svg>
 `;
@@ -1967,8 +2030,11 @@ function batchValidationErrors(asset) {
     return invalid;
   }
   const svg = readFileSync(path, "utf8");
-  if (!svg.includes('viewBox="0 0 856 539.8"'))
-    invalid.push(`${asset.id}:wrong_ratio`);
+  const expectedViewBox = usesCardLayout(asset)
+    ? 'viewBox="0 0 856 539.8"'
+    : 'viewBox="0 0 672 448"';
+  if (!svg.includes(expectedViewBox))
+    invalid.push(`${asset.id}:wrong_layout`);
   if (!svg.includes("data-source-kind="))
     invalid.push(`${asset.id}:missing_provenance`);
   if (asset.source_kind !== "poimichi_generic_category" && !asset.source_sha256)
@@ -2036,6 +2102,7 @@ async function generateAssets(catalogue) {
         (asset.alias_of ? durableSourceByAssetId.get(asset.alias_of) : null);
       if (
         cachedAsset &&
+        usesCardLayout(asset) &&
         (!cachedAsset.source_sha256 ||
           cachedSourceRow?.source_sha256 === cachedAsset.source_sha256)
       ) {
@@ -2049,7 +2116,7 @@ async function generateAssets(catalogue) {
           alias_of: asset.alias_of,
           resolved_id: asset.alias_of ?? asset.id,
           path: `/${relative(PUBLIC_ROOT, outputPath).replaceAll("\\", "/")}`,
-          aspect_ratio: "85.60:53.98",
+          aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2",
           transparent_outside_card: true,
           source_kind: cachedAsset.source_kind,
           source_page_url: cachedAsset.source_page_url,
@@ -2107,7 +2174,7 @@ async function generateAssets(catalogue) {
         alias_of: asset.alias_of,
         resolved_id: resolved.id,
         path: `/${relative(PUBLIC_ROOT, outputPath).replaceAll("\\\\", "/")}`,
-        aspect_ratio: "85.60:53.98",
+        aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2",
         transparent_outside_card: true,
         source_kind: source.sourceKind,
         source_page_url: source.pageUrl,
@@ -2160,7 +2227,7 @@ async function generateAssets(catalogue) {
     generation_run_id: generationRunId,
     generated_at: new Date().toISOString(),
     source_catalogue_deployment_commit_sha: catalogue.deployment_commit_sha,
-    aspect_ratio: "85.60:53.98",
+    aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2",
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     canonical_count: EXPECTED_CANONICAL,
@@ -2208,7 +2275,19 @@ function validateManifest(manifest) {
   if (new Set(manifest.assets.map((asset) => asset.id)).size !== EXPECTED_ASSETS)
     throw new Error("manifest_ids_not_unique");
 
+  const requiredWalletFamilies = [
+    "card.aeon", "card.aupay", "card.d", "card.paypay", "card.rakuten", "card.smbc", "card.view",
+    "emoney.nanaco", "emoney.waon",
+    "point.ana-mile", "point.d", "point.jal-mile", "point.jre", "point.moppy", "point.nanaco",
+    "point.paypay", "point.ponta", "point.rakuten", "point.recruit", "point.saison", "point.v", "point.waon",
+    "wallet.aeonpay", "wallet.anapay", "wallet.aupay", "wallet.dbarai", "wallet.famipay", "wallet.kyash",
+    "wallet.paypay", "wallet.rakutenpay", "wallet.revolut-jp",
+  ];
+  const manifestIds = new Set(manifest.assets.map((asset) => asset.id));
   const invalid = [];
+  for (const familyId of requiredWalletFamilies)
+    if (!manifestIds.has(familyId)) invalid.push(`${familyId}:live_wallet_asset_missing`);
+
   for (const asset of manifest.assets) {
     const path = join(PUBLIC_ROOT, asset.path.replace(/^\//u, ""));
     if (!existsSync(path)) {
@@ -2216,19 +2295,17 @@ function validateManifest(manifest) {
       continue;
     }
     const svg = readFileSync(path, "utf8");
-    if (!svg.includes('viewBox="0 0 856 539.8"'))
-      invalid.push(`${asset.id}:wrong_ratio`);
+    const expectedViewBox = usesCardLayout(asset)
+      ? 'viewBox="0 0 856 539.8"'
+      : 'viewBox="0 0 672 448"';
+    if (!svg.includes(expectedViewBox))
+      invalid.push(`${asset.id}:wrong_layout`);
     if (!svg.includes("data-source-kind="))
       invalid.push(`${asset.id}:missing_provenance`);
     if (asset.source_kind !== "poimichi_generic_category" && !asset.source_sha256)
       invalid.push(`${asset.id}:missing_original_bytes`);
     if (asset.entity_type === "credit_card") {
-      if (
-        [
-          "official_favicon_fallback",
-          "poimichi_generic_category",
-        ].includes(asset.source_kind)
-      )
+      if (["official_favicon_fallback", "poimichi_generic_category"].includes(asset.source_kind))
         invalid.push(`${asset.id}:non_card_source`);
       const dimensions = asset.source_dimensions;
       if (dimensions?.width && dimensions?.height) {
@@ -2354,6 +2431,11 @@ async function waitForProductionManifest(generationRunId) {
         for (const id of [
           "point.d",
           "point.moppy",
+          "point.ana-mile",
+          "point.jal-mile",
+          "point.recruit",
+          "emoney.nanaco",
+          "emoney.waon",
           "card.rakuten",
           "instrument.card.d-card-gold",
         ]) {
@@ -2362,8 +2444,11 @@ async function waitForProductionManifest(generationRunId) {
           const assetResponse = await fetch(`${PRODUCTION_ORIGIN}${asset.path}`);
           if (!assetResponse.ok) throw new Error(`production_file_missing:${id}`);
           const svg = await assetResponse.text();
-          if (!svg.includes('viewBox="0 0 856 539.8"'))
-            throw new Error(`production_ratio_invalid:${id}`);
+          const expectedViewBox = usesCardLayout(asset)
+            ? 'viewBox="0 0 856 539.8"'
+            : 'viewBox="0 0 672 448"';
+          if (!svg.includes(expectedViewBox))
+            throw new Error(`production_layout_invalid:${id}`);
           const metrics = await renderedArtworkMetrics(asset.path);
           if (metrics.opaque < 60000 || metrics.colorful < 1200)
             throw new Error(
