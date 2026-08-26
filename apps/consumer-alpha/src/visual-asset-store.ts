@@ -231,7 +231,11 @@ export function createVisualAssetStore(
       );
     },
 
-    async markValidation(assetId, status, errors): Promise<void> {
+    async markValidation(
+      assetId: string,
+      status: "valid" | "invalid",
+      errors: readonly string[],
+    ): Promise<void> {
       await target.query(
         `update app_private.entity_visual_assets
             set validation_status = $2,
@@ -242,7 +246,7 @@ export function createVisualAssetStore(
       );
     },
 
-    async markDeployed(assetIds): Promise<void> {
+    async markDeployed(assetIds: readonly string[]): Promise<void> {
       if (assetIds.length === 0) return;
       await target.query(
         `update app_private.entity_visual_assets
@@ -252,7 +256,9 @@ export function createVisualAssetStore(
       );
     },
 
-    async getReusable(assetIds): Promise<ReadonlyMap<string, StoredVisualAsset>> {
+    async getReusable(
+      assetIds: readonly string[],
+    ): Promise<ReadonlyMap<string, StoredVisualAsset>> {
       if (assetIds.length === 0) return new Map();
       const result = await target.query<StoredVisualAsset>(
         `select asset_id, entity_id::text, alias_of, display_name, entity_type,
@@ -270,7 +276,9 @@ export function createVisualAssetStore(
       return new Map(result.rows.map((row) => [row.asset_id, Object.freeze(row)]));
     },
 
-    async getSources(assetIds): Promise<ReadonlyMap<string, StoredVisualSource>> {
+    async getSources(
+      assetIds: readonly string[],
+    ): Promise<ReadonlyMap<string, StoredVisualSource>> {
       if (assetIds.length === 0) return new Map();
       const result = await target.query<StoredVisualSource>(
         `select l.asset_id, l.alias_of, a.source_sha256, a.source_kind,
