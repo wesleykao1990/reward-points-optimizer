@@ -53,5 +53,29 @@ if old_remote in text:
 elif "EXPLICIT_IMAGE_OVERRIDES[resolved.id]" not in text:
     raise SystemExit("acquireRemote call marker missing")
 
+# Some first-party CDNs reject hotlinked image requests unless the browser sends
+# the official product/program page as Referer. Preserve that provenance on the
+# explicit source fetch rather than falling back to reconstructed artwork.
+old_headers = '''      headers: {\n        "user-agent": USER_AGENT,\n        accept: options.accept ?? "*/*",\n      },'''
+new_headers = '''      headers: {\n        "user-agent": USER_AGENT,\n        accept: options.accept ?? "*/*",\n        ...(options.referer ? { referer: options.referer } : {}),\n      },'''
+if old_headers in text:
+    text = text.replace(old_headers, new_headers, 1)
+elif "...(options.referer ? { referer: options.referer } : {})" not in text:
+    raise SystemExit("fetchBytes headers marker missing")
+
+old_evaluate_fetch = '''      timeout: 22_000,\n    });'''
+new_evaluate_fetch = '''      timeout: 22_000,\n      referer: candidate.referer,\n    });'''
+if old_evaluate_fetch in text:
+    text = text.replace(old_evaluate_fetch, new_evaluate_fetch, 1)
+elif "referer: candidate.referer" not in text:
+    raise SystemExit("evaluateCandidate fetch marker missing")
+
+old_explicit_candidate = '''      descriptor: "official-explicit-image",\n      alt: asset.display_name,\n    });'''
+new_explicit_candidate = '''      descriptor: "official-explicit-image",\n      alt: asset.display_name,\n      referer: pageUrl,\n    });'''
+if old_explicit_candidate in text:
+    text = text.replace(old_explicit_candidate, new_explicit_candidate, 1)
+elif "referer: pageUrl" not in text:
+    raise SystemExit("explicit candidate marker missing")
+
 path.write_text(text)
-print("Pinned direct first-party artwork for the remaining Liquid Glass acquisition gaps")
+print("Pinned direct first-party artwork with official Referer headers")
