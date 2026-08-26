@@ -64,4 +64,4 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Latest recovery run supersedes older diagnostic runs in the same concurrency group.
+      # Recovery run is authoritative; cancel obsolete diagnostic/acquisition attempts.
