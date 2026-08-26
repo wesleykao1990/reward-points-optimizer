@@ -820,6 +820,8 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
+  "program.jp.muji-good": "reference-official/muji-good-program.png",
+  "program.jp.bicpoint": "reference-official/bic-point.png",
   "mile.ana": "reference-official/ana-mileage.png",
   "wallet.anapay": "reference-official/ana-pay.png",
   "program.jp.mi-point": "reference-official/mi-point.jpg",
