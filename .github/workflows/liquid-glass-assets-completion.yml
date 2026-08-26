@@ -56,6 +56,9 @@ jobs:
             git push origin HEAD:main
           fi
 
+      - name: Build consumer workspace dependencies
+        run: pnpm --filter @jro/consumer-alpha-app... build
+
       - name: Generate, validate, commit, deploy, and smoke-test all assets
         env:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
