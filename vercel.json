@@ -22,6 +22,10 @@
       "destination": "/api/asset-sources"
     },
     {
+      "source": "/visual-assets",
+      "destination": "/api/visual-assets"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -40,6 +44,9 @@
     },
     "api/asset-sources.mjs": {
       "maxDuration": 15
+    },
+    "api/visual-assets.mjs": {
+      "maxDuration": 30
     }
   },
   "headers": [
