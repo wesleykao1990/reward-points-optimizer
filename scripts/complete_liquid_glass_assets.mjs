@@ -1211,6 +1211,200 @@ async function officialFavicon(pageUrl) {
   return null;
 }
 
+
+async function officialSearchCandidates(asset, pageUrl) {
+  try {
+    const pageHost = new URL(pageUrl).hostname.replace(/^www\./u, "");
+    const query = encodeURIComponent(
+      `site:${pageHost} \"${asset.display_name}\" card logo`,
+    );
+    const search = await fetchBytes(
+      `https://www.bing.com/images/search?q=${query}&form=HDRSC2`,
+      {
+        accept: "text/html,*/*;q=0.5",
+        timeout: 22_000,
+        maxBytes: 6_000_000,
+      },
+    );
+    const html = search.bytes.toString("utf8");
+    const urls = [];
+    for (const match of html.matchAll(
+      /(?:murl(?:&quot;|")\s*:\s*(?:&quot;|"))([^&"]+)/gi,
+    )) {
+      const value = match[1]
+        .replaceAll("&amp;", "&")
+        .replaceAll("\\/", "/");
+      try {
+        const candidate = new URL(value);
+        const host = candidate.hostname.replace(/^www\./u, "");
+        if (host === pageHost || host.endsWith(`.${pageHost}`))
+          urls.push(candidate.toString());
+      } catch {
+        // Ignore malformed search metadata.
+      }
+    }
+    return [...new Set(urls)].slice(0, 24).map((url) => ({
+      url,
+      descriptor: "official-domain-image-search",
+      alt: asset.display_name,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function officialElementScreenshot(asset, pageUrl) {
+  try {
+    puppeteerPromise ??= import(
+      pathToFileURL(process.env.PUPPETEER_ENTRY).href,
+    );
+    const puppeteer = await puppeteerPromise;
+    browserPromise ??= puppeteer.default.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    });
+    const browser = await browserPromise;
+    const page = await browser.newPage();
+    try {
+      await page.setUserAgent(USER_AGENT);
+      await page.setViewport({
+        width: 1440,
+        height: 1400,
+        deviceScaleFactor: 1,
+      });
+      await page.goto(pageUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 40_000,
+      });
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.body.scrollHeight; y += 700) {
+          window.scrollTo(0, y);
+          await new Promise((resolve) => setTimeout(resolve, 110));
+        }
+        window.scrollTo(0, 0);
+      });
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      const tokens = nameTokens(asset);
+      const selected = await page.evaluate((wantedTokens) => {
+        const nodes = [
+          ...document.querySelectorAll("img"),
+          ...[...document.querySelectorAll("*")].filter((element) =>
+            getComputedStyle(element).backgroundImage?.includes("url("),
+          ),
+        ];
+        let best = null;
+        nodes.forEach((element, index) => {
+          const rect = element.getBoundingClientRect();
+          if (rect.width < 220 || rect.height < 120) return;
+          const ratio = rect.width / rect.height;
+          const cardLike =
+            (ratio >= 1.1 && ratio <= 2.1) ||
+            (ratio >= 0.47 && ratio <= 0.92);
+          if (!cardLike) return;
+          const haystack = `${
+            element.currentSrc || element.getAttribute("src") || ""
+          } ${element.getAttribute("alt") || ""} ${
+            element.getAttribute("aria-label") || ""
+          } ${element.className || ""}`.toLocaleLowerCase("en-US");
+          let score = rect.width * rect.height / 5000 + 150;
+          wantedTokens.forEach((token) => {
+            if (haystack.includes(token)) score += 60;
+          });
+          if (/card|カード/iu.test(haystack)) score += 55;
+          if (/logo|icon|favicon/iu.test(haystack)) score -= 100;
+          if (!best || score > best.score)
+            best = { index, score };
+        });
+        if (!best) return false;
+        nodes[best.index].setAttribute(
+          "data-poimichi-official-artwork",
+          "selected",
+        );
+        return true;
+      }, tokens);
+      if (!selected) return null;
+      const handle = await page.$(
+        '[data-poimichi-official-artwork="selected"]',
+      );
+      if (!handle) return null;
+      const bytes = Buffer.from(
+        await handle.screenshot({ type: "png", omitBackground: true }),
+      );
+      return {
+        bytes,
+        imageUrl: `${pageUrl}#rendered-official-artwork`,
+        mime: "image/png",
+        dimensions: imageDimensions(bytes, "image/png"),
+        descriptor: "official-rendered-element",
+        score: 500,
+        pageUrl,
+        sourceKind: "official_rendered_element",
+      };
+    } finally {
+      await page.close();
+    }
+  } catch {
+    return null;
+  }
+}
+
+
+async function officialPageCapture(asset, pageUrl) {
+  try {
+    puppeteerPromise ??= import(
+      pathToFileURL(process.env.PUPPETEER_ENTRY).href,
+    );
+    const puppeteer = await puppeteerPromise;
+    browserPromise ??= puppeteer.default.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    });
+    const browser = await browserPromise;
+    const page = await browser.newPage();
+    try {
+      await page.setUserAgent(USER_AGENT);
+      await page.setViewport({
+        width: 1586,
+        height: 1000,
+        deviceScaleFactor: 1,
+      });
+      await page.goto(pageUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 45_000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1400));
+      const bytes = Buffer.from(
+        await page.screenshot({
+          type: "png",
+          clip: { x: 0, y: 0, width: 1586, height: 1000 },
+        }),
+      );
+      return {
+        bytes,
+        imageUrl: `${pageUrl}#official-product-page-capture`,
+        mime: "image/png",
+        dimensions: { width: 1586, height: 1000 },
+        descriptor: "official-product-page-capture",
+        score: 200,
+        pageUrl,
+        sourceKind: "official_product_page_capture",
+      };
+    } finally {
+      await page.close();
+    }
+  } catch {
+    return null;
+  }
+}
+
 async function acquireRemote(asset, pageUrl, explicitImageUrl) {
   if (explicitImageUrl) {
     const explicit = await evaluateCandidate(asset, {
@@ -1279,16 +1473,32 @@ const pageMime = sniffMime(page.bytes, page.contentType);
     );
   }
 
-  if (best && best.score >= minimum)
-    return {
-      ...best,
-      pageUrl,
-      sourceKind: best.descriptor.startsWith("rendered")
-        ? "official_rendered_image"
-        : "official_page_image",
-    };
+  if (!best || best.score < minimum) {
+  const searched = await officialSearchCandidates(asset, pageUrl);
+  const searchedBest = await bestCandidate(asset, searched);
+  if (searchedBest && searchedBest.score > (best?.score ?? -Infinity))
+    best = searchedBest;
+}
 
-  if (!isCreditCard(asset)) {
+if (best && best.score >= minimum)
+  return {
+    ...best,
+    pageUrl,
+    sourceKind: best.descriptor.startsWith("rendered")
+      ? "official_rendered_image"
+      : best.descriptor === "official-domain-image-search"
+        ? "official_domain_image_search"
+        : "official_page_image",
+  };
+
+if (isCreditCard(asset)) {
+  const renderedElement = await officialElementScreenshot(asset, pageUrl);
+  if (renderedElement) return renderedElement;
+  const pageCapture = await officialPageCapture(asset, pageUrl);
+  if (pageCapture) return pageCapture;
+}
+
+if (!isCreditCard(asset)) {
     const favicon = await officialFavicon(page.url);
     if (favicon)
       return {
@@ -1304,7 +1514,9 @@ function localOfficial(asset, filename) {
   const path = join(PUBLIC_ROOT, "assets/payment-logos", filename);
   if (!existsSync(path)) throw new Error(`checked_in_artwork_missing:${filename}`);
   const bytes = readFileSync(path);
-  const mime = sniffMime(bytes, `image/${extname(filename).slice(1)}`);
+  const extension = extname(filename).toLocaleLowerCase("en-US");
+  const declaredMime = extension === ".svg" ? "image/svg+xml" : extension === ".jpg" || extension === ".jpeg" ? "image/jpeg" : extension === ".ico" ? "image/x-icon" : `image/${extension.slice(1)}`;
+  const mime = sniffMime(bytes, declaredMime);
   return {
     bytes,
     imageUrl: `/assets/payment-logos/${filename}`,
@@ -1387,11 +1599,14 @@ function liquidGlassSvg(asset, source, sourceFile) {
     .filter(Boolean)
     .join(" ");
   const isCard = isCreditCard(asset) || asset.id.startsWith("card.");
-  const inner = sourceFile
+  const artworkHref = source.bytes && source.bytes.length <= 1500000
+    ? `data:${source.mime};base64,${source.bytes.toString("base64")}`
+    : sourceFile?.publicPath;
+  const inner = artworkHref
     ? `<image x="${isCard ? 34 : 92}" y="${isCard ? 34 : 88}" width="${
         isCard ? 788 : 672
       }" height="${isCard ? 471.8 : 363.8}" href="${escapeXml(
-        sourceFile.publicPath,
+        artworkHref,
       )}" preserveAspectRatio="xMidYMid meet" clip-path="url(#art-${id})"/>`
     : `<g aria-hidden="true"><rect x="118" y="155" width="620" height="230" rx="78" fill="#ffffff" fill-opacity="0.62"/><text x="428" y="302" text-anchor="middle" font-family="system-ui, sans-serif" font-size="92" font-weight="800" fill="#203244">${escapeXml(
         genericSymbol(asset),
@@ -1648,6 +1863,72 @@ function validateManifest(manifest) {
   }
 }
 
+
+async function renderedArtworkMetrics(assetPath) {
+  try {
+    puppeteerPromise ??= import(
+      pathToFileURL(process.env.PUPPETEER_ENTRY).href,
+    );
+    const puppeteer = await puppeteerPromise;
+    browserPromise ??= puppeteer.default.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    });
+    const browser = await browserPromise;
+    const page = await browser.newPage();
+    try {
+      await page.goto(PRODUCTION_ORIGIN, {
+        waitUntil: "domcontentloaded",
+        timeout: 30_000,
+      });
+      return await page.evaluate(async (source) => {
+        const image = new Image();
+        image.src = `${source}?render=${Date.now()}`;
+        await new Promise((resolve, reject) => {
+          image.onload = resolve;
+          image.onerror = reject;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = 428;
+        canvas.height = 270;
+        const context = canvas.getContext("2d", {
+          willReadFrequently: true,
+        });
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const pixels = context.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        ).data;
+        let opaque = 0;
+        let colorful = 0;
+        for (let index = 0; index < pixels.length; index += 4) {
+          const red = pixels[index];
+          const green = pixels[index + 1];
+          const blue = pixels[index + 2];
+          const alpha = pixels[index + 3];
+          if (alpha > 20) opaque += 1;
+          if (
+            alpha > 20 &&
+            Math.max(red, green, blue) - Math.min(red, green, blue) > 28
+          )
+            colorful += 1;
+        }
+        return { opaque, colorful };
+      }, `${PRODUCTION_ORIGIN}${assetPath}`);
+    } finally {
+      await page.close();
+    }
+  } catch {
+    return { opaque: 0, colorful: 0 };
+  }
+}
+
 async function waitForProductionManifest(generationRunId) {
   const deadline = Date.now() + 25 * 60_000;
   let lastError = "not_started";
@@ -1677,6 +1958,11 @@ async function waitForProductionManifest(generationRunId) {
           const svg = await assetResponse.text();
           if (!svg.includes('viewBox="0 0 856 539.8"'))
             throw new Error(`production_ratio_invalid:${id}`);
+          const metrics = await renderedArtworkMetrics(asset.path);
+          if (metrics.opaque < 60000 || metrics.colorful < 1200)
+            throw new Error(
+              `production_artwork_not_rendered:${id}:${JSON.stringify(metrics)}`,
+            );
         }
         const runtime = await fetch(`${PRODUCTION_ORIGIN}/coverage.js?cache=${Date.now()}`);
         const runtimeText = await runtime.text();
@@ -1707,7 +1993,7 @@ async function main() {
   gitConfigure();
   syncMain();
   installPipelineFiles();
-  run("pnpm", ["exec", "biome", "format", "--write", ".github/workflows/liquid-glass-assets-completion.yml", "api/asset-sources.mjs", "apps/consumer-alpha/public/coverage.js", "apps/consumer-alpha/public/liquid-glass.css", "apps/consumer-alpha/src/asset-source-catalogue.ts", "scripts/complete_liquid_glass_assets.mjs", "vercel.json"]);
+  run("pnpm", ["exec", "biome", "format", "--write", "api/asset-sources.mjs", "apps/consumer-alpha/public/coverage.js", "apps/consumer-alpha/public/liquid-glass.css", "apps/consumer-alpha/src/asset-source-catalogue.ts", "scripts/complete_liquid_glass_assets.mjs", "vercel.json"]);
   run("pnpm", ["--filter", "@jro/consumer-alpha-app", "typecheck"]);
   run("pnpm", ["--filter", "@jro/consumer-alpha-app", "build"]);
   commitAndPush("Expose official asset source catalogue", [
@@ -1718,7 +2004,7 @@ async function main() {
     "supabase/migrations/20260825202837_asset_source_catalogue.sql",
     "vercel.json",
     "scripts/complete_liquid_glass_assets.mjs",
-    ".github/workflows/liquid-glass-assets-completion.yml",
+    
   ]);
 
   const catalogue = await waitForCatalogue();
