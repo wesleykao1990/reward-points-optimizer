@@ -120,8 +120,8 @@
     "電子マネー(nanaco)": "emoney.nanaco",
     "電子マネー(waon)": "emoney.waon",
     Suica: "storedvalue.suica",
-    ANAマイル: "mile.ana",
-    JALマイル: "mile.jal",
+    ANAマイル: "point.ana-mile",
+    JALマイル: "point.jal-mile",
   });
 
   let byId = new Map();
@@ -167,13 +167,19 @@
     image.alt = "";
     image.loading = "lazy";
     image.decoding = "async";
+    const cardLayout =
+      asset.entity_type === "credit_card" ||
+      String(asset.id).startsWith("card.");
+    frame.classList.toggle("is-liquid-card", cardLayout);
     image.addEventListener(
       "error",
       () => {
         if (frame.dataset.liquidGlassPath !== asset.path) return;
         frame.replaceChildren(...original.map((node) => node.cloneNode(true)));
+        frame.classList.remove("is-liquid-card");
         frame.dataset.liquidGlassFailed = asset.path;
         delete frame.dataset.liquidGlassPath;
+        delete frame.dataset.liquidAssetId;
       },
       { once: true },
     );
@@ -216,8 +222,10 @@
     const manifest = await response.json();
     if (
       manifest.version !== "liquid-glass-assets.v2" ||
-      manifest.asset_count !== 246 ||
-      !Array.isArray(manifest.assets)
+      !Number.isSafeInteger(manifest.asset_count) ||
+      manifest.asset_count < 251 ||
+      !Array.isArray(manifest.assets) ||
+      manifest.assets.length !== manifest.asset_count
     )
       throw new Error("asset_manifest_invalid");
     const manifestById = new Map(

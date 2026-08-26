@@ -1,8 +1,8 @@
 .payment-logo {
-  width: 52px !important;
+  width: 64px !important;
   height: auto !important;
-  aspect-ratio: 85.6 / 53.98;
-  flex: 0 0 52px !important;
+  aspect-ratio: 3 / 2;
+  flex: 0 0 64px !important;
   padding: 0 !important;
   overflow: visible;
   border: 0 !important;
@@ -10,22 +10,36 @@
   box-shadow: none !important;
 }
 
+.payment-logo.is-liquid-card {
+  width: 70px !important;
+  aspect-ratio: 85.6 / 53.98;
+  flex-basis: 70px !important;
+}
+
 .payment-logo img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px rgb(15 33 48 / 13%));
 }
 
 .route-node-logo {
-  width: 46px !important;
-  flex-basis: 46px !important;
+  width: 54px !important;
+  flex-basis: 54px !important;
+}
+
+.route-node-logo.is-liquid-card {
+  width: 58px !important;
+  flex-basis: 58px !important;
 }
 
 @media (max-width: 370px) {
   .payment-logo {
-    width: 46px !important;
-    flex-basis: 46px !important;
+    width: 58px !important;
+    flex-basis: 58px !important;
+  }
+  .payment-logo.is-liquid-card {
+    width: 64px !important;
+    flex-basis: 64px !important;
   }
 }
