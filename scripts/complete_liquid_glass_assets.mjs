@@ -978,6 +978,7 @@ async function fetchBytes(url, options = {}) {
       headers: {
         "user-agent": USER_AGENT,
         accept: options.accept ?? "*/*",
+        ...(options.referer ? { referer: options.referer } : {}),
       },
       signal: controller.signal,
     });
@@ -1182,6 +1183,7 @@ async function evaluateCandidate(asset, candidate) {
     const fetched = await fetchBytes(candidate.url, {
       accept: "image/avif,image/webp,image/svg+xml,image/png,image/jpeg,image/gif,*/*;q=0.5",
       timeout: 22_000,
+      referer: candidate.referer,
     });
     const mime = sniffMime(fetched.bytes, fetched.contentType);
     if (!mime.startsWith("image/")) return null;
@@ -1548,6 +1550,7 @@ async function acquireRemote(asset, pageUrl, explicitImageUrl) {
       url: explicitImageUrl,
       descriptor: "official-explicit-image",
       alt: asset.display_name,
+      referer: pageUrl,
     });
     if (explicit) return { ...explicit, pageUrl, sourceKind: "official-explicit-image" };
   }
