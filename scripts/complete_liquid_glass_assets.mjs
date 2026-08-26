@@ -808,6 +808,8 @@ const EXPLICIT_IMAGE_OVERRIDES = Object.freeze({
 });
 
 const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
+  "program.jp.bicpoint": "https://www.biccamera.com/bc/c/info/point/no_check.jsp",
+  "program.jp.muji-good": "https://www.muji.com/jp/ja/service/goodprogram/",
   "instrument.card.majica-ucs": "https://www.ucscard.co.jp/lineup/ucscard/",
   "instrument.card.rakuten-bank-card-credit-function": "https://www.rakuten-bank.co.jp/card/rc/update.html",
   "program.jp.nitori": "https://www.nitori-net.jp/ec/characteristic/loyalty-program/",
@@ -818,6 +820,16 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
+  "mile.ana": "reference-official/ana-mileage.png",
+  "wallet.anapay": "reference-official/ana-pay.png",
+  "program.jp.mi-point": "reference-official/mi-point.jpg",
+  "program.jp.takashimaya-point": "reference-official/takashimaya-point.png",
+  "instrument.card.rakuten-bank-card-credit-function": "reference-official/rakuten-bank-card.png",
+  "program.jp.nitori": "reference-official/nitori-members.jpg",
+  "instrument.card.ana-wide-gold-card": "reference-official/ana-wide-gold-card.jpg",
+  "instrument.card.ana-super-flyers-gold-card": "reference-official/ana-super-flyers-gold-card.jpg",
+  "instrument.card.ana-card-general": "reference-official/ana-card-general.jpg",
+  "instrument.card.majica-ucs": "reference-official/majica-ucs.png",
   "program.jp.dpoint": "dpoint.png",
   "program.jp.jrepoint": "jrepoint.webp",
   "program.jp.nanaco": "nanaco.png",
