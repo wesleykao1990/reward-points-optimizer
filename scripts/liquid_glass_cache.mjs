@@ -116,6 +116,15 @@ export function createLiquidGlassCacheClient(origin) {
       });
     },
 
+    async markValidationBatch(records) {
+      for (let index = 0; index < records.length; index += 40) {
+        await post({
+          operation: "mark_validation_batch",
+          records: records.slice(index, index + 40),
+        });
+      }
+    },
+
     async markDeployed(assetIds) {
       for (let index = 0; index < assetIds.length; index += 40) {
         await post({
