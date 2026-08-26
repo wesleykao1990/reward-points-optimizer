@@ -1,0 +1,210 @@
+name: Capture Liquid Glass official card faces
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-capture-card-faces.yml
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser runtime
+        run: npm install --no-save --package-lock=false puppeteer@24.16.0
+
+      - name: Capture exact first-party card faces
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import puppeteer from 'puppeteer';
+          import { mkdir } from 'node:fs/promises';
+
+          const outDir = 'apps/consumer-alpha/public/assets/payment-logos/reference-official';
+          await mkdir(outDir, { recursive: true });
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          });
+
+          const targets = [
+            {
+              id: 'instrument.card.aeon',
+              pageUrl: 'https://www.aeon.co.jp/card/lineup/aeoncardwaon/',
+              out: 'aeon-card-face.png',
+              patterns: ['aeoncardwaon', 'aeon card', 'イオンカード', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.d',
+              pageUrl: 'https://dcard.docomo.ne.jp/st/dcard_dcard/index.html',
+              out: 'd-card-face.png',
+              patterns: ['dcard_dcard', 'dカード', 'カードデザイン', 'card'],
+            },
+            {
+              id: 'instrument.card.mitsui-sumitomo-card-nl',
+              pageUrl: 'https://www.smbc-card.com/nyukai/card/numberless.jsp',
+              out: 'smbc-nl-card-face.png',
+              patterns: ['numberless', 'ナンバーレス', '三井住友カード（nl）', 'card'],
+            },
+            {
+              id: 'instrument.card.paypay-card',
+              pageUrl: 'https://www.paypay-card.co.jp/service/card/overview/',
+              out: 'paypay-card-face.png',
+              patterns: ['paypay card', 'paypayカード', 'card', 'カード'],
+            },
+            {
+              id: 'instrument.card.rakuten-ana-mileage-club-card',
+              pageUrl: 'https://www.rakuten-card.co.jp/card/rakuten-amc-card/',
+              out: 'rakuten-amc-card-face.png',
+              patterns: ['rakuten-amc-card', 'ana mileage', '楽天ana', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.rakuten-card',
+              pageUrl: 'https://www.rakuten-card.co.jp/card/rakuten-card/',
+              out: 'rakuten-card-face.png',
+              patterns: ['rakuten-card', '楽天カード', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.rakuten-gold-card',
+              pageUrl: 'https://www.rakuten-card.co.jp/card/rakuten-gold-card/',
+              out: 'rakuten-gold-card-face.png',
+              patterns: ['rakuten-gold-card', '楽天ゴールドカード', 'gold', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.rakuten-pink-card',
+              pageUrl: 'https://www.rakuten-card.co.jp/card/rakuten-pink-card/',
+              out: 'rakuten-pink-card-face.png',
+              patterns: ['rakuten-pink-card', '楽天pinkカード', 'pink', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.rakuten-premium-card',
+              pageUrl: 'https://www.rakuten-card.co.jp/card/rakuten-premium-card/',
+              out: 'rakuten-premium-card-face.png',
+              patterns: ['rakuten-premium-card', '楽天プレミアムカード', 'premium', 'カード券面'],
+            },
+            {
+              id: 'instrument.card.view-card-standard',
+              pageUrl: 'https://www.jreast.co.jp/card/first/viewcardstandard.html',
+              out: 'view-card-standard-face.png',
+              patterns: ['viewcardstandard', 'ビューカード スタンダード', 'view card', 'カード'],
+            },
+          ];
+
+          const normalize = (value) => String(value || '').normalize('NFKC').toLowerCase();
+
+          async function capture(target) {
+            const page = await browser.newPage();
+            try {
+              await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36');
+              await page.setViewport({ width: 1440, height: 1800, deviceScaleFactor: 2 });
+              await page.goto(target.pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.evaluate(async () => {
+                for (let y = 0; y < document.body.scrollHeight; y += 650) {
+                  window.scrollTo(0, y);
+                  await new Promise((resolve) => setTimeout(resolve, 120));
+                }
+                window.scrollTo(0, 0);
+              });
+              await new Promise((resolve) => setTimeout(resolve, 1800));
+
+              const selection = await page.evaluate(({ patterns }) => {
+                const wanted = patterns.map((p) => String(p).normalize('NFKC').toLowerCase());
+                const nodes = [...document.images];
+                let best = null;
+                nodes.forEach((img, index) => {
+                  const nw = Number(img.naturalWidth || 0);
+                  const nh = Number(img.naturalHeight || 0);
+                  if (nw < 120 || nh < 60) return;
+                  const ratio = nw / Math.max(1, nh);
+                  const cardLike = (ratio >= 1.10 && ratio <= 2.10) || (ratio >= 0.47 && ratio <= 0.92);
+                  if (!cardLike) return;
+                  const rect = img.getBoundingClientRect();
+                  const haystack = `${img.alt || ''} ${img.title || ''} ${img.currentSrc || img.src || ''} ${img.className || ''} ${img.id || ''}`.normalize('NFKC').toLowerCase();
+                  let score = 500;
+                  score += Math.min(180, (nw * nh) / 2500);
+                  wanted.forEach((pattern) => {
+                    if (haystack.includes(pattern)) score += 350;
+                  });
+                  if (/card|カード|券面|visa|master|jcb/.test(haystack)) score += 160;
+                  if (/logo|ロゴ|favicon|icon|bnr|banner|campaign|kv|hero|header/.test(haystack)) score -= 260;
+                  if (rect.width >= 180 && rect.height >= 100) score += 80;
+                  const targetRatio = 85.60 / 53.98;
+                  const landscapeRatio = ratio >= 1 ? ratio : 1 / ratio;
+                  score -= Math.abs(landscapeRatio - targetRatio) * 80;
+                  if (!best || score > best.score) best = { index, score, nw, nh, ratio, src: img.currentSrc || img.src, alt: img.alt || '' };
+                });
+                if (!best) return null;
+                nodes[best.index].setAttribute('data-poimichi-card-face', 'selected');
+                return best;
+              }, { patterns: target.patterns });
+
+              if (!selection) throw new Error(`official card face not found: ${target.id} ${target.pageUrl}`);
+              const handle = await page.$('img[data-poimichi-card-face="selected"]');
+              if (!handle) throw new Error(`capture handle missing: ${target.id}`);
+              await handle.screenshot({ path: `${outDir}/${target.out}`, type: 'png', omitBackground: true });
+              console.log(`CARD_FACE_SELECTED ${target.id} ${JSON.stringify(selection)}`);
+            } finally {
+              await page.close();
+            }
+          }
+
+          try {
+            for (const target of targets) await capture(target);
+          } finally {
+            await browser.close();
+          }
+          NODE
+
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          files = [
+            'aeon-card-face.png', 'd-card-face.png', 'smbc-nl-card-face.png', 'paypay-card-face.png',
+            'rakuten-amc-card-face.png', 'rakuten-card-face.png', 'rakuten-gold-card-face.png',
+            'rakuten-pink-card-face.png', 'rakuten-premium-card-face.png', 'view-card-standard-face.png',
+          ]
+          root = Path('apps/consumer-alpha/public/assets/payment-logos/reference-official')
+          for name in files:
+            p = root / name
+            if not p.exists() or p.stat().st_size == 0:
+              raise SystemExit(f'missing:{name}')
+            b = p.read_bytes()
+            if b[:8] != b'\x89PNG\r\n\x1a\n':
+              raise SystemExit(f'not_png:{name}')
+            w, h = struct.unpack('>II', b[16:24])
+            ratio = w / h
+            cardlike = (1.10 <= ratio <= 2.10) or (0.47 <= ratio <= 0.92)
+            print(f'CAPTURED_CARD_FACE {name} {w}x{h} ratio={ratio:.4f}')
+            if not cardlike:
+              raise SystemExit(f'not_card_shaped:{name}:{ratio}')
+          PY
+
+      - name: Commit captured official card faces
+        shell: bash
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/consumer-alpha/public/assets/payment-logos/reference-official/*-card-face.png \
+                  apps/consumer-alpha/public/assets/payment-logos/reference-official/d-card-face.png \
+                  apps/consumer-alpha/public/assets/payment-logos/reference-official/smbc-nl-card-face.png \
+                  apps/consumer-alpha/public/assets/payment-logos/reference-official/paypay-card-face.png \
+                  apps/consumer-alpha/public/assets/payment-logos/reference-official/view-card-standard-face.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Vendor verified first-party card faces for Liquid Glass'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
