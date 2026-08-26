@@ -26,6 +26,10 @@
       "destination": "/api/visual-assets"
     },
     {
+      "source": "/catalogue-ui",
+      "destination": "/api/catalogue-ui"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -47,6 +51,9 @@
     },
     "api/visual-assets.mjs": {
       "maxDuration": 30
+    },
+    "api/catalogue-ui.mjs": {
+      "maxDuration": 15
     }
   },
   "headers": [
