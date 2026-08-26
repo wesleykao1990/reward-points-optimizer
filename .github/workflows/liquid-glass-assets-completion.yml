@@ -46,7 +46,15 @@ jobs:
           echo "PUPPETEER_ENTRY=/tmp/liquid-glass-puppeteer/node_modules/puppeteer/lib/esm/puppeteer/puppeteer.js" >> "$GITHUB_ENV"
 
       - name: Freeze requested 211 canonical plus 35 alias scope
-        run: python scripts/patch_liquid_glass_scope.py
+        run: |
+          python scripts/patch_liquid_glass_scope.py
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/complete_liquid_glass_assets.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "Freeze Liquid Glass catalogue to requested 246 assets"
+            git push origin HEAD:main
+          fi
 
       - name: Generate, validate, commit, deploy, and smoke-test all assets
         env:
