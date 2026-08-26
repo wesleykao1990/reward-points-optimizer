@@ -1,0 +1,117 @@
+name: Capture remaining Liquid Glass official artwork
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-capture-cdn-outliers.yml
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser runtime
+        run: npm install --no-save --package-lock=false puppeteer@24.16.0
+
+      - name: Capture exact first-party artwork elements
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import puppeteer from 'puppeteer';
+          import { mkdir } from 'node:fs/promises';
+
+          const outDir = 'apps/consumer-alpha/public/assets/payment-logos/reference-official';
+          await mkdir(outDir, { recursive: true });
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          });
+
+          async function capture({ pageUrl, out, patterns }) {
+            const page = await browser.newPage();
+            try {
+              await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36');
+              await page.setViewport({ width: 1440, height: 1600, deviceScaleFactor: 2 });
+              await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.evaluate(async () => {
+                for (let y = 0; y < document.body.scrollHeight; y += 700) {
+                  window.scrollTo(0, y);
+                  await new Promise((resolve) => setTimeout(resolve, 120));
+                }
+                window.scrollTo(0, 0);
+              });
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              const selectedIndex = await page.evaluate((wanted) => {
+                const imgs = [...document.images];
+                const normalized = (value) => String(value || '').normalize('NFKC').toLowerCase();
+                let best = null;
+                imgs.forEach((img, index) => {
+                  const rect = img.getBoundingClientRect();
+                  const haystack = normalized(`${img.alt} ${img.title} ${img.currentSrc} ${img.className}`);
+                  let score = Math.min(100, (Math.max(1, img.naturalWidth) * Math.max(1, img.naturalHeight)) / 5000);
+                  wanted.forEach((pattern) => {
+                    if (haystack.includes(normalized(pattern))) score += 500;
+                  });
+                  if (/logo|point|ポイント|good program|ビック/.test(haystack)) score += 50;
+                  if (/banner|bnr|campaign/.test(haystack)) score -= 100;
+                  if (rect.width < 30 || rect.height < 20) score -= 150;
+                  if (!best || score > best.score) best = { index, score };
+                });
+                if (!best || best.score < 300) return -1;
+                imgs[best.index].setAttribute('data-poimichi-capture', 'selected');
+                return best.index;
+              }, patterns);
+              if (selectedIndex < 0) throw new Error(`official element not found: ${pageUrl}`);
+              const element = await page.$('img[data-poimichi-capture="selected"]');
+              if (!element) throw new Error(`capture handle missing: ${pageUrl}`);
+              await element.screenshot({ path: `${outDir}/${out}`, type: 'png', omitBackground: true });
+              console.log(`captured ${out} from ${pageUrl}`);
+            } finally {
+              await page.close();
+            }
+          }
+
+          await capture({
+            pageUrl: 'https://www.biccamera.com/bc/c/info/point/no_check.jsp',
+            out: 'bic-point.png',
+            patterns: ['ビックポイントカード', 'bic point'],
+          });
+          await capture({
+            pageUrl: 'https://www.muji.com/jp/ja/service/goodprogram/',
+            out: 'muji-good-program.png',
+            patterns: ['MUJI GOOD PROGRAM', 'mujigoodprogram'],
+          });
+          await browser.close();
+          NODE
+
+          file apps/consumer-alpha/public/assets/payment-logos/reference-official/bic-point.png
+          file apps/consumer-alpha/public/assets/payment-logos/reference-official/muji-good-program.png
+          test -s apps/consumer-alpha/public/assets/payment-logos/reference-official/bic-point.png
+          test -s apps/consumer-alpha/public/assets/payment-logos/reference-official/muji-good-program.png
+
+      - name: Commit captured official artwork
+        shell: bash
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/consumer-alpha/public/assets/payment-logos/reference-official/bic-point.png \
+                  apps/consumer-alpha/public/assets/payment-logos/reference-official/muji-good-program.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Vendor Bic and MUJI official Liquid Glass artwork'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
