@@ -5,6 +5,9 @@
   "buildCommand": "pnpm --filter @jro/consumer-alpha-app... build",
   "outputDirectory": "apps/consumer-alpha/public",
   "regions": ["hnd1"],
+  "github": {
+    "autoJobCancelation": false
+  },
   "rewrites": [
     {
       "source": "/internal/agent-feed/events",
