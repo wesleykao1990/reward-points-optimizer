@@ -1,45 +1,199 @@
 .payment-logo {
-  width: 64px !important;
+  position: relative;
+  isolation: isolate;
+  width: 78px !important;
   height: auto !important;
   aspect-ratio: 3 / 2;
-  flex: 0 0 64px !important;
+  flex: 0 0 78px !important;
+  display: grid !important;
+  place-items: center;
   padding: 0 !important;
-  overflow: visible;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  overflow: hidden;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.52) 44%, rgba(225, 235, 246, 0.42) 100%) !important;
+  box-shadow:
+    0 9px 18px rgba(42, 61, 82, 0.14),
+    0 2px 4px rgba(42, 61, 82, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(91, 112, 139, 0.14),
+    inset 1px 0 0 rgba(255, 255, 255, 0.74),
+    inset -1px 0 0 rgba(108, 132, 160, 0.1) !important;
+  backdrop-filter: blur(14px) saturate(1.18);
+  -webkit-backdrop-filter: blur(14px) saturate(1.18);
+  transform: translateZ(0);
+}
+
+.payment-logo::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 1px 2px auto 2px;
+  height: 43%;
+  border-radius: 14px 14px 48% 48%;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.06));
+  opacity: .72;
+}
+
+.payment-logo::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: auto 8% 4px 8%;
+  height: 7px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(86, 105, 128, .16), transparent 70%);
+  filter: blur(2px);
 }
 
 .payment-logo.is-liquid-card {
-  width: 70px !important;
+  width: 84px !important;
   aspect-ratio: 85.6 / 53.98;
-  flex-basis: 70px !important;
+  flex-basis: 84px !important;
+  border-radius: 14px !important;
 }
 
 .payment-logo img {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 88%;
+  height: 80%;
   object-fit: contain;
+  filter: saturate(1.08) contrast(1.04);
 }
 
+.payment-logo.is-liquid-card img {
+  width: 94%;
+  height: 92%;
+  border-radius: 10px;
+  filter: saturate(1.06) contrast(1.03);
+}
+
+.payment-logo .liquid-brand-mark {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 7px;
+  text-align: center;
+  font-weight: 850;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #17202a;
+  text-shadow: 0 1px 0 rgba(255,255,255,.92), 0 1px 1px rgba(21,31,43,.12);
+}
+
+.payment-logo .liquid-brand-mark small {
+  display: block;
+  margin-top: 2px;
+  font-size: 7px;
+  font-weight: 750;
+  letter-spacing: .01em;
+}
+
+.payment-logo .liquid-brand-mark.is-jal strong { color: #d70c18; font-size: 20px; }
+.payment-logo .liquid-brand-mark.is-revolut strong { font-size: 15px; letter-spacing: -.06em; }
+.payment-logo .liquid-brand-mark.is-saison strong { color: #184aa0; font-size: 10px; line-height: 1.12; }
+
 .route-node-logo {
-  width: 54px !important;
-  flex-basis: 54px !important;
+  width: 60px !important;
+  flex-basis: 60px !important;
 }
 
 .route-node-logo.is-liquid-card {
-  width: 58px !important;
-  flex-basis: 58px !important;
+  width: 64px !important;
+  flex-basis: 64px !important;
+}
+
+.card-provider-group {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(189, 207, 222, .72);
+  border-radius: 18px;
+  background: rgba(255,255,255,.58);
+  box-shadow: 0 3px 8px rgba(42,61,82,.07);
+  overflow: clip;
+}
+
+.card-provider-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 74px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-provider-group > summary::-webkit-details-marker { display: none; }
+.card-provider-group > summary::after {
+  content: "›";
+  margin-left: auto;
+  font-size: 25px;
+  line-height: 1;
+  color: #718497;
+  transform: rotate(90deg);
+  transition: transform .18s ease;
+}
+.card-provider-group[open] > summary::after { transform: rotate(-90deg); }
+
+.card-provider-copy {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card-provider-copy strong { font-size: 15px; color: #40586b; }
+.card-provider-copy small { flex: 0 0 auto; color: #8394a3; font-weight: 650; }
+
+.card-provider-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 10px 12px;
+}
+
+.card-provider-products .card-sku-option {
+  min-width: 0;
+  align-items: center;
+}
+
+.card-provider-products .card-sku-option .p0-product-name strong {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.card-provider-products .card-sku-option .p0-product-name small {
+  font-size: 10px;
+}
+
+@media (max-width: 430px) {
+  .payment-logo {
+    width: 72px !important;
+    flex-basis: 72px !important;
+  }
+  .payment-logo.is-liquid-card {
+    width: 76px !important;
+    flex-basis: 76px !important;
+  }
+  .card-provider-products { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 370px) {
   .payment-logo {
-    width: 58px !important;
-    flex-basis: 58px !important;
+    width: 66px !important;
+    flex-basis: 66px !important;
   }
   .payment-logo.is-liquid-card {
-    width: 64px !important;
-    flex-basis: 64px !important;
+    width: 70px !important;
+    flex-basis: 70px !important;
   }
 }
