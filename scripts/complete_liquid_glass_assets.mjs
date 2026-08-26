@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
+import { createLiquidGlassCacheClient } from "./liquid_glass_cache.mjs";
 
 const ROOT = process.cwd();
 const PUBLIC_ROOT = join(ROOT, "apps/consumer-alpha/public");
@@ -11,6 +12,9 @@ const SOURCE_ROOT = join(OUTPUT_ROOT, "sources");
 const PRODUCTION_ORIGIN =
   process.env.LIQUID_GLASS_PRODUCTION_ORIGIN ??
   "https://reward-points-optimizer-consumer-al.vercel.app";
+const durableCache = createLiquidGlassCacheClient(PRODUCTION_ORIGIN);
+const durableSourceByAssetId = new Map();
+const durableAssetById = new Map();
 const EXPECTED_CANONICAL = 211;
 const EXPECTED_ALIASES = 35;
 const EXPECTED_ASSETS = EXPECTED_CANONICAL + EXPECTED_ALIASES;
@@ -820,6 +824,16 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
+  "instrument.card.view-card-standard": "reference-official/view-card-standard-face.png",
+  "instrument.card.rakuten-premium-card": "reference-official/rakuten-premium-card-face.png",
+  "instrument.card.rakuten-pink-card": "reference-official/rakuten-pink-card-face.png",
+  "instrument.card.rakuten-gold-card": "reference-official/rakuten-gold-card-face.png",
+  "instrument.card.rakuten-card": "reference-official/rakuten-card-face.png",
+  "instrument.card.rakuten-ana-mileage-club-card": "reference-official/rakuten-amc-card-face.png",
+  "instrument.card.paypay-card": "reference-official/paypay-card-face.png",
+  "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
+  "instrument.card.d": "reference-official/d-card-face.png",
+  "instrument.card.aeon": "reference-official/aeon-card-face.png",
   "program.jp.muji-good": "reference-official/muji-good-program.png",
   "program.jp.bicpoint": "reference-official/bic-point.png",
   "mile.ana": "reference-official/ana-mileage.png",
@@ -1725,6 +1739,31 @@ function genericSource(asset) {
   };
 }
 
+function durableSourceObject(row) {
+  return {
+    bytes: Buffer.from(row.content_base64, "base64"),
+    imageUrl: row.official_image_url ?? null,
+    mime: row.mime_type,
+    dimensions:
+      row.width && row.height ? { width: Number(row.width), height: Number(row.height) } : null,
+    descriptor: "supabase-persisted-official-artwork",
+    score: 1000,
+    pageUrl: row.official_page_url ?? null,
+    sourceKind: row.source_kind,
+  };
+}
+
+async function hydrateDurableCache(assetIds) {
+  durableSourceByAssetId.clear();
+  durableAssetById.clear();
+  const cached = await durableCache.getCache(assetIds);
+  for (const row of cached.sources ?? []) durableSourceByAssetId.set(row.asset_id, row);
+  for (const row of cached.assets ?? []) durableAssetById.set(row.asset_id, row);
+  console.log(
+    `LIQUID_GLASS_CACHE reused_assets=${durableAssetById.size} cached_sources=${durableSourceByAssetId.size}`,
+  );
+}
+
 const sourceCache = new Map();
 
 async function acquireSource(asset, canonicalById) {
@@ -1735,6 +1774,8 @@ async function acquireSource(asset, canonicalById) {
     sourceCache.set(
       cacheKey,
       (async () => {
+        const persisted = durableSourceByAssetId.get(resolved.id);
+        if (persisted) return durableSourceObject(persisted);
         if (GENERIC_IDS.has(resolved.id)) return genericSource(resolved);
         const localFilename = LOCAL_OFFICIAL_ART[resolved.id];
         if (localFilename) return localOfficial(resolved, localFilename);
@@ -1948,13 +1989,85 @@ async function generateAssets(catalogue) {
   if (new Set(assets.map((asset) => asset.id)).size !== EXPECTED_ASSETS)
     throw new Error("asset_ids_not_unique");
 
+  const generationRunId = `liquid-glass-${Date.now()}-${sha256(
+    JSON.stringify(assets.map((asset) => asset.id)),
+  ).slice(0, 12)}`;
+  await durableCache.waitUntilReady();
+  await hydrateDurableCache(assets.map((asset) => asset.id));
+
   const failures = [];
   const generated = await mapLimit(assets, 5, async (asset) => {
     try {
+      const outputPath = outputPathFor(asset);
+      const cachedAsset = durableAssetById.get(asset.id);
+      const cachedSourceRow =
+        durableSourceByAssetId.get(asset.id) ??
+        (asset.alias_of ? durableSourceByAssetId.get(asset.alias_of) : null);
+      if (
+        cachedAsset &&
+        (!cachedAsset.source_sha256 ||
+          cachedSourceRow?.source_sha256 === cachedAsset.source_sha256)
+      ) {
+        if (cachedSourceRow) sourceFileFor(durableSourceObject(cachedSourceRow));
+        write(outputPath, cachedAsset.svg_text);
+        return {
+          id: asset.id,
+          display_name: asset.display_name,
+          labels: labelsFor(asset),
+          entity_type: asset.entity_type,
+          alias_of: asset.alias_of,
+          resolved_id: asset.alias_of ?? asset.id,
+          path: `/${relative(PUBLIC_ROOT, outputPath).replaceAll("\\", "/")}`,
+          aspect_ratio: "85.60:53.98",
+          transparent_outside_card: true,
+          source_kind: cachedAsset.source_kind,
+          source_page_url: cachedAsset.source_page_url,
+          source_image_url: cachedAsset.source_image_url,
+          source_sha256: cachedAsset.source_sha256,
+          source_asset_path: cachedAsset.source_asset_path,
+          source_mime: cachedAsset.source_mime,
+          source_dimensions: cachedAsset.source_dimensions,
+          source_score: null,
+          official_reference_preserved:
+            cachedAsset.source_kind !== "poimichi_generic_category",
+          reused_from_supabase: true,
+        };
+      }
+
       const { resolved, source } = await acquireSource(asset, canonicalById);
       const sourceFile = sourceFileFor(source);
-      const outputPath = outputPathFor(asset);
-      write(outputPath, liquidGlassSvg(asset, source, sourceFile));
+      const svg = liquidGlassSvg(asset, source, sourceFile);
+      write(outputPath, svg);
+      if (source.bytes && sourceFile) {
+        await durableCache.storeSource({
+          asset_id: asset.id,
+          alias_of: asset.alias_of,
+          source_sha256: sourceFile.digest,
+          source_kind: source.sourceKind,
+          mime_type: source.mime,
+          content_base64: source.bytes.toString("base64"),
+          width: source.dimensions?.width ?? null,
+          height: source.dimensions?.height ?? null,
+          official_page_url: source.pageUrl ?? null,
+          official_image_url: source.imageUrl ?? null,
+        });
+      }
+      await durableCache.storeAsset({
+        asset_id: asset.id,
+        alias_of: asset.alias_of,
+        display_name: asset.display_name,
+        entity_type: asset.entity_type,
+        svg_text: svg,
+        svg_sha256: sha256(svg),
+        generation_run_id: generationRunId,
+        source_kind: source.sourceKind,
+        source_page_url: source.pageUrl ?? null,
+        source_image_url: source.imageUrl ?? null,
+        source_sha256: sourceFile?.digest ?? null,
+        source_asset_path: sourceFile?.publicPath ?? null,
+        source_mime: source.mime,
+        source_dimensions: source.dimensions,
+      });
       return {
         id: asset.id,
         display_name: asset.display_name,
@@ -1988,9 +2101,6 @@ async function generateAssets(catalogue) {
   }
 
   const rows = generated.filter(Boolean);
-  const generationRunId = `liquid-glass-${Date.now()}-${sha256(
-    JSON.stringify(rows.map((row) => [row.id, row.source_sha256])),
-  ).slice(0, 12)}`;
   const sourceStats = rows.reduce((stats, row) => {
     stats[row.source_kind] = (stats[row.source_kind] ?? 0) + 1;
     return stats;
@@ -2086,6 +2196,29 @@ function validateManifest(manifest) {
   }
 }
 
+
+async function persistValidationResults(manifest, validationError = null) {
+  let failures = [];
+  const failurePath = join(OUTPUT_ROOT, "validation-failures.json");
+  if (validationError && existsSync(failurePath)) {
+    try {
+      failures = JSON.parse(readFileSync(failurePath, "utf8"));
+    } catch {
+      failures = [];
+    }
+  }
+  const records = manifest.assets.map((asset) => {
+    const errors = failures.filter(
+      (failure) => typeof failure === "string" && failure.startsWith(`${asset.id}:`),
+    );
+    return {
+      asset_id: asset.id,
+      status: errors.length > 0 ? "invalid" : "valid",
+      errors,
+    };
+  });
+  await durableCache.markValidationBatch(records);
+}
 
 async function renderedArtworkMetrics(assetPath) {
   try {
@@ -2232,7 +2365,13 @@ async function main() {
 
   const catalogue = await waitForCatalogue();
   const manifest = await generateAssets(catalogue);
-  validateManifest(manifest);
+  try {
+    validateManifest(manifest);
+    await persistValidationResults(manifest);
+  } catch (error) {
+    await persistValidationResults(manifest, error);
+    throw error;
+  }
   run("git", ["pull", "--rebase", "--autostash", "origin", "main"]);
   const generatedCommit = commitAndPush(
     "Generate 246 reference-faithful Liquid Glass assets [assets-generated]",
@@ -2244,6 +2383,7 @@ async function main() {
     asset_count: manifest.asset_count,
   });
   await waitForProductionManifest(manifest.generation_run_id);
+  await durableCache.markDeployed(manifest.assets.map((asset) => asset.id));
   console.log(
     JSON.stringify({
       status: "complete",
