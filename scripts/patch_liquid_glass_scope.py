@@ -66,8 +66,17 @@ new_mime = 'const extension = extname(filename).toLocaleLowerCase("en-US");\n  c
 if old_mime in text:
     text = text.replace(old_mime, new_mime, 1)
 
+# Surface exact acquisition failures in GitHub Actions rather than losing them with
+# the ephemeral runner filesystem.
+old_failure = '''  if (failures.length > 0) {\n    writeJson(join(OUTPUT_ROOT, "generation-failures.json"), failures);\n    throw new Error(`asset_generation_failed:${failures.length}`);\n  }'''
+new_failure = '''  if (failures.length > 0) {\n    writeJson(join(OUTPUT_ROOT, "generation-failures.json"), failures);\n    console.error("LIQUID_GLASS_GENERATION_FAILURES=" + JSON.stringify(failures));\n    throw new Error(`asset_generation_failed:${failures.length}`);\n  }'''
+if old_failure in text:
+    text = text.replace(old_failure, new_failure, 1)
+elif "LIQUID_GLASS_GENERATION_FAILURES=" not in text:
+    raise SystemExit("generation failure block missing")
+
 # The generator must not rewrite the workflow file that triggered it.
 text = text.replace('".github/workflows/liquid-glass-assets-completion.yml", ', '')
 
 path.write_text(text)
-print("Liquid Glass generator patched for frozen 211 canonical + 35 alias scope")
+print("Liquid Glass generator patched for frozen 211 canonical + 35 alias scope and diagnostics")
