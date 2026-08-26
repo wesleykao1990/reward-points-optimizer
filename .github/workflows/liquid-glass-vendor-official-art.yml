@@ -1,0 +1,76 @@
+name: Vendor remaining Liquid Glass official artwork
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-vendor-official-art.yml
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch and validate first-party artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          dst='apps/consumer-alpha/public/assets/payment-logos/reference-official'
+          mkdir -p "$dst"
+          fetch() {
+            out="$1"; url="$2"; ref="$3"; expected="$4"
+            tmp="$(mktemp)"
+            curl --http1.1 --fail --location --silent --show-error --retry 3 --retry-all-errors --max-time 45 \
+              -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36' \
+              -e "$ref" -o "$tmp" "$url"
+            test -s "$tmp"
+            mime="$(file --brief --mime-type "$tmp")"
+            echo "$out <- $url ($mime, $(wc -c < "$tmp") bytes)"
+            case "$expected" in
+              image/jpeg) [[ "$mime" == image/jpeg ]] ;;
+              image/png) [[ "$mime" == image/png ]] ;;
+              image/svg+xml) grep -qi '<svg' "$tmp" ;;
+              *) exit 2 ;;
+            esac
+            mv "$tmp" "$dst/$out"
+          }
+
+          fetch majica-ucs.png 'https://www.ucscard.co.jp/assets/images/lineup/ucscard/mv_pc.png' 'https://www.ucscard.co.jp/lineup/ucscard/' image/png
+          fetch ana-card-general.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/general_10.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/' image/jpeg
+          fetch ana-super-flyers-gold-card.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_05.gif' 'https://www.ana.co.jp/ja/jp/amc/premium/sfc/' image/jpeg
+          fetch ana-wide-gold-card.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_03.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/' image/jpeg
+          fetch bic-point.png 'https://www.biccamera.co.jp/shopguide/campaign/camp-caution/img/pointcard/bic_pointcard.png' 'https://www.biccamera.com/bc/c/info/point/index.jsp' image/png
+          fetch muji-good-program.svg 'https://www.muji.com/jp/ja/service/goodprogram/assets/img/logo-mujigoodprogram.svg' 'https://www.muji.com/jp/ja/service/goodprogram/' image/svg+xml
+          fetch nitori-members.jpg 'https://www.nitori-net.jp/ecstatic/include/characteristic/loyalty-program/img01.png' 'https://www.nitori-net.jp/ec/characteristic/loyalty-program/' image/jpeg
+          fetch rakuten-bank-card.png 'https://www.rakuten-bank.co.jp/card/rc/images/update-img-01.png' 'https://www.rakuten-bank.co.jp/card/rc/update.html' image/png
+          fetch takashimaya-point.png 'https://www.takashimaya.co.jp/base/pc/store/special/card_list/img/img_takashimaya_point.png' 'https://www.takashimaya.co.jp/store/special/card_list/' image/png
+          fetch mi-point.jpg 'https://www.mistore.jp/on/demandware.static/-/Sites-seamless-Library/ja_JP/dw9d1221a6/content/campaign/mip_cp/images/main.jpg' 'https://www.mistore.jp/shopping/campaign/mip_cp.html' image/jpeg
+          fetch ana-pay.png 'https://www.ana.co.jp/amc/ana-pay/img/image_top/mv/tittle_231107.png' 'https://www.ana.co.jp/ja/jp/amc/ana-pay/' image/png
+          fetch ana-mileage.png 'https://www.ana.co.jp/amc/ana-pay/img/image_top/logo/logo_ana.png' 'https://www.ana.co.jp/ja/jp/amc/' image/png
+
+          cat > "$dst/SOURCES.md" <<'EOF'
+          # First-party artwork vendored for Liquid Glass rendering
+
+          These files are byte-for-byte downloads from the provider's official domain and are used only as the preserved brand/card artwork inside Poimichi's Liquid Glass wrapper. Their source URLs are pinned in `scripts/patch_liquid_glass_explicit_sources.py`.
+          EOF
+
+      - name: Commit official source bytes
+        shell: bash
+        run: |
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/consumer-alpha/public/assets/payment-logos/reference-official
+          if ! git diff --cached --quiet; then
+            git commit -m 'Vendor verified first-party Liquid Glass artwork'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
