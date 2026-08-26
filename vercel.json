@@ -15,6 +15,10 @@
       "destination": "/api/coverage"
     },
     {
+      "source": "/asset-sources",
+      "destination": "/api/asset-sources"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/handler?path=:path*"
     }
@@ -29,6 +33,9 @@
       "includeFiles": "{fixtures/m3/provisional/**,registry/**}"
     },
     "api/coverage.mjs": {
+      "maxDuration": 15
+    },
+    "api/asset-sources.mjs": {
       "maxDuration": 15
     }
   },
