@@ -73,6 +73,24 @@ jobs:
               '".github/workflows/liquid-glass-assets-completion.yml",',
               "",
           )
+          # Production migration history is immutable. The v2 asset-source view
+          # is carried by db/0048 + its own staged Supabase migration instead.
+          legacy_migration_write = '''  write(
+            join(
+              ROOT,
+              "supabase/migrations/20260825202837_asset_source_catalogue.sql",
+            ),
+            migrationSource(),
+          );
+          '''
+          text = text.replace(legacy_migration_write, "")
+          text = text.replace(
+              '    "supabase/migrations/20260825202837_asset_source_catalogue.sql",\n',
+              "",
+          )
+          if "supabase/migrations/20260825202837_asset_source_catalogue.sql" in text:
+              raise SystemExit("legacy asset-source migration mutation remains")
+
           # Normalize the legacy Bing image-search regex if an older repair
           # snippet reintroduces invalid identity escapes under Unicode mode.
           text = text.replace(
