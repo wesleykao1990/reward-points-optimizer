@@ -867,13 +867,13 @@ const EXPLICIT_SOURCE_PAGE_OVERRIDES = Object.freeze({
 });
 
 const LOCAL_OFFICIAL_ART = Object.freeze({
-  "point.ana-mile": "reference-official/ana-mileage.png",
   "instrument.card.aeon": "reference-official/aeon-card-face.png",
   "instrument.card.d": "reference-official/d-card-face.png",
   "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
   "instrument.card.paypay-card": "reference-official/paypay-card-face.png",
   "instrument.card.rakuten-card": "reference-official/rakuten-card-face.png",
   "instrument.card.view-card-standard": "reference-official/view-card-standard-face.png",
+  "point.ana-mile": "reference-official/ana-mileage.png",
   "instrument.card.rakuten-premium-card": "reference-official/rakuten-premium-card-face.png",
   "instrument.card.rakuten-pink-card": "reference-official/rakuten-pink-card-face.png",
   "instrument.card.rakuten-gold-card": "reference-official/rakuten-gold-card-face.png",
@@ -2227,9 +2227,13 @@ async function generateAssets(catalogue) {
     generation_run_id: generationRunId,
     generated_at: new Date().toISOString(),
     source_catalogue_deployment_commit_sha: catalogue.deployment_commit_sha,
-    aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2",
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
+    aspect_ratio: "mixed",
+    width: null,
+    height: null,
+    geometries: {
+      card: { aspect_ratio: "85.60:53.98", width: 856, height: 539.8 },
+      service: { aspect_ratio: "3:2", width: 672, height: 448 },
+    },
     canonical_count: EXPECTED_CANONICAL,
     alias_count: EXPECTED_ALIASES,
     asset_count: rows.length,
