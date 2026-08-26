@@ -20,7 +20,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Fetch and validate first-party artwork
+      - name: Fetch and validate reachable first-party artwork
         shell: bash
         run: |
           set -euo pipefail
@@ -29,7 +29,7 @@ jobs:
           fetch() {
             out="$1"; url="$2"; ref="$3"; expected="$4"
             tmp="$(mktemp)"
-            curl --http1.1 --fail --location --silent --show-error --retry 3 --retry-all-errors --max-time 45 \
+            curl --http1.1 --fail --location --silent --show-error --retry 2 --retry-all-errors --max-time 30 \
               -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36' \
               -e "$ref" -o "$tmp" "$url"
             test -s "$tmp"
@@ -48,8 +48,6 @@ jobs:
           fetch ana-card-general.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/general_10.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/' image/jpeg
           fetch ana-super-flyers-gold-card.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_05.gif' 'https://www.ana.co.jp/ja/jp/amc/premium/sfc/' image/jpeg
           fetch ana-wide-gold-card.jpg 'https://www.ana.co.jp/amc/anacard/googlepay/popup01/images/gold_03.gif' 'https://www.ana.co.jp/ja/jp/amc/anacard/ichiran/' image/jpeg
-          fetch bic-point.png 'https://www.biccamera.co.jp/shopguide/campaign/camp-caution/img/pointcard/bic_pointcard.png' 'https://www.biccamera.com/bc/c/info/point/index.jsp' image/png
-          fetch muji-good-program.svg 'https://www.muji.com/jp/ja/service/goodprogram/assets/img/logo-mujigoodprogram.svg' 'https://www.muji.com/jp/ja/service/goodprogram/' image/svg+xml
           fetch nitori-members.jpg 'https://www.nitori-net.jp/ecstatic/include/characteristic/loyalty-program/img01.png' 'https://www.nitori-net.jp/ec/characteristic/loyalty-program/' image/jpeg
           fetch rakuten-bank-card.png 'https://www.rakuten-bank.co.jp/card/rc/images/update-img-01.png' 'https://www.rakuten-bank.co.jp/card/rc/update.html' image/png
           fetch takashimaya-point.png 'https://www.takashimaya.co.jp/base/pc/store/special/card_list/img/img_takashimaya_point.png' 'https://www.takashimaya.co.jp/store/special/card_list/' image/png
@@ -60,7 +58,7 @@ jobs:
           cat > "$dst/SOURCES.md" <<'EOF'
           # First-party artwork vendored for Liquid Glass rendering
 
-          These files are byte-for-byte downloads from the provider's official domain and are used only as the preserved brand/card artwork inside Poimichi's Liquid Glass wrapper. Their source URLs are pinned in `scripts/patch_liquid_glass_explicit_sources.py`.
+          These files are byte-for-byte downloads from the provider's official domain and are used only as preserved brand/card artwork inside Poimichi's Liquid Glass wrapper. Bic Point and MUJI GOOD PROGRAM remain direct first-party sources because their CDNs intermittently reject GitHub-runner downloads.
           EOF
 
       - name: Commit official source bytes
