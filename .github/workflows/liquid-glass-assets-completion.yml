@@ -65,3 +65,4 @@ jobs:
         run: node scripts/complete_liquid_glass_assets.mjs
 
       # Keep this workflow path as the explicit trigger for diagnostic/completion retries.
+      # Recovery retry includes official rendered-element and origin-capture fallbacks.
