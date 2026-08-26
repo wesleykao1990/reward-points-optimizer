@@ -17,71 +17,92 @@ concurrency:
 jobs:
   vendor:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - name: Download exact first-party card faces
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser runtime
+        run: npm install --no-save --package-lock=false puppeteer@24.16.0
+
+      - name: Capture exact first-party card faces from official issuer pages
         shell: bash
         run: |
           set -euo pipefail
-          out='apps/consumer-alpha/public/assets/payment-logos/reference-official'
-          mkdir -p "$out"
+          node --input-type=module <<'NODE'
+          import puppeteer from 'puppeteer';
+          import { mkdir } from 'node:fs/promises';
 
-          fetch() {
-            local url="$1" referer="$2" file="$3"
-            curl --fail --location --retry 4 --retry-delay 2 \
-              --connect-timeout 20 --max-time 90 \
-              -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36' \
-              -e "$referer" "$url" -o "$out/$file"
-            test -s "$out/$file"
-            file "$out/$file"
+          const outDir = 'apps/consumer-alpha/public/assets/payment-logos/reference-official';
+          await mkdir(outDir, { recursive: true });
+          const targets = [
+            ['instrument.card.aeon','https://www.aeon.co.jp/card/lineup/aeoncardwaon/','card_162_j_v','aeon-card-face.png'],
+            ['instrument.card.d','https://dcard.docomo.ne.jp/st/dcard_dcard/index.html','dCARD_REGULAR_white_VISA.jpg','d-card-face.png'],
+            ['instrument.card.mitsui-sumitomo-card-nl','https://www.smbc-card.com/nyukai/card/numberless.jsp','nyukai_numberless.png','smbc-nl-card-face.png'],
+            ['instrument.card.paypay-card','https://www.paypay-card.co.jp/service/card/overview/','illust_card_regular@2x.png','paypay-card-face.png'],
+            ['instrument.card.rakuten-ana-mileage-club-card','https://www.rakuten-card.co.jp/card/rakuten-amc-card/','cardface_bl_n_visa_touch_rp_e_front_360_227.png','rakuten-amc-card-face.png'],
+            ['instrument.card.rakuten-card','https://www.rakuten-card.co.jp/cashless/newcard/','cardface_n_visa_front.png','rakuten-card-face.png'],
+            ['instrument.card.rakuten-gold-card','https://www.rakuten-card.co.jp/cashless/newcard/','cardface_g_visa_front.png','rakuten-gold-card-face.png'],
+            ['instrument.card.rakuten-pink-card','https://www.rakuten-card.co.jp/cashless/newcard/','cardface_pk_visa_front.png','rakuten-pink-card-face.png'],
+            ['instrument.card.rakuten-premium-card','https://www.rakuten-card.co.jp/cashless/newcard/','cardface_p_visa_front.png','rakuten-premium-card-face.png'],
+            ['instrument.card.view-card-standard','https://www.jreast.co.jp/card/first/viewcardstandard.html','img_card_viewcardstandard.jpg','view-card-standard-face.png'],
+          ];
+
+          const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
+          const failures = [];
+          for (const [id, pageUrl, match, out] of targets) {
+            const page = await browser.newPage();
+            try {
+              await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36');
+              await page.setViewport({ width: 1440, height: 1800, deviceScaleFactor: 2 });
+              await page.goto(pageUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.evaluate(async () => {
+                for (let y = 0; y < document.body.scrollHeight; y += 700) {
+                  window.scrollTo(0, y);
+                  await new Promise((resolve) => setTimeout(resolve, 100));
+                }
+                window.scrollTo(0, 0);
+              });
+              await new Promise((resolve) => setTimeout(resolve, 1200));
+              const selected = await page.evaluate((needle) => {
+                const imgs = [...document.images];
+                const index = imgs.findIndex((img) => (img.currentSrc || img.src || '').includes(needle));
+                if (index < 0) return null;
+                imgs[index].setAttribute('data-poimichi-official-card','1');
+                return { src: imgs[index].currentSrc || imgs[index].src, alt: imgs[index].alt || '', width: imgs[index].naturalWidth, height: imgs[index].naturalHeight };
+              }, match);
+              if (!selected) throw new Error(`official_card_face_not_found:${match}`);
+              const handle = await page.$('img[data-poimichi-official-card="1"]');
+              if (!handle) throw new Error('selected_handle_missing');
+              await handle.screenshot({ path: `${outDir}/${out}`, type: 'png', omitBackground: true });
+              console.log(`CAPTURED ${id} ${JSON.stringify(selected)}`);
+            } catch (error) {
+              failures.push({ id, error: String(error) });
+            } finally {
+              await page.close();
+            }
           }
+          await browser.close();
+          if (failures.length) {
+            console.error(JSON.stringify(failures));
+            process.exit(1);
+          }
+          NODE
 
-          fetch 'https://www.aeon.co.jp/-/media/AeonCard/common/cardface/card_162_j_v.png?sc_lang=ja-JP&hash=175ED52073ACF919893A4DFD33EC5EB4' \
-            'https://www.aeon.co.jp/card/lineup/aeoncardwaon/' 'aeon-card-face.png'
-          fetch 'https://dcard.docomo.ne.jp/st/common/images/dCARD_REGULAR_white_VISA.jpg' \
-            'https://dcard.docomo.ne.jp/st/dcard_dcard/index.html' 'd-card-face.jpg'
-          fetch 'https://www.smbc-card.com/content/dam/smcc/jp/ja/card/nyukai_numberless.png' \
-            'https://www.smbc-card.com/nyukai/card/numberless.jsp' 'smbc-nl-card-face.png'
-          fetch 'https://www.paypay-card.co.jp/service/images/card/overview/illust_card_regular@2x.png' \
-            'https://www.paypay-card.co.jp/service/card/overview/' 'paypay-card-face.png'
-          fetch 'https://image.card.jp.rakuten-static.com/card_corp/common/cardface/cardface_bl_n_visa_touch_rp_e_front_360_227.png' \
-            'https://www.rakuten-card.co.jp/card/rakuten-amc-card/' 'rakuten-amc-card-face.png'
-          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_n_visa_front.png' \
-            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-card-face.png'
-          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_g_visa_front.png' \
-            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-gold-card-face.png'
-          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_pk_visa_front.png' \
-            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-pink-card-face.png'
-          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_p_visa_front.png' \
-            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-premium-card-face.png'
-          fetch 'https://www.jreast.co.jp/card/first/img/img_card_viewcardstandard.jpg' \
-            'https://www.jreast.co.jp/card/first/viewcardstandard.html' 'view-card-standard-face.jpg'
-
-      - name: Validate downloaded files are image bytes
+      - name: Validate captured files
         shell: bash
         run: |
           set -euo pipefail
           root='apps/consumer-alpha/public/assets/payment-logos/reference-official'
-          files=(
-            aeon-card-face.png
-            d-card-face.jpg
-            smbc-nl-card-face.png
-            paypay-card-face.png
-            rakuten-amc-card-face.png
-            rakuten-card-face.png
-            rakuten-gold-card-face.png
-            rakuten-pink-card-face.png
-            rakuten-premium-card-face.png
-            view-card-standard-face.jpg
-          )
-          for f in "${files[@]}"; do
+          for f in aeon-card-face.png d-card-face.png smbc-nl-card-face.png paypay-card-face.png rakuten-amc-card-face.png rakuten-card-face.png rakuten-gold-card-face.png rakuten-pink-card-face.png rakuten-premium-card-face.png view-card-standard-face.png; do
             test -s "$root/$f"
-            file "$root/$f" | grep -Eiq 'PNG image data|JPEG image data'
+            file "$root/$f" | grep -Eiq 'PNG image data'
           done
 
       - name: Commit official card faces
