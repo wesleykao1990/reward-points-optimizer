@@ -2081,6 +2081,7 @@ function validateManifest(manifest) {
   }
   if (invalid.length > 0) {
     writeJson(join(OUTPUT_ROOT, "validation-failures.json"), invalid);
+    console.error("LIQUID_GLASS_VALIDATION_FAILURES=" + JSON.stringify(invalid));
     throw new Error(`asset_validation_failed:${invalid.length}`);
   }
 }
