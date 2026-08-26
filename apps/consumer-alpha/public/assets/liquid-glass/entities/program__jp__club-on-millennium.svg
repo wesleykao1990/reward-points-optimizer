@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="856" height="539.8" viewBox="0 0 856 539.8" role="img" aria-labelledby="title-program__jp__club-on-millennium" data-asset-id="program.jp.club-on-millennium" data-source-kind="official_page_image" data-source-page="https://www.sogo-seibu.jp/" data-source-image="https://static.wixstatic.com/media/4a5912_94124b39539d461c99c2c669ab9fa572~mv2.png">
+<title id="title-program__jp__club-on-millennium">Club On / Millennium Points</title>
+<defs>
+  <linearGradient id="glass-program__jp__club-on-millennium" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/><stop offset="0.56" stop-color="#edf4fb" stop-opacity="0.76"/><stop offset="1" stop-color="#d9e8f4" stop-opacity="0.68"/></linearGradient>
+  <linearGradient id="shine-program__jp__club-on-millennium" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.82"/><stop offset="0.46" stop-color="#ffffff" stop-opacity="0.12"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+  <filter id="shadow-program__jp__club-on-millennium" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="13" stdDeviation="13" flood-color="#24445f" flood-opacity="0.2"/></filter>
+  <clipPath id="art-program__jp__club-on-millennium"><rect x="92" y="88" width="672" height="363.8" rx="58"/></clipPath>
+</defs>
+<g filter="url(#shadow-program__jp__club-on-millennium)">
+  <rect x="18" y="18" width="820" height="503.8" rx="58" fill="url(#glass-program__jp__club-on-millennium)" stroke="#ffffff" stroke-opacity="0.9" stroke-width="5"/>
+  <rect x="28" y="28" width="800" height="483.8" rx="50" fill="#ffffff" fill-opacity="0.56"/>
+  <image x="92" y="88" width="672" height="363.8" href="/assets/liquid-glass/sources/21f86b55f986848665ce54ab.png" preserveAspectRatio="xMidYMid meet" clip-path="url(#art-program__jp__club-on-millennium)"/>
+  <path d="M48 80C230 16 568 20 808 77C660 184 420 211 92 192C66 157 52 117 48 80Z" fill="url(#shine-program__jp__club-on-millennium)"/>
+  <path d="M43 448C240 355 522 358 824 222V470C824 495 806 508 779 508H77C59 508 48 486 43 448Z" fill="#75b8d8" fill-opacity="0.09"/>
+  <path d="M42 393C279 245 538 311 822 160" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="8"/>
+  <rect x="24" y="24" width="808" height="491.8" rx="54" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3"/>
+</g>
+</svg>
