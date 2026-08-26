@@ -1,0 +1,73 @@
+name: Repair payment catalogue and Liquid Glass UI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/payment-catalogue-repair.yml
+      - scripts/repair_payment_catalogue.py
+      - apps/consumer-alpha/public/catalogue-sync.js
+      - apps/consumer-alpha/public/catalogue-sync.css
+      - api/catalogue-ui.mjs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: payment-catalogue-repair-v1
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Apply DB-backed catalogue and UI repair
+        run: python scripts/repair_payment_catalogue.py
+
+      - name: Validate browser scripts
+        run: |
+          node --check apps/consumer-alpha/public/catalogue-sync.js
+          node --check apps/consumer-alpha/public/coverage.js
+          node --check api/catalogue-ui.mjs
+
+      - name: Build consumer app
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @jro/consumer-alpha-app... build
+
+      - name: Commit repair and launch asset completion
+        run: |
+          git config user.name poimichi-catalogue-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            apps/consumer-alpha/public/index.html \
+            apps/consumer-alpha/public/coverage.js \
+            apps/consumer-alpha/public/catalogue-sync.js \
+            apps/consumer-alpha/public/catalogue-sync.css \
+            apps/consumer-alpha/src/point-spend-recommendation.ts \
+            api/catalogue-ui.mjs \
+            vercel.json \
+            scripts/complete_liquid_glass_assets.mjs \
+            .github/workflows/liquid-glass-assets-completion.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "Unify DB-backed payment catalogue and repair Liquid Glass sources"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
