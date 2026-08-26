@@ -190,6 +190,22 @@ async function handleOperation(body) {
     return { status: "updated", asset_id: assetId };
   }
 
+  if (operation === "mark_validation_batch") {
+    const records = Array.isArray(body.records) ? body.records : [];
+    if (records.length > 40) throw new Error("too_many_validation_records");
+    for (const record of records) {
+      const assetId = requiredString(record?.asset_id, "records.asset_id");
+      const status = requiredString(record?.status, "records.status");
+      if (!["valid", "invalid"].includes(status))
+        throw new Error("validation_status_invalid");
+      const errors = Array.isArray(record?.errors)
+        ? record.errors.filter((value) => typeof value === "string")
+        : [];
+      await target.markValidation(assetId, status, errors);
+    }
+    return { status: "updated", asset_count: records.length };
+  }
+
   if (operation === "mark_deployed") {
     const assetIds = Array.isArray(body.asset_ids)
       ? body.asset_ids.filter((value) => typeof value === "string" && value.length > 0)
