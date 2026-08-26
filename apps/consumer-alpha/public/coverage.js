@@ -277,7 +277,9 @@
     const ids = [...document.querySelectorAll('input[data-card-sku-owned="true"]:checked')]
       .map((input) => input.dataset.cardSku)
       .filter(Boolean);
-    try { localStorage.setItem(CARD_SKU_STORAGE_KEY, JSON.stringify([...new Set(ids)])); } catch {}
+    try {
+      localStorage.setItem(CARD_SKU_STORAGE_KEY, JSON.stringify([...new Set(ids)]));
+    } catch {}
   };
 
   const inferId = (frame) => {
@@ -339,7 +341,9 @@
     const asset = byId.get(id);
     if (!asset) return;
     const cardLayout =
-      asset.entity_type === "credit_card" || String(asset.id).startsWith("instrument.card.") || String(id).startsWith("card.");
+      asset.entity_type === "credit_card" ||
+      String(asset.id).startsWith("instrument.card.") ||
+      String(id).startsWith("card.");
     frame.classList.toggle("is-liquid-card", cardLayout);
     frame.dataset.liquidAssetId = id;
 
@@ -385,8 +389,22 @@
     const strong = option.querySelector(".p0-product-name strong");
     if (strong) strong.textContent = serviceNames[input.value];
     const small = option.querySelector(".p0-product-name small");
-    if (small && /^(?:ウォレット|ポイント|電子マネー|stored|wallet|point)/iu.test(small.textContent || ""))
+    if (
+      small &&
+      /^(?:ウォレット|ポイント|電子マネー|stored|wallet|point)/iu.test(
+        small.textContent || "",
+      )
+    )
       small.textContent = "";
+  };
+
+  const mirrorProviderSelection = (familyId, checked) => {
+    const mirror = [...document.querySelectorAll("[data-p0-product]")].find(
+      (candidate) => candidate.value === familyId,
+    );
+    if (!mirror || mirror.checked === checked) return;
+    mirror.checked = checked;
+    mirror.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
   const makeProviderDetails = (option, familyId, config) => {
@@ -396,7 +414,21 @@
       .filter((asset) => asset && asset.entity_type === "credit_card");
     if (!products.length) return;
 
+    const originalInput = option.querySelector(
+      'input[data-payment-stack-owned="true"]',
+    );
+    const wasChecked = Boolean(originalInput?.checked);
     const selectedSkus = readSelectedCardSkus();
+    const selectedFromProvider = products.filter((asset) =>
+      selectedSkus.has(asset.id),
+    );
+    if (wasChecked && selectedFromProvider.length === 0) {
+      const defaultAsset = byId.get(familyId);
+      if (defaultAsset?.id && config.cards.includes(defaultAsset.id))
+        selectedSkus.add(defaultAsset.id);
+      else if (products[0]?.id) selectedSkus.add(products[0].id);
+    }
+
     const details = document.createElement("details");
     details.className = "card-provider-group";
     details.dataset.cardProvider = familyId;
@@ -426,6 +458,20 @@
 
     const grid = document.createElement("div");
     grid.className = "card-provider-products";
+
+    const syncProvider = ({ notifyMirror = true } = {}) => {
+      const selectedInputs = [
+        ...grid.querySelectorAll('input[data-card-sku-owned="true"]:checked'),
+      ];
+      proxy.checked = selectedInputs.length > 0;
+      small.textContent =
+        selectedInputs.length > 0
+          ? `${selectedInputs.length}/${products.length}枚選択中`
+          : `${products.length}枚から選択`;
+      writeSelectedCardSkus();
+      if (notifyMirror) mirrorProviderSelection(familyId, proxy.checked);
+    };
+
     products.forEach((asset) => {
       const child = document.createElement("label");
       child.className = "p0-product-option card-sku-option";
@@ -445,16 +491,14 @@
       note.textContent = "このカードを選択";
       name.append(productName, note);
       child.append(checkbox, childLogo, name);
-      checkbox.addEventListener("change", () => {
-        proxy.checked = [...grid.querySelectorAll('input[data-card-sku-owned="true"]')].some((item) => item.checked);
-        writeSelectedCardSkus();
-      });
+      checkbox.addEventListener("change", () => syncProvider());
       grid.appendChild(child);
     });
-    proxy.checked = [...grid.querySelectorAll('input[data-card-sku-owned="true"]')].some((item) => item.checked);
+
     details.appendChild(grid);
     option.dataset.cardProviderEnhanced = "true";
     option.replaceWith(details);
+    syncProvider({ notifyMirror: false });
     hydrateFrame(logo);
     grid.querySelectorAll(".payment-logo").forEach(hydrateFrame);
   };
@@ -462,16 +506,22 @@
   const enhancePaymentPicker = () => {
     if (!ready) return;
     document
-      .querySelectorAll("#payment-stack-owned .payment-stack-picker > .p0-product-option")
+      .querySelectorAll(
+        "#payment-stack-owned .payment-stack-picker > .p0-product-option",
+      )
       .forEach((option) => {
         renameOption(option);
-        const input = option.querySelector('input[data-payment-stack-owned="true"]');
+        const input = option.querySelector(
+          'input[data-payment-stack-owned="true"]',
+        );
         if (!input?.value) return;
         const provider = cardProviders[input.value];
         if (provider) makeProviderDetails(option, input.value, provider);
       });
     document
-      .querySelectorAll("#payment-stack-owned .payment-stack-picker > .p0-product-option")
+      .querySelectorAll(
+        "#payment-stack-owned .payment-stack-picker > .p0-product-option",
+      )
       .forEach(renameOption);
   };
 
@@ -487,7 +537,10 @@
           if (!(added instanceof Element)) return;
           if (added.matches(".payment-logo")) hydrateFrame(added);
           hydrateAll(added);
-          if (added.matches(".p0-product-option, .payment-stack-picker") || added.querySelector?.(".p0-product-option"))
+          if (
+            added.matches(".p0-product-option, .payment-stack-picker") ||
+            added.querySelector?.(".p0-product-option")
+          )
             shouldEnhance = true;
         }),
       );
@@ -502,6 +555,25 @@
     link.rel = "stylesheet";
     link.href = "/liquid-glass.css";
     document.head.appendChild(link);
+  };
+
+  const installResetSync = () => {
+    document
+      .getElementById("wallet-reset-button")
+      ?.addEventListener(
+        "click",
+        () => {
+          try {
+            localStorage.removeItem(CARD_SKU_STORAGE_KEY);
+          } catch {}
+          document
+            .querySelectorAll('input[data-card-sku-owned="true"]')
+            .forEach((input) => {
+              input.checked = false;
+            });
+        },
+        { capture: true },
+      );
   };
 
   const loadAssets = async () => {
@@ -519,7 +591,9 @@
       manifest.assets.length !== manifest.asset_count
     )
       throw new Error("asset_manifest_invalid");
-    const manifestById = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+    const manifestById = new Map(
+      manifest.assets.map((asset) => [asset.id, asset]),
+    );
     byId = new Map(manifestById);
     manifest.assets.forEach((asset) => {
       if (!String(asset.id).startsWith("card.")) return;
@@ -530,7 +604,9 @@
     byName = new Map();
     manifest.assets.forEach((asset) => {
       byName.set(normalize(asset.display_name), asset);
-      (asset.labels ?? []).forEach((label) => byName.set(normalize(label), asset));
+      (asset.labels ?? []).forEach((label) =>
+        byName.set(normalize(label), asset),
+      );
     });
     ready = true;
     installStylesheet();
@@ -564,6 +640,7 @@
   };
 
   observe();
+  installResetSync();
   void loadAssets().catch(() => {});
   void loadCoverage();
 })();
