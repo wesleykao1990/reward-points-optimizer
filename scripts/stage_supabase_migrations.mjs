@@ -101,6 +101,10 @@ const SCHEMA_DESTINATIONS = new Map([
     "0047_online_commerce_golden_backfill.sql",
     "20260825210410_online_commerce_golden_backfill.sql",
   ],
+  [
+    "0048_asset_source_catalogue_v2.sql",
+    "20260826001600_asset_source_catalogue_v2.sql",
+  ],
 ]);
 
 const SKIPPED_SCHEMA_MIGRATIONS = new Set([
