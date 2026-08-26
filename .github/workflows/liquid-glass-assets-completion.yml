@@ -63,3 +63,5 @@ jobs:
         env:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
+
+      # Keep this workflow path as the explicit trigger for diagnostic/completion retries.
