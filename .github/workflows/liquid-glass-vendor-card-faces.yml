@@ -1,0 +1,98 @@
+name: Vendor final Liquid Glass card faces
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/liquid-glass-vendor-card-faces.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liquid-glass-vendor-card-faces
+  cancel-in-progress: true
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download exact first-party card faces
+        shell: bash
+        run: |
+          set -euo pipefail
+          out='apps/consumer-alpha/public/assets/payment-logos/reference-official'
+          mkdir -p "$out"
+
+          fetch() {
+            local url="$1" referer="$2" file="$3"
+            curl --fail --location --retry 4 --retry-delay 2 \
+              --connect-timeout 20 --max-time 90 \
+              -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36' \
+              -e "$referer" "$url" -o "$out/$file"
+            test -s "$out/$file"
+            file "$out/$file"
+          }
+
+          fetch 'https://www.aeon.co.jp/-/media/AeonCard/common/cardface/card_162_j_v.png?sc_lang=ja-JP&hash=175ED52073ACF919893A4DFD33EC5EB4' \
+            'https://www.aeon.co.jp/card/lineup/aeoncardwaon/' 'aeon-card-face.png'
+          fetch 'https://dcard.docomo.ne.jp/st/common/images/dCARD_REGULAR_white_VISA.jpg' \
+            'https://dcard.docomo.ne.jp/st/dcard_dcard/index.html' 'd-card-face.jpg'
+          fetch 'https://www.smbc-card.com/content/dam/smcc/jp/ja/card/nyukai_numberless.png' \
+            'https://www.smbc-card.com/nyukai/card/numberless.jsp' 'smbc-nl-card-face.png'
+          fetch 'https://www.paypay-card.co.jp/service/images/card/overview/illust_card_regular@2x.png' \
+            'https://www.paypay-card.co.jp/service/card/overview/' 'paypay-card-face.png'
+          fetch 'https://image.card.jp.rakuten-static.com/card_corp/common/cardface/cardface_bl_n_visa_touch_rp_e_front_360_227.png' \
+            'https://www.rakuten-card.co.jp/card/rakuten-amc-card/' 'rakuten-amc-card-face.png'
+          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_n_visa_front.png' \
+            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-card-face.png'
+          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_g_visa_front.png' \
+            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-gold-card-face.png'
+          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_pk_visa_front.png' \
+            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-pink-card-face.png'
+          fetch 'https://image.card.jp.rakuten-static.com/card_corp/pc/contents/cashless/newcard/cardface_p_visa_front.png' \
+            'https://www.rakuten-card.co.jp/cashless/newcard/' 'rakuten-premium-card-face.png'
+          fetch 'https://www.jreast.co.jp/card/first/img/img_card_viewcardstandard.jpg' \
+            'https://www.jreast.co.jp/card/first/viewcardstandard.html' 'view-card-standard-face.jpg'
+
+      - name: Validate downloaded files are image bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='apps/consumer-alpha/public/assets/payment-logos/reference-official'
+          files=(
+            aeon-card-face.png
+            d-card-face.jpg
+            smbc-nl-card-face.png
+            paypay-card-face.png
+            rakuten-amc-card-face.png
+            rakuten-card-face.png
+            rakuten-gold-card-face.png
+            rakuten-pink-card-face.png
+            rakuten-premium-card-face.png
+            view-card-standard-face.jpg
+          )
+          for f in "${files[@]}"; do
+            test -s "$root/$f"
+            file "$root/$f" | grep -Eiq 'PNG image data|JPEG image data'
+          done
+
+      - name: Commit official card faces
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name poimichi-asset-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/consumer-alpha/public/assets/payment-logos/reference-official/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Vendor final official Liquid Glass card faces'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
