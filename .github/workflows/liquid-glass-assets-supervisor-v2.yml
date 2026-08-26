@@ -2,11 +2,6 @@ name: Supervise complete Liquid Glass asset catalogue v2
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/liquid-glass-assets-supervisor-v2.yml
 
 permissions:
   contents: write
