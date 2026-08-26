@@ -160,6 +160,9 @@ jobs:
             git commit -m "Consolidate Liquid Glass pipeline repairs"
           fi
 
+      - name: Build consumer workspace dependencies
+        run: pnpm --filter @jro/consumer-alpha-app... build
+
       - name: Execute complete acquisition, validation, deployment, and smoke loop
         id: pipeline
         continue-on-error: true
