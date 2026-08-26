@@ -73,6 +73,16 @@ local_entries = {
     "program.jp.mi-point": "reference-official/mi-point.jpg",
     "wallet.anapay": "reference-official/ana-pay.png",
     "mile.ana": "reference-official/ana-mileage.png",
+    "instrument.card.aeon": "reference-official/aeon-card-face.png",
+    "instrument.card.d": "reference-official/d-card-face.jpg",
+    "instrument.card.mitsui-sumitomo-card-nl": "reference-official/smbc-nl-card-face.png",
+    "instrument.card.paypay-card": "reference-official/paypay-card-face.png",
+    "instrument.card.rakuten-ana-mileage-club-card": "reference-official/rakuten-amc-card-face.png",
+    "instrument.card.rakuten-card": "reference-official/rakuten-card-face.png",
+    "instrument.card.rakuten-gold-card": "reference-official/rakuten-gold-card-face.png",
+    "instrument.card.rakuten-pink-card": "reference-official/rakuten-pink-card-face.png",
+    "instrument.card.rakuten-premium-card": "reference-official/rakuten-premium-card-face.png",
+    "instrument.card.view-card-standard": "reference-official/view-card-standard-face.jpg",
 }
 for asset_id, filename in local_entries.items():
     entry = f'  "{asset_id}": "{filename}",\n'
