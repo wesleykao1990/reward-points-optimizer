@@ -1677,6 +1677,41 @@ function labelsFor(asset) {
   return [...labels];
 }
 
+
+const LIQUID_GLASS_SCOPE_EXCLUDED_IDS = new Set([
+  "program.jp.amazonpoint",
+  "program.jp.zozopoint",
+  "instrument.payment.bank-transfer",
+  "instrument.payment.bitcoin",
+  "instrument.payment.carrier-billing",
+  "instrument.payment.cash-on-delivery",
+  "instrument.payment.convenience-store",
+  "instrument.payment.credit-card",
+  "instrument.payment.debit-card",
+  "instrument.payment.netbank-atm",
+  "instrument.payment.paidy",
+  "instrument.payment.pay-easy",
+  "instrument.payment.paypal",
+  "instrument.payment.postal-transfer",
+  "instrument.payment.postpay",
+  "instrument.payment.shopping-loan",
+  "instrument.payment.zozocard",
+  "instrument.value.amazon-gift-card",
+  "instrument.value.biccamera-gift-card",
+  "instrument.value.yahoo-shopping-voucher",
+]);
+
+function liquidGlassCanonicalScope(assets) {
+  const selected = assets.filter(
+    (asset) => !LIQUID_GLASS_SCOPE_EXCLUDED_IDS.has(asset.asset_id),
+  );
+  if (selected.length !== EXPECTED_CANONICAL)
+    throw new Error(
+      `liquid_glass_scope_invalid:${selected.length}:catalogue=${assets.length}`,
+    );
+  return selected;
+}
+
 async function waitForCatalogue() {
   const deadline = Date.now() + 25 * 60_000;
   let lastError = "not_started";
@@ -1691,7 +1726,7 @@ async function waitForCatalogue() {
       if (
         body.version === "asset-source-catalogue.v1" &&
         Array.isArray(body.assets) &&
-        body.assets.length === EXPECTED_CANONICAL
+        liquidGlassCanonicalScope(body.assets).length === EXPECTED_CANONICAL
       )
         return body;
       lastError = `unexpected_count:${body.assets?.length}`;
@@ -1707,7 +1742,7 @@ async function generateAssets(catalogue) {
   rmSync(OUTPUT_ROOT, { recursive: true, force: true });
   mkdirSync(SOURCE_ROOT, { recursive: true });
 
-  const canonical = catalogue.assets.map((asset) => ({
+  const canonical = liquidGlassCanonicalScope(catalogue.assets).map((asset) => ({
     id: asset.asset_id,
     display_name: asset.display_name,
     entity_type: asset.entity_type,
