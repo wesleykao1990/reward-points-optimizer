@@ -15,7 +15,7 @@ const PRODUCTION_ORIGIN =
 const durableCache = createLiquidGlassCacheClient(PRODUCTION_ORIGIN);
 const durableSourceByAssetId = new Map();
 const durableAssetById = new Map();
-const EXPECTED_CANONICAL = 211;
+const EXPECTED_CANONICAL = 213;
 const EXPECTED_ALIASES = 40;
 const EXPECTED_ASSETS = EXPECTED_CANONICAL + EXPECTED_ALIASES;
 const CARD_WIDTH = 856;
@@ -677,8 +677,8 @@ const ALIASES = Object.freeze([
   ["card.rakuten", "Rakuten Card", "instrument.card.rakuten-card"],
   ["card.smbc", "Mitsui Sumitomo Card (NL)", "instrument.card.mitsui-sumitomo-card-nl"],
   ["card.view", "View Card Standard", "instrument.card.view-card-standard"],
-  ["point.moppy", "ポイント (moppy)", null],
-  ["point.saison", "ポイント (saison)", null],
+  ["point.moppy", "モッピーポイント", null],
+  ["point.saison", "永久不滅ポイント", null],
   ["point.saison-permanent", "永久不滅ポイント", null],
   ["point.jr-kyupo", "JRキューポ", null],
   ["point.seven-mile", "セブンマイル", null],
@@ -693,9 +693,9 @@ const ALIASES = Object.freeze([
   ["portal.jal-mileage-park", "JAL Mileage Park", null],
   ["point.ana-mile", "ANAマイル", null],
   ["point.jal-mile", "JALマイル", null],
-  ["point.recruit", "Recruit Point", null],
-  ["emoney.nanaco", "nanaco電子マネー", "instrument.jp.nanaco"],
-  ["emoney.waon", "WAON電子マネー", "instrument.emoney.waon"],
+  ["point.recruit", "リクルートポイント", null],
+  ["emoney.nanaco", "nanaco", "instrument.jp.nanaco"],
+  ["emoney.waon", "WAON", "instrument.emoney.waon"],
 ].map(([id, displayName, aliasOf]) => ({
   id,
   display_name: displayName,
@@ -2231,7 +2231,7 @@ async function generateAssets(catalogue) {
     width: null,
     height: null,
     geometries: {
-      card: { aspect_ratio: "85.60:53.98", width: 856, height: 539.8 },
+      card: { aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2", width: 856, height: 539.8 },
       service: { aspect_ratio: "3:2", width: 672, height: 448 },
     },
     canonical_count: EXPECTED_CANONICAL,
