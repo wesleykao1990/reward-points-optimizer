@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: liquid-glass-assets-completion
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   complete:
@@ -64,5 +64,4 @@ jobs:
           LIQUID_GLASS_PRODUCTION_ORIGIN: https://reward-points-optimizer-consumer-al.vercel.app
         run: node scripts/complete_liquid_glass_assets.mjs
 
-      # Keep this workflow path as the explicit trigger for diagnostic/completion retries.
-      # Recovery retry includes official rendered-element and origin-capture fallbacks.
+      # Latest recovery run supersedes older diagnostic runs in the same concurrency group.
