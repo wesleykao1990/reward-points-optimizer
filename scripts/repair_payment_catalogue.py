@@ -61,8 +61,13 @@ source_pattern = re.compile(
 )
 replacement = '''  const sourceFor = (asset) => asset.path;\n\n  const hydrateFrame ='''
 coverage, count = source_pattern.subn(replacement, coverage, count=1)
-if count != 1 and 'const sourceFor = (asset) => asset.path;' not in coverage:
-    raise SystemExit('coverage sourceFor block missing')
+direct_asset_path = 'image.src = asset.path;' in coverage
+if (
+    count != 1
+    and 'const sourceFor = (asset) => asset.path;' not in coverage
+    and not direct_asset_path
+):
+    raise SystemExit('coverage Liquid Glass source path missing')
 coverage = coverage.replace(
     '    const markSpec = brandMarkOverrides[id] || brandMarkOverrides[asset.id];',
     '    const markSpec = null;',
