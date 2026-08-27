@@ -52,7 +52,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --filter @jro/consumer-alpha-app... build
 
-      - name: Commit repair and launch asset completion
+      - name: Commit repair
         run: |
           git config user.name poimichi-catalogue-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
@@ -64,8 +64,7 @@ jobs:
             apps/consumer-alpha/src/point-spend-recommendation.ts \
             api/catalogue-ui.mjs \
             vercel.json \
-            scripts/complete_liquid_glass_assets.mjs \
-            .github/workflows/liquid-glass-assets-completion.yml
+            scripts/complete_liquid_glass_assets.mjs
           if ! git diff --cached --quiet; then
             git commit -m "Unify DB-backed payment catalogue and repair Liquid Glass sources"
             git pull --rebase origin main
