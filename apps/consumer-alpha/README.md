@@ -1,9 +1,9 @@
 # M6 local consumer alpha
 
 This consumer prototype exposes one bounded merchant comparison journey at
-`POST /api/recommendations`, which evaluates the
-synthetic card route alongside the Nanaco purchase and Seven Card Plus ->
-Nanaco credit-charge experiments when their host ports are available. It
+`POST /api/recommendations`. Every merchant, including Seven-Eleven, uses the
+same selected-product calculation pipeline and the same Supabase-backed
+acceptance boundary. It
 binds to `127.0.0.1` locally, accepts only bounded consumer inputs, and keeps
 rules, assurances, evidence, candidate plans, database credentials, and
 authorization material on the trusted host. Browser DTOs may include only the
@@ -25,12 +25,10 @@ JRO_DATABASE_URL=postgresql://.../jro_local \
 ```
 
 `JRO_DATABASE_URL` is explicit and server-only. When set, one bounded pool
-backs the experimental catalogue, its correction route, all 364 P0
-implementation facts, the active structured Agent Feed reward-rule
-projection, and the exact Nanaco/Seven-Eleven experimental recommendations.
-Without it the localhost shell retains its checked-in demo
-catalogues; each unavailable real route remains visible with a route-scoped
-issue instead of suppressing its valid neighbors.
+backs merchant acceptance, current reward rates, route-graph facts, the
+experimental catalogue, corrections, and implementation facts. Without it,
+the shell can render but comparison fails closed; bundled fixtures never
+replace merchant acceptance or route economics.
 
 The unified response returns one safe record per route. Records distinguish
 `calculation` from `information_only`, report `eligible`, `conditional`,
@@ -69,11 +67,10 @@ The correction route creates a `not_submitted` session-only draft. No browser
 storage, cookies, authentication, live source collection, production mode, or
 current reward advice is enabled.
 
-The legacy synthetic endpoint still exposes one exact Tokyo test branch. The
-browser starts with neutral general shopping and populates every currently
-covered merchant family from `GET /api/consumer/reference`; Seven-Eleven is no
-longer the only named choice. Only that merchant adds its Nanaco-specific
-routes.
+The legacy synthetic endpoint remains available only for isolated engine
+tests. The customer comparison starts with a real merchant and populates every
+currently covered merchant family from `GET /api/consumer/reference`.
+Seven-Eleven does not add a separate customer route or a special input panel.
 Enabling credit cards, mobile payments, or point programmes expands an exact
 allowlisted catalogue of seven card families, six mobile-payment families,
 and eight point families. The selected cards and mobile payments create real

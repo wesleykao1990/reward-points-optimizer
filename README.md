@@ -5,7 +5,7 @@ An agent-native rewards intelligence platform for comparing purchase routes in J
 The long-term product is a **Rewards Passport + Agent Checkout Planner + Rewards Auditor**. The rewards intelligence is the platform; the chatbot is one interface to it.
 
 > [!IMPORTANT]
-> The browser demo uses explicitly enabled synthetic Rewards Passport and route data. It does not connect to real loyalty accounts and must not be treated as current financial advice.
+> Reward rates, merchant acceptance, and route facts come from the configured Supabase PostgreSQL database. The current Rewards Passport balances and expiry lots are clearly marked test data because account authentication is not implemented yet; they must not be treated as real account balances.
 
 ## What works today
 
@@ -15,7 +15,8 @@ The current WebMCP milestone is ready for local testing:
 - deterministic purchase-route comparison through the existing recommendation engine;
 - dynamic `document.modelContext` tool registration and visible Agent Activity;
 - an optional server-side OpenAI agent with bounded, schema-validated tools;
-- synthetic balances and expiry data enabled only with `JRO_DEMO_REWARDS=1`;
+- live Supabase-backed merchant acceptance and reward-rate calculations, shared by every merchant;
+- a clearly labelled synthetic Rewards Passport until user authentication is added;
 - browser, integration, adversarial, and identical-winner test coverage.
 
 The wider repository also includes a versioned rule engine, evidence and provenance contracts, PostgreSQL/Supabase migrations, Agent Feed ingestion boundaries, source-maintenance workflows, and a Vercel deployment adapter.
@@ -38,11 +39,15 @@ pnpm install --frozen-lockfile
 pnpm --filter @jro/consumer-alpha-app... build
 ```
 
-Start the explicit local demo:
+Copy the **Session pooler** connection string from Supabase Dashboard → **Connect**, then read it into the current shell without displaying it:
 
 ```bash
-JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+read -rs "JRO_DATABASE_URL?Paste your Supabase Session pooler URL: "; echo
+export JRO_DATABASE_URL
+PORT=3000 pnpm --filter @jro/consumer-alpha-app start
 ```
+
+`JRO_DATABASE_URL` is server-only. Do not place it in browser JavaScript, HTML, local storage, or a public `VITE_`/`NEXT_PUBLIC_` variable. The app can render without it, but route comparison intentionally reports data unavailable instead of using fixture rates.
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000), go to **貯める**, select at least two payment products, enter a purchase amount such as ¥10,000, and run the comparison.
 
@@ -98,7 +103,7 @@ For zsh, read the key without displaying it and export it only to the current te
 ```bash
 read -rs "OPENAI_API_KEY?Paste your OpenAI API key: "; echo
 export OPENAI_API_KEY
-JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+PORT=3000 pnpm --filter @jro/consumer-alpha-app start
 ```
 
 You can optionally set `JRO_OPENAI_MODEL`. Keep the API key server-side: never place it in `app.js`, `webmcp.js`, HTML, browser storage, DevTools, or a public environment variable. The app does not need the key prefixed with `NEXT_PUBLIC_`, `VITE_`, or anything similar.
@@ -115,10 +120,9 @@ Without a key, the agent fails safely while the normal UI and WebMCP tools remai
 
 | Variable | Required | Purpose |
 |---|---:|---|
-| `JRO_DEMO_REWARDS=1` | Local demo only | Explicitly enables bundled synthetic passport and route economics. |
+| `JRO_DATABASE_URL` | Route comparison | Server-only Supabase/PostgreSQL connection used for current rates, acceptance, and route facts. |
 | `OPENAI_API_KEY` | Agent only | Server-side credential for the built-in Rewards Agent. |
 | `JRO_OPENAI_MODEL` | No | Overrides the agent model. |
-| `JRO_DATABASE_URL` | Hosted/data runtime | Connects the trusted server runtime to PostgreSQL/Supabase. |
 | `PORT` | No | Local server port; defaults to `3000`. |
 
 Additional deployment and Agent Feed variables are documented with their respective subsystems.
@@ -151,7 +155,7 @@ The three interaction paths call the same capability layer and calculator. An LL
 - Rule publication is reviewed and fails closed.
 - Private data and credentials stay on the trusted server.
 - Browser DTOs omit internal rules, hashes, evidence locators, and database credentials.
-- Synthetic examples are visibly labeled and never silently substituted for authoritative data.
+- Synthetic passport examples are visibly labeled and never substituted for Supabase route economics.
 
 Read [WebMCP architecture](docs/webmcp/architecture.md), [security model](docs/webmcp/security-model.md), [data classification](docs/webmcp/data-classification.md), and the repository-wide [trust and provenance policy](docs/01_trust_and_provenance_policy.md) for the full design.
 

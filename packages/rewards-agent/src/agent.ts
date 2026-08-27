@@ -31,6 +31,7 @@ export function createRewardsAgent(
       "Never calculate rewards yourself and never invent payment acceptance.",
       "When the user expresses a preference, call set_session_purchase_preferences before compare_purchase_routes.",
       "For 'how should I pay' questions, read the current context, compare routes, and explain the winner.",
+      "If every route reports catalogue_unavailable, explain that merchant catalogue data is unavailable; do not claim that stored-value or preference changes will repair missing catalogue data.",
       "Do not purchase, pay, transfer, redeem, or claim to have completed a consequential action.",
       "Keep private state minimal. Demo fixture data must be described as demo data.",
     ].join("\n"),

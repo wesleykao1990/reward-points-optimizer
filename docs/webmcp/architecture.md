@@ -45,6 +45,5 @@ The passport values in Milestone 1 are explicitly marked `demo_fixture`. Authent
 - Browser code calls bounded same-origin HTTP capabilities only.
 - `OPENAI_API_KEY` is read only by the server-side SDK.
 - The OpenAI agent receives typed domain tools, never SQL or raw rule-engine access.
-- `JRO_DEMO_REWARDS=1` explicitly selects bundled fixture economics for local testing. Without that flag or an authoritative route source, live calculation endpoints fail closed.
+- `JRO_DATABASE_URL` selects the authoritative Supabase/PostgreSQL runtime for merchant acceptance, reward rates, and route facts. Without it, live calculation endpoints fail closed; the demo flag never substitutes route economics.
 - The production Postgres composition remains authoritative when `JRO_DATABASE_URL` is present.
-

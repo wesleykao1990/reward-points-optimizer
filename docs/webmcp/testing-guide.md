@@ -31,13 +31,15 @@ pnpm --filter @jro/consumer-alpha-app... build
 Start the explicit local demo:
 
 ```bash
-JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+read -rs "JRO_DATABASE_URL?Paste your Supabase Session pooler URL: "; echo
+export JRO_DATABASE_URL
+PORT=3000 pnpm --filter @jro/consumer-alpha-app start
 ```
 
 For the real built-in OpenAI agent, keep the key in the server process only:
 
 ```bash
-OPENAI_API_KEY='your-key' JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+OPENAI_API_KEY='your-key' PORT=3000 pnpm --filter @jro/consumer-alpha-app start
 ```
 
 Optionally set `JRO_OPENAI_MODEL` in the server environment. Never put the key in `app.js`, `webmcp.js`, HTML, DevTools local storage or a public environment variable.
@@ -52,7 +54,7 @@ Open [http://127.0.0.1:3000](http://127.0.0.1:3000).
 4. Click the recommendation/compare action.
 5. Confirm route cards appear, one winner is selected and the comparison explanation is visible.
 
-The results are compiled from a bundled fixture only because `JRO_DEMO_REWARDS=1` was explicit. Do not treat the values as current financial advice.
+The comparison reads current merchant acceptance and reward rules from the configured Supabase database. The displayed Rewards Passport balances remain labelled test data until account authentication is implemented.
 
 ## 4. Test WebMCP discovery and execution
 
@@ -142,7 +144,6 @@ The integration gate asserts that identical deterministic input produces the sam
 - **Badge says 通常UIで利用可能:** update Chrome, enable `chrome://flags/#enable-webmcp-testing`, relaunch and reload the page.
 - **`document.modelContext` is undefined:** the flag/build is not active. The ordinary app can still be tested.
 - **No comparison tool:** enter a valid positive purchase amount and wait briefly for dynamic tool refresh.
-- **Recommendation unavailable:** restart with `JRO_DEMO_REWARDS=1`; the server intentionally refuses to invent a route source otherwise.
+- **Recommendation unavailable:** confirm `JRO_DATABASE_URL` is exported in the same terminal that starts the server. The server intentionally refuses to invent rates or merchant acceptance when Supabase is unavailable.
 - **Agent unavailable:** set `OPENAI_API_KEY` in the terminal that starts the server and restart. Do not expose it to the client.
 - **Install/build warns about Node:** switch to Node 22.x; newer unsupported runtimes may appear to work but are not the test baseline.
-

@@ -1583,16 +1583,13 @@
     const select = document.getElementById("merchant-selector");
     if (!select || !consumerReference) return;
     const previous = select.value;
-    const options = [
-      { value: "merchant.synthetic", label: "一般のお買い物" },
-      ...consumerReference.merchants.map((group) => ({
-        value:
-          group.family_id === "merchant.7eleven"
-            ? "merchant.seveneleven"
-            : group.family_id,
-        label: group.label,
-      })),
-    ];
+    const options = consumerReference.merchants.map((group) => ({
+      value:
+        group.family_id === "merchant.7eleven"
+          ? "merchant.seveneleven"
+          : group.family_id,
+      label: group.label,
+    }));
     clear(select);
     const seen = new Set();
     options.forEach((option) => {
@@ -1603,7 +1600,8 @@
       element.textContent = option.label;
       select.appendChild(element);
     });
-    select.value = seen.has(previous) ? previous : "merchant.synthetic";
+    if (seen.has(previous)) select.value = previous;
+    else if (select.options.length > 0) select.selectedIndex = 0;
     select.dispatchEvent(new Event("change"));
   };
 
@@ -4104,14 +4102,9 @@
   const amountInput = document.getElementById("amount-jpy");
   const merchantSelector = document.getElementById("merchant-selector");
   const syncMerchantContext = () => {
-    const sevenEleven = merchantSelector.value === "merchant.seveneleven";
-    document.getElementById("nanaco-route-fields").hidden = !sevenEleven;
-    document.getElementById("branch-name").textContent = sevenEleven
-      ? "東京エリア"
-      : "通常の店舗";
-    document.getElementById("merchant-support-note").textContent = sevenEleven
-      ? "選択したサービスの通常還元率に、セブン‐イレブン固有のnanacoルートを加えて比較します。"
-      : "選択したカードとモバイル決済の通常還元率で比較します。";
+    document.getElementById("branch-name").textContent = "店舗共通の比較";
+    document.getElementById("merchant-support-note").textContent =
+      "すべてのお店を同じ比較フローで判定し、利用可否と還元率はSupabaseの現在データを使います。";
   };
   const syncInstrumentViews = () => {
     const checked = [...instrumentInputs].filter((input) => input.checked);

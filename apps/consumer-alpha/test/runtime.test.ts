@@ -11,20 +11,22 @@ import {
 } from "../src/runtime.js";
 
 describe("consumer-alpha PostgreSQL runtime configuration", () => {
-  it("wires merchant acceptance from the private typed-rule projection", async () => {
+  it("wires merchant acceptance from the live Supabase merchant projection", async () => {
     const target = {
-      async query<Row = unknown>() {
+      async query<Row = unknown>(text: string, values?: readonly unknown[]) {
+        expect(text).toContain("app_api.merchant_acceptance_current");
+        expect(values).toEqual([
+          "merchant.lawson",
+          "location.lawson.representative",
+        ]);
         return {
           rows: [
             {
-              merchant_id: "merchant.lawson",
-              payment_family: "category.credit_card",
-              accepted: true,
-              rule_id: `atr_${"a".repeat(64)}`,
-              rule_version: 1,
-              source_kind: "source_observation",
-              source_id: "11111111-1111-4111-8111-111111111111",
-              observed_at: "2026-08-24T00:00:00.000Z",
+              instrument_key: "instrument.payment.credit_card_general",
+              action: "pay",
+              acceptance_state: "yes",
+              scope: "chain_default",
+              location_key: null,
             },
           ] as Row[],
         };
@@ -39,6 +41,40 @@ describe("consumer-alpha PostgreSQL runtime configuration", () => {
         effective_at: "2026-08-24T12:00:00+09:00",
       }),
     ).resolves.toEqual(["card.rakuten"]);
+  });
+
+  it("lets a Supabase branch fact override a chain default", async () => {
+    const target = {
+      async query<Row = unknown>() {
+        return {
+          rows: [
+            {
+              instrument_key: "instrument.wallet.paypay",
+              action: "pay",
+              acceptance_state: "no",
+              scope: "branch",
+              location_key: "location.lawson.representative",
+            },
+            {
+              instrument_key: "instrument.wallet.paypay",
+              action: "pay",
+              acceptance_state: "yes",
+              scope: "chain_default",
+              location_key: null,
+            },
+          ] as Row[],
+        };
+      },
+    };
+    const port = createPostgresAppDependencies(target).merchantAcceptance;
+    await expect(
+      port?.listAcceptedFamilies({
+        merchant_id: "merchant.lawson",
+        branch_id: "location.lawson.representative",
+        family_ids: ["wallet.paypay"],
+        effective_at: "2026-08-24T12:00:00+09:00",
+      }),
+    ).resolves.toEqual([]);
   });
 
   it("uses one bounded connection without unsafe pooler session options", () => {

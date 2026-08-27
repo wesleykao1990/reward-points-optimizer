@@ -100,6 +100,27 @@ describe("M6 localhost consumer shell", () => {
     });
   });
 
+  it("serves the current local catalogue enhancers and Liquid Glass assets", async () => {
+    for (const pathname of [
+      "/catalogue-sync.css",
+      "/catalogue-sync.js",
+      "/coverage.js",
+      "/liquid-glass.css",
+      "/assets/liquid-glass/manifest.json",
+      "/assets/liquid-glass/services/card__rakuten.svg",
+    ]) {
+      const response = await handleRequest({ method: "GET", pathname });
+      expect(response.status, pathname).toBe(200);
+      expect(response.body.length, pathname).toBeGreaterThan(0);
+    }
+
+    const privateSource = await handleRequest({
+      method: "GET",
+      pathname: "/assets/liquid-glass/sources/d2548b5fa96b059cf93d79a2.svg",
+    });
+    expect(privateSource.status).toBe(404);
+  });
+
   it("rejects an impossible experimental effective date before evaluator access", async () => {
     let calls = 0;
     const body = JSON.stringify({
@@ -620,15 +641,15 @@ describe("M6 localhost consumer shell", () => {
     expect(source).toContain('stored_value_use: "no"');
     expect(source).not.toContain('getElementById("stored-value-use")');
     expect(html).toContain('id="merchant-selector"');
-    expect(html).toContain("一般のお買い物");
-    expect(html).toContain("選択したカードとモバイル決済の通常還元率");
+    expect(html).not.toContain("一般のお買い物");
+    expect(html).toContain("Supabaseの現在データ");
     expect(html).not.toMatch(/P0の|P0で|P0先行版/u);
     expect(html).not.toContain("条件キー");
     expect(html).not.toContain("上限キー");
     expect(html).not.toContain('id="add-fact"');
     expect(html).not.toContain('id="add-cap"');
     expect(html).toContain("セブン‐イレブン");
-    expect(html).toContain("通常の店舗");
+    expect(html).toContain("店舗共通の比較");
     expect(html).not.toContain("サンプルストア");
     expect(html).not.toContain("東京サンプル店");
     expect(html).not.toContain("サンプルカード");

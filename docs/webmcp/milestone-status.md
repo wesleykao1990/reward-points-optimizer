@@ -16,7 +16,7 @@ Completed:
 - One UI state bridge for normal UI, WebMCP and built-in agent results.
 - Synthetic Rewards Passport summary and expiry lot, explicitly labeled as demo data.
 - Preference-aware deterministic reranking without changing default behavior.
-- Explicit `JRO_DEMO_REWARDS=1` local fixture mode; non-demo calculation still fails closed without an authoritative source.
+- Supabase/PostgreSQL is the sole runtime source for merchant acceptance and route economics; calculation fails closed when `JRO_DATABASE_URL` is absent.
 - Unit, integration, adversarial and identical-winner gate coverage.
 
 Validation record:

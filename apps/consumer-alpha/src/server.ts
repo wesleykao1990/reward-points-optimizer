@@ -92,7 +92,6 @@ import {
 } from "./payment-stack-recommendation.js";
 import {
   calculateSelectedProductPurchases,
-  createBundledFixtureRouteGraphSource,
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   MAX_POINT_SPEND_BODY_BYTES,
@@ -143,6 +142,10 @@ const STATIC_FILES: Readonly<Record<string, string>> = Object.freeze({
   "/": "index.html",
   "/index.html": "index.html",
   "/app.js": "app.js",
+  "/catalogue-sync.css": "catalogue-sync.css",
+  "/catalogue-sync.js": "catalogue-sync.js",
+  "/coverage.js": "coverage.js",
+  "/liquid-glass.css": "liquid-glass.css",
   "/webmcp.js": "webmcp.js",
   "/styles.css": "styles.css",
 });
@@ -150,7 +153,13 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = Object.freeze({
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
 });
+const LIQUID_GLASS_PATH_PATTERN =
+  /^\/assets\/liquid-glass\/(?:manifest\.json|(?:cards|entities|services)\/[A-Za-z0-9_.-]+\.svg)$/u;
+const MAX_STATIC_FILE_BYTES = 256 * 1024;
+const MAX_LIQUID_GLASS_FILE_BYTES = 2 * 1024 * 1024;
 const PAYMENT_LOGO_FILES = new Set([
   "dpoint.png",
   "dbarai.png",
@@ -324,20 +333,6 @@ export type AppCatalogueDependency =
   | MerchantAcceptancePort
   | RewardsAgentRunnerPort
   | AppDependencies;
-
-/** Complete, explicitly synthetic composition for local browser testing. */
-export function createLocalDemoDependencies(): AppDependencies {
-  return Object.freeze({
-    experimentalCatalogue: getDefaultExperimentalCataloguePort(),
-    experimentalRecommendation:
-      createUnavailableNanacoExperimentalRecommendationPort(),
-    experimentalNanacoCreditChargeRecommendation:
-      createUnavailableNanacoCreditChargeRecommendationPort(),
-    implementationFacts: getDefaultImplementationFactCataloguePort(),
-    factInfluenceGraph: getDefaultFactInfluenceGraphPort(),
-    routeGraphSource: createBundledFixtureRouteGraphSource(),
-  });
-}
 
 function resolveActiveRewardCalculations(
   dependency: AppCatalogueDependency | undefined,
@@ -2186,15 +2181,26 @@ function parsePath(request: IncomingMessage): string {
   }
 }
 
+function staticFileName(pathname: string): string | undefined {
+  const exact = STATIC_FILES[pathname];
+  if (exact) return exact;
+  return LIQUID_GLASS_PATH_PATTERN.test(pathname)
+    ? pathname.slice(1)
+    : undefined;
+}
+
 async function staticResponse(pathname: string): Promise<AppResponse> {
-  const fileName = STATIC_FILES[pathname];
+  const fileName = staticFileName(pathname);
   if (!fileName) throw requestError(404, "not_found");
   const filePath = normalize(join(PUBLIC_ROOT, fileName));
   const root = normalize(PUBLIC_ROOT + sep);
   if (!filePath.startsWith(root)) throw requestError(404, "not_found");
   try {
     const stat = await fs.stat(filePath);
-    if (!stat.isFile() || stat.size > 256 * 1024)
+    const maximum = LIQUID_GLASS_PATH_PATTERN.test(pathname)
+      ? MAX_LIQUID_GLASS_FILE_BYTES
+      : MAX_STATIC_FILE_BYTES;
+    if (!stat.isFile() || stat.size > maximum)
       throw new Error("static_file_invalid");
   } catch {
     throw requestError(500, "static_asset_unavailable");
@@ -2475,7 +2481,7 @@ export async function handleRequest(
           body: "",
         };
       }
-      if (STATIC_FILES[pathname]) {
+      if (staticFileName(pathname)) {
         return await staticResponse(pathname);
       }
       return errorResponse(requestError(404, "not_found"));
@@ -3089,12 +3095,11 @@ if (
   relative(process.cwd(), process.argv[1]) === "dist/server.js"
 ) {
   const databaseUrl = process.env.JRO_DATABASE_URL;
-  const demoRewards = process.env.JRO_DEMO_REWARDS === "1";
   if (databaseUrl === undefined) {
-    const demoDependencies = demoRewards
-      ? createLocalDemoDependencies()
-      : undefined;
-    void startServer(Number(process.env.PORT ?? 3000), demoDependencies);
+    // The localhost shell may still render without a database, but comparison
+    // deliberately fails closed. All route economics and merchant acceptance
+    // come from PostgreSQL/Supabase.
+    void startServer(Number(process.env.PORT ?? 3000));
   } else {
     const runtime = createPostgresAppRuntime(databaseUrl);
     void startServer(Number(process.env.PORT ?? 3000), runtime.dependencies)

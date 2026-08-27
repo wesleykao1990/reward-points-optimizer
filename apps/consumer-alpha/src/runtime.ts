@@ -1,6 +1,5 @@
 import {
   createPostgresActiveRewardClaimStore,
-  createPostgresAgentFeedTypedRuleRecordStore,
   createPostgresP0FactInfluenceGraphStore,
   createPostgresP0ImplementationCatalogueStore,
   type P0ImplementationCatalogueOptions,
@@ -16,12 +15,9 @@ import {
   loadP0AgentFeedIngressFromEnvironment,
   type P0AgentFeedIngressOptions,
 } from "./agent-feed-ingress.js";
-import {
-  isCanonicalProductFamilyId,
-  type MerchantAcceptanceQuery,
-} from "./contracts.js";
 import { createFactInfluenceGraphPort } from "./fact-influence-graph.js";
 import { createPostgresImplementationFactCataloguePort } from "./implementation-catalog.js";
+import { createPostgresMerchantAcceptancePort } from "./merchant-acceptance.js";
 import {
   createPostgresExperimentalCataloguePort,
   createPostgresNanacoCreditChargeRecommendationPort,
@@ -237,45 +233,11 @@ export function createPostgresAppDependencies(
     target,
     options,
   );
-  const typedRuleStore = createPostgresAgentFeedTypedRuleRecordStore(target);
   return Object.freeze({
     activeRewardCalculations: createActiveRewardCalculationPort(
       createPostgresActiveRewardClaimStore(target),
     ),
-    merchantAcceptance: Object.freeze({
-      async listAcceptedFamilies(input: MerchantAcceptanceQuery) {
-        const requested = new Set(input.family_ids);
-        const rows = await typedRuleStore.listMerchantPaymentAcceptance(
-          input.effective_at,
-        );
-        const matches = (paymentFamily: string, familyId: string): boolean =>
-          paymentFamily === familyId ||
-          (paymentFamily === "category.credit_card" &&
-            familyId.startsWith("card.")) ||
-          (paymentFamily === "category.mobile_pay" &&
-            familyId.startsWith("wallet.")) ||
-          (paymentFamily === "category.point" &&
-            familyId.startsWith("point.")) ||
-          (paymentFamily === "category.stored_value" &&
-            (familyId.startsWith("emoney.") ||
-              familyId.startsWith("storedvalue.")));
-        return Object.freeze(
-          input.family_ids
-            .filter(
-              (familyId) =>
-                isCanonicalProductFamilyId(familyId) &&
-                rows.some(
-                  (row) =>
-                    row.merchant_id === input.merchant_id &&
-                    row.accepted &&
-                    matches(row.payment_family, familyId),
-                ),
-            )
-            .filter((familyId) => requested.has(familyId))
-            .sort(),
-        );
-      },
-    }),
+    merchantAcceptance: createPostgresMerchantAcceptancePort(target),
     experimentalCatalogue: createPostgresExperimentalCataloguePort(target),
     routeGraphSource: createPostgresRouteGraphSourcePort(target),
     experimentalRecommendation:

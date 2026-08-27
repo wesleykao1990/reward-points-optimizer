@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { AppDependencies } from "../src/server.js";
-import { createLocalDemoDependencies, handleRequest } from "../src/server.js";
+import { handleRequest } from "../src/server.js";
 
 const purchaseContext = {
   merchant_id: "merchant.lawson",
@@ -161,43 +161,5 @@ describe("shared RewardCapabilities adapters", () => {
     expect(source).not.toContain("unregisterTool");
     expect(source).not.toContain("run_sql");
     expect(source).not.toContain("execute_rule");
-  });
-
-  it("supports an explicitly labeled local demo graph without a database", async () => {
-    const result = await post(
-      "/api/capabilities/invoke",
-      {
-        tool: "compare_purchase_routes",
-        purchase_context: {
-          ...purchaseContext,
-          merchant_id: "merchant.synthetic",
-          branch_id: "location.synthetic",
-        },
-        preferences: {},
-        arguments: {},
-      },
-      createLocalDemoDependencies(),
-    );
-
-    expect(result.response.status).toBe(200);
-    expect(
-      (result.body.result as Record<string, unknown>).comparison,
-    ).toMatchObject({ winner_route_id: "selected_product_card.rakuten" });
-  });
-
-  it("hydrates the local demo's browser catalogue from the same fixture source", async () => {
-    const response = await handleRequest(
-      {
-        method: "GET",
-        pathname: "/api/experimental/point-spend/options",
-        headers: { host: "127.0.0.1" },
-      },
-      createLocalDemoDependencies(),
-    );
-    const body = JSON.parse(response.body) as Record<string, unknown>;
-
-    expect(response.status).toBe(200);
-    expect(body).toMatchObject({ data_origin: "bundled_fixture" });
-    expect((body.wallet_catalogue as unknown[]).length).toBeGreaterThan(1);
   });
 });

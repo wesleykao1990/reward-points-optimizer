@@ -191,29 +191,16 @@
               </span>
               <label class="merchant-copy" for="merchant-selector">
                 <small>比較するお店</small>
-                <select id="merchant-selector"><option value="merchant.synthetic" selected>一般のお買い物</option><option value="merchant.seveneleven">セブン‐イレブン</option></select>
-                <span><output id="branch-name">通常の店舗</output></span>
+                <select id="merchant-selector"><option value="merchant.seveneleven" selected>セブン‐イレブン</option></select>
+                <span><output id="branch-name">店舗共通の比較</output></span>
               </label>
             </div>
-            <p id="merchant-support-note" class="helper">選択したカードとモバイル決済の通常還元率で比較します。</p>
+            <p id="merchant-support-note" class="helper">すべてのお店を同じ比較フローで判定し、利用可否と還元率はSupabaseの現在データを使います。</p>
 
             <label class="amount-field" for="amount-jpy">
               <span>お支払い金額</span>
               <span class="amount-control"><span aria-hidden="true">¥</span><input id="amount-jpy" name="amount_jpy" type="number" min="1" max="1000000" step="1" value="640" required><small>円</small></span>
             </label>
-
-            <fieldset id="nanaco-route-fields" class="route-fieldset" aria-labelledby="route-input-title" hidden>
-              <legend id="route-input-title"><span>セブン‐イレブンの追加条件</span><small>入力できる範囲だけを使います</small></legend>
-              <div class="route-input-grid">
-                <label for="nanaco-tax-exclusive">nanaco購入・税抜対象額（円）<input id="nanaco-tax-exclusive" type="number" min="0" max="1000000" step="1" value="640"></label>
-                <label for="nanaco-balance">nanaco残高（円）<input id="nanaco-balance" type="number" min="0" max="10000000" step="1" value="10000"></label>
-                <label for="credit-charge-amount">チャージ額（円）<input id="credit-charge-amount" type="number" min="0" max="30000" step="1000" value="5000"></label>
-                <label for="credit-balance">チャージ前nanaco残高（円）<input id="credit-balance" type="number" min="0" max="50000" step="1" value="0"></label>
-              </div>
-              <label class="check-row" for="seven-card-owned"><input id="seven-card-owned" type="checkbox"><span>セブンカード・プラスを持っている</span></label>
-              <label class="check-row" for="credit-preregistered"><input id="credit-preregistered" type="checkbox"><span>nanacoクレジットチャージを登録済み</span></label>
-              <p class="helper">持っているかどうかは分からないため、初期値は未選択です。選んだときだけ対象ルートを確認します。</p>
-            </fieldset>
 
             <fieldset class="instrument-fieldset">
               <legend><span>比較するサービス</span><small>タップで選択・複数可</small></legend>
