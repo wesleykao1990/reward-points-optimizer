@@ -2053,6 +2053,14 @@ function batchValidationErrors(asset) {
   return invalid;
 }
 
+function cachedAssetHasExpectedLayout(asset, cachedAsset) {
+  if (!cachedAsset || typeof cachedAsset.svg_text !== "string") return false;
+  const expectedViewBox = usesCardLayout(asset)
+    ? 'viewBox="0 0 856 539.8"'
+    : 'viewBox="0 0 672 448"';
+  return cachedAsset.svg_text.includes(expectedViewBox);
+}
+
 async function generateAssets(catalogue) {
   rmSync(OUTPUT_ROOT, { recursive: true, force: true });
   mkdirSync(SOURCE_ROOT, { recursive: true });
@@ -2102,7 +2110,7 @@ async function generateAssets(catalogue) {
         (asset.alias_of ? durableSourceByAssetId.get(asset.alias_of) : null);
       if (
         cachedAsset &&
-        usesCardLayout(asset) &&
+        cachedAssetHasExpectedLayout(asset, cachedAsset) &&
         (!cachedAsset.source_sha256 ||
           cachedSourceRow?.source_sha256 === cachedAsset.source_sha256)
       ) {
@@ -2231,7 +2239,7 @@ async function generateAssets(catalogue) {
     width: null,
     height: null,
     geometries: {
-      card: { aspect_ratio: usesCardLayout(asset) ? "85.60:53.98" : "3:2", width: 856, height: 539.8 },
+      card: { aspect_ratio: "85.60:53.98", width: 856, height: 539.8 },
       service: { aspect_ratio: "3:2", width: 672, height: 448 },
     },
     canonical_count: EXPECTED_CANONICAL,
