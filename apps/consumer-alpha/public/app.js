@@ -7,6 +7,13 @@
   let campaignLinks = [];
   let campaignLinksLoaded = false;
   let consumerReference = null;
+  let rewardSessionPreferences = {
+    preferred_reward_class: null,
+    preferred_assets: [],
+    excluded_family_ids: [],
+    max_extra_steps: null,
+    minimum_incremental_value_jpy: null,
+  };
 
   const node = (tag, className) => {
     const value = document.createElement(tag);
@@ -365,7 +372,7 @@
     };
   };
 
-  const collectUnifiedState = () => {
+  const collectUnifiedState = (requirePaymentMethod = true) => {
     const manual = collectManualState();
     const amount = Number(document.getElementById("amount-jpy").value);
     const merchantId = document.getElementById("merchant-selector").value;
@@ -392,8 +399,53 @@
         document.getElementById("credit-preregistered")?.checked,
       ),
       effective_at: new Date().toISOString(),
-      selected_p0_products: selectedP0Products(true),
+      selected_p0_products: selectedP0Products(requirePaymentMethod),
     };
+  };
+
+  const renderAgentActivity = (activity) => {
+    const list = document.getElementById("agent-activity");
+    clear(list);
+    if (!Array.isArray(activity) || activity.length === 0) {
+      list.appendChild(text("li", "まだツール呼び出しはありません。"));
+      return;
+    }
+    activity.slice(-12).forEach((item) => {
+      if (!item || typeof item !== "object") return;
+      const time =
+        typeof item.timestamp === "string"
+          ? new Date(item.timestamp).toLocaleTimeString("ja-JP")
+          : "—";
+      list.appendChild(
+        text(
+          "li",
+          `${time} · ${String(item.tool || "unknown")} · ${String(item.outcome || "unknown")} · ${String(item.visible_ui_effect || "none")}`,
+        ),
+      );
+    });
+  };
+
+  const applyRewardCapabilityState = (state) => {
+    if (!state || typeof state !== "object") return;
+    if (state.preferences && typeof state.preferences === "object")
+      rewardSessionPreferences = state.preferences;
+    renderAgentActivity(state.activity);
+    const context = state.purchase_context;
+    const comparison = state.comparison;
+    if (!context || !comparison) return;
+    renderUnifiedRecommendation({
+      version: "unified-recommendations.v2",
+      merchant_id: context.merchant_id,
+      branch_id: context.branch_id,
+      amount_jpy: context.amount_jpy,
+      effective_at: context.effective_at,
+      selected_p0_products: context.selected_p0_products || [],
+      routes: comparison.routes || [],
+      supplemental_routes: comparison.supplemental_routes || [],
+      comparison: comparison.comparison || {},
+      fact_influence_shared: comparison.fact_influence_shared || null,
+      questions: comparison.questions || [],
+    });
   };
 
   const translatedText = (value) => {
@@ -868,8 +920,9 @@
     const shownRoutes = routes.filter(
       (route) => route.status === "eligible" || route.status === "conditional",
     );
-    document.getElementById("wallet-route-summary").textContent =
-      shownRoutes.length
+    const walletRouteSummary = document.getElementById("wallet-route-summary");
+    if (walletRouteSummary)
+      walletRouteSummary.textContent = shownRoutes.length
         ? `${shownRoutes.length}ルートを今回比較中：${shownRoutes
             .slice(0, 3)
             .map((route) => String(route.label || "支払いルート"))
@@ -2541,6 +2594,7 @@
     syncPaymentStackOwnedState(selected);
     renderHomeWalletSummary();
     updateWalletStorageStatus(selected.length);
+    document.dispatchEvent(new Event("rewards-tool-state-changed"));
   };
 
   const renderP0ProductPickers = () => {
@@ -4184,6 +4238,16 @@
           collectUnifiedState(),
         );
         renderUnifiedRecommendation(body);
+        if (body.capability_state) {
+          if (body.capability_state.preferences)
+            rewardSessionPreferences = body.capability_state.preferences;
+          renderAgentActivity(body.capability_state.activity);
+          document.dispatchEvent(
+            new CustomEvent("rewards-capability-state", {
+              detail: body.capability_state,
+            }),
+          );
+        }
       } catch (error) {
         clear(result);
         const errorTitle = text("h2", "比較できませんでした");
@@ -4197,6 +4261,65 @@
           ),
         );
         result.appendChild(text("p", consumerErrorMessage(error), "error"));
+      }
+    });
+
+  document.addEventListener("rewards-request-bridge-state", (event) => {
+    if (!event.detail || typeof event.detail !== "object") return;
+    const purchaseContext = collectUnifiedState(false);
+    const hasPaymentMethod = purchaseContext.selected_p0_products.some(
+      (familyId) => {
+        const kind = pointSpendOptions?.walletCatalogue.find(
+          (item) => item.family_id === familyId,
+        )?.kind;
+        return kind === "credit_card" || kind === "mobile_pay";
+      },
+    );
+    event.detail.value = {
+      purchase_context: hasPaymentMethod ? purchaseContext : null,
+      preferences: rewardSessionPreferences,
+    };
+  });
+
+  document.addEventListener("rewards-capability-state", (event) => {
+    applyRewardCapabilityState(event.detail);
+  });
+
+  document
+    .getElementById("rewards-agent-form")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("rewards-agent-submit");
+      const answer = document.getElementById("rewards-agent-answer");
+      const message = document.getElementById("rewards-agent-message").value;
+      button.disabled = true;
+      clear(answer);
+      answer.appendChild(
+        text("p", "Rewards Agentがツールを確認しています…", "helper"),
+      );
+      try {
+        const body = await postJson("/api/agent", {
+          message,
+          purchase_context: collectUnifiedState(),
+          preferences: rewardSessionPreferences,
+        });
+        clear(answer);
+        answer.appendChild(text("p", body.answer || "回答がありません。"));
+        document.dispatchEvent(
+          new CustomEvent("rewards-capability-state", { detail: body.state }),
+        );
+      } catch (error) {
+        clear(answer);
+        answer.appendChild(
+          text(
+            "p",
+            "Rewards Agentを利用できません。サーバー側のOPENAI_API_KEY設定を確認してください。通常の比較機能は引き続き利用できます。",
+            "error-panel",
+          ),
+        );
+        answer.appendChild(text("p", consumerErrorMessage(error), "error"));
+      } finally {
+        button.disabled = false;
       }
     });
 

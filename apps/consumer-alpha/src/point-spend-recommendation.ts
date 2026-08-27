@@ -516,7 +516,10 @@ const FAMILY_PREFIX_LABEL: Readonly<Record<string, string>> = Object.freeze({
 });
 
 const DYNAMIC_FAMILY_DISPLAY_OVERRIDES: Readonly<
-  Record<string, { readonly label: string; readonly kind: P0WalletCatalogueKind }>
+  Record<
+    string,
+    { readonly label: string; readonly kind: P0WalletCatalogueKind }
+  >
 > = Object.freeze({
   "wallet.anapay": { label: "ANA Pay", kind: "mobile_pay" },
   "wallet.kyash": { label: "Kyash", kind: "mobile_pay" },
@@ -614,6 +617,9 @@ export interface RouteGraphSourceResult {
   readonly artifacts: readonly unknown[];
   readonly provenance: readonly RouteGraphProvenance[];
   readonly as_of: string | null;
+  /** Explicitly distinguishes a local demo fixture from authoritative data. */
+  readonly origin?: RouteGraphOrigin;
+  readonly fallback_reason?: string | null;
 }
 
 /** Supplies the current research claims, normally from the database. */
@@ -700,6 +706,36 @@ async function loadFixtureBundle(
 }
 
 /**
+ * Opt-in route graph for the local browser demo. Production hosts must compose
+ * an authoritative source instead of using this clearly labeled fixture.
+ */
+export function createBundledFixtureRouteGraphSource(): RouteGraphSourcePort {
+  return Object.freeze({
+    async current(effectiveAt: string) {
+      const bundle = await loadFixtureBundle(null);
+      const provenance = Object.freeze(
+        bundle.artifacts.map((artifact, index) =>
+          Object.freeze({
+            research_artifact_id: `bundled-fixture-${index + 1}`,
+            implementation_version: "bundled-fixture.v1",
+            implementation_hash: `bundled-fixture-${index + 1}`,
+            as_of: effectiveAt,
+            claim_count: artifact.claims.length,
+          }),
+        ),
+      );
+      return Object.freeze({
+        artifacts: bundle.artifacts,
+        provenance,
+        as_of: bundle.as_of,
+        origin: "bundled_fixture" as const,
+        fallback_reason: "explicit_local_demo_mode",
+      });
+    },
+  });
+}
+
+/**
  * Compile the routing graph and payment layers from the freshest claims.
  *
  * Supplying a source makes that source authoritative. A source failure, an
@@ -715,18 +751,19 @@ export async function loadPointSpendBundle(
   const loaded: RouteGraphSourceResult = await source.current(effectiveAt);
   if (loaded.artifacts.length === 0)
     throw new Error("route_graph_source_empty");
-  const hashKey = loaded.provenance
+  const origin = loaded.origin ?? "database";
+  const hashKey = `${origin}|${loaded.provenance
     .map((item) => `${item.research_artifact_id}:${item.implementation_hash}`)
     .sort()
-    .join("|");
+    .join("|")}`;
   const cached = compiledByHashKey.get(hashKey);
   if (cached) return cached;
   const compiled = compileBundle(
     [...loaded.artifacts],
-    "database",
+    origin,
     loaded.as_of,
     loaded.provenance,
-    null,
+    loaded.fallback_reason ?? null,
   );
   if (compiledByHashKey.size >= MAX_COMPILED_GRAPHS) compiledByHashKey.clear();
   compiledByHashKey.set(hashKey, compiled);

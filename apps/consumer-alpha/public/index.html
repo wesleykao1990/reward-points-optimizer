@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/catalogue-sync.css">
   </head>
-  <body>
+  <body data-demo-passport="true">
     <a class="skip-link" href="#main-content">本文へ移動</a>
     <main id="main-content" class="shell">
 
@@ -158,6 +158,25 @@
             <span class="slip-value" id="summary-instruments">0件を選択中</span>
           </div>
           <div class="slip-gauge" aria-hidden="true"><i id="summary-meter"></i></div>
+        </section>
+
+        <section class="content-section rewards-agent-panel" aria-labelledby="rewards-agent-title">
+          <div class="section-title-row">
+            <div><p class="section-kicker">OUR AGENT OR YOURS</p><h2 id="rewards-agent-title">Rewards Agent</h2></div>
+            <span id="webmcp-status" class="agent-status">WebMCPを確認中</span>
+          </div>
+          <form id="rewards-agent-form" class="agent-prompt-form">
+            <label for="rewards-agent-message">買い方を相談する</label>
+            <textarea id="rewards-agent-message" maxlength="2000" rows="3" required>この買い物は、どう支払うのが一番いい？</textarea>
+            <button id="rewards-agent-submit" type="submit" class="primary">Rewards Agentに聞く</button>
+          </form>
+          <div id="rewards-agent-answer" class="agent-answer" aria-live="polite">
+            <p class="helper">OpenAI APIキーはサーバー側だけで使用します。比較計算は既存のルールエンジンが行います。</p>
+          </div>
+          <details class="agent-activity-details">
+            <summary>Agent Activity</summary>
+            <ol id="agent-activity" class="agent-activity-list"><li>まだツール呼び出しはありません。</li></ol>
+          </details>
         </section>
 
         <section id="purchase-form" class="content-section" aria-labelledby="onboarding-title">
@@ -352,6 +371,7 @@
       </nav>
     </main>
     <script src="/app.js" defer></script>
+    <script src="/webmcp.js" defer></script>
     <script src="/coverage.js" defer></script>
     <script src="/catalogue-sync.js" defer></script>
   </body>

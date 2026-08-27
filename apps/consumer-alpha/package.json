@@ -15,7 +15,9 @@
     "@jro/consumer-alpha": "workspace:*",
     "@jro/p0-source-operations": "workspace:*",
     "@jro/provisional-rules": "workspace:*",
+    "@jro/reward-capabilities": "workspace:*",
     "@jro/recommendation-api": "workspace:*",
+    "@jro/rewards-agent": "workspace:*",
     "@jro/rule-engine": "workspace:*",
     "@jro/test-fixtures": "workspace:*",
     "pg": "8.16.3"

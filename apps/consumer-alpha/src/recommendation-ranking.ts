@@ -56,6 +56,17 @@ export interface RankingCandidate {
   readonly comparison_role: "purchase" | "funding";
 }
 
+export interface RankingPreferences {
+  readonly preferred_reward_class:
+    | "cash_equivalent"
+    | "airline_miles"
+    | "hotel_points"
+    | "merchant_points"
+    | null;
+  readonly preferred_assets: readonly string[];
+  readonly minimum_incremental_value_jpy: number | null;
+}
+
 export interface RankedRouteSummary {
   readonly rank: number;
   readonly route_id: string;
@@ -189,6 +200,41 @@ function rankOrder(left: RankingCandidate, right: RankingCandidate): number {
   return left.route_id.localeCompare(right.route_id);
 }
 
+function isPreferredAsset(
+  candidate: RankingCandidate,
+  preferences: RankingPreferences,
+): boolean {
+  const asset = candidate.reward_asset_id;
+  if (asset === null) return false;
+  if (preferences.preferred_assets.includes(asset)) return true;
+  if (preferences.preferred_reward_class === "airline_miles")
+    return asset.startsWith("mile.") || asset.includes(".mile.");
+  if (preferences.preferred_reward_class === "hotel_points")
+    return asset.startsWith("hotel.") || asset.includes(".hotel.");
+  if (preferences.preferred_reward_class === "merchant_points")
+    return asset.startsWith("point.");
+  return preferences.preferred_reward_class === "cash_equivalent"
+    ? asset.startsWith("point.") || asset.startsWith("value.")
+    : false;
+}
+
+function preferenceAwareOrder(
+  preferences: RankingPreferences,
+  bestScore: string,
+): (left: RankingCandidate, right: RankingCandidate) => number {
+  const threshold = String(preferences.minimum_incremental_value_jpy ?? 0);
+  const eligibleForPreference = (candidate: RankingCandidate) =>
+    isPreferredAsset(candidate, preferences) &&
+    Number.parseFloat(subtract(bestScore, candidate.objective_score_jpy)) <=
+      Number.parseFloat(threshold);
+  return (left, right) => {
+    const preferredDelta =
+      Number(eligibleForPreference(right)) -
+      Number(eligibleForPreference(left));
+    return preferredDelta !== 0 ? preferredDelta : rankOrder(left, right);
+  };
+}
+
 function summary(
   candidate: RankingCandidate,
   rank: number,
@@ -237,11 +283,23 @@ function breakEven(
  * comparison. */
 export function rankUnifiedRoutes(
   candidates: readonly RankingCandidate[],
+  preferences?: RankingPreferences,
 ): UnifiedComparisonSummary {
-  const eligible = candidates
+  const byValue = candidates
     .filter((candidate) => candidate.comparison_role === "purchase")
     .slice()
     .sort(rankOrder);
+  const eligible =
+    preferences &&
+    (preferences.preferred_reward_class !== null ||
+      preferences.preferred_assets.length > 0) &&
+    byValue[0]
+      ? byValue
+          .slice()
+          .sort(
+            preferenceAwareOrder(preferences, byValue[0].objective_score_jpy),
+          )
+      : byValue;
   const rankedRoutes = Object.freeze(
     eligible.map((candidate, index) => summary(candidate, index + 1)),
   );

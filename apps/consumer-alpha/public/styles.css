@@ -1645,6 +1645,69 @@ fieldset {
   padding-top: 22px;
 }
 
+.rewards-agent-panel {
+  margin-top: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 94%, var(--accent));
+}
+
+.agent-status {
+  color: var(--tx-3);
+  font-size: 0.64rem;
+}
+
+.agent-prompt-form {
+  display: grid;
+  gap: 10px;
+}
+
+.agent-prompt-form label {
+  color: var(--tx-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.agent-prompt-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--ground);
+  color: var(--tx-1);
+  font: inherit;
+  resize: vertical;
+}
+
+.agent-answer {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--ground);
+  white-space: pre-wrap;
+}
+
+.agent-answer p {
+  margin: 0;
+}
+
+.agent-activity-details {
+  margin-top: 12px;
+  color: var(--tx-2);
+  font-size: 0.7rem;
+}
+
+.agent-activity-list {
+  display: grid;
+  gap: 7px;
+  padding-left: 20px;
+}
+
+.agent-activity-list li {
+  padding-left: 4px;
+}
+
 .empty-result,
 .empty-state {
   display: grid;

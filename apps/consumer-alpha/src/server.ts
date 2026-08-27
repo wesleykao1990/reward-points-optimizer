@@ -9,6 +9,20 @@ import {
 import { extname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { types as nodeTypes } from "node:util";
+import {
+  DEFAULT_SESSION_PURCHASE_PREFERENCES,
+  normalizeSessionPurchasePreferences,
+  type PurchaseContext,
+  RewardCapabilities,
+  type RewardCapabilitySnapshot,
+  type RouteComparison,
+  type SessionPurchasePreferences,
+  type SessionPurchasePreferenceUpdate,
+} from "@jro/reward-capabilities";
+import {
+  type RewardsAgentRunResult,
+  runRewardsAgent,
+} from "@jro/rewards-agent";
 import { SYNTHETIC_REPLAY_KNOWLEDGE_TIME } from "@jro/test-fixtures";
 import type { ActiveRewardCalculationPort } from "./active-reward-calculation.js";
 import {
@@ -78,6 +92,7 @@ import {
 } from "./payment-stack-recommendation.js";
 import {
   calculateSelectedProductPurchases,
+  createBundledFixtureRouteGraphSource,
   listP0LotteryBrowserLinks,
   listPointSpendBrowserOptions,
   MAX_POINT_SPEND_BODY_BYTES,
@@ -116,6 +131,9 @@ export {
   MAX_UNIFIED_RECOMMENDATION_BODY_BYTES,
 } from "./contracts.js";
 
+export const MAX_CAPABILITY_BODY_BYTES = 48 * 1024;
+export const MAX_AGENT_BODY_BYTES = 48 * 1024;
+
 export const LOCALHOST_BIND_HOST = "127.0.0.1" as const;
 export const CSP_HEADER =
   "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
@@ -125,6 +143,7 @@ const STATIC_FILES: Readonly<Record<string, string>> = Object.freeze({
   "/": "index.html",
   "/index.html": "index.html",
   "/app.js": "app.js",
+  "/webmcp.js": "webmcp.js",
   "/styles.css": "styles.css",
 });
 const CONTENT_TYPES: Readonly<Record<string, string>> = Object.freeze({
@@ -281,11 +300,17 @@ export interface AppDependencies {
   readonly activeRewardCalculations?: ActiveRewardCalculationPort;
   /** Direct merchant acceptance rows for the selected product families. */
   readonly merchantAcceptance?: MerchantAcceptancePort;
-  /**
-   * Current research claims for the routing graph and payment layers.  Absent
-   * in the loopback shell, which compiles the checked-in fixtures instead.
-   */
+  /** Current research claims for the routing graph and payment layers. */
   readonly routeGraphSource?: RouteGraphSourcePort;
+  /** Test/host seam for the server-only OpenAI Agents SDK runner. */
+  readonly rewardsAgentRunner?: RewardsAgentRunnerPort;
+}
+
+export interface RewardsAgentRunnerPort {
+  run(
+    capabilities: RewardCapabilities,
+    message: string,
+  ): Promise<RewardsAgentRunResult>;
 }
 
 export type AppCatalogueDependency =
@@ -297,7 +322,22 @@ export type AppCatalogueDependency =
   | AgentFeedIngressPort
   | ActiveRewardCalculationPort
   | MerchantAcceptancePort
+  | RewardsAgentRunnerPort
   | AppDependencies;
+
+/** Complete, explicitly synthetic composition for local browser testing. */
+export function createLocalDemoDependencies(): AppDependencies {
+  return Object.freeze({
+    experimentalCatalogue: getDefaultExperimentalCataloguePort(),
+    experimentalRecommendation:
+      createUnavailableNanacoExperimentalRecommendationPort(),
+    experimentalNanacoCreditChargeRecommendation:
+      createUnavailableNanacoCreditChargeRecommendationPort(),
+    implementationFacts: getDefaultImplementationFactCataloguePort(),
+    factInfluenceGraph: getDefaultFactInfluenceGraphPort(),
+    routeGraphSource: createBundledFixtureRouteGraphSource(),
+  });
+}
 
 function resolveActiveRewardCalculations(
   dependency: AppCatalogueDependency | undefined,
@@ -1551,8 +1591,13 @@ function compactUnifiedFactInfluence(routes: readonly UnifiedRouteRecord[]): {
 async function unifiedRecommendations(
   input: UnifiedRecommendationInput,
   dependency: AppCatalogueDependency | undefined,
+  preferences: SessionPurchasePreferences = DEFAULT_SESSION_PURCHASE_PREFERENCES,
 ): Promise<UnifiedRecommendationsResult> {
-  const selected = Object.freeze([...input.selected_p0_products]);
+  const selected = Object.freeze(
+    input.selected_p0_products.filter(
+      (familyId) => !preferences.excluded_family_ids.includes(familyId),
+    ),
+  );
   const activePort = resolveActiveRewardCalculations(dependency);
   const acceptancePort = resolveMerchantAcceptance(dependency);
 
@@ -1611,6 +1656,7 @@ async function unifiedRecommendations(
     const enriched = routes.map(enrichUnifiedRoute);
     const comparison = rankUnifiedRoutes(
       enriched.flatMap((item) => (item.candidate ? [item.candidate] : [])),
+      preferences,
     );
     const purchaseRoutes = enriched
       .filter((item) => item.route.comparison_role !== "funding")
@@ -1765,6 +1811,292 @@ async function unifiedRecommendations(
     });
   });
   return routeResult(selectedRoutes);
+}
+
+const CAPABILITY_TOOL_NAMES = Object.freeze([
+  "get_rewards_passport_summary",
+  "get_expiring_rewards",
+  "get_current_purchase_context",
+  "compare_purchase_routes",
+  "set_session_purchase_preferences",
+  "explain_purchase_route",
+] as const);
+type CapabilityToolName = (typeof CAPABILITY_TOOL_NAMES)[number];
+
+interface ParsedCapabilityInvocation {
+  readonly tool: CapabilityToolName;
+  readonly purchaseContext: UnifiedRecommendationInput | null;
+  readonly preferences: SessionPurchasePreferences;
+  readonly arguments: Readonly<Record<string, unknown>>;
+}
+
+interface ParsedAgentRequest {
+  readonly message: string;
+  readonly purchaseContext: UnifiedRecommendationInput;
+  readonly preferences: SessionPurchasePreferences;
+}
+
+function boundedPlainRecord(
+  value: unknown,
+  code: string,
+): Readonly<Record<string, unknown>> {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    Array.isArray(value) ||
+    nodeTypes.isProxy(value) ||
+    !isPlainDataOutput(value)
+  )
+    throw requestError(400, code);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null)
+    throw requestError(400, code);
+  return value as Readonly<Record<string, unknown>>;
+}
+
+function exactRecordKeys(
+  record: Readonly<Record<string, unknown>>,
+  allowed: ReadonlySet<string>,
+  required: ReadonlySet<string>,
+  code: string,
+): void {
+  const keys = Object.keys(record);
+  if (
+    keys.some((key) => !allowed.has(key)) ||
+    [...required].some((key) => !Object.hasOwn(record, key))
+  )
+    throw requestError(400, code);
+}
+
+function parsePreferenceUpdate(
+  value: unknown,
+): SessionPurchasePreferenceUpdate {
+  if (value === undefined) return Object.freeze({});
+  const record = boundedPlainRecord(value, "preferences_invalid");
+  const keys = new Set([
+    "preferred_reward_class",
+    "preferred_assets",
+    "excluded_family_ids",
+    "max_extra_steps",
+    "minimum_incremental_value_jpy",
+  ]);
+  exactRecordKeys(record, keys, new Set(), "preferences_invalid");
+  const rewardClass = record.preferred_reward_class;
+  if (
+    rewardClass !== undefined &&
+    rewardClass !== null &&
+    ![
+      "cash_equivalent",
+      "airline_miles",
+      "hotel_points",
+      "merchant_points",
+    ].includes(String(rewardClass))
+  )
+    throw requestError(400, "preferences_invalid");
+  for (const key of ["preferred_assets", "excluded_family_ids"] as const) {
+    const item = record[key];
+    if (
+      item !== undefined &&
+      (!Array.isArray(item) ||
+        !item.every((entry) => typeof entry === "string"))
+    )
+      throw requestError(400, "preferences_invalid");
+  }
+  for (const key of [
+    "max_extra_steps",
+    "minimum_incremental_value_jpy",
+  ] as const) {
+    const item = record[key];
+    if (item !== undefined && item !== null && typeof item !== "number")
+      throw requestError(400, "preferences_invalid");
+  }
+  try {
+    return Object.freeze({
+      ...(rewardClass === undefined
+        ? {}
+        : {
+            preferred_reward_class: rewardClass as
+              | SessionPurchasePreferences["preferred_reward_class"]
+              | undefined,
+          }),
+      ...(record.preferred_assets === undefined
+        ? {}
+        : { preferred_assets: record.preferred_assets as readonly string[] }),
+      ...(record.excluded_family_ids === undefined
+        ? {}
+        : {
+            excluded_family_ids:
+              record.excluded_family_ids as readonly string[],
+          }),
+      ...(record.max_extra_steps === undefined
+        ? {}
+        : { max_extra_steps: record.max_extra_steps as number | null }),
+      ...(record.minimum_incremental_value_jpy === undefined
+        ? {}
+        : {
+            minimum_incremental_value_jpy:
+              record.minimum_incremental_value_jpy as number | null,
+          }),
+    });
+  } catch {
+    throw requestError(400, "preferences_invalid");
+  }
+}
+
+function parsePreferences(value: unknown): SessionPurchasePreferences {
+  try {
+    return normalizeSessionPurchasePreferences(parsePreferenceUpdate(value));
+  } catch (error) {
+    if (error && typeof error === "object" && "status" in error) throw error;
+    throw requestError(400, "preferences_invalid");
+  }
+}
+
+function parseCapabilityInvocation(value: unknown): ParsedCapabilityInvocation {
+  const record = boundedPlainRecord(value, "capability_request_invalid");
+  exactRecordKeys(
+    record,
+    new Set(["tool", "purchase_context", "preferences", "arguments"]),
+    new Set(["tool", "arguments"]),
+    "capability_request_invalid",
+  );
+  if (
+    typeof record.tool !== "string" ||
+    !(CAPABILITY_TOOL_NAMES as readonly string[]).includes(record.tool)
+  )
+    throw requestError(400, "capability_tool_invalid");
+  return Object.freeze({
+    tool: record.tool as CapabilityToolName,
+    purchaseContext:
+      record.purchase_context === undefined || record.purchase_context === null
+        ? null
+        : parseUnifiedRecommendation(record.purchase_context),
+    preferences: parsePreferences(record.preferences),
+    arguments: boundedPlainRecord(
+      record.arguments,
+      "capability_arguments_invalid",
+    ),
+  });
+}
+
+function parseAgentRequest(value: unknown): ParsedAgentRequest {
+  const record = boundedPlainRecord(value, "agent_request_invalid");
+  exactRecordKeys(
+    record,
+    new Set(["message", "purchase_context", "preferences"]),
+    new Set(["message", "purchase_context"]),
+    "agent_request_invalid",
+  );
+  if (
+    typeof record.message !== "string" ||
+    record.message.trim().length < 1 ||
+    record.message.length > 2_000
+  )
+    throw requestError(400, "agent_message_invalid");
+  return Object.freeze({
+    message: record.message.trim(),
+    purchaseContext: parseUnifiedRecommendation(record.purchase_context),
+    preferences: parsePreferences(record.preferences),
+  });
+}
+
+function createRequestRewardCapabilities(
+  input: UnifiedRecommendationInput | null,
+  dependency: AppCatalogueDependency | undefined,
+  preferences: SessionPurchasePreferences = DEFAULT_SESSION_PURCHASE_PREFERENCES,
+): RewardCapabilities {
+  return new RewardCapabilities({
+    purchaseContext: input as unknown as PurchaseContext | null,
+    preferences,
+    calculator: {
+      async comparePurchaseRoutes(context, activePreferences) {
+        return (await unifiedRecommendations(
+          context as unknown as UnifiedRecommendationInput,
+          dependency,
+          activePreferences,
+        )) as unknown as RouteComparison;
+      },
+    },
+  });
+}
+
+function rewardsAgentRunnerOf(
+  dependency: AppCatalogueDependency | undefined,
+): RewardsAgentRunnerPort {
+  if (
+    dependency &&
+    typeof dependency === "object" &&
+    "rewardsAgentRunner" in dependency &&
+    dependency.rewardsAgentRunner
+  )
+    return dependency.rewardsAgentRunner;
+  if (
+    dependency &&
+    typeof dependency === "object" &&
+    "run" in dependency &&
+    typeof dependency.run === "function"
+  )
+    return dependency as RewardsAgentRunnerPort;
+  return {
+    async run(capabilities, message) {
+      return runRewardsAgent(capabilities, message, {
+        model: process.env.JRO_OPENAI_MODEL,
+        tracing: "disabled",
+      });
+    },
+  };
+}
+
+async function invokeCapability(
+  invocation: ParsedCapabilityInvocation,
+  dependency: AppCatalogueDependency | undefined,
+): Promise<{
+  readonly result: unknown;
+  readonly state: RewardCapabilitySnapshot;
+}> {
+  const capabilities = createRequestRewardCapabilities(
+    invocation.purchaseContext,
+    dependency,
+    invocation.preferences,
+  );
+  const args = invocation.arguments;
+  let result: unknown;
+  if (invocation.tool === "get_rewards_passport_summary") {
+    exactRecordKeys(args, new Set(), new Set(), "capability_arguments_invalid");
+    result = capabilities.getRewardsPassportSummary();
+  } else if (invocation.tool === "get_expiring_rewards") {
+    exactRecordKeys(
+      args,
+      new Set(["within_days"]),
+      new Set(["within_days"]),
+      "capability_arguments_invalid",
+    );
+    result = capabilities.getExpiringRewards(args.within_days as number);
+  } else if (invocation.tool === "get_current_purchase_context") {
+    exactRecordKeys(args, new Set(), new Set(), "capability_arguments_invalid");
+    result = capabilities.getCurrentPurchaseContext();
+  } else if (invocation.tool === "set_session_purchase_preferences") {
+    result = capabilities.setSessionPurchasePreferences(
+      parsePreferenceUpdate(args),
+    );
+  } else if (invocation.tool === "compare_purchase_routes") {
+    exactRecordKeys(args, new Set(), new Set(), "capability_arguments_invalid");
+    result = await capabilities.comparePurchaseRoutes();
+  } else {
+    exactRecordKeys(
+      args,
+      new Set(["route_id"]),
+      new Set(),
+      "capability_arguments_invalid",
+    );
+    if (args.route_id !== undefined && typeof args.route_id !== "string")
+      throw requestError(400, "capability_arguments_invalid");
+    await capabilities.comparePurchaseRoutes();
+    result = capabilities.explainPurchaseRoute(
+      args.route_id as string | undefined,
+    );
+  }
+  return Object.freeze({ result, state: capabilities.snapshot() });
 }
 
 function contentTypeIsJson(
@@ -2011,6 +2343,8 @@ export async function handleRequest(
         pathname === "/api/experimental/nanaco-credit-charge" ||
         pathname === "/api/experimental/point-spend/recommendation" ||
         pathname === "/api/experimental/payment-stack/recommendation" ||
+        pathname === "/api/capabilities/invoke" ||
+        pathname === "/api/agent" ||
         pathname === "/api/experimental/corrections" ||
         pathname === "/api/experimental/fact-corrections")
     ) {
@@ -2178,6 +2512,50 @@ export async function handleRequest(
         rememberRecommendationId(result.request_id);
       return jsonResponse(200, { recommendation: result });
     }
+    if (pathname === "/api/capabilities/invoke") {
+      const invocation = parseCapabilityInvocation(
+        parseJsonBody(request, MAX_CAPABILITY_BODY_BYTES),
+      );
+      try {
+        const result = await invokeCapability(invocation, dependency);
+        return jsonResponse(
+          200,
+          result as unknown as Readonly<Record<string, unknown>>,
+        );
+      } catch (error) {
+        if (error instanceof TypeError) throw requestError(400, error.message);
+        throw error;
+      }
+    }
+    if (pathname === "/api/agent") {
+      const input = parseAgentRequest(
+        parseJsonBody(request, MAX_AGENT_BODY_BYTES),
+      );
+      const capabilities = createRequestRewardCapabilities(
+        input.purchaseContext,
+        dependency,
+        input.preferences,
+      );
+      try {
+        const result = await rewardsAgentRunnerOf(dependency).run(
+          capabilities,
+          input.message,
+        );
+        if (
+          !isPlainDataOutput(result) ||
+          typeof result.answer !== "string" ||
+          result.answer.length > 20_000
+        )
+          throw new Error("agent_result_invalid");
+        return jsonResponse(200, {
+          answer: result.answer,
+          state: result.state,
+        });
+      } catch (error) {
+        reportDeploymentFailure("rewards_agent", error);
+        throw requestError(503, "rewards_agent_unavailable");
+      }
+    }
     if (pathname === "/api/experimental/point-spend/recommendation") {
       if (method !== "POST") {
         return errorResponseWithHeaders(
@@ -2236,7 +2614,8 @@ export async function handleRequest(
       const input = parseUnifiedRecommendation(
         parseJsonBody(request, MAX_UNIFIED_RECOMMENDATION_BODY_BYTES),
       );
-      const recommendation = await unifiedRecommendations(input, dependency);
+      const capabilities = createRequestRewardCapabilities(input, dependency);
+      const recommendation = await capabilities.comparePurchaseRoutes();
       return jsonResponse(200, {
         version: "unified-recommendations.v2",
         merchant_id: input.merchant_id,
@@ -2249,6 +2628,7 @@ export async function handleRequest(
         comparison: recommendation.comparison,
         fact_influence_shared: recommendation.fact_influence_shared,
         questions: recommendation.questions,
+        capability_state: capabilities.snapshot(),
       });
     }
     if (pathname === "/api/experimental/recommendation") {
@@ -2656,6 +3036,8 @@ export function requestBodyLimit(
   if (pathname === "/api/synthetic/evaluate") return MAX_EVALUATE_BODY_BYTES;
   if (pathname === "/api/recommendations")
     return MAX_UNIFIED_RECOMMENDATION_BODY_BYTES;
+  if (pathname === "/api/capabilities/invoke") return MAX_CAPABILITY_BODY_BYTES;
+  if (pathname === "/api/agent") return MAX_AGENT_BODY_BYTES;
   if (
     pathname === "/api/experimental/recommendation" ||
     pathname === "/api/experimental/nanaco-credit-charge"
@@ -2707,8 +3089,12 @@ if (
   relative(process.cwd(), process.argv[1]) === "dist/server.js"
 ) {
   const databaseUrl = process.env.JRO_DATABASE_URL;
+  const demoRewards = process.env.JRO_DEMO_REWARDS === "1";
   if (databaseUrl === undefined) {
-    void startServer(Number(process.env.PORT ?? 3000));
+    const demoDependencies = demoRewards
+      ? createLocalDemoDependencies()
+      : undefined;
+    void startServer(Number(process.env.PORT ?? 3000), demoDependencies);
   } else {
     const runtime = createPostgresAppRuntime(databaseUrl);
     void startServer(Number(process.env.PORT ?? 3000), runtime.dependencies)
