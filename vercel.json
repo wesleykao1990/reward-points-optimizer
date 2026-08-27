@@ -4,7 +4,9 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @jro/consumer-alpha-app... build",
   "outputDirectory": "apps/consumer-alpha/public",
-  "regions": ["hnd1"],
+  "regions": [
+    "hnd1"
+  ],
   "github": {
     "autoJobCancelation": false
   },

@@ -515,10 +515,31 @@ const FAMILY_PREFIX_LABEL: Readonly<Record<string, string>> = Object.freeze({
   storedvalue: "電子マネー残高",
 });
 
+const DYNAMIC_FAMILY_DISPLAY_OVERRIDES: Readonly<
+  Record<string, { readonly label: string; readonly kind: P0WalletCatalogueKind }>
+> = Object.freeze({
+  "wallet.anapay": { label: "ANA Pay", kind: "mobile_pay" },
+  "wallet.kyash": { label: "Kyash", kind: "mobile_pay" },
+  "wallet.revolut": { label: "Revolut", kind: "mobile_pay" },
+  "wallet.revolut-jp": { label: "Revolut", kind: "mobile_pay" },
+  "point.ana-mile": { label: "ANAマイル", kind: "point" },
+  "point.jal-mile": { label: "JALマイル", kind: "point" },
+  "point.recruit": { label: "リクルートポイント", kind: "point" },
+  "point.moppy": { label: "モッピーポイント", kind: "point" },
+  "point.saison": { label: "永久不滅ポイント", kind: "point" },
+  "point.saison-permanent": { label: "永久不滅ポイント", kind: "point" },
+  "emoney.nanaco": { label: "nanaco", kind: "emoney" },
+  "emoney.waon": { label: "WAON", kind: "emoney" },
+  "storedvalue.nanaco": { label: "nanaco", kind: "stored_value" },
+  "storedvalue.waon": { label: "WAON", kind: "stored_value" },
+});
+
 function dynamicFamilyDefinition(
   familyId: string,
 ): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {
   if (!isCanonicalProductFamilyId(familyId)) return null;
+  const override = DYNAMIC_FAMILY_DISPLAY_OVERRIDES[familyId];
+  if (override) return override;
   const prefix = familyId.slice(0, familyId.indexOf("."));
   const kind = FAMILY_PREFIX_KIND[prefix];
   const prefixLabel = FAMILY_PREFIX_LABEL[prefix];
