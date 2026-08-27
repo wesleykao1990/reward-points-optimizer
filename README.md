@@ -1,162 +1,194 @@
-# Japan Rewards Optimizer Foundation Package v0.4.1
+# Japan Rewards Optimizer
 
-Research cutoff: **2026-08-20 (Asia/Tokyo)**
+An agent-native rewards intelligence platform for comparing purchase routes in Japan. It combines a deterministic rewards engine, evidence-bound rule data, a browser interface, native WebMCP tools, and an optional OpenAI-powered Rewards Agent.
 
-This package defines the evidence, domain model, database controls, implementation sequence, and Codex handoff for a Japan-first purchase-route optimizer.
+The long-term product is a **Rewards Passport + Agent Checkout Planner + Rewards Auditor**. The rewards intelligence is the platform; the chatbot is one interface to it.
 
-## Separate Agent Feed project
+> [!IMPORTANT]
+> The browser demo uses explicitly enabled synthetic Rewards Passport and route data. It does not connect to real loyalty accounts and must not be treated as current financial advice.
 
-Monitoring transport is no longer implemented inside this application. The sibling project `../agent-feed` owns generic agent runs, findings, submitted evidence, SDKs, adapters, MCP/REST ingress, and durable consumer delivery.
+## What works today
 
-The Rewards Optimizer pins Agent Feed protocol `0.1` and converts supported generic findings into its own untrusted `SourceObservation` records. Only the Rewards Optimizer can acquire/promote canonical evidence and publish reward rules.
+The current WebMCP milestone is ready for local testing:
 
-The projects are separate deployables and do not query one another's database.
+- six typed rewards capabilities shared by the UI, WebMCP, and the built-in agent;
+- deterministic purchase-route comparison through the existing recommendation engine;
+- dynamic `document.modelContext` tool registration and visible Agent Activity;
+- an optional server-side OpenAI agent with bounded, schema-validated tools;
+- synthetic balances and expiry data enabled only with `JRO_DEMO_REWARDS=1`;
+- browser, integration, adversarial, and identical-winner test coverage.
 
-## Status
+The wider repository also includes a versioned rule engine, evidence and provenance contracts, PostgreSQL/Supabase migrations, Agent Feed ingestion boundaries, source-maintenance workflows, and a Vercel deployment adapter.
 
-v0.4.1 retains the converged operation-and-asset engine from v0.3 and adds a clean cross-project monitoring boundary. Realtime is explicitly optional UX rather than a monitor or job-delivery dependency.
+Not yet included in the WebMCP product path: real user authentication, provider account connections, per-user Rewards Passport storage, browser-extension purchase extraction, reward reconciliation, or production graph/vector indexes. See [milestone status](docs/webmcp/milestone-status.md).
 
-The architecture remains commercial-capable, but the first validation target is a personal/internal Tokyo convenience-store alpha.
+## Quick start
 
-Milestones 0, 1A, 1B, 2, and 2.5 now have production-oriented implementation
-surfaces alongside the preserved prototype. Milestones 3–7 also have
-synthetic/internal gate implementations. The first six real-data evidence
-records are verified and hash-bound, and two isolated scenarios now have
-immutable golden replay fixtures plus private canonical database rows without
-rule or frontend publication;
-operational source maintenance and production consumer use remain blocked:
+### Prerequisites
 
-- `packages/contracts` owns the twelve generated schema type modules plus shared structural and semantic validation;
-- `packages/rule-engine` owns the pure conservation, reward, valuation, bitemporal, and replay kernel;
-- `packages/test-fixtures` owns schema-valid synthetic fixtures and builders.
-- `db/0003_milestone_2_hardening.sql` and `db/tests/006_m2_persistence_security.sql` own the hardened persistence boundary and adversarial database gate.
-- `packages/agent-feed-consumer`, `db/0004_m25_agent_feed_consumer.sql`, and `db/tests/007_m25_agent_feed_consumer.sql` own the signed Agent Feed consumer, durable receipt/mapping boundary, and M2.5 adversarial gate.
-- `db/0005_m3_golden_publication_boundary.sql`, the generated M3 seed, and `db/tests/008_m3_golden_publication_boundary.sql` own sealed golden persistence and the separate fail-closed rule-publication boundary.
-- `packages/recommendation-api` owns the pure M5 internal recommendation and
-  security boundary; production mode is hard-blocked.
-- `packages/consumer-alpha` owns the pure M6 onboarding, presentation,
-  synthetic-link, and correction contracts.
-- `apps/consumer-alpha` is the M6 loopback-only synthetic browser shell. It
-  does not contain current reward data, authentication, persistence, or real
-  official-app links.
-- `packages/challenge-track` is the M7 deterministic 100-target control plane.
-  Its `SYN-M7-*` probes and replay results never count as evidence or golden
-  coverage.
+- Node.js 22.x
+- Corepack and pnpm 8.15.4
 
-The rule engine preserves the Milestone 1A accounting kernel and adds fixed, tiered, multiplier, and directed-transfer calculations; cap and stacking policies; explicit feasible-state ranking; probability separation; and refund, reversal, expiry, and clawback adjustments. Transfer cancellation and reward expiry are exposed through a typed event facade because they are state transitions rather than candidate purchase operations. Reward calculations remain explicit about their supported aggregation scope rather than silently approximating unsupported aggregation.
-
-## Core model
-
-```text
-external funding
-  → top-up or voucher acquisition
-  → created asset lot
-  → merchant purchase
-  → residual asset lot
-  → reward components
-  → separate valuation
-  → reconciled rank
-```
-
-## Discovery and evidence model
-
-```text
-external monitor
-  → Agent Feed Finding
-  → Rewards SourceObservation
-  → canonical evidence acquisition
-  → ExtractionCandidate
-  → reviewed RewardRuleVersion
-```
-
-A finding is not a fact, and submitted evidence is not canonical evidence.
-
-## Important new files
-
-| Path | Purpose |
-|---|---|
-| `docs/15_agent_feed_integration.md` | Cross-project trust, mapping, dedupe, and delivery contract |
-| `docs/16_supabase_stack_decision.md` | Supabase features and Realtime decision |
-| `docs/17_monitoring_producer_contract.md` | Requirements for ChatGPT/Claude/API monitors |
-| `schemas/source-observation.schema.json` | App-specific observation after generic finding intake |
-| `db/0002_agent_feed_consumer.sql` | Private staging/receipt reference migration |
-| `db/tests/003_agent_feed_consumer.sql` | Idempotency and no-direct-rule-link regression |
-| `prompts/CODEX_AGENT_FEED_INTEGRATION_PROMPT.md` | Later app-side integration assignment |
-| `packages/agent-feed-consumer/README.md` | Consumer package boundary |
-| `db/0004_m25_agent_feed_consumer.sql` | M2.5 verified intake, semantic dedupe, evidence work, lifecycle, liveness, and diagnostics |
-| `db/tests/007_m25_agent_feed_consumer.sql` | M2.5 transport, mapping, promotion, lifecycle, and redaction regressions |
-| `db/0005_m3_golden_publication_boundary.sql` | Exact golden completion/immutability and completed-request rule publication gate |
-| `db/seeds/001_m3_real_data_goldens.sql` | Generated private seed for six evidence records and two golden replays; no rule publication |
-| `scripts/generate_m3_db_seed.mjs` | Reproducibly derives and verifies the canonical M3 seed from reviewed fixtures |
-| `db/tests/008_m3_golden_publication_boundary.sql` | Golden provenance, immutability, privilege, and publication-bypass regressions |
-| `fixtures/m3/publication/` | Hash-bound five-rule publication dossier, explicit synthetic-rule exclusion, and human-only decision instructions |
-| `scripts/m3_publication.mjs` | Fail-closed publication validator and all-or-nothing SQL generator |
-| `fixtures/security/agent-feed-hostile-run-bundle.json` | Protocol-valid hostile bundle retained as untrusted input |
-| `packages/consumer-alpha/` | M6 immutable consumer state, safe presentation, link, and correction contracts |
-| `apps/consumer-alpha/` | M6 `127.0.0.1` synthetic Node/static-DOM shell |
-| `docs/reviews/m6-local-synthetic-alpha-2026-08-19.md` | M6 scope, verification, and remaining real-alpha blockers |
-| `packages/challenge-track/` | M7 strict coverage, synthetic-case, runner, report, and CLI boundaries |
-| `docs/reviews/m7-challenge-infrastructure-2026-08-19.md` | M7 hostile review, verification, and evidence-track blockers |
-| `fixtures/m3/real-data-alpha-evidence-index.v0.1.json` | Six-record reviewed manual Seven-Eleven/nanaco evidence index; verified but not yet publishable |
-| `fixtures/m3/real-data/jp-cvs-002/golden-scenario.v1.json` | Immutable JP-CVS-002 golden replay oracle with exact reviewed rule bindings |
-| `fixtures/m3/real-data/jp-cvs-006/golden-scenario.v1.json` | Immutable JP-CVS-006 golden replay oracle with engine/preflight provenance and conserved asset ledger |
-| `docs/reviews/m3-real-data-alpha-candidate-2026-08-20.md` | Owner source-policy decision, golden fixture checkpoint, resolved tax-basis gap, and publication boundary |
-| `packages/rule-engine/src/point-route-optimizer.ts` | Value-ranked multi-hop routing with backward capacity, cap-aware splitting, per-hop stranded accounting, and date-of-hop validity |
-| `packages/rule-engine/src/point-valuation.ts` | Explicit per-asset valuation; unvalued assets are reported, never defaulted to face value |
-| `packages/rule-engine/src/payment-stack-synthesizer.ts` | Enumerates and prices funding/charge/payment/loyalty combinations through the stacking resolver |
-| `packages/provisional-rules/src/p0-payment-layers.ts` | Compiles payment layers, charge exclusions, and redemption values from exact claim shapes only |
-| `apps/consumer-alpha/src/payment-stack-recommendation.ts` | Browser surface for "how should I pay", scoped to what the buyer holds |
-| `db/0024_p0_implementation_rule_facts.sql` | Bounded private machine-readable fact projection used to compile the graph from current data |
-| `packages/agent-feed-postgres/src/implementation-rule-facts.ts` | Driver-free loader turning current facts back into research-artifact documents |
-
-The source registry remains data version v0.3. Its research cutoff is now 2026-08-20 and it includes the exact first-party pages used by the manual alpha slice.
-
-## Implementation order
-
-1. Run `prompts/CODEX_INITIATING_PROMPT.md` for Milestones 0 + 1A.
-2. Run `prompts/CODEX_MILESTONE_1B_PROMPT.md` after the conservation gate.
-3. Implement hardened persistence.
-4. Implement the separate Agent Feed project in parallel.
-5. Run `prompts/CODEX_AGENT_FEED_INTEGRATION_PROMPT.md` only after both dependency gates pass.
-6. Run the two-lane source-maintenance rehearsal.
-
-## Boundaries
-
-- no automated live source collection in the engine slices;
-- no Agent Feed server implementation in this project;
-- no direct database coupling between projects;
-- no finding-to-rule automatic publication;
-- no Realtime-based job delivery;
-- no PAN, CVV, PIN, banking passwords, dynamic payment QR values, or copied issuer sessions;
-- synthetic examples are not current market claims;
-- this package is engineering/product research, not legal advice.
-
-## Runnable prototype
-
-`prototype/` contains a tested operation-and-asset kernel, a thin HTTP API, and a responsive browser experience using synthetic data. Run `cd prototype && npm test && npm start`. Codex must extend this baseline instead of deleting it and scaffolding from zero.
-
-The local synthetic M6 checkpoint is implemented and verified. The two
-isolated real-data golden fixtures are now also seeded in private canonical
-database tables. Their rule versions remain `under_review`, no publication
-request exists, and the approved-rule API view cannot expose them. Explicit
-rule publication review and a controlled frontend adapter remain separate
-product steps. The localhost app must not be presented as current reward advice.
-
-The five-rule publication dossier is prepared and machine-verified. Its decision
-remains honestly `pending` because funding/tender exclusions and the JPY 5,000
-charge commitment require accountable human confirmation. Follow
-`fixtures/m3/publication/README.md`; publication SQL cannot be generated before
-that hash-bound decision is approved. The deliberately synthetic unsupported-
-tender rule remains an unpublished golden-test input and is excluded from the
-dossier.
-
-## Verified workspace
-
-Node.js 22+ and pnpm 8.15.4 are required. The workspace does not use live web content or secrets.
+From the repository root:
 
 ```bash
+corepack enable
+corepack prepare pnpm@8.15.4 --activate
 pnpm install --frozen-lockfile
+pnpm --filter @jro/consumer-alpha-app... build
+```
+
+Start the explicit local demo:
+
+```bash
+JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+```
+
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000), go to **貯める**, select at least two payment products, enter a purchase amount such as ¥10,000, and run the comparison.
+
+The ordinary interface works in any current browser. Native WebMCP discovery needs the Chrome setup below.
+
+## Test WebMCP in Chrome
+
+Use Google Chrome 149 or newer. Chrome Canary or Chrome Dev is recommended while WebMCP remains experimental.
+
+1. Open `chrome://flags/#enable-webmcp-testing`.
+2. Set **WebMCP for testing** to **Enabled**.
+3. Relaunch Chrome and open the app in a normal top-level tab.
+4. Enter a valid positive purchase amount and wait for the **WebMCPツール公開中** badge.
+
+In Chrome DevTools Console:
+
+```javascript
+const tools = await document.modelContext.getTools();
+tools.map(({ name }) => name);
+```
+
+Expected tools include:
+
+- `get_current_purchase_context`
+- `get_rewards_passport_summary`
+- `get_expiring_rewards`
+- `compare_purchase_routes`
+- `set_session_purchase_preferences`
+
+Run a comparison with WebMCP's JSON-string input:
+
+```javascript
+const compare = tools.find(({ name }) => name === "compare_purchase_routes");
+await document.modelContext.executeTool(compare, "{}");
+```
+
+The visible route cards should update and Agent Activity should record the tool call. After a comparison exists, the page dynamically adds `explain_purchase_route`:
+
+```javascript
+const updatedTools = await document.modelContext.getTools();
+const explain = updatedTools.find(({ name }) => name === "explain_purchase_route");
+await document.modelContext.executeTool(explain, "{}");
+```
+
+See the [complete WebMCP testing guide](docs/webmcp/testing-guide.md) for preference calls, agent prompts, expected results, and troubleshooting. Chrome's API references are [WebMCP for Chrome](https://developer.chrome.com/docs/ai/webmcp) and the [Imperative API](https://developer.chrome.com/docs/ai/webmcp/imperative-api).
+
+## Add an OpenAI API key
+
+The normal UI and deterministic WebMCP path do not require an API key. A key is needed only for the built-in natural-language Rewards Agent.
+
+For zsh, read the key without displaying it and export it only to the current terminal session:
+
+```bash
+read -rs "OPENAI_API_KEY?Paste your OpenAI API key: "; echo
+export OPENAI_API_KEY
+JRO_DEMO_REWARDS=1 PORT=3000 pnpm --filter @jro/consumer-alpha-app start
+```
+
+You can optionally set `JRO_OPENAI_MODEL`. Keep the API key server-side: never place it in `app.js`, `webmcp.js`, HTML, browser storage, DevTools, or a public environment variable. The app does not need the key prefixed with `NEXT_PUBLIC_`, `VITE_`, or anything similar.
+
+Once the server is running, try this in the Rewards Agent panel:
+
+```text
+I'm saving airline miles and don't want more than one extra step. Compare my routes.
+```
+
+Without a key, the agent fails safely while the normal UI and WebMCP tools remain available.
+
+## Configuration
+
+| Variable | Required | Purpose |
+|---|---:|---|
+| `JRO_DEMO_REWARDS=1` | Local demo only | Explicitly enables bundled synthetic passport and route economics. |
+| `OPENAI_API_KEY` | Agent only | Server-side credential for the built-in Rewards Agent. |
+| `JRO_OPENAI_MODEL` | No | Overrides the agent model. |
+| `JRO_DATABASE_URL` | Hosted/data runtime | Connects the trusted server runtime to PostgreSQL/Supabase. |
+| `PORT` | No | Local server port; defaults to `3000`. |
+
+Additional deployment and Agent Feed variables are documented with their respective subsystems.
+
+## How it fits together
+
+```text
+normal browser UI ─────┐
+native WebMCP client ──┼─> shared reward capabilities
+built-in OpenAI agent ─┘            │
+                                     v
+                         recommendation adapter
+                                     │
+                                     v
+                     deterministic rule and valuation engine
+                                     │
+                                     v
+                      safe UI state + Agent Activity
+
+Agent Feed findings -> untrusted observations -> reviewed evidence -> rules
+PostgreSQL/Supabase -> authoritative facts and private runtime state
+```
+
+The three interaction paths call the same capability layer and calculator. An LLM may select and sequence bounded tools, but it does not perform reward arithmetic, execute SQL, read secrets, or publish findings as rules.
+
+### Trust boundaries
+
+- Reward calculations remain deterministic and replayable.
+- Findings and submitted evidence are not canonical facts.
+- Rule publication is reviewed and fails closed.
+- Private data and credentials stay on the trusted server.
+- Browser DTOs omit internal rules, hashes, evidence locators, and database credentials.
+- Synthetic examples are visibly labeled and never silently substituted for authoritative data.
+
+Read [WebMCP architecture](docs/webmcp/architecture.md), [security model](docs/webmcp/security-model.md), [data classification](docs/webmcp/data-classification.md), and the repository-wide [trust and provenance policy](docs/01_trust_and_provenance_policy.md) for the full design.
+
+## Repository map
+
+| Path | Responsibility |
+|---|---|
+| `apps/consumer-alpha` | Local browser app, API endpoints, WebMCP bridge, and hosted adapter. |
+| `packages/reward-capabilities` | Shared typed rewards operations and session state. |
+| `packages/rewards-agent` | OpenAI Agents SDK adapter and bounded tool definitions. |
+| `packages/rule-engine` | Pure reward, transfer, valuation, replay, and accounting logic. |
+| `packages/recommendation-api` | Internal recommendation and response-security boundary. |
+| `packages/contracts` | Generated schemas plus structural and semantic validation. |
+| `packages/agent-feed-consumer` | Signed delivery intake and untrusted-finding mapping. |
+| `packages/agent-feed-postgres` | PostgreSQL adapters for compiled implementation facts. |
+| `db` | Canonical SQL migrations, seeds, and adversarial database tests. |
+| `supabase` | Ordered Supabase migrations and local project configuration. |
+| `docs` | Product, architecture, trust, operations, deployment, and review records. |
+| `prototype` | Preserved legacy operation-and-asset prototype. |
+
+Agent Feed is a separate deployable sibling project. It transports generic findings; this repository owns evidence acquisition, review, rule publication, and recommendation behavior. The two projects do not query each other's databases. See [Agent Feed integration](docs/15_agent_feed_integration.md).
+
+## Validation
+
+For the current WebMCP milestone:
+
+```bash
+pnpm --filter @jro/reward-capabilities test
+pnpm --filter @jro/rewards-agent test
+pnpm --filter @jro/consumer-alpha-app test
+pnpm --filter @jro/consumer-alpha-app... build
 pnpm lint
+```
+
+For the complete workspace:
+
+```bash
 pnpm typecheck
 pnpm validate:schemas
 pnpm validate:registry
@@ -170,36 +202,7 @@ pnpm publication:m3:check
 pnpm publication:m3:self-test
 ```
 
-Run the local synthetic consumer shell only after building its dependencies:
-
-```bash
-pnpm --filter @jro/consumer-alpha-app build
-pnpm --filter @jro/consumer-alpha-app start
-```
-
-It binds to `127.0.0.1`, uses synthetic `.test` link fixtures, and keeps all
-state in process memory. A direct synthetic card route and optional
-stored-value top-up route are exercised; no QR purchase candidate is exposed.
-
-## Vercel + Supabase deployment
-
-The repository includes a deployment-ready hosted-alpha boundary:
-
-- Vercel serves `apps/consumer-alpha/public` and the bounded Node adapter in
-  `api/[...path].mjs`;
-- Supabase hosts the ordered PostgreSQL schema and released application data;
-- the Vercel runtime connects through the Supabase transaction pooler and
-  immediately selects the restricted NOLOGIN `jro_runtime` role;
-- Vercel's Git integration deploys `main` after merges, while the
-  `Deploy Supabase` workflow applies pending migrations only after the `CI`
-  workflow succeeds on `main`.
-
-Account authentication, project IDs, database passwords, access tokens, and
-the production URL are intentionally not committed. The complete account
-handoff, secrets, initial deployment, and verification commands are documented
-in `docs/28_deployment_vercel_supabase.md`.
-
-The Milestone 2, 2.5, and M3 canonical-persistence gates require a new disposable PostgreSQL 15+ database. No extra Python packages are needed:
+Database tests require a new disposable PostgreSQL 15+ database. They are intentionally guarded against running on an unconfirmed target:
 
 ```bash
 JRO_TEST_DATABASE_URL=postgresql://.../jro_test \
@@ -207,4 +210,25 @@ JRO_DB_TEST_CONFIRM=isolated \
 pnpm test:db
 ```
 
-The legacy offline foundation validator remains available with `make validate` after installing `requirements-dev.txt`. Database integration tests require an isolated PostgreSQL 15+ instance and must report the actual server version.
+## Deployment
+
+The hosted-alpha boundary uses Vercel for the static app and bounded Node adapter, with Supabase PostgreSQL as the authoritative data store. The runtime selects a restricted database role; account credentials, project IDs, database passwords, tokens, and production URLs are not committed.
+
+Follow [Vercel and Supabase deployment](docs/28_deployment_vercel_supabase.md) for environment setup, migrations, CI ordering, smoke tests, and rollback guidance.
+
+## Current scope and roadmap
+
+- **M1 — complete and browser-testable:** shared capabilities, native WebMCP, optional OpenAI agent, one UI state bridge, and explicit demo mode.
+- **M2 — planned:** authentication, private per-user Rewards Passport storage, RLS, provider authorization, and compliance boundaries.
+- **M3 — planned:** browser extension foundation, normalized commerce context, and a narrow shopping companion.
+- **M4 — planned:** complete checkout plans, controlled native-WebMCP commerce, and optional Neo4j route discovery.
+- **M5 — planned:** expected reward ledger, reconciliation, Reward Auditor, and optional Qdrant evidence retrieval.
+- **M6 — planned:** agent evals, security tests, production connector policy, budget controls, and hackathon hardening.
+
+Detailed completion evidence and blockers live in [docs/webmcp/milestone-status.md](docs/webmcp/milestone-status.md).
+
+## Research and safety notice
+
+The source registry's current research cutoff is **2026-08-20 (Asia/Tokyo)**. Reward programmes, campaigns, acceptance rules, and conversion values change. Production guidance must be supported by current canonical evidence and its validity window; bundled fixtures and historical records are for engineering validation only.
+
+This repository is product and engineering research, not financial, legal, tax, or compliance advice.
