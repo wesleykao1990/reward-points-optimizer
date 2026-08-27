@@ -1,8 +1,8 @@
 {
   "version": "liquid-glass-assets.v2",
-  "generation_run_id": "liquid-glass-1787745332405-5f189e731c31",
-  "generated_at": "2026-08-26T11:56:31.527Z",
-  "source_catalogue_deployment_commit_sha": "9eb47848d0b4314e1221afebb29735479bbf967a",
+  "generation_run_id": "liquid-glass-1787792241031-cccdffc30234",
+  "generated_at": "2026-08-27T00:57:45.695Z",
+  "source_catalogue_deployment_commit_sha": "717af95db9866199ad84132b2be730df44a755fd",
   "aspect_ratio": "mixed",
   "width": null,
   "height": null,
@@ -18,18 +18,18 @@
       "height": 448
     }
   },
-  "canonical_count": 211,
+  "canonical_count": 213,
   "alias_count": 40,
-  "asset_count": 251,
+  "asset_count": 253,
   "source_stats": {
-    "checked_in_official_artwork": 54,
-    "official_product_origin_capture": 3,
-    "official_product_page_capture": 18,
-    "official_page_image": 144,
-    "official_exact_image": 9,
+    "checked_in_official_artwork": 55,
+    "official_product_page_capture": 17,
+    "official_product_origin_capture": 4,
+    "official_page_image": 142,
+    "official-explicit-image": 7,
+    "official_exact_image": 8,
     "official_rendered_element_loose": 4,
     "official_page_capture_fallback": 10,
-    "official-explicit-image": 3,
     "poimichi_generic_category": 5,
     "official_origin_capture_fallback": 1
   },
@@ -218,9 +218,9 @@
     },
     {
       "id": "emoney.nanaco",
-      "display_name": "nanaco電子マネー",
+      "display_name": "nanaco",
       "labels": [
-        "nanaco電子マネー"
+        "nanaco"
       ],
       "entity_type": "service_alias",
       "alias_of": "instrument.jp.nanaco",
@@ -238,14 +238,15 @@
         "width": 360,
         "height": 232
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "emoney.waon",
-      "display_name": "WAON電子マネー",
+      "display_name": "WAON",
       "labels": [
-        "WAON電子マネー"
+        "WAON"
       ],
       "entity_type": "service_alias",
       "alias_of": "instrument.emoney.waon",
@@ -263,8 +264,9 @@
         "width": 240,
         "height": 52
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.card.aeon",
@@ -304,11 +306,11 @@
       "path": "/assets/liquid-glass/cards/instrument__card__aeon-card-select.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_product_origin_capture",
+      "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.aeon.co.jp/card/lineup/select/",
-      "source_image_url": "https://www.aeon.co.jp/#official-product-page-capture",
-      "source_sha256": "075ea8d25c0da8ea790d411c3aea9b97d12e1078f808e2f82d30aff5664281ec",
-      "source_asset_path": "/assets/liquid-glass/sources/075ea8d25c0da8ea790d411c.png",
+      "source_image_url": "https://www.aeon.co.jp/card/lineup/select/#official-product-page-capture",
+      "source_sha256": "21a12945a16b677e4f696a9cabbbedb247b1e7be9cba85d59ccee1b5904c8233",
+      "source_asset_path": "/assets/liquid-glass/sources/21a12945a16b677e4f696a9c.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -333,8 +335,8 @@
       "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.aeon.co.jp/card/lineup/jmbwaon/",
       "source_image_url": "https://www.aeon.co.jp/card/lineup/jmbwaon/#official-product-page-capture",
-      "source_sha256": "c027a76f4d370a5ef450b06d45c61afee0bfa5112e145e0fad44b17b8d9bd4d6",
-      "source_asset_path": "/assets/liquid-glass/sources/c027a76f4d370a5ef450b06d.png",
+      "source_sha256": "2d0e9ccc5637195a09c67964d9e41a1647e9b30096485194a12e81ac3c226c63",
+      "source_asset_path": "/assets/liquid-glass/sources/2d0e9ccc5637195a09c67964.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -356,11 +358,11 @@
       "path": "/assets/liquid-glass/cards/instrument__card__aeon-suica-card.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_product_page_capture",
+      "source_kind": "official_product_origin_capture",
       "source_page_url": "https://www.aeon.co.jp/card/lineup/aeonsuica/",
-      "source_image_url": "https://www.aeon.co.jp/card/lineup/aeonsuica/#official-product-page-capture",
-      "source_sha256": "6921bee3ba6347aa563f5a535cc931522f1f5db8fffb7c5ea070624dd5dd4004",
-      "source_asset_path": "/assets/liquid-glass/sources/6921bee3ba6347aa563f5a53.png",
+      "source_image_url": "https://www.aeon.co.jp/#official-product-page-capture",
+      "source_sha256": "6aa24beb129f27510ee81eb0e7c7e1ad3034165a012ab31c4e2572307aa4203d",
+      "source_asset_path": "/assets/liquid-glass/sources/6aa24beb129f27510ee81eb0.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -659,15 +661,15 @@
       "path": "/assets/liquid-glass/cards/instrument__card__au-pay-gold-card.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.kddi-fs.com/",
-      "source_image_url": "https://www.kddi-fs.com/shared/img/top/img_mv_gold_sp.jpg",
-      "source_sha256": "438a666468c7f412db797bcfc53565aaf717c90bb8e73571cc6478c9453ef7f3",
-      "source_asset_path": "/assets/liquid-glass/sources/438a666468c7f412db797bcf.jpg",
-      "source_mime": "image/jpeg",
+      "source_kind": "official-explicit-image",
+      "source_page_url": "https://www.kddi-fs.com/card/gold/",
+      "source_image_url": "https://www.kddi-fs.com/shared/img/img_card_gold.png",
+      "source_sha256": "6481bbe29e13108b43779c8cae1ece7fbe557d59e3b14e00d3d9f723d8214ba8",
+      "source_asset_path": "/assets/liquid-glass/sources/6481bbe29e13108b43779c8c.png",
+      "source_mime": "image/png",
       "source_dimensions": {
-        "width": 750,
-        "height": 1314
+        "width": 560,
+        "height": 354
       },
       "source_score": null,
       "official_reference_preserved": true,
@@ -688,8 +690,8 @@
       "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.jreast.co.jp/card/first/bic/",
       "source_image_url": "https://www.jreast.co.jp/card/first/bic/#official-product-page-capture",
-      "source_sha256": "99ad3be42abbb0d98d5b55b19b114e126239cf1fcd4702f5e33f508e982a1359",
-      "source_asset_path": "/assets/liquid-glass/sources/99ad3be42abbb0d98d5b55b1.png",
+      "source_sha256": "c70bdb26ec9dd376e7d905e58a09cf28fa2e6aa8dd28413fa4db1a67ef0f173a",
+      "source_asset_path": "/assets/liquid-glass/sources/c70bdb26ec9dd376e7d905e5.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -740,8 +742,8 @@
       "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.aeon.co.jp/card/lineup/cosmo/",
       "source_image_url": "https://www.aeon.co.jp/card/lineup/cosmo/#official-product-page-capture",
-      "source_sha256": "c14cf4023d4cef7c461c2211dd917d42a7d0df5f8ef807c96ee2cf6c1226f6f1",
-      "source_asset_path": "/assets/liquid-glass/sources/c14cf4023d4cef7c461c2211.png",
+      "source_sha256": "e44c90ec9b1c6be23739d5159cf671c35f6f494396c78267662eec3e2c00349b",
+      "source_asset_path": "/assets/liquid-glass/sources/e44c90ec9b1c6be23739d515.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -1139,6 +1141,55 @@
       "reused_from_supabase": true
     },
     {
+      "id": "instrument.card.hilton-honors-american-express-card",
+      "display_name": "Hilton Honors American Express Card",
+      "labels": [
+        "Hilton Honors American Express Card"
+      ],
+      "entity_type": "credit_card",
+      "alias_of": null,
+      "resolved_id": "instrument.card.hilton-honors-american-express-card",
+      "path": "/assets/liquid-glass/cards/instrument__card__hilton-honors-american-express-card.svg",
+      "aspect_ratio": "85.60:53.98",
+      "transparent_outside_card": true,
+      "source_kind": "official-explicit-image",
+      "source_page_url": "https://www.americanexpress.com/ja-jp/credit-cards/hilton-classic-card/",
+      "source_image_url": "https://icm.aexp-static.com/Internet/internationalcardshop/ja_jp/images/cards/hilton-classic-card.png",
+      "source_sha256": "025d1e26ce19fd6246e0cf9f679633e9afccd5899edfb719dc6ccd5a0a3df61e",
+      "source_asset_path": "/assets/liquid-glass/sources/025d1e26ce19fd6246e0cf9f.png",
+      "source_mime": "image/png",
+      "source_dimensions": {
+        "width": 480,
+        "height": 304
+      },
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
+    },
+    {
+      "id": "instrument.card.hilton-honors-american-express-premium-card",
+      "display_name": "Hilton Honors American Express Premium Card",
+      "labels": [
+        "Hilton Honors American Express Premium Card"
+      ],
+      "entity_type": "credit_card",
+      "alias_of": null,
+      "resolved_id": "instrument.card.hilton-honors-american-express-premium-card",
+      "path": "/assets/liquid-glass/cards/instrument__card__hilton-honors-american-express-premium-card.svg",
+      "aspect_ratio": "85.60:53.98",
+      "transparent_outside_card": true,
+      "source_kind": "official-explicit-image",
+      "source_page_url": "https://www.americanexpress.com/ja-jp/credit-cards/hilton-premium-card/",
+      "source_image_url": "https://icm.aexp-static.com/Internet/internationalcardshop/ja_jp/images/cards/hilton-premium-card.png",
+      "source_sha256": "5fc358f52654006f480952f0f848bc990d5aa71de9f873aac9b34fb38eddb1b4",
+      "source_asset_path": "/assets/liquid-glass/sources/5fc358f52654006f480952f0.avif",
+      "source_mime": "image/avif",
+      "source_dimensions": null,
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
+    },
+    {
       "id": "instrument.card.j-west-card",
       "display_name": "J-WEST Card",
       "labels": [
@@ -1309,8 +1360,8 @@
       "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.jreast.co.jp/card/first/jalsuica/",
       "source_image_url": "https://www.jreast.co.jp/card/first/jalsuica/#official-product-page-capture",
-      "source_sha256": "d4b8d7c17b1ae12ff4459ce34e9f48f08f38a6a7dc40b80687d90dfb9b1aa3f2",
-      "source_asset_path": "/assets/liquid-glass/sources/d4b8d7c17b1ae12ff4459ce3.png",
+      "source_sha256": "c503eadf78acda76fae35b0a106159f07ded176f5be86971ab789ba2ba2a073d",
+      "source_asset_path": "/assets/liquid-glass/sources/c503eadf78acda76fae35b0a.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -1543,8 +1594,8 @@
       "source_kind": "official_product_page_capture",
       "source_page_url": "https://www.jreast.co.jp/card/first/jrecard.html",
       "source_image_url": "https://www.jreast.co.jp/card/first/jrecard.html#official-product-page-capture",
-      "source_sha256": "256a96bb99456ccc2e580fc7397a86d9827e2cfade6fe1a3ecb5660442b1f4da",
-      "source_asset_path": "/assets/liquid-glass/sources/256a96bb99456ccc2e580fc7.png",
+      "source_sha256": "0b68d8728f227af7b6c9f7062d9f4b78fdcdac7dc37b0fc523a137d329ddf808",
+      "source_asset_path": "/assets/liquid-glass/sources/0b68d8728f227af7b6c9f706.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -1670,11 +1721,11 @@
       "path": "/assets/liquid-glass/cards/instrument__card__lumine-card.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_product_page_capture",
+      "source_kind": "official_product_origin_capture",
       "source_page_url": "https://www.jreast.co.jp/card/first/lumine.html",
-      "source_image_url": "https://www.jreast.co.jp/card/first/lumine.html#official-product-page-capture",
-      "source_sha256": "785cdc29ee5f81e5eb70e9e2ee8d861ecbe3c579daab48fb67270050968c1213",
-      "source_asset_path": "/assets/liquid-glass/sources/785cdc29ee5f81e5eb70e9e2.png",
+      "source_image_url": "https://www.jreast.co.jp/#official-product-page-capture",
+      "source_sha256": "7595cbc910d5c9a6eaaac9f856defcd8adf05d7d5ca3cc5ed88e0f66526de3d1",
+      "source_asset_path": "/assets/liquid-glass/sources/7595cbc910d5c9a6eaaac9f8.png",
       "source_mime": "image/png",
       "source_dimensions": {
         "width": 1586,
@@ -1722,15 +1773,15 @@
       "path": "/assets/liquid-glass/cards/instrument__card__marriott-bonvoy-american-express-premium-card.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_page_image",
-      "source_page_url": "https://www.americanexpress.com/",
-      "source_image_url": "https://www.aexp-static.com/cdaas/one/statics/@americanexpress/static-assets/2.32.1/package/dist/img/flags/dls-flag-us.svg",
-      "source_sha256": "5e60a20da0f769a6260d4ed755d615da930b87c62436f807a6ff32d000017d18",
-      "source_asset_path": "/assets/liquid-glass/sources/5e60a20da0f769a6260d4ed7.svg",
-      "source_mime": "image/svg+xml",
+      "source_kind": "official-explicit-image",
+      "source_page_url": "https://www.americanexpress.com/ja-jp/credit-cards/card-types/both-marriott-bonvoy-mclp-ieep/index.html",
+      "source_image_url": "https://icm.aexp-static.com/Internet/internationalcardshop/ja_jp/images/cards/marriot-bonvoy-premium-marland.png",
+      "source_sha256": "9364f80b664901ad9af38fcda11fa660b35d2dd32a892edfc1343d56f2911e66",
+      "source_asset_path": "/assets/liquid-glass/sources/9364f80b664901ad9af38fcd.webp",
+      "source_mime": "image/webp",
       "source_dimensions": {
-        "width": 100,
-        "height": 69
+        "width": 480,
+        "height": 304
       },
       "source_score": null,
       "official_reference_preserved": true,
@@ -2762,15 +2813,15 @@
       "path": "/assets/liquid-glass/cards/instrument__card__view-card-standard.svg",
       "aspect_ratio": "85.60:53.98",
       "transparent_outside_card": true,
-      "source_kind": "official_exact_image",
+      "source_kind": "checked_in_official_artwork",
       "source_page_url": "https://www.jreast.co.jp/card/first/viewcardstandard.html",
-      "source_image_url": "https://www.jreast.co.jp/card/first/img/img_card_viewcardstandard.jpg",
-      "source_sha256": "a639ef3d814eeb56855cde8db99c9e2cd725e69830baaf7ed9cf4063c17fb8d8",
-      "source_asset_path": "/assets/liquid-glass/sources/a639ef3d814eeb56855cde8d.jpg",
-      "source_mime": "image/jpeg",
+      "source_image_url": "/assets/payment-logos/reference-official/view-card-standard-face.png",
+      "source_sha256": "1373ed3c43672fb878e1a16304bbff2816e104dcc7cefa8500c45df51278a3d6",
+      "source_asset_path": "/assets/liquid-glass/sources/1373ed3c43672fb878e1a163.png",
+      "source_mime": "image/png",
       "source_dimensions": {
-        "width": 800,
-        "height": 520
+        "width": 900,
+        "height": 586
       },
       "source_score": null,
       "official_reference_preserved": true,
@@ -2850,8 +2901,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.crie.card",
@@ -2875,8 +2927,9 @@
         "width": 3240,
         "height": 1608
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.doutor.valuecard",
@@ -2900,8 +2953,9 @@
         "width": 420,
         "height": 53
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.id",
@@ -2925,8 +2979,9 @@
         "width": 198,
         "height": 129
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.pitapa",
@@ -2950,8 +3005,9 @@
         "width": 200,
         "height": 49
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.quicpay",
@@ -2975,8 +3031,9 @@
         "width": 520,
         "height": 101
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.rakuten_edy",
@@ -3000,8 +3057,9 @@
         "width": 48,
         "height": 48
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.transit_ic",
@@ -3025,8 +3083,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.emoney.waon",
@@ -3050,8 +3109,9 @@
         "width": 240,
         "height": 52
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.jp.nanaco",
@@ -3075,8 +3135,9 @@
         "width": 360,
         "height": 232
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.jp.seven-card-plus",
@@ -3126,8 +3187,9 @@
         "width": 439,
         "height": 100
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.life.lacuca",
@@ -3151,8 +3213,9 @@
         "width": 480,
         "height": 343
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.majica.money",
@@ -3176,8 +3239,9 @@
         "width": 629,
         "height": 327
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.misterdonut.card",
@@ -3201,8 +3265,9 @@
         "width": 260,
         "height": 160
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.mos.card",
@@ -3226,8 +3291,9 @@
         "width": 290,
         "height": 203
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.payment.cashless_generic",
@@ -3248,8 +3314,9 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": 0,
-      "official_reference_preserved": false
+      "source_score": null,
+      "official_reference_preserved": false,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.payment.credit_card_general",
@@ -3270,8 +3337,9 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": 0,
-      "official_reference_preserved": false
+      "source_score": null,
+      "official_reference_preserved": false,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.payment.emoney_generic",
@@ -3292,8 +3360,9 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": 0,
-      "official_reference_preserved": false
+      "source_score": null,
+      "official_reference_preserved": false,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.payment.ic_generic",
@@ -3314,8 +3383,9 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": 0,
-      "official_reference_preserved": false
+      "source_score": null,
+      "official_reference_preserved": false,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.payment.unionpay",
@@ -3339,8 +3409,9 @@
         "width": 578,
         "height": 329
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.prepaid.hopetan",
@@ -3364,8 +3435,9 @@
         "width": 163,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.pronto.money",
@@ -3389,8 +3461,9 @@
         "width": 520,
         "height": 103
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.renoir.card",
@@ -3414,8 +3487,9 @@
         "width": 141,
         "height": 141
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.santoku.cogca",
@@ -3439,8 +3513,9 @@
         "width": 199,
         "height": 86
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.st.emoney",
@@ -3464,8 +3539,9 @@
         "width": 1380,
         "height": 734
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.starbucks.card",
@@ -3489,8 +3565,9 @@
         "width": 48,
         "height": 48
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.sugi.pay",
@@ -3514,8 +3591,9 @@
         "width": 51,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.tullys.card",
@@ -3539,8 +3617,9 @@
         "width": 55,
         "height": 64
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.ueshima.precious",
@@ -3564,8 +3643,9 @@
         "width": 336,
         "height": 80
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.aeonpay",
@@ -3589,8 +3669,9 @@
         "width": 236,
         "height": 42
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.alipay",
@@ -3614,8 +3695,9 @@
         "width": 180,
         "height": 180
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.applepay",
@@ -3639,8 +3721,9 @@
         "width": 293,
         "height": 180
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.aupay",
@@ -3664,8 +3747,9 @@
         "width": 120,
         "height": 120
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.bankpay",
@@ -3689,8 +3773,9 @@
         "width": 700,
         "height": 129
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.barcode_generic",
@@ -3711,8 +3796,9 @@
       "source_asset_path": null,
       "source_mime": null,
       "source_dimensions": null,
-      "source_score": 0,
-      "official_reference_preserved": false
+      "source_score": null,
+      "official_reference_preserved": false,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.dbarai",
@@ -3736,8 +3822,9 @@
         "width": 144,
         "height": 144
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.famipay",
@@ -3761,8 +3848,9 @@
         "width": 157,
         "height": 40
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.jcoinpay",
@@ -3786,8 +3874,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.merpay",
@@ -3811,8 +3900,9 @@
         "width": 270,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.paypay",
@@ -3836,8 +3926,9 @@
         "width": 120,
         "height": 30
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.quocardpay",
@@ -3861,8 +3952,9 @@
         "width": 121,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.rakutenpay",
@@ -3886,8 +3978,9 @@
         "width": 74,
         "height": 25
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.smartcode",
@@ -3911,8 +4004,9 @@
         "width": 241,
         "height": 94
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.wechatpay",
@@ -3936,8 +4030,9 @@
         "width": 320,
         "height": 297
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.wallet.yuchopay",
@@ -3961,8 +4056,9 @@
         "width": 560,
         "height": 135
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "instrument.yoshinoya.prepaid",
@@ -3986,8 +4082,9 @@
         "width": 976,
         "height": 716
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "mile.ana",
@@ -4011,8 +4108,9 @@
         "width": 2960,
         "height": 2960
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "mile.jal",
@@ -4036,8 +4134,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.ana-mile",
@@ -4061,8 +4160,9 @@
         "width": 2960,
         "height": 2960
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.d",
@@ -4086,8 +4186,9 @@
         "width": 192,
         "height": 192
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.jal-mile",
@@ -4111,8 +4212,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.jr-kyupo",
@@ -4136,8 +4238,9 @@
         "width": 279,
         "height": 56
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.jre",
@@ -4161,14 +4264,15 @@
         "width": 498,
         "height": 112
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.moppy",
-      "display_name": "ポイント (moppy)",
+      "display_name": "モッピーポイント",
       "labels": [
-        "ポイント (moppy)",
+        "モッピーポイント",
         "ポイント(moppy)"
       ],
       "entity_type": "service_alias",
@@ -4187,8 +4291,9 @@
         "width": 180,
         "height": 144
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.nanaco",
@@ -4212,8 +4317,9 @@
         "width": 360,
         "height": 232
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.paypay",
@@ -4237,8 +4343,9 @@
         "width": 120,
         "height": 30
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.ponta",
@@ -4262,8 +4369,9 @@
         "width": 180,
         "height": 180
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.rakuten",
@@ -4287,14 +4395,15 @@
         "width": 242,
         "height": 32
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.recruit",
-      "display_name": "Recruit Point",
+      "display_name": "リクルートポイント",
       "labels": [
-        "Recruit Point"
+        "リクルートポイント"
       ],
       "entity_type": "service_alias",
       "alias_of": null,
@@ -4312,14 +4421,15 @@
         "width": 360,
         "height": 61
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.saison",
-      "display_name": "ポイント (saison)",
+      "display_name": "永久不滅ポイント",
       "labels": [
-        "ポイント (saison)",
+        "永久不滅ポイント",
         "ポイント(saison)"
       ],
       "entity_type": "service_alias",
@@ -4338,8 +4448,9 @@
         "width": 40,
         "height": 40
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.saison-permanent",
@@ -4363,8 +4474,9 @@
         "width": 40,
         "height": 40
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.seven-mile",
@@ -4388,8 +4500,9 @@
         "width": 1200,
         "height": 630
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.v",
@@ -4413,8 +4526,9 @@
         "width": 208,
         "height": 55
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "point.waon",
@@ -4438,8 +4552,9 @@
         "width": 240,
         "height": 52
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "portal.jal-mileage-park",
@@ -4463,8 +4578,9 @@
         "width": 245,
         "height": 46
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.bicpoint",
@@ -4488,8 +4604,9 @@
         "width": 640,
         "height": 320
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.bikkuri-app-rank",
@@ -4513,8 +4630,9 @@
         "width": 338,
         "height": 383
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.chatnoir-point",
@@ -4538,8 +4656,9 @@
         "width": 240,
         "height": 64
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.club-on-millennium",
@@ -4563,8 +4682,9 @@
         "width": 5000,
         "height": 5000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.cocos-mileage",
@@ -4588,8 +4708,9 @@
         "width": 146,
         "height": 104
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.coop-mirai-point",
@@ -4613,8 +4734,9 @@
         "width": 163,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.create-point",
@@ -4638,8 +4760,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.crie-card-discount",
@@ -4663,8 +4786,9 @@
         "width": 3240,
         "height": 1608
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.daimaru-matsuzakaya-card-point",
@@ -4688,8 +4812,9 @@
         "width": 274,
         "height": 62
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.daimaru-matsuzakaya-point",
@@ -4713,8 +4838,9 @@
         "width": 274,
         "height": 62
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.dennys-point",
@@ -4738,8 +4864,9 @@
         "width": 209,
         "height": 209
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.doutor-value",
@@ -4763,8 +4890,9 @@
         "width": 420,
         "height": 53
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.dpoint",
@@ -4788,8 +4916,9 @@
         "width": 192,
         "height": 192
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.gongcha-leaf",
@@ -4813,8 +4942,9 @@
         "width": 98,
         "height": 121
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.hands-club",
@@ -4838,8 +4968,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ikinaristeak-meat-mileage",
@@ -4863,8 +4994,9 @@
         "width": 548,
         "height": 129
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ingfan",
@@ -4888,8 +5020,9 @@
         "width": 450,
         "height": 562
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.jrepoint",
@@ -4913,8 +5046,9 @@
         "width": 498,
         "height": 112
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.keio-point",
@@ -4938,8 +5072,9 @@
         "width": 168,
         "height": 39
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.keyuca-point",
@@ -4963,8 +5098,9 @@
         "width": 120,
         "height": 120
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.komeca-point",
@@ -4988,8 +5124,9 @@
         "width": 439,
         "height": 100
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.life-point",
@@ -5013,8 +5150,9 @@
         "width": 180,
         "height": 45
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.loft-stamp",
@@ -5038,8 +5176,9 @@
         "width": 93,
         "height": 59
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.majica",
@@ -5063,8 +5202,9 @@
         "width": 629,
         "height": 327
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.matsukiyococokara",
@@ -5088,8 +5228,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.matsuya-point",
@@ -5113,8 +5254,9 @@
         "width": 540,
         "height": 120
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.mi-point",
@@ -5138,8 +5280,9 @@
         "width": 1440,
         "height": 512
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.mospoint",
@@ -5163,8 +5306,9 @@
         "width": 290,
         "height": 203
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.muji-good",
@@ -5188,8 +5332,9 @@
         "width": 1200,
         "height": 106
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.my-saintmarc",
@@ -5213,8 +5358,9 @@
         "width": 174,
         "height": 92
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.myroyal",
@@ -5238,8 +5384,9 @@
         "width": 480,
         "height": 480
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.nanaco",
@@ -5264,8 +5411,9 @@
         "width": 360,
         "height": 232
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.nitori",
@@ -5289,8 +5437,9 @@
         "width": 800,
         "height": 396
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ohsho-stamp",
@@ -5314,8 +5463,9 @@
         "width": 124,
         "height": 82
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.olympic-tokopon",
@@ -5339,8 +5489,9 @@
         "width": 416,
         "height": 122
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ootoya-point",
@@ -5364,8 +5515,9 @@
         "width": 240,
         "height": 211
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ozeki-cashback",
@@ -5389,8 +5541,9 @@
         "width": 136,
         "height": 40
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.pal-point",
@@ -5414,8 +5567,9 @@
         "width": 326,
         "height": 98
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.paypaypoint",
@@ -5439,8 +5593,9 @@
         "width": 120,
         "height": 30
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.plaza-pass",
@@ -5461,8 +5616,9 @@
       "source_asset_path": "/assets/liquid-glass/sources/a89015b5d957821490e82473.ico",
       "source_mime": "image/x-icon",
       "source_dimensions": null,
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ponta",
@@ -5486,8 +5642,9 @@
         "width": 180,
         "height": 180
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.rakutenpoint",
@@ -5511,8 +5668,9 @@
         "width": 242,
         "height": 32
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.renoir-bonus-value",
@@ -5536,8 +5694,9 @@
         "width": 141,
         "height": 141
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.santoku-point",
@@ -5561,8 +5720,9 @@
         "width": 1012,
         "height": 271
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.sanwa-point",
@@ -5586,8 +5746,9 @@
         "width": 300,
         "height": 300
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.seims-point",
@@ -5611,8 +5772,9 @@
         "width": 678,
         "height": 80
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.seki-tulip",
@@ -5636,8 +5798,9 @@
         "width": 200,
         "height": 140
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.skylark",
@@ -5661,8 +5824,9 @@
         "width": 73,
         "height": 73
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.soupstock-point",
@@ -5686,8 +5850,9 @@
         "width": 393,
         "height": 66
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.st-point",
@@ -5711,8 +5876,9 @@
         "width": 1380,
         "height": 734
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.starbucks-stars",
@@ -5736,8 +5902,9 @@
         "width": 1200,
         "height": 630
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.sugi-point",
@@ -5761,8 +5928,9 @@
         "width": 51,
         "height": 50
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.sundrug",
@@ -5786,8 +5954,9 @@
         "width": 1952,
         "height": 312
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.sushiro-point",
@@ -5811,8 +5980,9 @@
         "width": 285,
         "height": 315
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.takashimaya-point",
@@ -5836,8 +6006,9 @@
         "width": 593,
         "height": 139
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.tobu-point",
@@ -5861,8 +6032,9 @@
         "width": 646,
         "height": 192
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.tokyu-point",
@@ -5886,8 +6058,9 @@
         "width": 376,
         "height": 80
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.tsuruha-point",
@@ -5911,8 +6084,9 @@
         "width": 120,
         "height": 120
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.tullys-beans",
@@ -5936,8 +6110,9 @@
         "width": 55,
         "height": 64
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.ueshima-precious",
@@ -5961,8 +6136,9 @@
         "width": 336,
         "height": 80
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.vpoint",
@@ -5986,8 +6162,9 @@
         "width": 208,
         "height": 55
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.waonpoint",
@@ -6011,8 +6188,9 @@
         "width": 240,
         "height": 52
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.wendys-stage",
@@ -6036,8 +6214,9 @@
         "width": 381,
         "height": 156
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.yaoko-point",
@@ -6061,8 +6240,9 @@
         "width": 256,
         "height": 80
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "program.jp.yodobashi-goldpoint",
@@ -6086,8 +6266,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "storedvalue.suica",
@@ -6111,8 +6292,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "transit.suica",
@@ -6136,8 +6318,9 @@
         "width": 1586,
         "height": 1000
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.aeonpay",
@@ -6161,8 +6344,9 @@
         "width": 236,
         "height": 42
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.anapay",
@@ -6186,8 +6370,9 @@
         "width": 607,
         "height": 133
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.aupay",
@@ -6211,8 +6396,9 @@
         "width": 120,
         "height": 120
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.dbarai",
@@ -6236,8 +6422,9 @@
         "width": 144,
         "height": 144
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.famipay",
@@ -6261,8 +6448,9 @@
         "width": 157,
         "height": 40
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.kyash",
@@ -6286,8 +6474,9 @@
         "width": 230,
         "height": 73
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.paypay",
@@ -6311,8 +6500,9 @@
         "width": 120,
         "height": 30
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.rakutenpay",
@@ -6336,8 +6526,9 @@
         "width": 74,
         "height": 25
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.revolut",
@@ -6361,8 +6552,9 @@
         "width": 3087,
         "height": 1715
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     },
     {
       "id": "wallet.revolut-jp",
@@ -6386,8 +6578,9 @@
         "width": 3085,
         "height": 1713
       },
-      "source_score": 1000,
-      "official_reference_preserved": true
+      "source_score": null,
+      "official_reference_preserved": true,
+      "reused_from_supabase": true
     }
   ]
 }

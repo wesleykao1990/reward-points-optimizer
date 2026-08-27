@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="856" height="539.8" viewBox="0 0 856 539.8" role="img" aria-labelledby="title-instrument__card__aeon" data-asset-id="instrument.card.aeon" data-source-kind="checked_in_official_artwork" data-source-page="https://www.aeon.co.jp/card/lineup/aeoncardwaon/" data-source-image="/assets/payment-logos/reference-official/aeon-card-face.png">
+<svg xmlns="http://www.w3.org/2000/svg" width="856" height="539.8" viewBox="0 0 856 539.8" role="img" aria-labelledby="title-instrument__card__aeon" data-asset-id="instrument.card.aeon" data-source-kind="checked_in_official_artwork" data-layout="card" data-source-page="https://www.aeon.co.jp/card/lineup/aeoncardwaon/" data-source-image="/assets/payment-logos/reference-official/aeon-card-face.png">
 <title id="title-instrument__card__aeon">AEON Card</title>
 <defs>
   <linearGradient id="glass-instrument__card__aeon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.96"/><stop offset="0.56" stop-color="#edf4fb" stop-opacity="0.76"/><stop offset="1" stop-color="#d9e8f4" stop-opacity="0.68"/></linearGradient>
   <linearGradient id="shine-instrument__card__aeon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.82"/><stop offset="0.46" stop-color="#ffffff" stop-opacity="0.12"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
-  <filter id="shadow-instrument__card__aeon" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="13" stdDeviation="13" flood-color="#24445f" flood-opacity="0.2"/></filter>
+  <filter id="shadow-instrument__card__aeon" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="13" stdDeviation="13" flood-color="#24445f" flood-opacity="0.18"/></filter>
   <clipPath id="art-instrument__card__aeon"><rect x="34" y="34" width="788" height="471.8" rx="46"/></clipPath>
 </defs>
 <g filter="url(#shadow-instrument__card__aeon)">

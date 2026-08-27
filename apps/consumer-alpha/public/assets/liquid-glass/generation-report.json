@@ -1,18 +1,18 @@
 {
-  "generation_run_id": "liquid-glass-1787745332405-5f189e731c31",
-  "asset_count": 251,
+  "generation_run_id": "liquid-glass-1787792241031-cccdffc30234",
+  "asset_count": 253,
   "source_stats": {
-    "checked_in_official_artwork": 54,
-    "official_product_origin_capture": 3,
-    "official_product_page_capture": 18,
-    "official_page_image": 144,
-    "official_exact_image": 9,
+    "checked_in_official_artwork": 55,
+    "official_product_page_capture": 17,
+    "official_product_origin_capture": 4,
+    "official_page_image": 142,
+    "official-explicit-image": 7,
+    "official_exact_image": 8,
     "official_rendered_element_loose": 4,
     "official_page_capture_fallback": 10,
-    "official-explicit-image": 3,
     "poimichi_generic_category": 5,
     "official_origin_capture_fallback": 1
   },
-  "card_count": 100,
+  "card_count": 102,
   "fallback_count": 11
 }
