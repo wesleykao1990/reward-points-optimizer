@@ -88,3 +88,4 @@ jobs:
       # Assets run in 20-item checkpoints. Official source bytes and generated
       # SVGs are persisted to Supabase and validated after every checkpoint so
       # retries resume from stored work instead of starting over.
+      # Recovery trigger: reuse persisted valid wrappers and finish post-batch commit/deploy/smoke.
