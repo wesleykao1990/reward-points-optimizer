@@ -94,13 +94,4 @@ elif 'const override = DYNAMIC_FAMILY_DISPLAY_OVERRIDES[familyId];' not in point
     raise SystemExit('dynamic family body marker missing')
 point_path.write_text(point)
 
-# Touch the authoritative completion workflow so this repair commit immediately
-# launches the resumable 213+40 asset generation/deployment run.
-completion_path = root / '.github/workflows/liquid-glass-assets-completion.yml'
-completion = completion_path.read_text()
-trigger = '# payment-catalogue-repair-trigger-v1'
-if trigger not in completion:
-    completion = completion.rstrip() + '\n\n' + trigger + '\n'
-completion_path.write_text(completion)
-
 print('Payment catalogue, labels, and Liquid Glass source path repaired')
