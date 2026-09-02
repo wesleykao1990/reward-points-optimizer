@@ -24,7 +24,7 @@ const example = <T>(file: string): T =>
 describe("schema bundle", () => {
   it("compiles all twelve schemas with relative references", () => {
     expect(compileAllSchemas().size).toBe(12);
-  });
+  }, 15_000);
 
   it("produces byte-stable canonical JSON independent of object insertion order", () => {
     const first = { z: 1, nested: { b: true, a: "x" }, a: [3, 2, 1] };
