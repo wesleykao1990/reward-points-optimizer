@@ -88,10 +88,11 @@ if 'DYNAMIC_FAMILY_DISPLAY_OVERRIDES' not in point:
     point = point.replace(map_marker, override + map_marker, 1)
 needle = '''function dynamicFamilyDefinition(\n  familyId: string,\n): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {\n  if (!isCanonicalProductFamilyId(familyId)) return null;'''
 replacement = '''function dynamicFamilyDefinition(\n  familyId: string,\n): { readonly label: string; readonly kind: P0WalletCatalogueKind } | null {\n  if (!isCanonicalProductFamilyId(familyId)) return null;\n  const override = DYNAMIC_FAMILY_DISPLAY_OVERRIDES[familyId];\n  if (override) return override;'''
-if needle in point:
+override_marker = 'const override = DYNAMIC_FAMILY_DISPLAY_OVERRIDES[familyId];'
+if override_marker not in point:
+    if needle not in point:
+        raise SystemExit('dynamic family body marker missing')
     point = point.replace(needle, replacement, 1)
-elif 'const override = DYNAMIC_FAMILY_DISPLAY_OVERRIDES[familyId];' not in point:
-    raise SystemExit('dynamic family body marker missing')
 point_path.write_text(point)
 
 print('Payment catalogue, labels, and Liquid Glass source path repaired')

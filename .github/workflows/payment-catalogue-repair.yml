@@ -50,6 +50,15 @@ jobs:
       - name: Build consumer app
         run: |
           pnpm install --frozen-lockfile
+          pnpm exec biome format --write \
+            apps/consumer-alpha/public/index.html \
+            apps/consumer-alpha/public/coverage.js \
+            apps/consumer-alpha/public/catalogue-sync.js \
+            apps/consumer-alpha/public/catalogue-sync.css \
+            apps/consumer-alpha/src/point-spend-recommendation.ts \
+            api/catalogue-ui.mjs \
+            vercel.json \
+            scripts/complete_liquid_glass_assets.mjs
           pnpm --filter @jro/consumer-alpha-app... build
 
       - name: Commit repair
