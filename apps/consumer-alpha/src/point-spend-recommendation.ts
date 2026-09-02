@@ -516,7 +516,10 @@ const FAMILY_PREFIX_LABEL: Readonly<Record<string, string>> = Object.freeze({
 });
 
 const DYNAMIC_FAMILY_DISPLAY_OVERRIDES: Readonly<
-  Record<string, { readonly label: string; readonly kind: P0WalletCatalogueKind }>
+  Record<
+    string,
+    { readonly label: string; readonly kind: P0WalletCatalogueKind }
+  >
 > = Object.freeze({
   "wallet.anapay": { label: "ANA Pay", kind: "mobile_pay" },
   "wallet.kyash": { label: "Kyash", kind: "mobile_pay" },

@@ -273,7 +273,9 @@ export function createVisualAssetStore(
             and validation_status in ('valid','deployed')`,
         [assetIds],
       );
-      return new Map(result.rows.map((row) => [row.asset_id, Object.freeze(row)]));
+      return new Map(
+        result.rows.map((row) => [row.asset_id, Object.freeze(row)]),
+      );
     },
 
     async getSources(
@@ -291,7 +293,9 @@ export function createVisualAssetStore(
           where l.asset_id = any($1::text[])`,
         [assetIds],
       );
-      return new Map(result.rows.map((row) => [row.asset_id, Object.freeze(row)]));
+      return new Map(
+        result.rows.map((row) => [row.asset_id, Object.freeze(row)]),
+      );
     },
 
     async close(): Promise<void> {

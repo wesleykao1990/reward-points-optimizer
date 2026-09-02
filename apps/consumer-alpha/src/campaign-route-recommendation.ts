@@ -651,12 +651,11 @@ function assertMoppyConsistency(claims: ParsedMoppyClaims): void {
     throw new Error("campaign_route_source_inconsistent");
 }
 
-async function loadCampaignClaims(
+async function loadCampaignClaimMap(
   source: CampaignRouteSourcePort,
   effectiveAt: string,
 ): Promise<{
-  readonly moppy: ParsedMoppyClaims;
-  readonly jal: ParsedJalClaim;
+  readonly found: ReadonlyMap<string, unknown>;
   readonly data_as_of: string | null;
 }> {
   const loaded: RouteGraphSourceResult = await source.current(effectiveAt);
@@ -699,6 +698,22 @@ async function loadCampaignClaims(
       }
     }
   }
+  const asOfValue = result.as_of;
+  const dataAsOf = asOfValue === null ? null : text(asOfValue);
+  if (dataAsOf !== null && !Number.isFinite(Date.parse(dataAsOf)))
+    throw new Error("campaign_route_source_malformed");
+  return { found, data_as_of: dataAsOf };
+}
+
+async function loadCampaignClaims(
+  source: CampaignRouteSourcePort,
+  effectiveAt: string,
+): Promise<{
+  readonly moppy: ParsedMoppyClaims;
+  readonly jal: ParsedJalClaim;
+  readonly data_as_of: string | null;
+}> {
+  const { found, data_as_of } = await loadCampaignClaimMap(source, effectiveAt);
   if (
     !found.has(MOPPY_PRINCIPAL_ID) ||
     !found.has(MOPPY_BONUS_ID) ||
@@ -712,14 +727,44 @@ async function loadCampaignClaims(
     rebate: parseMoppyRebate(found.get(MOPPY_REBATE_ID)),
   };
   assertMoppyConsistency(moppy);
-  const asOfValue = result.as_of;
-  const dataAsOf = asOfValue === null ? null : text(asOfValue);
-  if (dataAsOf !== null && !Number.isFinite(Date.parse(dataAsOf)))
-    throw new Error("campaign_route_source_malformed");
   return {
     moppy,
     jal: parseJalRakuten(found.get(JAL_RAKUTEN_ID)),
-    data_as_of: dataAsOf,
+    data_as_of,
+  };
+}
+
+async function loadCampaignDescriptorClaims(
+  source: CampaignRouteSourcePort,
+  effectiveAt: string,
+): Promise<{
+  readonly moppy: ParsedMoppyClaims | null;
+  readonly jal: ParsedJalClaim;
+}> {
+  const { found } = await loadCampaignClaimMap(source, effectiveAt);
+  const moppyClaimCount = [
+    MOPPY_PRINCIPAL_ID,
+    MOPPY_BONUS_ID,
+    MOPPY_REBATE_ID,
+  ].filter((claimId) => found.has(claimId)).length;
+  if (
+    !found.has(JAL_RAKUTEN_ID) ||
+    (moppyClaimCount !== 0 && moppyClaimCount !== 3) ||
+    (inMoppyWindow(effectiveAt) && moppyClaimCount !== 3)
+  )
+    throw new Error("campaign_route_source_incomplete");
+  const moppy =
+    moppyClaimCount === 0
+      ? null
+      : {
+          principal: parseMoppyPrincipal(found.get(MOPPY_PRINCIPAL_ID)),
+          bonus: parseMoppyBonus(found.get(MOPPY_BONUS_ID)),
+          rebate: parseMoppyRebate(found.get(MOPPY_REBATE_ID)),
+        };
+  if (moppy !== null) assertMoppyConsistency(moppy);
+  return {
+    moppy,
+    jal: parseJalRakuten(found.get(JAL_RAKUTEN_ID)),
   };
 }
 
@@ -730,28 +775,33 @@ async function loadCampaignClaims(
  */
 export async function listCampaignRouteDescriptors(
   source: CampaignRouteSourcePort,
+  effectiveAt = new Date().toISOString(),
 ): Promise<readonly CampaignRouteDescriptor[]> {
-  const claims = await loadCampaignClaims(source, new Date().toISOString());
+  const claims = await loadCampaignDescriptorClaims(source, effectiveAt);
   return Object.freeze([
-    {
-      route_id: "moppy_aug_2026" as const,
-      scenario: "moppy_aug_2026" as const,
-      label: "モッピーからJALマイルへ交換",
-      source_asset_id: claims.moppy.principal.source_asset_ref,
-      source_label: MOPPY_SOURCE_LABEL,
-      source_kind: "reward_point" as const,
-      target_asset_id: claims.moppy.principal.destination_asset_ref,
-      target_label: JAL_MILE_LABEL,
-      target_kind: "airline_mile" as const,
-      principal_source_amount: String(
-        claims.moppy.principal.source_units_debited,
-      ),
-      principal_target_amount: String(
-        claims.moppy.principal.destination_units_principal,
-      ),
-      valid_from: claims.moppy.principal.validity.effective_from,
-      valid_to: claims.moppy.principal.validity.effective_to,
-    },
+    ...(claims.moppy === null
+      ? []
+      : [
+          {
+            route_id: "moppy_aug_2026" as const,
+            scenario: "moppy_aug_2026" as const,
+            label: "モッピーからJALマイルへ交換",
+            source_asset_id: claims.moppy.principal.source_asset_ref,
+            source_label: MOPPY_SOURCE_LABEL,
+            source_kind: "reward_point" as const,
+            target_asset_id: claims.moppy.principal.destination_asset_ref,
+            target_label: JAL_MILE_LABEL,
+            target_kind: "airline_mile" as const,
+            principal_source_amount: String(
+              claims.moppy.principal.source_units_debited,
+            ),
+            principal_target_amount: String(
+              claims.moppy.principal.destination_units_principal,
+            ),
+            valid_from: claims.moppy.principal.validity.effective_from,
+            valid_to: claims.moppy.principal.validity.effective_to,
+          },
+        ]),
     {
       route_id: "jal_mileage_park_rakuten" as const,
       scenario: "jal_mileage_park_rakuten" as const,

@@ -192,6 +192,9 @@ const REQUIRED_PRODUCTION_HISTORY = Object.freeze([
   "20260824153544_restrict_credit_card_identity_map_to_active_canonical_cards.sql",
   "20260824170224_credit_card_catalogue_optimization_coverage.sql",
   "20260824171114_credit_card_catalogue_attributes.sql",
+  "20260826055424_persist_entity_visual_assets.sql",
+  "20260826055751_persist_visual_source_artifacts.sql",
+  "20260826062700_visual_asset_runtime_entity_identity_lookup.sql",
 ]);
 
 if (mode !== "--check" && mode !== "--write") {

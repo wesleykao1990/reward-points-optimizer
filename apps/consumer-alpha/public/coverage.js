@@ -194,13 +194,13 @@
 
   const observe = () => {
     const observer = new MutationObserver((records) => {
-      records.forEach((record) =>
+      records.forEach((record) => {
         record.addedNodes.forEach((added) => {
           if (!(added instanceof Element)) return;
           if (added.matches(".payment-logo")) hydrateFrame(added);
           hydrateAll(added);
-        }),
-      );
+        });
+      });
     });
     observer.observe(document.body, { childList: true, subtree: true });
   };
@@ -241,9 +241,9 @@
     byName = new Map();
     manifest.assets.forEach((asset) => {
       byName.set(normalize(asset.display_name), asset);
-      (asset.labels ?? []).forEach((label) =>
-        byName.set(normalize(label), asset),
-      );
+      (asset.labels ?? []).forEach((label) => {
+        byName.set(normalize(label), asset);
+      });
     });
     ready = true;
     installStylesheet();

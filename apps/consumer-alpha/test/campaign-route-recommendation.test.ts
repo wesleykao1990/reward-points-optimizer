@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   type CampaignRouteSourcePort,
+  listCampaignRouteDescriptors,
   parseCampaignRouteBrowserInput,
   recommendCampaignRoute,
 } from "../src/campaign-route-recommendation.js";
@@ -239,5 +240,37 @@ describe("campaign route recommendation", () => {
         source(malformed),
       ),
     ).rejects.toThrow("campaign_route_source_malformed");
+  });
+
+  it("omits an expired campaign without hiding incomplete active data", async () => {
+    const withoutMoppy = claims.filter(
+      (claim) =>
+        !String(claim.claim_id).startsWith("claim.campaign.moppy-jal."),
+    );
+    await expect(
+      listCampaignRouteDescriptors(
+        source(withoutMoppy),
+        "2026-08-31T23:59:59+09:00",
+      ),
+    ).rejects.toThrow("campaign_route_source_incomplete");
+
+    await expect(
+      listCampaignRouteDescriptors(
+        source(withoutMoppy),
+        "2026-09-01T00:00:00+09:00",
+      ),
+    ).resolves.toEqual([
+      expect.objectContaining({ route_id: "jal_mileage_park_rakuten" }),
+    ]);
+
+    const partiallyMissing = claims.filter(
+      (claim) => claim.claim_id !== "claim.campaign.moppy-jal.jal-bonus.001",
+    );
+    await expect(
+      listCampaignRouteDescriptors(
+        source(partiallyMissing),
+        "2026-09-01T00:00:00+09:00",
+      ),
+    ).rejects.toThrow("campaign_route_source_incomplete");
   });
 });
