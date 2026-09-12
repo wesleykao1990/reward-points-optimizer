@@ -138,9 +138,19 @@ and uses Supabase's migration history to skip versions already applied.
 
 The `Production consumer smoke` workflow runs after successful `main` CI and
 hourly. It verifies the live database-backed facts and point-spend option paths
-without pinning their growing row counts. A missing migration, 503 response,
-empty graph, or missing card/mobile-pay/point category therefore becomes a
-visible GitHub Actions failure instead of an indefinitely loading UI.
+sequentially, and retries only the path that failed instead of multiplying load
+on a constrained database. A missing migration, empty graph, or missing
+card/mobile-pay/point category therefore becomes a visible GitHub Actions
+failure instead of an indefinitely loading UI.
+
+The production repository must define a `SUPABASE_ACCESS_TOKEN` Actions secret.
+Use a scoped Supabase personal access token restricted to this project with only
+Project Settings read-write access. If the smoke remains unavailable after its
+bounded retry, the workflow restores an inactive Free project or restarts an
+unresponsive active project, waits for `ACTIVE_HEALTHY`, and reruns the smoke.
+The token is never printed. This is recovery, not an availability guarantee:
+Supabase may still pause low-activity Free projects, and a restart causes a few
+minutes of downtime.
 
 Never edit or renumber an applied `db/NNNN_*.sql` or released-data seed. Add a
 new numbered migration instead. Never repair production migration history or
