@@ -13,6 +13,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: production-consumer-smoke
+  cancel-in-progress: false
+
 jobs:
   verify:
     if: >-
@@ -20,7 +24,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,4 +35,25 @@ jobs:
           node-version: 22
 
       - name: Verify production-backed consumer data paths
+        id: smoke
+        continue-on-error: true
+        env:
+          JRO_PRODUCTION_SMOKE_ATTEMPTS: 3
+          JRO_PRODUCTION_SMOKE_RETRY_MS: 15000
+        run: node scripts/verify_consumer_production.mjs
+
+      - name: Recover the Supabase Free project
+        if: steps.smoke.outcome == 'failure'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: fiksfdmmrvmsvjpvelji
+        run: |
+          if test -z "$SUPABASE_ACCESS_TOKEN"; then
+            echo "::error title=Supabase recovery unavailable::Add a project-scoped SUPABASE_ACCESS_TOKEN repository secret with Project Settings read-write access."
+            exit 1
+          fi
+          node scripts/recover_supabase_project.mjs
+
+      - name: Verify production after recovery
+        if: steps.smoke.outcome == 'failure'
         run: node scripts/verify_consumer_production.mjs
